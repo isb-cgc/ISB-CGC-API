@@ -1,0 +1,21 @@
+runtime: python27
+version: api
+api_version: 1
+threadsafe: true
+
+builtins:
+- remote_api: on
+- appstats: on
+- deferred: on
+
+libraries:
+- name: endpoints
+  version: 1.0
+
+handlers:
+- url: /_ah/spi/.*
+  script: cgc_api.APPLICATION
+- url: /remoteapi.*
+  script: google.appengine.ext.remote_api.handler.application
+  login: admin
+
