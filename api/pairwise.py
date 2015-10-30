@@ -4,7 +4,7 @@ import logging
 import urllib
 
 from google.appengine.api import urlfetch
-from django.conf import settings
+import settings
 
 from bq_data_access.data_access import get_feature_vector
 from bq_data_access.feature_value_types import ValueType
@@ -100,7 +100,7 @@ class Pairwise(object):
 
     @classmethod
     def run_pairwise(self, feature_rows):
-        url = settings.PAIRWISE_SERVICE_URL
+        url = settings.get('PAIRWISE_SERVICE_URL')
 
         data_dict = {}
         row_count = 1

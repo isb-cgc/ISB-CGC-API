@@ -4,11 +4,11 @@ import os
 import MySQLdb
 import httplib2
 from oauth2client.client import GoogleCredentials, AccessTokenCredentials
-from django.conf import settings
+import settings
 from googleapiclient.discovery import build
 
 
-debug = settings.DEBUG
+debug = settings.get('DEBUG')
 
 # Database connection
 def sql_connection():
@@ -17,7 +17,7 @@ def sql_connection():
         env = os.getenv('SERVER_SOFTWARE')
         print >> sys.stderr, "Printing Environment."
         print >> sys.stderr, env
-        database = settings.DATABASES['default']
+        database = settings.get('LOCAL_DATABASE')['default']
         print >> sys.stderr, "Printing Database."
         print >> sys.stderr, database
     if env.startswith('Google App Engine/'):

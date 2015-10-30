@@ -2,19 +2,19 @@ import endpoints
 from protorpc import messages
 from protorpc import message_types
 from protorpc import remote
-from django.conf import settings
-from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
-from django.contrib.auth.models import User as Django_User
-from accounts.models import NIH_User
-from cohorts.models import Cohort_Perms,  Cohort as Django_Cohort,Patients, Samples, Filters
-import django
+import settings
+# from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
+# from django.contrib.auth.models import User as Django_User
+# from accounts.models import NIH_User
+# from cohorts.models import Cohort_Perms,  Cohort as Django_Cohort,Patients, Samples, Filters
+# import django
 import logging
 
 from api_helpers import *
 
 logger = logging.getLogger(__name__)
 
-debug = settings.DEBUG
+debug = settings.get('DEBUG')
 
 METADATA_SHORTLIST = [
     # 'adenocarcinoma_invasion',
@@ -1375,26 +1375,26 @@ class Meta_Endpoints_API(remote.Service):
         if access_token:
             user_email = get_user_email_from_token(access_token)
 
-        if user_email:
-            django.setup()
-            try:
-                user_id = Django_User.objects.get(email=user_email).id
-            except (ObjectDoesNotExist, MultipleObjectsReturned), e:
-                logger.warn(e)
-                raise endpoints.NotFoundException("%s does not have an entry in the user database." % user_email)
-            try:
-                cohort_perm = Cohort_Perms.objects.get(cohort_id=cohort_id, user_id=user_id)
-            except (ObjectDoesNotExist, MultipleObjectsReturned), e:
-                logger.warn(e)
-                raise endpoints.NotFoundException("%s does not have permission to view cohort %d." % (user_email, cohort_id))
-
-            try:
-                is_dbGaP_authorized = bool(NIH_User.objects.get(user_id=user_id).dbGaP_authorized)
-            except (ObjectDoesNotExist, MultipleObjectsReturned), e:
-                logger.info("%s does not have an entry in NIH_User: %s" % (user_email, str(e)))
-        else:
-            logger.warn("Authentication required for cohort_files endpoint.")
-            raise endpoints.NotFoundException("No user email found.")
+        # if user_email:
+        #     django.setup()
+        #     try:
+        #         user_id = Django_User.objects.get(email=user_email).id
+        #     except (ObjectDoesNotExist, MultipleObjectsReturned), e:
+        #         logger.warn(e)
+        #         raise endpoints.NotFoundException("%s does not have an entry in the user database." % user_email)
+        #     try:
+        #         cohort_perm = Cohort_Perms.objects.get(cohort_id=cohort_id, user_id=user_id)
+        #     except (ObjectDoesNotExist, MultipleObjectsReturned), e:
+        #         logger.warn(e)
+        #         raise endpoints.NotFoundException("%s does not have permission to view cohort %d." % (user_email, cohort_id))
+        #
+        #     try:
+        #         is_dbGaP_authorized = bool(NIH_User.objects.get(user_id=user_id).dbGaP_authorized)
+        #     except (ObjectDoesNotExist, MultipleObjectsReturned), e:
+        #         logger.info("%s does not have an entry in NIH_User: %s" % (user_email, str(e)))
+        # else:
+        #     logger.warn("Authentication required for cohort_files endpoint.")
+        #     raise endpoints.NotFoundException("No user email found.")
 
         if request.__getattribute__('page') is not None:
             page = request.page

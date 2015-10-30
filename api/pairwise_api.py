@@ -2,7 +2,7 @@ import logging
 
 import endpoints
 from protorpc import messages, remote, message_types
-from django.conf import settings
+import settings
 
 from api.api_helpers import authorize_credentials_with_Google
 from api.pairwise import Pairwise
