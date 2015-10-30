@@ -2,12 +2,6 @@ import endpoints
 from protorpc import messages
 from protorpc import message_types
 from protorpc import remote
-import settings
-# from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
-# from django.contrib.auth.models import User as Django_User
-# from accounts.models import NIH_User
-# from cohorts.models import Cohort_Perms,  Cohort as Django_Cohort,Patients, Samples, Filters
-# import django
 import logging
 
 from api_helpers import *
@@ -1375,7 +1369,18 @@ class Meta_Endpoints_API(remote.Service):
         if access_token:
             user_email = get_user_email_from_token(access_token)
 
-        # if user_email:
+        db = sql_connection()
+        cursor = db.cursor(MySQLdb.cursors.DictCursor)
+
+        if user_email:
+            cohort_perm = 'select * from cohorts_cohort_perms where user_id in (select id from auth_user where email=%s) and cohort_id=%s;'
+            cursor.execute(cohort_perm, (user_email, cohort_id))
+            if cursor.row_count > 0:
+                raise endpoints.NotFoundException('%s done not have permission to view cohort %d.' % (user_email, cohort_id))
+
+            cursor.execute('select * from accounts_nih_user where user_id in (select id from auth_user where email=%s);', (user_email,))
+            if cursor.rowcount > 0:
+                is_dbGaP_authorized = bool(cursor.fetchone()['dbGaP_authorized'])
         #     django.setup()
         #     try:
         #         user_id = Django_User.objects.get(email=user_email).id
@@ -1436,8 +1441,6 @@ class Meta_Endpoints_API(remote.Service):
             query += ' offset %s'
             query_tuple += (offset,)
         query += ';'
-        db = sql_connection()
-        cursor = db.cursor(MySQLdb.cursors.DictCursor)
 
         try:
             cursor.execute(count_query, (cohort_id,))
