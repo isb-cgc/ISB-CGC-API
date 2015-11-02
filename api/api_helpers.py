@@ -17,7 +17,7 @@ def sql_connection():
         env = os.getenv('SERVER_SOFTWARE')
         print >> sys.stderr, "Printing Environment."
         print >> sys.stderr, env
-        database = settings.get('LOCAL_DATABASE')['default']
+        database = settings.get('CLOUD_DATABASE')['default']
         print >> sys.stderr, "Printing Database."
         print >> sys.stderr, database
     if env.startswith('Google App Engine/'):
@@ -25,11 +25,11 @@ def sql_connection():
         if debug: print >> sys.stderr, "PASSED env.startswith('Google App Engine/')"
         try:
             db = MySQLdb.connect(
-                host = database['HOST'],
-                port = 3306, #database['PORT'],
+                unix_socket = database['HOST'],
+                # port = 3306, #database['PORT'],
                 db = database['NAME'],
                 user = database['USER'],
-                passwd = database['PASSWORD'],
+                # passwd = database['PASSWORD'],
                 ssl = database['OPTIONS']['ssl'])            
         except:
             print >> sys.stderr, "Unexpected ERROR in sql_connection(): ", sys.exc_info()[0]
