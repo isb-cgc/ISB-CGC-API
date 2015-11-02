@@ -871,7 +871,7 @@ class Cohort_Endpoints_API(remote.Service):
                     cursor.execute('select * from cohorts_cohort_perms where cohort_id=%s and user_id=%s', (cohort_id, user_id))
                     cohort_perm = cursor.fetchone()['perm']
                     if cohort_perm == 'OWNER':
-                        cursor.execute('update cohorts_cohort set active=%s where cohort_id=%s', (False, cohort_id))
+                        cursor.execute('update cohorts_cohort set active=%s where id=%s', (False, cohort_id))
                         db.commit()
                         return_message = 'Cohort %d successfully deactivated.' % cohort_id
                     else:
