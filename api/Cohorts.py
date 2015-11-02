@@ -5,21 +5,13 @@ import endpoints
 from google.appengine.ext import ndb
 from protorpc import messages, message_types
 from protorpc import remote
-from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
-from django.contrib.auth.models import User as Django_User
-import django
-
 from metadata import MetadataItem, IncomingMetadataItem
-
-from accounts.models import NIH_User
-from cohorts.models import Cohort as Django_Cohort, Cohort_Perms, Patients, Samples, Filters
 from bq_data_access.cohort_bigquery import BigQueryCohortSupport
 from api_helpers import *
 
-
 logger = logging.getLogger(__name__)
 
-INSTALLED_APP_CLIENT_ID = settings.INSTALLED_APP_CLIENT_ID
+INSTALLED_APP_CLIENT_ID = settings.get('INSTALLED_APP_CLIENT_ID')
 
 
 
@@ -201,6 +193,9 @@ class Cohort_Endpoints_API(remote.Service):
         print >> sys.stderr,'Called '+sys._getframe().f_code.co_name
         user_email = None
 
+        db = sql_connection()
+        cursor = db.cursor(MySQLdb.cursors.DictCursor)
+
         if endpoints.get_current_user() is not None:
             user_email = endpoints.get_current_user().email()
 
@@ -215,10 +210,13 @@ class Cohort_Endpoints_API(remote.Service):
 
         if user_email:
             # todo: see if this needs to be done with a MySQldb cursor
-            django.setup()
+            # django.setup()
             try:
-                user_id = Django_User.objects.get(email=user_email).id
-            except (ObjectDoesNotExist, MultipleObjectsReturned), e:
+                cursor.execute('select id from auth_user where email=%s;', (user_email,))
+                if cursor.rowcount > 0:
+                    row = cursor.fetchone()
+                    user_id = row['id']
+            except (IndexError, TypeError), e:
                 logger.warn(e)
                 raise endpoints.NotFoundException("%s does not have an entry in the user database." % user_email)
 
@@ -291,6 +289,9 @@ class Cohort_Endpoints_API(remote.Service):
         print >> sys.stderr,'Called '+sys._getframe().f_code.co_name
         user_email = None
 
+        db = sql_connection()
+        cursor = db.cursor(MySQLdb.cursors.DictCursor)
+
         if endpoints.get_current_user() is not None:
             user_email = endpoints.get_current_user().email()
 
@@ -304,11 +305,12 @@ class Cohort_Endpoints_API(remote.Service):
         cohort_id = request.__getattribute__('cohort_id')
 
         if user_email:
-            # todo: see if this needs to be done with a MySQldb cursor
-            django.setup()
             try:
-                user_id = Django_User.objects.get(email=user_email).id
-            except (ObjectDoesNotExist, MultipleObjectsReturned), e:
+                cursor.execute('select id from auth_user where email=%s;', (user_email,))
+                if cursor.rowcount > 0:
+                    row = cursor.fetchone()
+                    user_id = row['id']
+            except (IndexError, TypeError), e:
                 logger.warn(e)
                 raise endpoints.NotFoundException("%s does not have an entry in the user database." % user_email)
 
@@ -630,6 +632,9 @@ class Cohort_Endpoints_API(remote.Service):
         user_email = None
         dbGaP_authorized = False
 
+        db = sql_connection()
+        cursor = db.cursor(MySQLdb.cursors.DictCursor)
+
         if endpoints.get_current_user() is not None:
             user_email = endpoints.get_current_user().email()
 
@@ -641,11 +646,16 @@ class Cohort_Endpoints_API(remote.Service):
             user_email = get_user_email_from_token(access_token)
 
         if user_email:
-            django.setup()
+            # django.setup()
             try:
-                user_id = Django_User.objects.get(email=user_email).id
-                dbGaP_authorized = NIH_User.objects.get(user_id=user_id).dbGaP_authorized
-            except (ObjectDoesNotExist, MultipleObjectsReturned), e:
+                cursor.execute('select * from accounts_nih_user where user_id in (select id from auth_user where email=%s);', (user_email,))
+                if cursor.rowcount > 0:
+                    row = cursor.fetchone()
+                    dbGaP_authorized = bool(row['dbGaP_authorized'])
+
+                # user_id = Django_User.objects.get(email=user_email).id
+                # dbGaP_authorized = NIH_User.objects.get(user_id=user_id).dbGaP_authorized
+            except (IndexError, TypeError), e:
                 logger.warn(e)
                 # raise endpoints.NotFoundException("%s does not have an entry in the user database." % user_email)
 
@@ -701,6 +711,9 @@ class Cohort_Endpoints_API(remote.Service):
         print >> sys.stderr,'Called '+sys._getframe().f_code.co_name
         user_email = None
 
+        db = sql_connection()
+        cursor = db.cursor(MySQLdb.cursors.DictCursor)
+
         if endpoints.get_current_user() is not None:
             user_email = endpoints.get_current_user().email()
 
@@ -712,11 +725,13 @@ class Cohort_Endpoints_API(remote.Service):
             user_email = get_user_email_from_token(access_token)
 
         if user_email:
-            django.setup()
             try:
-                django_user = Django_User.objects.get(email=user_email)
-                user_id = django_user.id
-            except (ObjectDoesNotExist, MultipleObjectsReturned), e:
+                cursor.execute('select id from auth_user where email=%s;', (user_email,))
+                if cursor.rowcount > 0:
+                    row = cursor.fetchone()
+                    user_id = row['id']
+
+            except (IndexError, TypeError), e:
                 logger.warn(e)
                 raise endpoints.NotFoundException("%s does not have an entry in the user database." % user_email)
 
@@ -762,34 +777,39 @@ class Cohort_Endpoints_API(remote.Service):
             cohort_name = request.__getattribute__('name')
 
             # 1. create new cohorts_cohort with name, active=True, last_date_saved=now
-            created_cohort = Django_Cohort.objects.create(name=cohort_name, active=True, last_date_saved=datetime.utcnow())
-            created_cohort.save()  # todo: redundant?
+            insert_cohort = 'INSERT INTO cohorts_cohort (name, active, last_date_saved) values (%s, %s, %s);'
+            cursor.execute(insert_cohort, (cohort_name, True, datetime.utcnow()))
+            db.commit()
+            cursor.execute('select * from cohorts_cohort order by id desc limit 1')
+            cohort_id = cursor.fetchone()['id']
 
             # 2. insert patients into cohort_patients
-            patient_barcodes = list(set(patient_barcodes))
-            patient_list = [Patients(cohort=created_cohort, patient_id=patient_code) for patient_code in patient_barcodes]
-            Patients.objects.bulk_create(patient_list)
+            patient_list = [(cohort_id, patient_code) for patient_code in patient_barcodes]
+            cursor.executemany('insert into cohorts_patients (cohort_id, patient_id) values (%s, %s);', patient_list)
+            db.commit()
 
             # 3. insert samples into cohort_samples
-            sample_barcodes = list(set(sample_barcodes))
-            sample_list = [Samples(cohort=created_cohort, sample_id=sample_code) for sample_code in sample_barcodes]
-            Samples.objects.bulk_create(sample_list)
+            sample_list = [(cohort_id, sample_code) for sample_code in sample_barcodes]
+            cursor.executemany('insert into cohorts_samples (cohort_id, sample_id) values (%s, %s);', patient_list)
+            db.commit()
 
             # 4. Set permission for user to be owner
-            perm = Cohort_Perms(cohort=created_cohort, user=django_user, perm=Cohort_Perms.OWNER)
-            perm.save()
+            cursor.execute('insert into cohorts_cohort_perms (cohort_id, user_id, perm) values (%s, %s, %s);', (cohort_id, user_id, 'OWNER'))
+            db.commit()
 
             # 5. Create filters applied
+            filter_list = []
             for key, val in query_dict.items():
-                Filters.objects.create(resulting_cohort=created_cohort, name=key, value=val).save()  # todo: save redundant with create?
+                filter_list.append((cohort_id, key, val))
+            cursor.executemany('insert into cohorts_filters (resulting_cohort_id, name, value) values (%s, %s, %s);', filter_list)
 
             # 6. Store cohort to BigQuery
             project_id = settings.BQ_PROJECT_ID
             cohort_settings = settings.GET_BQ_COHORT_SETTINGS()
             bcs = BigQueryCohortSupport(project_id, cohort_settings.dataset_id, cohort_settings.table_id)
-            bcs.add_cohort_with_sample_barcodes(created_cohort.id, sample_barcodes)
+            bcs.add_cohort_with_sample_barcodes(cohort_id, sample_barcodes)
 
-            return SavedCohort(id=str(created_cohort.id),
+            return SavedCohort(id=str(cohort_id),
                                name=cohort_name,
                                active='True',
                                last_date_saved=str(datetime.utcnow()),
@@ -816,6 +836,9 @@ class Cohort_Endpoints_API(remote.Service):
         user_email = None
         result_message = None
 
+        db = sql_connection()
+        cursor = db.cursor(MySQLdb.cursors.DictCursor)
+
         if endpoints.get_current_user() is not None:
             user_email = endpoints.get_current_user().email()
 
@@ -829,26 +852,33 @@ class Cohort_Endpoints_API(remote.Service):
         cohort_id = request.__getattribute__('cohort_id')
 
         if user_email:
-            django.setup()
+            # django.setup()
             try:
-                django_user = Django_User.objects.get(email=user_email)
-                user_id = django_user.id
-            except (ObjectDoesNotExist, MultipleObjectsReturned), e:
+                cursor.execute('select id from auth_user where email=%s;', (user_email,))
+                if cursor.rowcount > 0:
+                    row = cursor.fetchone()
+                    user_id = row['id']
+                # django_user = Django_User.objects.get(email=user_email)
+                # user_id = django_user.id
+            except (IndexError, TypeError), e:
                 logger.warn(e)
                 raise endpoints.NotFoundException("%s does not have an entry in the user database." % user_email)
             try:
-                cohort_to_deactivate = Django_Cohort.objects.get(id=cohort_id)
-                if cohort_to_deactivate.active is True:
-                    cohort_perm = Cohort_Perms.objects.get(cohort_id=cohort_id, user_id=user_id)
-                    if cohort_perm.perm == 'OWNER':
-                        cohort_to_deactivate.active = False
-                        cohort_to_deactivate.save()
+                cursor.execute('select * from cohorts_cohort where id=%s', (cohort_id,))
+                cohort_to_deactivate = cursor.fetchone()
+
+                if cursor.rowcount > 0 and bool(cohort_to_deactivate['active']) is True:
+                    cursor.execute('select * from cohorts_cohort_perms where cohort_id=%s and user_id=%s', (cohort_id, user_id))
+                    cohort_perm = cursor.fetchone()['perm']
+                    if cohort_perm == 'OWNER':
+                        cursor.execute('update cohorts_cohort set active=%s where cohort_id=%s', (False, cohort_id))
+                        db.commit()
                         return_message = 'Cohort %d successfully deactivated.' % cohort_id
                     else:
                         return_message = 'You do not have owner permission on cohort %d.' % cohort_id
                 else:
                     return_message = "Cohort %d was already deactivated." % cohort_id
-            except (ObjectDoesNotExist, MultipleObjectsReturned), e:
+            except (IndexError, TypeError), e:
                 logger.warn(e)
                 raise endpoints.NotFoundException(
                     "Either cohort %d does not have an entry in the database "
