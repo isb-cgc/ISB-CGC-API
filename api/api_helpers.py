@@ -1,3 +1,21 @@
+"""
+
+Copyright 2015, Institute for Systems Biology
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+   http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+
+"""
+
 import sys
 
 import os
@@ -8,35 +26,27 @@ import settings
 from googleapiclient.discovery import build
 
 
-debug = settings.get('DEBUG')
+# debug = settings.DEBUG
 
 # Database connection
 def sql_connection():
-    if debug:
-        print >> sys.stderr, "      ****** sql_connection() Called. *******"
-        env = os.getenv('SERVER_SOFTWARE')
-        print >> sys.stderr, "Printing Environment."
-        print >> sys.stderr, env
-        database = settings.get('CLOUD_DATABASE')['default']
-        print >> sys.stderr, "Printing Database."
-        print >> sys.stderr, database
+    env = os.getenv('SERVER_SOFTWARE')
+    database = settings.DATABASES['default']
     if env.startswith('Google App Engine/'):
         # Connecting from App Engine
-        if debug: print >> sys.stderr, "PASSED env.startswith('Google App Engine/')"
         try:
             db = MySQLdb.connect(
-                unix_socket = database['HOST'],
-                # port = 3306, #database['PORT'],
+                host = database['HOST'],
+                port = 3306,
                 db = database['NAME'],
                 user = database['USER'],
-                # passwd = database['PASSWORD'],
+                passwd = database['PASSWORD'],
                 ssl = database['OPTIONS']['ssl'])            
         except:
             print >> sys.stderr, "Unexpected ERROR in sql_connection(): ", sys.exc_info()[0]
             #return HttpResponse( traceback.format_exc() ) 
             raise # if you want to soldier bravely on despite the exception, but comment to stderr
     else:
-        if debug: print >> sys.stderr, "FAILED env.startswith('Google App Engine/')"
         # Connecting to localhost
         try:
             db = MySQLdb.connect(
@@ -46,10 +56,9 @@ def sql_connection():
                 passwd=database['PASSWORD'])
         except:
             print >> sys.stderr, "Unexpected ERROR in sql_connection(): ", sys.exc_info()[0]
-            #return HttpResponse( traceback.format_exc() ) 
+            #return HttpResponse( traceback.format_exc() )
             raise # if you want to soldier bravely on despite the exception, but comment to stderr
 
-    if debug: print >> sys.stderr, "Made it to the end of sql_connection()."
     return db
 
 
@@ -287,8 +296,8 @@ def authorize_credentials_with_Google():
     if debug: print >> sys.stderr,'Called '+sys._getframe().f_code.co_name
     # documentation: https://developers.google.com/accounts/docs/application-default-credentials
     SCOPES = ['https://www.googleapis.com/auth/bigquery']
-    credentials = GoogleCredentials.get_application_default().create_scoped(SCOPES)
-#    credentials = GoogleCredentials.from_stream(settings.GOOGLE_APPLICATION_CREDENTIALS).create_scoped(SCOPES)
+    # credentials = GoogleCredentials.get_application_default().create_scoped(SCOPES)
+    credentials = GoogleCredentials.from_stream(settings.GOOGLE_APPLICATION_CREDENTIALS).create_scoped(SCOPES)
     http = httplib2.Http()
     http = credentials.authorize(http)
     service = build('bigquery', 'v2', http=http)
