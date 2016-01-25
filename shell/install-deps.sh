@@ -40,6 +40,7 @@ wget -q https://storage.googleapis.com/appengine-sdks/featured/google_appengine_
 unzip -nq ${HOME}/google_appengine.zip -d $HOME
 export PATH=$PATH:${HOME}/google_appengine/
 export PYTHONPATH=$PYTHONPATH:${HOME}/google_appengine/
+echo $PYTHONPATH
 #mkdir ${HOMEROOT}/lib/endpoints/ 2> /dev/null
 #cp ${HOME}/google_appengine/lib/endpoints-1.0/endpoints/* ${HOMEROOT}/lib/endpoints/
 echo "Google App Engine Installed"
