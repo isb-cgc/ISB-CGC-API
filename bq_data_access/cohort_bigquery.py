@@ -1,3 +1,21 @@
+"""
+
+Copyright 2015, Institute for Systems Biology
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+   http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+
+"""
+
 from copy import deepcopy
 
 from api.api_helpers import authorize_credentials_with_Google
@@ -31,6 +49,10 @@ class BigQueryCohortSupport(object):
         {
             "name": "aliquot_barcode",
             "type": "STRING"
+        },
+        {
+            "name": "study_id",
+            "type": "INTEGER"
         }
     ]
 
@@ -72,19 +94,32 @@ class BigQueryCohortSupport(object):
         return response
 
     def _build_cohort_row(self, cohort_id,
-                          patient_barcode=None, sample_barcode=None, aliquot_barcode=None):
+                          patient_barcode=None, sample_barcode=None, aliquot_barcode=None, study_id=None):
         return {
             'cohort_id': cohort_id,
             'patient_barcode': patient_barcode,
             'sample_barcode': sample_barcode,
-            'aliquot_barcode': aliquot_barcode
+            'aliquot_barcode': aliquot_barcode,
+            'study_id': study_id
         }
 
-    def add_cohort_with_sample_barcodes(self, cohort_id, barcodes):
+    def add_cohort_with_sample_barcodes(self, cohort_id, samples):
         rows = []
-        for sample_barcode in barcodes:
-            patient_barcode = sample_barcode[:12]
-            rows.append(self._build_cohort_row(cohort_id, patient_barcode, sample_barcode, None))
+        for sample in samples:
+            # TODO This is REALLY specific to TCGA. This needs to be changed
+            # patient_barcode = sample_barcode[:12]
+            barcode = sample
+            study_id = None
+            if isinstance(sample, tuple):
+                barcode = sample[0]
+                if len(sample) > 1:
+                    study_id = sample[1]
+            elif isinstance(sample, dict):
+                barcode = sample['sample_id']
+                if 'study_id' in sample:
+                    study_id = sample['study_id']
+
+            rows.append(self._build_cohort_row(cohort_id, sample_barcode=barcode, study_id=study_id))
 
         response = self._streaming_insert(rows)
         return response
