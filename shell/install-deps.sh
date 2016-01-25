@@ -32,7 +32,7 @@ pip install -q -r ${HOMEROOT}/requirements.txt -t ${HOMEROOT}/lib --upgrade --on
 echo "Libraries Installed"
 
 # Install SASS
-gem install sass
+#gem install sass
 
 # Install Google App Engine
 echo "Installing Google App Engine..."
