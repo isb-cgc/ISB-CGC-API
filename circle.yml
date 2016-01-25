@@ -13,7 +13,7 @@ dependencies:
 #    - mysql -u ubuntu -e "USE mysql; SET PASSWORD FOR 'ubuntu'@'localhost' = PASSWORD('isb')"
 #    - sudo -E /bin/sh ./shell/database-setup.sh
 test:
-  post:
+  override:
     - echo 'No Tests'
 deployment:
   staging:
