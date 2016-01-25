@@ -19,6 +19,7 @@ deployment:
   staging:
     branch: [master]
     commands:
+      - sudo -E rm -rf ./lib/*.egg-info
       - sudo -E /bin/sh ./shell/gcloud_authenticate.sh
       - sudo -E /bin/sh ./shell/gcloud-pull-staging-files.sh
       - echo $APPENGINE_PASSWORD | sudo -E ./google_appengine/appcfg.py update --email=$APPENGINE_EMAIL .
