@@ -70,6 +70,7 @@ migrations/
 .env
 *.env
 scripts/metadata_featdef_tables.sql
+app.yaml
 
 # dummy datasets
 *.tsv

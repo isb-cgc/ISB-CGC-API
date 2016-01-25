@@ -1,3 +1,21 @@
+"""
+
+Copyright 2015, Institute for Systems Biology
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+   http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+
+"""
+
 from protorpc.messages import Enum
 
 def enum(**enums):
@@ -9,9 +27,10 @@ class ValueType(Enum):
     INTEGER = 2
     FLOAT = 3
     BOOLEAN = 4
+    UNKNOWN = 5 # We can get queries that return no data, which may be of an unknown type
 
 IdentifierTypes = enum(PATIENT=1, SAMPLE=2, ALIQUOT=3)
-DataTypes = enum(CLIN=1, GEXP=2, METH=3, CNVR=4, RPPA=5, MIRN=6, GNAB=7)
+DataTypes = enum(CLIN=1, GEXP=2, METH=3, CNVR=4, RPPA=5, MIRN=6, GNAB=7, USER=8)
 
 IDENTIER_FIELDS_FOR_DATA_TYPES = {
     #TODO: change clin to match new BQ clin table in tcga_data_open
@@ -48,6 +67,9 @@ IDENTIER_FIELDS_FOR_DATA_TYPES = {
         IdentifierTypes.PATIENT: 'ParticipantBarcode',
         IdentifierTypes.SAMPLE: 'Tumor_SampleBarcode',
         IdentifierTypes.ALIQUOT: 'Tumor_AliquotBarcode'
+    },
+    DataTypes.USER: {
+        IdentifierTypes.SAMPLE: 'sample_barcode'
     }
 }
 

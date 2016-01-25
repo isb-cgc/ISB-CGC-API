@@ -1,364 +1,115 @@
-import os
+"""
 
-### MVM STUFF
+Copyright 2015, Institute for Systems Biology
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+   http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+
+"""
+
+# Django settings for GAE_Django17 project.
+import os
+BASE_DIR = os.path.abspath(os.path.dirname(__file__))
+SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY')
+DEBUG = os.environ.get('DEBUG')
+TEMPLATE_DEBUG = DEBUG
+ALLOWED_HOSTS = [
+    os.environ.get('ALLOWED_HOST')
+]
+
+### added for connecting to CloudSQL with SSL certs on MVM platform
 SSL_DIR = os.path.abspath(os.path.dirname(__file__))+os.sep
-if 'VERSION_NAME' in os.environ:
-    VER = os.getenv('VERSION_NAME')
-else:
-    VER = os.getenv('SETTINGS_VERSION')
+MVM_ON = True
 ###
 
+#ADMINS = (
+    # ('Your Name', 'your_email@example.com'),
+#)
+ADMINS = ()
+MANAGERS = ADMINS
 
-# if os.getenv('SETTINGS_VERSION') == 'dev':
-SETTINGS = {
-    'SECRET_KEY': '$czh)t*on8g-l+q4io=*7x4$z!0w+lfz71ya1+$9^6rkphzi18',
-    'DEBUG': True,
-    'PROJECT_ID': '907668440978',
-    'BQ_PROJECT_ID': '907668440978',
+REQUEST_PROJECT_EMAIL = os.environ.get('REQUEST_PROJECT_EMAIL')
 
-    'CLOUD_BASE_URL': 'http://api.isb-cgc.appspot.com',
-    'CLOUD_API_URL': 'https://api.isb-cgc.appspot.com',
+PROJECT_ID = os.environ.get('PROJECT_ID')
+BQ_PROJECT_ID = os.environ.get('BQ_PROJECT_ID')
+IGV_PROJECT_ID = os.environ.get('IGV_PROJECT_ID')
 
-    'LOCAL_BASE_URL': 'http://localhost:8080',
+CLOUD_BASE_URL = os.environ.get('CLOUD_BASE_URL')
+CLOUD_API_URL = os.environ.get('CLOUD_API_URL')
+LOCAL_BASE_URL = os.environ.get('LOCAL_BASE_URL')
 
+# Compute services
+PAIRWISE_SERVICE_URL = os.environ.get('PAIRWISE_SERVICE_URL')
 
-    # BigQuery cohort storage settings
-    'COHORT_DATASET_ID': 'dev_deployment_cohorts',
-    'DEVELOPER_COHORT_TABLE_ID': 'pl_cohorts',
-    'CLOUD_COHORT_TABLE': 'dev_cohorts',
+# Data Buckets
+OPEN_DATA_BUCKET = os.environ.get('OPEN_DATA_BUCKET')
+CONTROLLED_DATA_BUCKET = os.environ.get('CONTROLLED_DATA_BUCKET')
 
-    # Database settings
-    'CLOUD_DATABASE': {
-        'default': {
-            'ENGINE': 'django.db.backends.mysql',
-            'NAME': 'dev',
-            'USER': 'root',
-            'PASSWORD': 'password', # this is particular to isb-cgc:mvm CldSQL Instance
-            'HOST':   '/cloudsql/isb-cgc:demo01',
-            # 'PORT': 3306,
-            'OPTIONS':  {
-                'ssl': {'ca': SSL_DIR + 'demo01-server-ca.pem',
-                        'cert': SSL_DIR + 'demo01-client-cert.pem',
-                        'key': SSL_DIR + 'demo01-client-key.pem'
-                        }
-            }
-        }
-    },
-    'CLOUD_DATABASE_LOCAL_CONNECTION': {
-        'default': {
-            'ENGINE': 'django.db.backends.mysql',
-            'HOST': '173.194.225.46',
-            'NAME': 'dev',
-            'USER': 'root',
-            'PASSWORD': 'password'
-        }
-    },
-    'LOCAL_DATABASE': {
-        'default': {
-            'ENGINE': 'django.db.backends.mysql',
-            'NAME': 'dev',
-            'USER': 'root',
-            'PASSWORD': 'password'
-        }
-    },
-    'TEST_DATABASE': {
-        'default': {
-            'ENGINE': 'django.db.backends.mysql',
-            'NAME': 'djangotests',
-            'USER': 'root',
-            'PASSWORD': 'password'
-        }
-    },
-    'BIGQUERY_DATASET': 'isb_cgc',
-    'BIGQUERY_DATASET2': 'tcga_data_open',
-    'BIGQUERY_PROJECT_NAME': 'isb-cgc',
-
-    'GOOGLE_APPLICATION_CREDENTIALS': os.path.join(os.path.dirname(os.path.dirname(__file__)), 'privatekey.json'),
-    'CLIENT_SECRETS': os.path.join(os.path.dirname(os.path.dirname(__file__)), 'client_secrets.json'),
-    'PEM_FILE': os.path.join(os.path.dirname(os.path.dirname(__file__)), 'privatekey.pem'),
-    'CLIENT_EMAIL': '907668440978-oskt05du3ao083cke14641u35deokgjj@developer.gserviceaccount.com',
-    'WEB_CLIENT_ID': '907668440978-j9ec27vhg0e0mmpjvrcelfq7ah9n0ntm.apps.googleusercontent.com',
-    'INSTALLED_APP_CLIENT_ID': '907668440978-0ol0griu70qkeb6k3gnn2vipfa5mgl60.apps.googleusercontent.com',
-
-    'DBGAP_AUTHENTICATION_LIST_FILENAME': 'dbGaP_authentication_list',
-    'DBGAP_AUTHENTICATION_LIST_BUCKET': 'isb-cgc-nih-users',
-    'ACL_GOOGLE_GROUP': 'isb-cgc-cntl@isb-cgc.org',
-    'OPEN_ACL_GOOGLE_GROUP': 'isb-cgc-open@isb-cgc.org',
-    'ERA_LOGIN_URL': 'https://104.197.85.205/',
-    'IPV4': '173.194.225.46',
-
-    # Compute services
-    'PAIRWISE_SERVICE_URL': 'http://104.197.42.216:8080',
-
-    # Cloud Storage Buckets
-    'OPEN_DATA_BUCKET': 'isb-cgc-open',
-    'CONTROLLED_DATA_BUCKET': 'isb-cgc-controlled'
-}
-
-# elif os.getenv('SETTINGS_VERSION') == 'test':
-#     SETTINGS = {
-#         'SECRET_KEY': '$czh)t*on8g-l+q4io=*7x4$z!0w+lfz71ya1+$9^6rkphzi18',
-#         'DEBUG': True,
-#         'PROJECT_ID': '144657163696',
-#         'BQ_PROJECT_ID': '144657163696',
-#
-#         'CLOUD_BASE_URL': 'http://isb-cgc-test.appspot.com',
-#         'CLOUD_API_URL': 'https://isb-cgc-test.appspot.com',
-#
-#         'LOCAL_BASE_URL': 'http://localhost:8080',
-#
-#
-#         # BigQuery cohort storage settings
-#         'COHORT_DATASET_ID': 'cloud_deployment_cohorts',
-#         'DEVELOPER_COHORT_TABLE_ID': 'prod_cohorts',
-#         'CLOUD_COHORT_TABLE': 'prod_cohorts',
-#
-#         # Database Settings
-#         'CLOUD_DATABASE': {
-#             'default': {
-#                 'ENGINE': 'django.db.backends.mysql',
-#                 'NAME': 'test',
-#                 'USER': 'django-user',
-#                 'PASSWORD': 'isbcgc2015', # this is particular to isb-cgc:mvm CldSQL Instance
-#                 'HOST':   '173.194.255.207',
-#                 'PORT': 3306,
-#                 'OPTIONS':  {
-#                     'ssl': {
-#                         'ca': SSL_DIR + 'ISB-CGC-test-main-server-ca.pem',
-#                         'cert': SSL_DIR + 'ISB-CGC-test-main-client-cert.pem',
-#                         'key': SSL_DIR + 'ISB-CGC-test-main-client-key.pem'
-#                     }
-#                 }
-#             }
-#         },
-#         'CLOUD_DATABASE_LOCAL_CONNECTION': {
-#             'default': {
-#                 'ENGINE': 'django.db.backends.mysql',
-#                 'HOST': '173.194.255.207',
-#                 'NAME': 'test',
-#                 'USER': 'plee',
-#                 'PASSWORD': 'password'
-#             }
-#         },
-#         'LOCAL_DATABASE': {
-#             'default': {
-#                 'ENGINE': 'django.db.backends.mysql',
-#                 'NAME': 'dev',
-#                 'USER': 'root',
-#                 'PASSWORD': 'password'
-#             }
-#         },
-#
-#         # 'BIGQUERY_DATASET': 'isb_cgc',
-#         'BIGQUERY_DATASET': 'tcga_data_open',
-#         'BIGQUERY_DATASET2': 'tcga_data_open',
-#         'BIGQUERY_PROJECT_NAME': 'isb-cgc-test',
-#
-#         'GOOGLE_APPLICATION_CREDENTIALS_ISB_CGC': os.path.join(os.path.dirname(os.path.dirname(__file__)), 'privatekey.json'),
-#         'GOOGLE_APPLICATION_CREDENTIALS': os.path.join(os.path.dirname(os.path.dirname(__file__)), 'ISB-CGC-test-privatekey.json'), # for service account
-#         'CLIENT_SECRETS': os.path.join(os.path.dirname(os.path.dirname(__file__)), 'ISB-CGC-test-client-secrets.json'),  # for web client
-#         'PEM_FILE': os.path.join(os.path.dirname(os.path.dirname(__file__)), 'ISB-CGC-test-privatekey.pem'),  # 'ISB-CGC-test-4b595aaa1759.p12'),
-#         'CLIENT_EMAIL': '144657163696-utjumdn9c03fof16ig7bjak44hfj53o6@developer.gserviceaccount.com',
-#         'WEB_CLIENT_ID': '144657163696-glkmo9pq3hts8l0002utth0013rrm0vf.apps.googleusercontent.com',
-#         'INSTALLED_APP_CLIENT_ID': '144657163696-9dnmed5krg4r00km2fg1q93l71nj3r9j.apps.googleusercontent.com',
-#
-#         'DBGAP_AUTHENTICATION_LIST_FILENAME': 'dbGaP_authentication_list',
-#         'DBGAP_AUTHENTICATION_LIST_BUCKET': 'isb-cgc-nih-users',
-#         'ACL_GOOGLE_GROUP': 'isb-cgc-cntl@isb-cgc.org',
-#         'OPEN_ACL_GOOGLE_GROUP': 'isb-cgc-open@isb-cgc.org',
-#         'ERA_LOGIN_URL': 'https://104.197.85.205/',
-#         'IPV4': '173.194.225.46',
-#
-#         # Compute services
-# 		'PAIRWISE_SERVICE_URL': 'http://104.197.42.216:8080',
-#
-#         # Cloud Storage Buckets
-#         'OPEN_DATA_BUCKET': 'isb-cgc-open',
-#         'CONTROLLED_DATA_BUCKET': 'isb-cgc-controlled'
-#     }
-#
-# elif os.getenv('SETTINGS_VERSION') == 'stage':
-#     SETTINGS = {
-#         'SECRET_KEY': '$czh)t*on8g-l+q4io=*7x4$z!0w+lfz71ya1+$9^6rkphzi18',
-#         'DEBUG': True,
-#         'PROJECT_ID': '241915578225',
-#         'BQ_PROJECT_ID': '241915578225',
-#
-#         'CLOUD_BASE_URL': 'http://isb-cgc-stage.appspot.com',
-#         'CLOUD_API_URL': 'https://isb-cgc-stage.appspot.com',
-#
-#         'LOCAL_BASE_URL': 'http://localhost:8080',
-#
-#
-#         # BigQuery cohort storage settings
-#         'COHORT_DATASET_ID': 'cloud_deployment_cohorts',
-#         'DEVELOPER_COHORT_TABLE_ID': 'prod_cohorts',
-#         'CLOUD_COHORT_TABLE': 'prod_cohorts',
-#
-#         # Database Settings
-#         'CLOUD_DATABASE': {
-#             'default': {
-#                 'ENGINE': 'django.db.backends.mysql',
-#                 'NAME': 'main',
-#                 'USER': 'root',
-#                 'PASSWORD': 'isbcgctest', # this is particular to isb-cgc:mvm CldSQL Instance
-#                 'HOST':   '173.194.235.45',
-#                 'PORT': 3306,
-#                 'OPTIONS':  {
-#                     'ssl': {'ca': SSL_DIR + 'ISB-CGC-stage-server-ca.pem',
-#                             'cert': SSL_DIR + 'ISB-CGC-stage-client-cert.pem',
-#                             'key': SSL_DIR + 'ISB-CGC-stage-client-key.pem'
-#                             }
-#                 }
-#             }
-#         },
-#         'CLOUD_DATABASE_LOCAL_CONNECTION': {
-#             'default': {
-#                 'ENGINE': 'django.db.backends.mysql',
-#                 'HOST': '173.194.235.45',
-#                 'NAME': 'main',
-#                 'USER': 'root',
-#                 'PASSWORD': 'isbcgctest'
-#             }
-#         },
-#         'LOCAL_DATABASE': {
-#             'default': {
-#                 'ENGINE': 'django.db.backends.mysql',
-#                 'NAME': 'dev',
-#                 'USER': 'root',
-#                 'PASSWORD': 'password'
-#             }
-#         },
-#
-#         # 'BIGQUERY_DATASET': 'isb_cgc',
-#         'BIGQUERY_DATASET': 'tcga_data_open',
-#         'BIGQUERY_DATASET2': 'tcga_data_open',
-#         'BIGQUERY_PROJECT_NAME': 'isb-cgc-stage',
-#
-#         'GOOGLE_APPLICATION_CREDENTIALS_ISB_CGC': os.path.join(os.path.dirname(os.path.dirname(__file__)), 'privatekey.json'),
-#         'GOOGLE_APPLICATION_CREDENTIALS': os.path.join(os.path.dirname(os.path.dirname(__file__)), 'ISB-CGC-stage-privatekey2.json'), # for service account
-#         'CLIENT_SECRETS': os.path.join(os.path.dirname(os.path.dirname(__file__)), 'ISB-CGC-stage-client-secrets.json'),  # for web client
-#         'PEM_FILE': os.path.join(os.path.dirname(os.path.dirname(__file__)), 'ISB-CGC-stage-privatekey2.pem'),  # 'ISB-CGC-stage-privatekey.p12'),
-#         'CLIENT_EMAIL': '241915578225-nuanneqc1tdeqi0fthog1g0fl8n29a1k@developer.gserviceaccount.com',
-#         'WEB_CLIENT_ID': '241915578225-jh43cpemj9tgfh432d8qmidl70epss45.apps.googleusercontent.com',
-#         'INSTALLED_APP_CLIENT_ID': '241915578225-nuanneqc1tdeqi0fthog1g0fl8n29a1k.apps.googleusercontent.com',
-#
-#         'DBGAP_AUTHENTICATION_LIST_FILENAME': 'dbGaP_authentication_list',
-#         'DBGAP_AUTHENTICATION_LIST_BUCKET': 'isb-cgc-nih-users',
-#         'ACL_GOOGLE_GROUP': 'isb-cgc-cntl@isb-cgc.org',
-#         'OPEN_ACL_GOOGLE_GROUP': 'isb-cgc-open@isb-cgc.org',
-#         'ERA_LOGIN_URL': 'https://104.197.85.205/',
-#         'IPV4': '173.194.225.46',
-#
-#         # Compute services
-# 		'PAIRWISE_SERVICE_URL': 'http://104.197.42.216:8080',
-#
-#         # Cloud Storage Buckets
-#         'OPEN_DATA_BUCKET': 'isb-cgc-open',
-#         'CONTROLLED_DATA_BUCKET': 'isb-cgc-controlled'
-#     }
-#
-# elif os.getenv('SETTINGS_VERSION') == 'prod':
-#     SETTINGS = {
-#         'SECRET_KEY': '$czh)t*on8g-l+q4io=*7x4$z!0w+lfz71ya1+$9^6rkphzi18',
-#         'DEBUG': True,
-#         'PROJECT_ID': '907668440978',
-#         'BQ_PROJECT_ID': '907668440978',
-#
-#         'CLOUD_BASE_URL': 'http://isb-cgc.appspot.com',
-#         'CLOUD_API_URL': 'https://isb-cgc.appspot.com',
-#
-#         'LOCAL_BASE_URL': 'http://localhost:8080',
-#
-#
-#         # BigQuery cohort storage settings
-#         'COHORT_DATASET_ID': 'cloud_deployment_cohorts',
-#         'DEVELOPER_COHORT_TABLE_ID': 'pl_cohorts',
-#         'CLOUD_COHORT_TABLE': 'prod_cohorts',
-#
-#         # Database settings
-#         'CLOUD_DATABASE': {
-#             'default': {
-#                 'ENGINE': 'django.db.backends.mysql',
-#                 'HOST': '/cloudsql/isb-cgc:demo01',
-#                 'NAME': 'dev',
-#                 'USER': 'django-app'
-#             }
-#         },
-#         'CLOUD_DATABASE_LOCAL_CONNECTION': {
-#             'default': {
-#                 'ENGINE': 'django.db.backends.mysql',
-#                 'HOST': '173.194.225.46',
-#                 'NAME': 'dev',
-#                 'USER': 'root',
-#                 'PASSWORD': 'password'
-#             }
-#         },
-#         'LOCAL_DATABASE': {
-#             'default': {
-#                 'ENGINE': 'django.db.backends.mysql',
-#                 'NAME': 'dev',
-#                 'USER': 'root',
-#                 'PASSWORD': 'password'
-#             }
-#         },
-#         'TEST_DATABASE': {
-#             'default': {
-#                 'ENGINE': 'django.db.backends.mysql',
-#                 'NAME': 'djangotests',
-#                 'USER': 'root',
-#                 'PASSWORD': 'password'
-#             }
-#         },
-#
-#         'BIGQUERY_DATASET': 'isb_cgc',
-#         'BIGQUERY_DATASET2': 'tcga_data_open',
-#         'BIGQUERY_PROJECT_NAME': 'isb-cgc',
-#
-#         'GOOGLE_APPLICATION_CREDENTIALS': os.path.join(os.path.dirname(os.path.dirname(__file__)), 'privatekey.json'),
-#         'CLIENT_SECRETS': os.path.join(os.path.dirname(os.path.dirname(__file__)), 'client_secrets.json'),
-#         'PEM_FILE': os.path.join(os.path.dirname(os.path.dirname(__file__)), 'privatekey.pem'),
-#         'CLIENT_EMAIL': '907668440978-oskt05du3ao083cke14641u35deokgjj@developer.gserviceaccount.com',
-#         'WEB_CLIENT_ID': '907668440978-j9ec27vhg0e0mmpjvrcelfq7ah9n0ntm.apps.googleusercontent.com',
-#         'INSTALLED_APP_CLIENT_ID': '907668440978-0ol0griu70qkeb6k3gnn2vipfa5mgl60.apps.googleusercontent.com',
-#
-#         'DBGAP_AUTHENTICATION_LIST_FILENAME': 'dbGaP_authentication_list',
-#         'DBGAP_AUTHENTICATION_LIST_BUCKET': 'isb-cgc-nih-users',
-#         'ACL_GOOGLE_GROUP': 'isb-cgc-cntl@isb-cgc.org',
-#         'ERA_LOGIN_URL': 'https://104.197.85.205/',
-#         'IPV4': '173.194.225.46',
-#
-#         # Compute services
-# 		'PAIRWISE_SERVICE_URL': 'http://104.197.42.216:8080',
-#
-#         # Cloud Storage Buckets
-#         'OPEN_DATA_BUCKET': 'isb-cgc-open',
-#         'CONTROLLED_DATA_BUCKET': 'isb-cgc-controlled'
-#     }
-
-BQ_PROJECT_ID = SETTINGS['BQ_PROJECT_ID']
+GCLOUD_BUCKET = os.environ.get('GCLOUD_BUCKET')
 
 # BigQuery cohort storage settings
-COHORT_DATASET_ID = SETTINGS['COHORT_DATASET_ID']
-DEVELOPER_COHORT_TABLE_ID = SETTINGS['DEVELOPER_COHORT_TABLE_ID']
+COHORT_DATASET_ID = os.environ.get('COHORT_DATASET_ID')
+DEVELOPER_COHORT_TABLE_ID = os.environ.get('DEVELOPER_COHORT_TABLE_ID')
+
+NIH_AUTH_ON = os.environ.get('NIH_AUTH_ON', False)
+
+DATABASES = {
+    'default': {
+        'ENGINE': os.environ.get('DATABASE_ENGINE', 'django.db.backends.mysql'),
+        'HOST': os.environ.get('DATABASE_HOST', '127.0.0.1'),
+        'PORT': os.environ.get('DATABASE_PORT', 3306),
+        'NAME': os.environ.get('DATABASE_NAME', 'dev'),
+        'USER': os.environ.get('DATABASE_USER'),
+        'PASSWORD': os.environ.get('DATABASE_PASSWORD')
+    }
+}
+
+if os.environ.has_key('DB_SSL_CERT'):
+    DATABASES['default']['OPTIONS'] = {
+        'ssl': {
+            'ca': os.environ.get('DB_SSL_CA'),
+            'cert': os.environ.get('DB_SSL_CERT'),
+            'key': os.environ.get('DB_SSL_KEY')
+        }
+    }
+BASE_URL = CLOUD_BASE_URL
+BASE_API_URL = CLOUD_API_URL
+SITE_ID = 4
+DEVELOPER_COHORT_TABLE_ID = os.environ.get('CLOUD_COHORT_TABLE')
+NIH_AUTH_ON = True
+
+# For running local unit tests for models
+import sys
+if 'test' in sys.argv:
+    DATABASES = os.environ.get('TEST_DATABASE')
 
 def get_project_identifier():
     return BQ_PROJECT_ID
 
-BIGQUERY_DATASET = SETTINGS['BIGQUERY_DATASET']
-BIGQUERY_DATASET2 = SETTINGS['BIGQUERY_DATASET2']
+BIGQUERY_DATASET = os.environ.get('BIGQUERY_DATASET')
+BIGQUERY_DATASET2 = os.environ.get('BIGQUERY_DATASET2')
 
 def get_bigquery_dataset():
     return BIGQUERY_DATASET
 
-BIGQUERY_PROJECT_NAME = SETTINGS['BIGQUERY_PROJECT_NAME']
+PROJECT_NAME = os.environ.get('PROJECT_NAME')
+BIGQUERY_PROJECT_NAME = os.environ.get('BIGQUERY_PROJECT_NAME')
 
 def get_bigquery_project_name():
     return BIGQUERY_PROJECT_NAME
 
 # Set cohort table here
-# if DEVELOPER_COHORT_TABLE_ID is None:
-#     raise Exception("Developer-specific cohort table ID is not set.")
+if DEVELOPER_COHORT_TABLE_ID is None:
+    raise Exception("Developer-specific cohort table ID is not set.")
 
 class BigQueryCohortStorageSettings(object):
     def __init__(self, dataset_id, table_id):
@@ -368,9 +119,267 @@ class BigQueryCohortStorageSettings(object):
 def GET_BQ_COHORT_SETTINGS():
     return BigQueryCohortStorageSettings(COHORT_DATASET_ID, DEVELOPER_COHORT_TABLE_ID)
 
-def get(setting):
-    if setting in SETTINGS:
-        return SETTINGS[setting]
-    else:
-        print setting, ' is not a valid setting.'
-        return None
+USE_CLOUD_STORAGE = os.environ.get('USE_CLOUD_STORAGE')
+
+PROCESSING_ENABLED = os.environ.get('PROCESSING_ENABLED')
+PROCESSING_JENKINS_URL = os.environ.get('PROCESSING_JENKINS_URL')
+PROCESSING_JENKINS_PROJECT = os.environ.get('PROCESSING_JENKINS_PROJECT')
+PROCESSING_JENKINS_USER = os.environ.get('PROCESSING_JENKINS_USER')
+PROCESSING_JENKINS_PASSWORD = os.environ.get('PROCESSING_JENKINS_PASSWORD')
+
+# Local time zone for this installation. Choices can be found here:
+# http://en.wikipedia.org/wiki/List_of_tz_zones_by_name
+# although not all choices may be available on all operating systems.
+# On Unix systems, a value of None will cause Django to use the same
+# timezone as the operating system.
+# If running in a Windows environment this must be set to the same as your
+# system time zone.
+TIME_ZONE = 'America/Los_Angeles'
+
+# Language code for this installation. All choices can be found here:
+# http://www.i18nguy.com/unicode/language-identifiers.html
+LANGUAGE_CODE = 'en-us'
+
+# If you set this to False, Django will make some optimizations so as not
+# to load the internationalization machinery.
+USE_I18N = True
+
+# If you set this to False, Django will not format dates, numbers and
+# calendars according to the current locale.
+USE_L10N = True
+
+# If you set this to False, Django will not use timezone-aware datetimes.
+USE_TZ = True
+
+# Absolute filesystem path to the directory that will hold user-uploaded files.
+# Example: "/home/media/media.lawrence.com/media/"
+MEDIA_FOLDER = os.environ.get('MEDIA_FOLDER')
+MEDIA_ROOT = os.path.join(os.path.dirname(__file__), '..', '..', os.environ.get('MEDIA_FOLDER'))
+MEDIA_ROOT = os.path.normpath(MEDIA_ROOT)
+
+# URL that handles the media served from MEDIA_ROOT. Make sure to use a
+# trailing slash.
+# Examples: "http://media.lawrence.com/media/", "http://example.com/media/"
+MEDIA_URL = ''
+
+# Absolute path to the directory static files should be collected to.
+# Don't put anything in this directory yourself; store your static files
+# in apps' "static/" subdirectories and in STATICFILES_DIRS.
+# Example: "/home/media/media.lawrence.com/static/"
+STATIC_ROOT = ''
+
+# URL prefix for static files.
+# Example: "http://media.lawrence.com/static/"
+STATIC_URL = '/static/'
+
+# Additional locations of static files
+STATICFILES_DIRS = (
+    # Put strings here, like "/home/html/static" or "C:/www/django/static".
+    # Always use forward slashes, even on Windows.
+    # Don't forget to use absolute paths, not relative paths.
+    os.path.join(BASE_DIR, 'static'),
+)
+
+# List of finder classes that know how to find static files in
+# various locations.
+STATICFILES_FINDERS = (
+    'django.contrib.staticfiles.finders.FileSystemFinder',
+    'django.contrib.staticfiles.finders.AppDirectoriesFinder',
+#    'django.contrib.staticfiles.finders.DefaultStorageFinder',
+#    'django.core.context_processors.tz' # moved this to template_context_processors
+)
+
+# Make this unique, and don't share it with anybody.
+# SECRET_KEY = os.environ.get('SECRET_KEY')
+
+# List of callables that know how to import templates from various sources.
+TEMPLATE_LOADERS = (
+    'django.template.loaders.filesystem.Loader',
+    'django.template.loaders.app_directories.Loader',
+    # 'django.template.loaders.eggs.Loader',
+)
+
+MIDDLEWARE_CLASSES = (
+    # For using NDB with Django
+    # documentation: https://cloud.google.com/appengine/docs/python/ndb/#integration
+    'google.appengine.ext.ndb.django_middleware.NdbDjangoMiddleware',
+    'google.appengine.ext.appstats.recording.AppStatsDjangoMiddleware',
+    'django.middleware.common.CommonMiddleware',
+    'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.middleware.csrf.CsrfViewMiddleware',
+    'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'django.contrib.messages.middleware.MessageMiddleware',
+    # Uncomment the next line for simple clickjacking protection:
+    'django.middleware.clickjacking.XFrameOptionsMiddleware',
+
+)
+
+ROOT_URLCONF = 'GenespotRE.urls'
+
+# Python dotted path to the WSGI application used by Django's runserver.
+WSGI_APPLICATION = 'GenespotRE.wsgi.application'
+
+TEMPLATE_DIRS = (
+    # Put strings here, like "/home/html/django_templates" or "C:/www/django/templates".
+    # Always use forward slashes, even on Windows.
+    # Don't forget to use absolute paths, not relative paths.
+    os.path.join(BASE_DIR, 'templates'),
+    # os.path.join(BASE_DIR, 'lib/django/contrib/admin/templates'),
+)
+
+INSTALLED_APPS = (
+    'django.contrib.auth',
+    'django.contrib.contenttypes',
+    'django.contrib.sessions',
+    'django.contrib.sites',
+    'django.contrib.messages',
+    'django.contrib.staticfiles',
+    'django.contrib.admin',
+    'django.contrib.admindocs',
+    # 'GenespotRE',
+    # 'visualizations',
+    # 'seqpeek',
+    # 'sharing',
+    'cohorts',
+    'projects',
+    # 'genes',
+    # 'variables',
+    # 'workbooks',
+    'data_upload'
+)
+
+#############################
+#  django-session-security  #
+#############################
+
+# testing "session security works at the moment" commit
+INSTALLED_APPS += ('session_security',)
+SESSION_SECURITY_WARN_AFTER = 540
+SESSION_SECURITY_EXPIRE_AFTER = 600
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True
+MIDDLEWARE_CLASSES += (
+    # for django-session-security -- must go *after* AuthenticationMiddleware
+    'session_security.middleware.SessionSecurityMiddleware',
+)
+
+###############################
+# End django-session-security #
+###############################
+
+TEST_RUNNER = 'django.test.runner.DiscoverRunner'
+
+# A sample logging configuration. The only tangible logging
+# performed by this configuration is to send an email to
+# the site admins on every HTTP 500 error when DEBUG=False.
+# See http://docs.djangoproject.com/en/dev/topics/logging for
+# more details on how to customize your logging configuration.
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'filters': {
+        'require_debug_false': {
+            '()': 'django.utils.log.RequireDebugFalse'
+        }
+    },
+    'handlers': {
+        'mail_admins': {
+            'level': 'ERROR',
+            'filters': ['require_debug_false'],
+            'class': 'django.utils.log.AdminEmailHandler'
+        }
+    },
+    'loggers': {
+        'django.request': {
+            'handlers': ['mail_admins'],
+            'level': 'ERROR',
+            'propagate': True,
+        },
+    }
+}
+
+##########################
+#  Start django-allauth  #
+##########################
+
+LOGIN_REDIRECT_URL = '/dashboard/'
+
+INSTALLED_APPS += (
+    'accounts',
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
+    'allauth.socialaccount.providers.google')
+
+TEMPLATE_CONTEXT_PROCESSORS = (
+    'allauth.socialaccount.context_processors.socialaccount',
+    # 'allauth.account.context_processors.account', # deprecated in django-allauth
+    'django.core.context_processors.request',
+    'django.contrib.auth.context_processors.auth',
+    'django.contrib.messages.context_processors.messages',
+    'django.core.context_processors.tz'
+)
+
+TEMPLATE_DIRS += (
+    os.path.join(BASE_DIR, 'templates', 'accounts'),
+    )
+
+AUTHENTICATION_BACKENDS = (
+    # Needed to login by username in Django admin, regardless of `allauth`
+    "django.contrib.auth.backends.ModelBackend",
+
+    # `allauth` specific authentication methods, such as login by e-mail
+    "allauth.account.auth_backends.AuthenticationBackend",
+)
+
+SOCIALACCOUNT_PROVIDERS = \
+    { 'google':
+        { 'SCOPE': ['profile', 'email'],
+          'AUTH_PARAMS': { 'access_type': 'online' }
+        }
+    }
+
+
+##########################
+#   End django-allauth   #
+##########################
+
+GOOGLE_APPLICATION_CREDENTIALS  = os.environ.get('GOOGLE_APPLICATION_CREDENTIALS')
+CLIENT_SECRETS                  = os.environ.get('CLIENT_SECRETS')
+PEM_FILE                        = os.environ.get('PEM_FILE')
+CLIENT_EMAIL                    = os.environ.get('CLIENT_EMAIL')
+WEB_CLIENT_ID                   = os.environ.get('WEB_CLIENT_ID')
+INSTALLED_APP_CLIENT_ID         = os.environ.get('INSTALLED_APP_CLIENT_ID')
+
+#################################
+#   For NIH/eRA Commons login   #
+#################################
+
+LOGIN_EXPIRATION_HOURS = 24
+FAKE_DBGAP_AUTHENTICATION_LIST_FILENAME  = os.environ.get('FAKE_DBGAP_AUTHENTICATION_LIST_FILENAME')
+DBGAP_AUTHENTICATION_LIST_FILENAME  = os.environ.get('DBGAP_AUTHENTICATION_LIST_FILENAME')
+DBGAP_AUTHENTICATION_LIST_BUCKET    = os.environ.get('DBGAP_AUTHENTICATION_LIST_BUCKET')
+ACL_GOOGLE_GROUP                    = os.environ.get('ACL_GOOGLE_GROUP')
+OPEN_ACL_GOOGLE_GROUP               = os.environ.get('OPEN_ACL_GOOGLE_GROUP')
+ERA_LOGIN_URL                       = os.environ.get('ERA_LOGIN_URL')
+IPV4                                = os.environ.get('IPV4')
+SAML_FOLDER                         = os.environ.get('SAML_FOLDER')
+
+
+
+##############################
+#   Start django-finalware   #
+##############################
+
+INSTALLED_APPS += (
+    'finalware',)
+TEMPLATE_CONTEXT_PROCESSORS += (
+    'finalware.context_processors.contextify',)
+
+SITE_SUPERUSER_USERNAME = os.environ.get('SU_USER')
+SITE_SUPERUSER_EMAIL = ''
+SITE_SUPERUSER_PASSWORD = os.environ.get('SU_PASS')
+
+
+############################
+#   End django-finalware   #
+############################

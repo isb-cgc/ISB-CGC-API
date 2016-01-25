@@ -22,7 +22,7 @@ import logging
 import urllib
 
 from google.appengine.api import urlfetch
-import settings
+from django.conf import settings
 
 from bq_data_access.data_access import get_feature_vector
 from bq_data_access.feature_value_types import ValueType
