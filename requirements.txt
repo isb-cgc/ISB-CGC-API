@@ -12,5 +12,6 @@ simplejson==3.8.1
 six==1.10.0  #1.5.2
 uritemplate==0.6
 pysftp==0.2.8
+google-api-python-client==1.4.2
 git+https://github.com/BlinkUX/paramiko.git@v1.15-GAE#egg=paramiko
 django-finalware==0.1.1
