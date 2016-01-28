@@ -21,4 +21,4 @@ deployment:
     commands:
       - sudo -E /bin/sh ./shell/gcloud_authenticate.sh
       - sudo -E /bin/sh ./shell/gcloud-pull-staging-files.sh
-      - sudo -E ./google_appengine/appcfg.py update . --noisy
+      - sudo -E ./google_appengine/appcfg.py update .
