@@ -73,6 +73,9 @@ DATABASES = {
     }
 }
 
+if os.environ.has_key('DB_INSTANCE'):
+    DATABASES['default']['INSTANCE'] = os.engiron.get('DB_INSTANCE')
+
 if os.environ.has_key('DB_SSL_CERT'):
     DATABASES['default']['OPTIONS'] = {
         'ssl': {
