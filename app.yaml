@@ -24,3 +24,8 @@ handlers:
   script: google.appengine.ext.remote_api.handler.application
   login: admin
 
+skip_files:
+- ^google_appengine/.*$
+- ^google-cloud-sdk/.*$
+- ^google_appengine\.zip$
+- ^(.*/)?.*\.sql$

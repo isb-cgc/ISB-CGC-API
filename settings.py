@@ -75,9 +75,6 @@ DATABASES = {
 if os.environ.has_key('DATABASE_PASSWORD'):
     DATABASES['default']['PASSWORD'] = os.environ.get('DATABASE_PASSWORD')
 
-if os.environ.has_key('DB_INSTANCE'):
-    DATABASES['default']['INSTANCE'] = os.environ.get('DB_INSTANCE')
-
 if os.environ.has_key('DB_SSL_CERT'):
     DATABASES['default']['OPTIONS'] = {
         'ssl': {
