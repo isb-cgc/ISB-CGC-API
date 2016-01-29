@@ -68,10 +68,12 @@ DATABASES = {
         'HOST': os.environ.get('DATABASE_HOST', '127.0.0.1'),
         'PORT': os.environ.get('DATABASE_PORT', 3306),
         'NAME': os.environ.get('DATABASE_NAME', 'dev'),
-        'USER': os.environ.get('DATABASE_USER'),
-        'PASSWORD': os.environ.get('DATABASE_PASSWORD')
+        'USER': os.environ.get('DATABASE_USER')
     }
 }
+
+if os.environ.has_key('DATABASE_PASSWORD'):
+    DATABASES['default']['PASSWORD'] = os.environ.get('DATABASE_PASSWORD')
 
 if os.environ.has_key('DB_INSTANCE'):
     DATABASES['default']['INSTANCE'] = os.environ.get('DB_INSTANCE')
