@@ -39,8 +39,8 @@ def sql_connection():
         # Connecting from App Engine
         try:
             db = MySQLdb.connect(
-                host = database['HOST'],
-                port = 3306,
+                unix_socket = database['HOST'],
+                # port = 3306,
                 db = database['NAME'],
                 user = database['USER'],
                 passwd = database['PASSWORD'],
