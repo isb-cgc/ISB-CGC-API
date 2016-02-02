@@ -168,7 +168,6 @@ class Cohort_Endpoints_API(remote.Service):
         :param cohort_id: Optional. Cohort id to get information about.
         :return: List of one or more cohorts along with information about each cohort.
         '''
-        print >> sys.stderr,'Called '+sys._getframe().f_code.co_name
         user_email = None
         cursor = None
         filter_cursor = None
@@ -281,7 +280,6 @@ class Cohort_Endpoints_API(remote.Service):
         Returns error message if the cohort id is invalid or if the user does not have reader or
         owner permissions on that cohort.
         """
-        print >> sys.stderr,'Called '+sys._getframe().f_code.co_name
 
         db = None
         cursor = None
@@ -400,7 +398,6 @@ class Cohort_Endpoints_API(remote.Service):
         :return: List of samples and a list of aliquots associated with the participant barcode
         as well as clinical data on that participant.
         """
-        print >> sys.stderr,'Called '+sys._getframe().f_code.co_name
 
         clinical_cursor = None
         sample_cursor = None
@@ -534,7 +531,6 @@ class Cohort_Endpoints_API(remote.Service):
         :return: Biospecimen data about the sample, a list of aliquots associated with the sample barcode,
         and a list of details about each aliquot.
         """
-        print >> sys.stderr,'Called '+sys._getframe().f_code.co_name
 
         biospecimen_cursor = None
         aliquot_cursor = None
@@ -718,7 +714,6 @@ class Cohort_Endpoints_API(remote.Service):
         :return: List of cloud storage file paths. If the user is dbGaP authorized, controlled-access file paths
         will appear in the list.
         """
-        print >> sys.stderr,'Called '+sys._getframe().f_code.co_name
         user_email = None
         cursor = None
         db = None
@@ -787,7 +782,6 @@ class Cohort_Endpoints_API(remote.Service):
 
 
             try:
-                print 'Query String: ', query_str
                 db = sql_connection()
                 cursor = db.cursor(MySQLdb.cursors.DictCursor)
                 cursor.execute(query_str, query_tuple)
@@ -840,7 +834,6 @@ class Cohort_Endpoints_API(remote.Service):
         :return: Information about the saved cohort, including the number of patients and the number
         of samples in that cohort.
         """
-        print >> sys.stderr,'Called '+sys._getframe().f_code.co_name
         user_email = None
         patient_cursor = None
         sample_cursor = None
@@ -963,7 +956,6 @@ class Cohort_Endpoints_API(remote.Service):
         :param token: Optional. Access token with email scope to verify user's google identity.
         :return: Message indicating whether the cohort was deleted or not.
         """
-        print >> sys.stderr,'Called '+sys._getframe().f_code.co_name
         user_email = None
         return_message = None
 
@@ -1031,7 +1023,6 @@ class Cohort_Endpoints_API(remote.Service):
         :return: List of cloud storage file paths. If the user is dbGaP authorized, controlled-access file paths
         will appear in the list.
         """
-        print >> sys.stderr,'Called '+sys._getframe().f_code.co_name
         user_email = None
         cursor = None
         user_cursor = None
@@ -1145,7 +1136,6 @@ class Cohort_Endpoints_API(remote.Service):
         :return: Information about the cohort, including the number of patients and the number
         of samples in that cohort.
         """
-        print >> sys.stderr,'Called '+sys._getframe().f_code.co_name
         patient_cursor = None
         sample_cursor = None
         db = None
