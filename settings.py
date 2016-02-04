@@ -384,4 +384,4 @@ SITE_SUPERUSER_PASSWORD = os.environ.get('SU_PASS')
 #   End django-finalware   #
 ############################
 
-CONN_MAX_AGE = 1
+CONN_MAX_AGE = 0
