@@ -1721,6 +1721,9 @@ class Meta_Endpoints_API_v2(remote.Service):
             if cursor: cursor.close()
             if db: db.close()
             raise endpoints.InternalServerErrorException('Error retrieving attribute list')
+        finally:
+            if cursor: cursor.close()
+            if db: db.close()
 
     GET_RESOURCE = endpoints.ResourceContainer(
                                                filters=messages.StringField(1),
