@@ -2,7 +2,7 @@ application: isb-cgc
 runtime: python27
 version: api
 api_version: 1
-threadsafe: true
+threadsafe: false
 
 builtins:
 - remote_api: on
