@@ -1725,6 +1725,7 @@ class Meta_Endpoints_API_v2(remote.Service):
         finally:
             if cursor: cursor.close()
             if db: db.close()
+            request_finished.send(self)
 
     GET_RESOURCE = endpoints.ResourceContainer(
                                                filters=messages.StringField(1),
@@ -1959,6 +1960,7 @@ class Meta_Endpoints_API_v2(remote.Service):
                 raise endpoints.BadRequestException('Filters must be a valid JSON formatted array with objects containing both key and value properties')
 
         db = sql_connection()
+        django.setup()
 
         # TODO enable filtering based off of this
         # Check for passed in saved search id
@@ -2061,5 +2063,6 @@ class Meta_Endpoints_API_v2(remote.Service):
 
                 results.append( SampleBarcodeItem(sample_barcode=row[0], study_id=table_settings['study_id']) )
             cursor.close()
-            db.close()
+        db.close()
+        request_finished.send(self)
         return SampleBarcodeList( items=results, count=len(results) )
