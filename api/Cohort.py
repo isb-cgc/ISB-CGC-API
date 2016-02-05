@@ -111,7 +111,7 @@ class CohortPatientsSamplesList(messages.Message):
     samples = messages.StringField(3, repeated=True)
     sample_count = messages.IntegerField(4)
     cohort_id = messages.IntegerField(5)
-    error = messages.StringField(6)
+
 
 class PatientDetails(messages.Message):
     clinical_data = messages.MessageField(MetadataItem, 1)
@@ -303,7 +303,7 @@ class Cohort_Endpoints_API(remote.Service):
                 user_id = Django_User.objects.get(email=user_email).id
             except (ObjectDoesNotExist, MultipleObjectsReturned), e:
                 logger.warn(e)
-                raise endpoints.NotFoundException("%s does not have an entry in the user database." % user_email)
+                raise endpoints.UnauthorizedException("%s does not have an entry in the user database." % user_email)
 
             try:
                 db = sql_connection()
@@ -312,17 +312,13 @@ class Cohort_Endpoints_API(remote.Service):
                 result = cursor.fetchone()
                 if int(result['count(*)']) == 0:
                     error_message = "{} does not have owner or reader permissions on cohort {}.".format(user_email, cohort_id)
-                    return CohortPatientsSamplesList(error=error_message, patients=[],
-                                                     patient_count=None, samples=[],
-                                                     sample_count=None, cohort_id=None)
+                    return endpoints.ForbiddenException(error_message)
 
                 cursor.execute("select count(*) from cohorts_cohort where id=%s and active=%s", (cohort_id, unicode('0')))
                 result = cursor.fetchone()
                 if int(result['count(*)']) > 0:
                     error_message = "Cohort {} was deleted.".format(cohort_id)
-                    return CohortPatientsSamplesList(error=error_message, patients=[],
-                                                     patient_count=None, samples=[],
-                                                     sample_count=None, cohort_id=None)
+                    return endpoints.NotFoundException(error_message)
 
             except (IndexError, TypeError) as e:
                 logger.warn(e)
