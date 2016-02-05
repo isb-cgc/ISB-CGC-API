@@ -691,19 +691,17 @@ class Cohort_Endpoints_API(remote.Service):
 
 
 
-    GET_RESOURCE = endpoints.ResourceContainer(sample_barcode=messages.StringField(1),
+    GET_RESOURCE = endpoints.ResourceContainer(cohort_id=messages.IntegerField(1, required=True),
                                                platform=messages.StringField(2),
                                                pipeline=messages.StringField(3),
-                                               token=messages.StringField(4),
-                                               cohort_id=messages.IntegerField(5))
+                                               token=messages.StringField(4))
     @endpoints.method(GET_RESOURCE, DataFileNameKeyList,
                       path='datafilenamekey_list', http_method='GET', name='cohorts.datafilenamekey_list')
-    def datafilenamekey_list(self, request):
+    def datafilenamekey_list_from_cohort(self, request):
         """
-        Returns a list of cloud storage paths for files associated with either a sample barcode or
+        Returns a list of cloud storage paths for files associated with
         all the samples in a specified cohort.
-        :param sample_barcode: Required if cohort_id is absent, else optional.
-        :param cohort_id: Required if sample_barcode is absent, else optional.
+        :param cohort_id: Required.
         :param platform: Optional. Filter results by platform.
         :param pipeline: Optional. Filter results by pipeline.
         :param token: Optional. Access token with email scope to verify user's google identity.
@@ -716,13 +714,9 @@ class Cohort_Endpoints_API(remote.Service):
         dbGaP_authorized = False
         cohort_id = None
 
-        sample_barcode = request.__getattribute__('sample_barcode')
         platform = request.__getattribute__('platform')
         pipeline = request.__getattribute__('pipeline')
         cohort_id = request.__getattribute__('cohort_id')
-
-        if not sample_barcode and not cohort_id:
-            raise endpoints.NotFoundException("You must enter a sample barcode or a cohort id.")
 
         if endpoints.get_current_user() is not None:
             user_email = endpoints.get_current_user().email()
@@ -740,31 +734,21 @@ class Cohort_Endpoints_API(remote.Service):
             query_str = 'SELECT DataFileNameKey, SecurityProtocol, Repository ' \
                         'FROM metadata_data '
 
-            if cohort_id:
-                logger.info('cohort_id block: ' + str(cohort_id))
-                try:
-                    user_id = Django_User.objects.get(email=user_email).id
-                    django_cohort = Django_Cohort.objects.get(id=cohort_id)
-                    cohort_perm = Cohort_Perms.objects.get(cohort_id=cohort_id, user_id=user_id)
-                except (ObjectDoesNotExist, MultipleObjectsReturned), e:
-                    logger.info(e)
-                    logger.warn(e)
-                    # logger.exception(e)
-                    err_msg = "Error retrieving cohort {} for user {}: {}".format(cohort_id, user_email, e)
-                    if 'Cohort_Perms' in e.message:
-                        err_msg = "User {} does not have permissions on cohort {}. Error: {}"\
-                            .format(user_email, cohort_id, e)
-                    raise endpoints.UnauthorizedException(err_msg)  # this is the exception that doesn't seem to be raised.
+            try:
+                user_id = Django_User.objects.get(email=user_email).id
+                django_cohort = Django_Cohort.objects.get(id=cohort_id)
+                cohort_perm = Cohort_Perms.objects.get(cohort_id=cohort_id, user_id=user_id)
+            except (ObjectDoesNotExist, MultipleObjectsReturned), e:
+                logger.warn(e)
+                err_msg = "Error retrieving cohort {} for user {}: {}".format(cohort_id, user_email, e)
+                if 'Cohort_Perms' in e.message:
+                    err_msg = "User {} does not have permissions on cohort {}. Error: {}"\
+                        .format(user_email, cohort_id, e)
+                raise endpoints.UnauthorizedException(err_msg)
 
-                logger.info("Made it past the except block.")
-                # query_str += 'WHERE SampleBarcode IN (SELECT sample_id FROM cohorts_samples WHERE cohort_id=%s) '
-                query_str += 'JOIN cohorts_samples ON metadata_data.SampleBarcode=cohorts_samples.sample_id ' \
-                             'WHERE cohorts_samples.cohort_id=%s '
-                query_tuple = (cohort_id,)
-
-            elif sample_barcode:
-                query_str += 'WHERE SampleBarcode=%s '
-                query_tuple = (sample_barcode,)
+            query_str += 'JOIN cohorts_samples ON metadata_data.SampleBarcode=cohorts_samples.sample_id ' \
+                         'WHERE cohorts_samples.cohort_id=%s '
+            query_tuple = (cohort_id,)
 
             if platform:
                 query_str += ' and metadata_data.Platform=%s '
@@ -775,7 +759,6 @@ class Cohort_Endpoints_API(remote.Service):
                 query_tuple += (pipeline,)
 
             query_str += ' GROUP BY DataFileNameKey'
-
 
             try:
                 db = sql_connection()
@@ -802,18 +785,103 @@ class Cohort_Endpoints_API(remote.Service):
 
             except (IndexError, TypeError), e:
                 logger.warn(e)
-                if sample_barcode:
-                    raise endpoints.NotFoundException("Sample {} not found.".format(sample_barcode))
-                elif cohort_id:
-                    raise endpoints.NotFoundException("Cohort {} not found.".format(cohort_id))
-                else:
-                    raise endpoints.NotFoundException("Error retrieving files.")
+                raise endpoints.NotFoundException("File paths for cohort {} not found.".format(cohort_id))
             finally:
                 if cursor: cursor.close()
                 if db and db.open: db.close()
 
         else:
             raise endpoints.UnauthorizedException("Authentication failed.")
+
+
+    GET_RESOURCE = endpoints.ResourceContainer(sample_barcode=messages.StringField(1, required=True),
+                                               platform=messages.StringField(2),
+                                               pipeline=messages.StringField(3),
+                                               token=messages.StringField(4))
+    @endpoints.method(GET_RESOURCE, DataFileNameKeyList,
+                      path='datafilenamekey_list', http_method='GET', name='cohorts.datafilenamekey_list')
+    def datafilenamekey_list_from_sample(self, request):
+        """
+        Returns a list of cloud storage paths for files associated with either a sample barcode.
+        :param sample_barcode: Required.
+        :param cohort_id: Required if sample_barcode is absent, else optional.
+        :param platform: Optional. Filter results by platform.
+        :param pipeline: Optional. Filter results by pipeline.
+        :param token: Optional. Access token with email scope to verify user's google identity.
+        :return: List of cloud storage file paths. If the user is dbGaP authorized, controlled-access file paths
+        will appear in the list.
+        """
+        user_email = None
+        cursor = None
+        db = None
+        dbGaP_authorized = False
+
+        sample_barcode = request.__getattribute__('sample_barcode')
+        platform = request.__getattribute__('platform')
+        pipeline = request.__getattribute__('pipeline')
+
+        if endpoints.get_current_user() is not None:
+            user_email = endpoints.get_current_user().email()
+
+        # users have the option of pasting the access token in the query string
+        # or in the 'token' field in the api explorer
+        # but this is not required
+        access_token = request.__getattribute__('token')
+        if access_token:
+            user_email = get_user_email_from_token(access_token)
+
+        if user_email:
+            dbGaP_authorized = is_dbgap_authorized(user_email)
+
+            query_str = 'SELECT DataFileNameKey, SecurityProtocol, Repository ' \
+                        'FROM metadata_data WHERE SampleBarcode=%s '
+
+            query_tuple = (sample_barcode,)
+
+            if platform:
+                query_str += ' and Platform=%s '
+                query_tuple += (platform,)
+
+            if pipeline:
+                query_str += ' and Pipeline=%s '
+                query_tuple += (pipeline,)
+
+            query_str += ' GROUP BY DataFileNameKey'
+
+            try:
+                db = sql_connection()
+                cursor = db.cursor(MySQLdb.cursors.DictCursor)
+                cursor.execute(query_str, query_tuple)
+                logger.info(query_str)
+                logger.info(query_tuple)
+
+                datafilenamekeys = []
+                for row in cursor.fetchall():
+                    file_path = row.get('DataFileNameKey') if len(row.get('DataFileNameKey', '')) else '/file-path-currently-unavailable'
+                    if 'controlled' not in str(row['SecurityProtocol']).lower():
+                        datafilenamekeys.append("gs://{}{}".format(settings.OPEN_DATA_BUCKET, file_path))
+                    elif dbGaP_authorized:
+                        bucket_name = ''
+                        # hard-coding mock bucket names for now --testing purposes only
+                        if row['Repository'].lower() == 'dcc':
+                            bucket_name = 'gs://62f2c827-mock-mock-mock-1cde698a4f77'
+                        elif row['Repository'].lower() == 'cghub':
+                            bucket_name = 'gs://360ee3ad-mock-mock-mock-52f9a5e7f99a'
+                        datafilenamekeys.append("{}{}".format(bucket_name, file_path))
+
+                return DataFileNameKeyList(datafilenamekeys=datafilenamekeys, count=len(datafilenamekeys))
+
+            except (IndexError, TypeError), e:
+                logger.warn(e)
+                raise endpoints.NotFoundException("File paths for sample {} not found.".format(sample_barcode))
+
+            finally:
+                if cursor: cursor.close()
+                if db and db.open: db.close()
+
+        else:
+            raise endpoints.UnauthorizedException("Authentication failed.")
+
 
 
     POST_RESOURCE = endpoints.ResourceContainer(IncomingMetadataItem,
@@ -997,129 +1065,6 @@ class Cohort_Endpoints_API(remote.Service):
             # todo: when endpoints.UnauthorizedException is fixed, add that here.
 
         return ReturnJSON(msg=return_message)
-
-
-    GET_RESOURCE = endpoints.ResourceContainer(sample_barcode=messages.StringField(1),
-                                               platform=messages.StringField(2),
-                                               pipeline=messages.StringField(3),
-                                               token=messages.StringField(4),
-                                               cohort_id=messages.IntegerField(5))
-    @endpoints.method(GET_RESOURCE, DataFileNameKeyList,
-                      path='alt_datafilenamekey_list', http_method='GET', name='cohorts.alt_datafilenamekey_list')
-    def alt_datafilenamekey_list(self, request):
-        """
-        Same endpoint as datafilenamekey_list using a different method. This was written to test performance.
-        Returns a list of cloud storage paths for files associated with either a sample barcode or
-        all the samples in a specified cohort.
-        :param sample_barcode: Required if cohort_id is absent, else optional.
-        :param cohort_id: Required if sample_barcode is absent, else optional.
-        :param platform: Optional. Filter results by platform.
-        :param pipeline: Optional. Filter results by pipeline.
-        :param token: Optional. Access token with email scope to verify user's google identity.
-        :return: List of cloud storage file paths. If the user is dbGaP authorized, controlled-access file paths
-        will appear in the list.
-        """
-        user_email = None
-        cursor = None
-        user_cursor = None
-        db = None
-        dbGaP_authorized = False
-        cohort_id = None
-        row = None
-
-        sample_barcode = request.__getattribute__('sample_barcode')
-        platform = request.__getattribute__('platform')
-        pipeline = request.__getattribute__('pipeline')
-        cohort_id = request.__getattribute__('cohort_id')
-
-        if not sample_barcode and not cohort_id:
-            raise endpoints.NotFoundException("You must enter a sample barcode or a cohort id.")
-
-        if endpoints.get_current_user() is not None:
-            user_email = endpoints.get_current_user().email()
-
-        # users have the option of pasting the access token in the query string
-        # or in the 'token' field in the api explorer
-        # but this is not required
-        access_token = request.__getattribute__('token')
-        if access_token:
-            user_email = get_user_email_from_token(access_token)
-
-        if not user_email:
-            raise endpoints.UnauthorizedException("Authentication failed.")
-        dbGaP_authorized = is_dbgap_authorized(user_email)
-
-        query_str = 'SELECT DataFileNameKey, SecurityProtocol, Repository ' \
-                    'FROM metadata_data '
-
-        if cohort_id:
-            try:
-                db = sql_connection()
-                user_cursor = db.cursor(MySQLdb.cursors.DictCursor)
-                user_cohort_query_str = "select * from cohorts_cohort_perms " \
-                                        "where cohort_id=%s " \
-                                        "and user_id = " \
-                                        "(select id from auth_user " \
-                                        "where email=%s) "
-                user_cursor.execute(user_cohort_query_str, (cohort_id, user_email))
-                row = user_cursor.fetchone()
-                perm = row['perm']
-                # note: we are not doing anything with the 'perm' variable for now
-                # but it will throw a TypeError if row is None
-            except (IndexError, TypeError), e:
-                logger.info(e)
-                raise endpoints.NotFoundException(
-                    "Error retrieving cohort {} for user {}.".format(cohort_id, user_email))
-            finally:
-                if user_cursor: user_cursor.close()
-                if db and db.open: db.close()
-
-            # query_str += 'WHERE SampleBarcode IN (SELECT sample_id FROM cohorts_samples WHERE cohort_id=%s) '
-            query_str += 'JOIN cohorts_samples ON metadata_data.SampleBarcode=cohorts_samples.sample_id ' \
-                         'WHERE cohorts_samples.cohort_id=%s '
-            query_tuple = (cohort_id,)
-        elif sample_barcode:
-            query_str += 'WHERE SampleBarcode=%s '
-            query_tuple = (sample_barcode,)
-
-        if platform:
-            query_str += ' and metadata_data.Platform=%s '
-            query_tuple += (platform,)
-
-        if pipeline:
-            query_str += ' and metadata_data.Pipeline=%s '
-            query_tuple += (pipeline,)
-
-        query_str += ' GROUP BY metadata_data.DataFileNameKey'
-
-
-        try:
-            db = sql_connection()
-            cursor = db.cursor(MySQLdb.cursors.DictCursor)
-            cursor.execute(query_str, query_tuple)
-
-            datafilenamekeys = []
-            for row in cursor.fetchall():
-                file_path = row.get('DataFileNameKey') if len(row.get('DataFileNameKey', '')) else '/file-path-currently-unavailable'
-                if 'controlled' not in str(row['SecurityProtocol']).lower():
-                    datafilenamekeys.append("gs://{}{}".format(settings.OPEN_DATA_BUCKET, file_path))
-                elif dbGaP_authorized:
-                    bucket_name = ''
-                    # hard-coding mock bucket names for now --testing purposes only
-                    if row['Repository'].lower() == 'dcc':
-                        bucket_name = 'gs://62f2c827-mock-mock-mock-1cde698a4f77'
-                    elif row['Repository'].lower() == 'cghub':
-                        bucket_name = 'gs://360ee3ad-mock-mock-mock-52f9a5e7f99a'
-                    datafilenamekeys.append("{}{}".format(bucket_name, file_path))
-
-            return DataFileNameKeyList(datafilenamekeys=datafilenamekeys, count=len(datafilenamekeys))
-
-        except (IndexError, TypeError) as e:
-            logger.warn(e)
-            raise endpoints.NotFoundException("Sample {} not found.".format(sample_barcode))
-        finally:
-            if cursor: cursor.close()
-            if db and db.open: db.close()
 
 
 
