@@ -111,7 +111,7 @@ class CohortPatientsSamplesList(messages.Message):
     samples = messages.StringField(3, repeated=True)
     sample_count = messages.IntegerField(4)
     cohort_id = messages.IntegerField(5)
-    error = messages.StringField(6)
+
 
 class PatientDetails(messages.Message):
     clinical_data = messages.MessageField(MetadataItem, 1)
