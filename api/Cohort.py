@@ -696,7 +696,7 @@ class Cohort_Endpoints_API(remote.Service):
                                                pipeline=messages.StringField(3),
                                                token=messages.StringField(4))
     @endpoints.method(GET_RESOURCE, DataFileNameKeyList,
-                      path='datafilenamekey_list', http_method='GET', name='cohorts.datafilenamekey_list')
+                      path='datafilenamekey_list_from_cohort', http_method='GET', name='cohorts.datafilenamekey_list_from_cohort')
     def datafilenamekey_list_from_cohort(self, request):
         """
         Returns a list of cloud storage paths for files associated with
@@ -799,7 +799,7 @@ class Cohort_Endpoints_API(remote.Service):
                                                pipeline=messages.StringField(3),
                                                token=messages.StringField(4))
     @endpoints.method(GET_RESOURCE, DataFileNameKeyList,
-                      path='datafilenamekey_list', http_method='GET', name='cohorts.datafilenamekey_list')
+                      path='datafilenamekey_list_from_sample', http_method='GET', name='cohorts.datafilenamekey_list_from_sample')
     def datafilenamekey_list_from_sample(self, request):
         """
         Returns a list of cloud storage paths for files associated with either a sample barcode.
