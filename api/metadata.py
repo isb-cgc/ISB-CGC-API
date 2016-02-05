@@ -1758,6 +1758,7 @@ class Meta_Endpoints_API_v2(remote.Service):
                 raise endpoints.BadRequestException('Filters must be a valid JSON formatted array with objects containing both key and value properties')
 
         db = sql_connection()
+        django.setup()
 
         # Check for passed in saved search id
         if request.__getattribute__('cohort_id') is not None:
