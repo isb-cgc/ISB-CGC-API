@@ -26,6 +26,7 @@ from django.contrib.auth.models import User as Django_User
 from accounts.models import NIH_User
 from cohorts.models import Cohort_Perms,  Cohort as Django_Cohort,Patients, Samples, Filters
 from projects.models import Study, User_Feature_Definitions, User_Feature_Counts, User_Data_Tables
+from django.core.signals import request_finished
 import django
 import logging
 import re
@@ -1923,6 +1924,7 @@ class Meta_Endpoints_API_v2(remote.Service):
                 total = feature['total']
 
         db.close()
+        request_finished.send(self)
         return MetadataCountsItem(count=count_list, total=total)
 
     GET_RESOURCE = endpoints.ResourceContainer(
