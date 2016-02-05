@@ -312,13 +312,13 @@ class Cohort_Endpoints_API(remote.Service):
                 result = cursor.fetchone()
                 if int(result['count(*)']) == 0:
                     error_message = "{} does not have owner or reader permissions on cohort {}.".format(user_email, cohort_id)
-                    return endpoints.ForbiddenException(error_message)
+                    raise endpoints.ForbiddenException(error_message)
 
                 cursor.execute("select count(*) from cohorts_cohort where id=%s and active=%s", (cohort_id, unicode('0')))
                 result = cursor.fetchone()
                 if int(result['count(*)']) > 0:
                     error_message = "Cohort {} was deleted.".format(cohort_id)
-                    return endpoints.NotFoundException(error_message)
+                    raise endpoints.NotFoundException(error_message)
 
             except (IndexError, TypeError) as e:
                 logger.warn(e)
