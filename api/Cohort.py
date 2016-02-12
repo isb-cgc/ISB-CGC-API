@@ -18,6 +18,7 @@ limitations under the License.
 
 import logging
 from datetime import datetime
+import MySQLdb
 
 import endpoints
 from protorpc import messages
@@ -30,7 +31,7 @@ import django
 
 from metadata import MetadataItem, IncomingMetadataItem
 
-from accounts.models import NIH_User
+
 from cohorts.models import Cohort as Django_Cohort, Cohort_Perms, Patients, Samples, Filters
 from bq_data_access.cohort_bigquery import BigQueryCohortSupport
 from api_helpers import *
