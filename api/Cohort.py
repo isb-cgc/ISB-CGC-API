@@ -79,6 +79,7 @@ IMPORTANT_FEATURES = [
     'rppaPlatform'
 ]
 
+
 class ReturnJSON(messages.Message):
     msg = messages.StringField(1)
 
@@ -86,6 +87,7 @@ class ReturnJSON(messages.Message):
 class FilterDetails(messages.Message):
     name = messages.StringField(1)
     value = messages.StringField(2)
+
 
 class Cohort(messages.Message):
     id = messages.StringField(1)
@@ -101,9 +103,11 @@ class Cohort(messages.Message):
     num_patients = messages.StringField(11)
     num_samples = messages.StringField(12)
 
+
 class CohortsList(messages.Message):
     items = messages.MessageField(Cohort, 1, repeated=True)
     count = messages.IntegerField(2)
+
 
 class CohortPatientsSamplesList(messages.Message):
     patients = messages.StringField(1, repeated=True)
@@ -118,6 +122,7 @@ class PatientDetails(messages.Message):
     samples = messages.StringField(2, repeated=True)
     aliquots = messages.StringField(3, repeated=True)
     error = messages.StringField(4)
+
 
 class DataDetails(messages.Message):
     SampleBarcode = messages.StringField(1)
@@ -137,6 +142,7 @@ class DataDetails(messages.Message):
     SDRFFileName = messages.StringField(15)
     SecurityProtocol = messages.StringField(16)
 
+
 class SampleDetails(messages.Message):
     biospecimen_data = messages.MessageField(MetadataItem, 1)
     aliquots = messages.StringField(2, repeated=True)
@@ -145,8 +151,20 @@ class SampleDetails(messages.Message):
     data_details_count = messages.IntegerField(5)
     error = messages.StringField(6)
 
+
 class DataFileNameKeyList(messages.Message):
     datafilenamekeys = messages.StringField(1, repeated=True)
+    count = messages.IntegerField(2)
+
+
+class GoogleGenomicsItem(messages.Message):
+    SampleBarcode = messages.StringField(1)
+    GG_dataset_id = messages.StringField(2)
+    GG_readgroupset_id = messages.StringField(3)
+
+
+class GoogleGenomicsList(messages.Message):
+    items = messages.MessageField(GoogleGenomicsItem, 1, repeated=True)
     count = messages.IntegerField(2)
 
 
@@ -1133,3 +1151,97 @@ class Cohort_Endpoints_API(remote.Service):
                                           patient_count=len(patient_barcodes),
                                           samples=sample_barcodes,
                                           sample_count=len(sample_barcodes))
+
+
+    GET_RESOURCE = endpoints.ResourceContainer(cohort_id=messages.IntegerField(1, required=True))
+    @endpoints.method(GET_RESOURCE, GoogleGenomicsList,
+                      path='google_genomics_from_cohort', http_method='GET', name='cohorts.google_genomics_from_cohort')
+    def google_genomics_from_cohort(self, request):
+        """
+        Returns a list of Google Genomics dataset and readgroupset ids associated with
+        all the samples in a specified cohort.
+        :param cohort_id: Required.
+        :return: List of google genomics dataset and readgroupset ids.
+        """
+        cursor = None
+        db = None
+        cohort_id = request.__getattribute__('cohort_id')
+
+        query_str = 'SELECT SampleBarcode, GG_dataset_id, GG_readgroupset_id ' \
+                    'FROM metadata_data ' \
+                    'JOIN cohorts_samples ON metadata_data.SampleBarcode=cohorts_samples.sample_id ' \
+                    'WHERE cohorts_samples.cohort_id=%s ' \
+                    'AND GG_dataset_id !="" AND GG_readgroupset_id !="" ' \
+                    'GROUP BY SampleBarcode, GG_dataset_id, GG_readgroupset_id;'
+
+        query_tuple = (cohort_id,)
+        try:
+            db = sql_connection()
+            cursor = db.cursor(MySQLdb.cursors.DictCursor)
+            cursor.execute(query_str, query_tuple)
+
+            google_genomics_items = []
+            for row in cursor.fetchall():
+                google_genomics_items.append(
+                    GoogleGenomicsItem(
+                        SampleBarcode=row['SampleBarcode'],
+                        GG_dataset_id=row['GG_dataset_id'],
+                        GG_readgroupset_id=row['GG_readgroupset_id']
+                    )
+                )
+
+            return GoogleGenomicsList(items=google_genomics_items, count=len(google_genomics_items))
+
+        except (IndexError, TypeError), e:
+            logger.warn(e)
+            raise endpoints.NotFoundException("Google Genomics dataset and readgroupset id's for cohort {} not found.".format(cohort_id))
+        finally:
+            if cursor: cursor.close()
+            if db and db.open: db.close()
+
+
+    # GET_RESOURCE = endpoints.ResourceContainer(cohort_id=messages.IntegerField(1, required=True))
+    # @endpoints.method(GET_RESOURCE, GoogleGenomicsList,
+    #                   path='google_genomics_from_cohort', http_method='GET', name='cohorts.google_genomics_from_cohort')
+    # def google_genomics_from_cohort(self, request):
+    #     """
+    #     Returns a list of Google Genomics dataset and readgroupset ids associated with
+    #     all the samples in a specified cohort.
+    #     :param cohort_id: Required.
+    #     :return: List of google genomics dataset and readgroupset ids.
+    #     """
+    #     cursor = None
+    #     db = None
+    #     cohort_id = request.__getattribute__('cohort_id')
+    #
+    #     query_str = 'SELECT SampleBarcode, GG_dataset_id, GG_readgroupset_id ' \
+    #                 'FROM metadata_data ' \
+    #                 'JOIN cohorts_samples ON metadata_data.SampleBarcode=cohorts_samples.sample_id ' \
+    #                 'WHERE cohorts_samples.cohort_id=%s ' \
+    #                 'AND GG_dataset_id !="" AND GG_readgroupset_id !="" ' \
+    #                 'GROUP BY SampleBarcode, GG_dataset_id, GG_readgroupset_id;'
+    #
+    #     query_tuple = (cohort_id,)
+    #     try:
+    #         db = sql_connection()
+    #         cursor = db.cursor(MySQLdb.cursors.DictCursor)
+    #         cursor.execute(query_str, query_tuple)
+    #
+    #         google_genomics_items = []
+    #         for row in cursor.fetchall():
+    #             google_genomics_items.append(
+    #                 GoogleGenomicsItem(
+    #                     SampleBarcode=row['SampleBarcode'],
+    #                     GG_dataset_id=row['GG_dataset_id'],
+    #                     GG_readgroupset_id=row['GG_readgroupset_id']
+    #                 )
+    #             )
+    #
+    #         return GoogleGenomicsList(items=google_genomics_items, count=len(google_genomics_items))
+    #
+    #     except (IndexError, TypeError), e:
+    #         logger.warn(e)
+    #         raise endpoints.NotFoundException("Google Genomics dataset and readgroupset id's for cohort {} not found.".format(cohort_id))
+    #     finally:
+    #         if cursor: cursor.close()
+    #         if db and db.open: db.close()
