@@ -1153,7 +1153,8 @@ class Cohort_Endpoints_API(remote.Service):
                                           sample_count=len(sample_barcodes))
 
 
-    GET_RESOURCE = endpoints.ResourceContainer(cohort_id=messages.IntegerField(1, required=True))
+    GET_RESOURCE = endpoints.ResourceContainer(cohort_id=messages.IntegerField(1, required=True),
+                                               token=messages.StringField(2))
     @endpoints.method(GET_RESOURCE, GoogleGenomicsList,
                       path='google_genomics_from_cohort', http_method='GET', name='cohorts.google_genomics_from_cohort')
     def google_genomics_from_cohort(self, request):
@@ -1161,20 +1162,95 @@ class Cohort_Endpoints_API(remote.Service):
         Returns a list of Google Genomics dataset and readgroupset ids associated with
         all the samples in a specified cohort.
         :param cohort_id: Required.
+        :param token: Optional. Access token to verify a user's identity
         :return: List of google genomics dataset and readgroupset ids.
         """
         cursor = None
         db = None
         cohort_id = request.__getattribute__('cohort_id')
 
+        if endpoints.get_current_user() is not None:
+            user_email = endpoints.get_current_user().email()
+
+        # users have the option of pasting the access token in the query string
+        # or in the 'token' field in the api explorer
+        # but this is not required
+        access_token = request.__getattribute__('token')
+        if access_token:
+            user_email = get_user_email_from_token(access_token)
+
+        if user_email:
+            django.setup()
+            try:
+                user_id = Django_User.objects.get(email=user_email).id
+                django_cohort = Django_Cohort.objects.get(id=cohort_id)
+                cohort_perm = Cohort_Perms.objects.get(cohort_id=cohort_id, user_id=user_id)
+            except (ObjectDoesNotExist, MultipleObjectsReturned), e:
+                logger.warn(e)
+                err_msg = "Error retrieving cohort {} for user {}: {}".format(cohort_id, user_email, e)
+                if 'Cohort_Perms' in e.message:
+                    err_msg = "User {} does not have permissions on cohort {}. Error: {}"\
+                        .format(user_email, cohort_id, e)
+                raise endpoints.UnauthorizedException(err_msg)
+
+
+            query_str = 'SELECT SampleBarcode, GG_dataset_id, GG_readgroupset_id ' \
+                        'FROM metadata_data ' \
+                        'JOIN cohorts_samples ON metadata_data.SampleBarcode=cohorts_samples.sample_id ' \
+                        'WHERE cohorts_samples.cohort_id=%s ' \
+                        'AND GG_dataset_id !="" AND GG_readgroupset_id !="" ' \
+                        'GROUP BY SampleBarcode, GG_dataset_id, GG_readgroupset_id;'
+
+            query_tuple = (cohort_id,)
+            try:
+                db = sql_connection()
+                cursor = db.cursor(MySQLdb.cursors.DictCursor)
+                cursor.execute(query_str, query_tuple)
+
+                google_genomics_items = []
+                for row in cursor.fetchall():
+                    google_genomics_items.append(
+                        GoogleGenomicsItem(
+                            SampleBarcode=row['SampleBarcode'],
+                            GG_dataset_id=row['GG_dataset_id'],
+                            GG_readgroupset_id=row['GG_readgroupset_id']
+                        )
+                    )
+
+                return GoogleGenomicsList(items=google_genomics_items, count=len(google_genomics_items))
+
+            except (IndexError, TypeError), e:
+                logger.warn(e)
+                raise endpoints.NotFoundException("Google Genomics dataset and readgroupset id's for cohort {} not found.".format(cohort_id))
+            finally:
+                if cursor: cursor.close()
+                if db and db.open: db.close()
+        else:
+            raise endpoints.UnauthorizedException("Authentication failed.")
+
+
+    GET_RESOURCE = endpoints.ResourceContainer(sample_barcode=messages.StringField(1, required=True))
+    @endpoints.method(GET_RESOURCE, GoogleGenomicsList,
+                      path='google_genomics_from_sample', http_method='GET', name='cohorts.google_genomics_from_sample')
+    def google_genomics_from_sample(self, request):
+        """
+        Returns a list of Google Genomics dataset and readgroupset ids associated with
+        all the samples in a specified cohort.
+        :param cohort_id: Required.
+        :return: List of google genomics dataset and readgroupset ids.
+        """
+        print >> sys.stderr,'Called '+sys._getframe().f_code.co_name
+        cursor = None
+        db = None
+        sample_barcode = request.__getattribute__('sample_barcode')
+
         query_str = 'SELECT SampleBarcode, GG_dataset_id, GG_readgroupset_id ' \
                     'FROM metadata_data ' \
-                    'JOIN cohorts_samples ON metadata_data.SampleBarcode=cohorts_samples.sample_id ' \
-                    'WHERE cohorts_samples.cohort_id=%s ' \
+                    'WHERE SampleBarcode=%s ' \
                     'AND GG_dataset_id !="" AND GG_readgroupset_id !="" ' \
                     'GROUP BY SampleBarcode, GG_dataset_id, GG_readgroupset_id;'
 
-        query_tuple = (cohort_id,)
+        query_tuple = (sample_barcode,)
         try:
             db = sql_connection()
             cursor = db.cursor(MySQLdb.cursors.DictCursor)
@@ -1194,54 +1270,7 @@ class Cohort_Endpoints_API(remote.Service):
 
         except (IndexError, TypeError), e:
             logger.warn(e)
-            raise endpoints.NotFoundException("Google Genomics dataset and readgroupset id's for cohort {} not found.".format(cohort_id))
+            raise endpoints.NotFoundException("Google Genomics dataset and readgroupset id's for sample {} not found.".format(sample_barcode))
         finally:
             if cursor: cursor.close()
             if db and db.open: db.close()
-
-
-    # GET_RESOURCE = endpoints.ResourceContainer(cohort_id=messages.IntegerField(1, required=True))
-    # @endpoints.method(GET_RESOURCE, GoogleGenomicsList,
-    #                   path='google_genomics_from_cohort', http_method='GET', name='cohorts.google_genomics_from_cohort')
-    # def google_genomics_from_cohort(self, request):
-    #     """
-    #     Returns a list of Google Genomics dataset and readgroupset ids associated with
-    #     all the samples in a specified cohort.
-    #     :param cohort_id: Required.
-    #     :return: List of google genomics dataset and readgroupset ids.
-    #     """
-    #     cursor = None
-    #     db = None
-    #     cohort_id = request.__getattribute__('cohort_id')
-    #
-    #     query_str = 'SELECT SampleBarcode, GG_dataset_id, GG_readgroupset_id ' \
-    #                 'FROM metadata_data ' \
-    #                 'JOIN cohorts_samples ON metadata_data.SampleBarcode=cohorts_samples.sample_id ' \
-    #                 'WHERE cohorts_samples.cohort_id=%s ' \
-    #                 'AND GG_dataset_id !="" AND GG_readgroupset_id !="" ' \
-    #                 'GROUP BY SampleBarcode, GG_dataset_id, GG_readgroupset_id;'
-    #
-    #     query_tuple = (cohort_id,)
-    #     try:
-    #         db = sql_connection()
-    #         cursor = db.cursor(MySQLdb.cursors.DictCursor)
-    #         cursor.execute(query_str, query_tuple)
-    #
-    #         google_genomics_items = []
-    #         for row in cursor.fetchall():
-    #             google_genomics_items.append(
-    #                 GoogleGenomicsItem(
-    #                     SampleBarcode=row['SampleBarcode'],
-    #                     GG_dataset_id=row['GG_dataset_id'],
-    #                     GG_readgroupset_id=row['GG_readgroupset_id']
-    #                 )
-    #             )
-    #
-    #         return GoogleGenomicsList(items=google_genomics_items, count=len(google_genomics_items))
-    #
-    #     except (IndexError, TypeError), e:
-    #         logger.warn(e)
-    #         raise endpoints.NotFoundException("Google Genomics dataset and readgroupset id's for cohort {} not found.".format(cohort_id))
-    #     finally:
-    #         if cursor: cursor.close()
-    #         if db and db.open: db.close()
