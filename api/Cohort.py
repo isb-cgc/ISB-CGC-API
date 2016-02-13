@@ -922,7 +922,9 @@ class Cohort_Endpoints_API(remote.Service):
                 logger.warn(e)
                 raise endpoints.NotFoundException("%s does not have an entry in the user database." % user_email)
 
-            keys = [k for k in IncomingMetadataItem.__dict__.keys() if not k.startswith('_') and request.__getattribute__(k)]
+            keys = [k for k in IncomingMetadataItem.__dict__.keys()
+                    if not k.startswith('_') and
+                    (request.__getattribute__(k) or request.__getattribute__(k.lower()))]
             values = (request.__getattribute__(k) for k in keys)
             query_dict = dict(zip(keys, values))
 
@@ -1077,11 +1079,15 @@ class Cohort_Endpoints_API(remote.Service):
         :return: Information about the cohort, including the number of patients and the number
         of samples in that cohort.
         """
+        print >> sys.stderr,'Called '+sys._getframe().f_code.co_name
         patient_cursor = None
         sample_cursor = None
         db = None
 
-        keys = [k for k in IncomingMetadataItem.__dict__.keys() if not k.startswith('_') and request.__getattribute__(k)]
+        keys = [k for k in IncomingMetadataItem.__dict__.keys()
+                if not k.startswith('_') and
+                (request.__getattribute__(k) or request.__getattribute__(k.lower()))]
+
         values = (request.__getattribute__(k) for k in keys)
         query_dict = dict(zip(keys, values))
 
