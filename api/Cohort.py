@@ -18,20 +18,20 @@ limitations under the License.
 
 import logging
 from datetime import datetime
-import MySQLdb
 
 import endpoints
-from protorpc import messages
+from protorpc import messages, message_types
 from protorpc import remote
+from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 from django.contrib.auth.models import User as Django_User
-from django.core.signals import request_finished
 import django
-
+import MySQLdb
+import json
 
 from metadata import MetadataItem, IncomingMetadataItem
 
-
+from accounts.models import NIH_User
 from cohorts.models import Cohort as Django_Cohort, Cohort_Perms, Patients, Samples, Filters
 from bq_data_access.cohort_bigquery import BigQueryCohortSupport
 from api_helpers import *
@@ -79,6 +79,7 @@ IMPORTANT_FEATURES = [
     'rppaPlatform'
 ]
 
+
 class ReturnJSON(messages.Message):
     msg = messages.StringField(1)
 
@@ -86,6 +87,7 @@ class ReturnJSON(messages.Message):
 class FilterDetails(messages.Message):
     name = messages.StringField(1)
     value = messages.StringField(2)
+
 
 class Cohort(messages.Message):
     id = messages.StringField(1)
@@ -101,9 +103,11 @@ class Cohort(messages.Message):
     num_patients = messages.StringField(11)
     num_samples = messages.StringField(12)
 
+
 class CohortsList(messages.Message):
     items = messages.MessageField(Cohort, 1, repeated=True)
     count = messages.IntegerField(2)
+
 
 class CohortPatientsSamplesList(messages.Message):
     patients = messages.StringField(1, repeated=True)
@@ -118,6 +122,7 @@ class PatientDetails(messages.Message):
     samples = messages.StringField(2, repeated=True)
     aliquots = messages.StringField(3, repeated=True)
     error = messages.StringField(4)
+
 
 class DataDetails(messages.Message):
     SampleBarcode = messages.StringField(1)
@@ -137,6 +142,7 @@ class DataDetails(messages.Message):
     SDRFFileName = messages.StringField(15)
     SecurityProtocol = messages.StringField(16)
 
+
 class SampleDetails(messages.Message):
     biospecimen_data = messages.MessageField(MetadataItem, 1)
     aliquots = messages.StringField(2, repeated=True)
@@ -145,8 +151,20 @@ class SampleDetails(messages.Message):
     data_details_count = messages.IntegerField(5)
     error = messages.StringField(6)
 
+
 class DataFileNameKeyList(messages.Message):
     datafilenamekeys = messages.StringField(1, repeated=True)
+    count = messages.IntegerField(2)
+
+
+class GoogleGenomicsItem(messages.Message):
+    SampleBarcode = messages.StringField(1)
+    GG_dataset_id = messages.StringField(2)
+    GG_readgroupset_id = messages.StringField(3)
+
+
+class GoogleGenomicsList(messages.Message):
+    items = messages.MessageField(GoogleGenomicsItem, 1, repeated=True)
     count = messages.IntegerField(2)
 
 
@@ -262,7 +280,6 @@ class Cohort_Endpoints_API(remote.Service):
                 if cursor: cursor.close()
                 if filter_cursor: filter_cursor.close()
                 if db and db.open: db.close()
-                request_finished.send(self)
         else:
             raise endpoints.UnauthorizedException("Authentication failed.")
 
@@ -379,7 +396,6 @@ class Cohort_Endpoints_API(remote.Service):
             finally:
                 if cursor: cursor.close()
                 if db and db.open: db.close()
-                request_finished.send(self)
 
         else:
             raise endpoints.UnauthorizedException("Authentication failed.")
@@ -968,7 +984,6 @@ class Cohort_Endpoints_API(remote.Service):
                 if patient_cursor: patient_cursor.close()
                 if sample_cursor: sample_cursor.close()
                 if db and db.open: db.close()
-                request_finished.send(self)
 
             cohort_name = request.__getattribute__('name')
 
@@ -1045,7 +1060,6 @@ class Cohort_Endpoints_API(remote.Service):
                 user_id = django_user.id
             except (ObjectDoesNotExist, MultipleObjectsReturned), e:
                 logger.warn(e)
-                request_finished.send(self)
                 raise endpoints.NotFoundException("%s does not have an entry in the user database." % user_email)
             try:
                 cohort_to_deactivate = Django_Cohort.objects.get(id=cohort_id)
@@ -1059,15 +1073,14 @@ class Cohort_Endpoints_API(remote.Service):
                         return_message = 'You do not have owner permission on cohort %d.' % cohort_id
                 else:
                     return_message = "Cohort %d was already deactivated." % cohort_id
-                request_finished.send(self)
             except (ObjectDoesNotExist, MultipleObjectsReturned), e:
                 logger.warn(e)
-                request_finished.send(self)
                 raise endpoints.NotFoundException(
                     "Either cohort %d does not have an entry in the database "
                     "or you do not have owner or reader permissions on this cohort." % cohort_id)
         else:
-            raise endpoints.UnauthorizedException("Unsuccessful authentication.")
+            return_message = "Unsuccessful authentication."
+            # todo: when endpoints.UnauthorizedException is fixed, add that here.
 
         return ReturnJSON(msg=return_message)
 
@@ -1135,6 +1148,129 @@ class Cohort_Endpoints_API(remote.Service):
             if db and db.open: db.close()
 
         return CohortPatientsSamplesList(patients=patient_barcodes,
-                                         patient_count=len(patient_barcodes),
-                                         samples=sample_barcodes,
-                                         sample_count=len(sample_barcodes))
+                                          patient_count=len(patient_barcodes),
+                                          samples=sample_barcodes,
+                                          sample_count=len(sample_barcodes))
+
+
+    GET_RESOURCE = endpoints.ResourceContainer(cohort_id=messages.IntegerField(1, required=True),
+                                               token=messages.StringField(2))
+    @endpoints.method(GET_RESOURCE, GoogleGenomicsList,
+                      path='google_genomics_from_cohort', http_method='GET', name='cohorts.google_genomics_from_cohort')
+    def google_genomics_from_cohort(self, request):
+        """
+        Returns a list of Google Genomics dataset and readgroupset ids associated with
+        all the samples in a specified cohort.
+        :param cohort_id: Required.
+        :param token: Optional. Access token to verify a user's identity
+        :return: List of google genomics dataset and readgroupset ids.
+        """
+        cursor = None
+        db = None
+        cohort_id = request.__getattribute__('cohort_id')
+
+        if endpoints.get_current_user() is not None:
+            user_email = endpoints.get_current_user().email()
+
+        # users have the option of pasting the access token in the query string
+        # or in the 'token' field in the api explorer
+        # but this is not required
+        access_token = request.__getattribute__('token')
+        if access_token:
+            user_email = get_user_email_from_token(access_token)
+
+        if user_email:
+            django.setup()
+            try:
+                user_id = Django_User.objects.get(email=user_email).id
+                django_cohort = Django_Cohort.objects.get(id=cohort_id)
+                cohort_perm = Cohort_Perms.objects.get(cohort_id=cohort_id, user_id=user_id)
+            except (ObjectDoesNotExist, MultipleObjectsReturned), e:
+                logger.warn(e)
+                err_msg = "Error retrieving cohort {} for user {}: {}".format(cohort_id, user_email, e)
+                if 'Cohort_Perms' in e.message:
+                    err_msg = "User {} does not have permissions on cohort {}. Error: {}"\
+                        .format(user_email, cohort_id, e)
+                raise endpoints.UnauthorizedException(err_msg)
+
+
+            query_str = 'SELECT SampleBarcode, GG_dataset_id, GG_readgroupset_id ' \
+                        'FROM metadata_data ' \
+                        'JOIN cohorts_samples ON metadata_data.SampleBarcode=cohorts_samples.sample_id ' \
+                        'WHERE cohorts_samples.cohort_id=%s ' \
+                        'AND GG_dataset_id !="" AND GG_readgroupset_id !="" ' \
+                        'GROUP BY SampleBarcode, GG_dataset_id, GG_readgroupset_id;'
+
+            query_tuple = (cohort_id,)
+            try:
+                db = sql_connection()
+                cursor = db.cursor(MySQLdb.cursors.DictCursor)
+                cursor.execute(query_str, query_tuple)
+
+                google_genomics_items = []
+                for row in cursor.fetchall():
+                    google_genomics_items.append(
+                        GoogleGenomicsItem(
+                            SampleBarcode=row['SampleBarcode'],
+                            GG_dataset_id=row['GG_dataset_id'],
+                            GG_readgroupset_id=row['GG_readgroupset_id']
+                        )
+                    )
+
+                return GoogleGenomicsList(items=google_genomics_items, count=len(google_genomics_items))
+
+            except (IndexError, TypeError), e:
+                logger.warn(e)
+                raise endpoints.NotFoundException("Google Genomics dataset and readgroupset id's for cohort {} not found.".format(cohort_id))
+            finally:
+                if cursor: cursor.close()
+                if db and db.open: db.close()
+        else:
+            raise endpoints.UnauthorizedException("Authentication failed.")
+
+
+    GET_RESOURCE = endpoints.ResourceContainer(sample_barcode=messages.StringField(1, required=True))
+    @endpoints.method(GET_RESOURCE, GoogleGenomicsList,
+                      path='google_genomics_from_sample', http_method='GET', name='cohorts.google_genomics_from_sample')
+    def google_genomics_from_sample(self, request):
+        """
+        Returns a list of Google Genomics dataset and readgroupset ids associated with
+        all the samples in a specified cohort.
+        :param cohort_id: Required.
+        :return: List of google genomics dataset and readgroupset ids.
+        """
+        print >> sys.stderr,'Called '+sys._getframe().f_code.co_name
+        cursor = None
+        db = None
+        sample_barcode = request.__getattribute__('sample_barcode')
+
+        query_str = 'SELECT SampleBarcode, GG_dataset_id, GG_readgroupset_id ' \
+                    'FROM metadata_data ' \
+                    'WHERE SampleBarcode=%s ' \
+                    'AND GG_dataset_id !="" AND GG_readgroupset_id !="" ' \
+                    'GROUP BY SampleBarcode, GG_dataset_id, GG_readgroupset_id;'
+
+        query_tuple = (sample_barcode,)
+        try:
+            db = sql_connection()
+            cursor = db.cursor(MySQLdb.cursors.DictCursor)
+            cursor.execute(query_str, query_tuple)
+
+            google_genomics_items = []
+            for row in cursor.fetchall():
+                google_genomics_items.append(
+                    GoogleGenomicsItem(
+                        SampleBarcode=row['SampleBarcode'],
+                        GG_dataset_id=row['GG_dataset_id'],
+                        GG_readgroupset_id=row['GG_readgroupset_id']
+                    )
+                )
+
+            return GoogleGenomicsList(items=google_genomics_items, count=len(google_genomics_items))
+
+        except (IndexError, TypeError), e:
+            logger.warn(e)
+            raise endpoints.NotFoundException("Google Genomics dataset and readgroupset id's for sample {} not found.".format(sample_barcode))
+        finally:
+            if cursor: cursor.close()
+            if db and db.open: db.close()
