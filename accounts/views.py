@@ -77,13 +77,11 @@ def unlink_accounts(request):
     try:
         nih_account_to_unlink = NIH_User.objects.get(user_id=request.user.id)
         nih_account_to_unlink.delete()
-        # todo: delete from google group
 
     except (ObjectDoesNotExist, MultipleObjectsReturned), e:
         if type(e) is MultipleObjectsReturned:
             logger.warn("Error %s: more than one NIH User account linked to user id %d" % (str(e), request.user.id))
             NIH_User.objects.filter(user_id=request.user.id).delete()
-            # todo: delete from google group
 
     user_email = User.objects.get(id=request.user.id).email
     try:
