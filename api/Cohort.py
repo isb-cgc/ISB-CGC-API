@@ -1114,6 +1114,7 @@ class Cohort_Endpoints_API(remote.Service):
         values = (request.__getattribute__(k) for k in keys)
         query_dict = dict(zip(keys, values))
 
+        #check for unknown fields
         if request._Message__unrecognized_fields or not query_dict:
             bad_keys = request._Message__unrecognized_fields.keys()
             bad_key_str = "'" + "', '".join(bad_keys) + "'"
