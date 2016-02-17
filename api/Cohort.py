@@ -1109,17 +1109,21 @@ class Cohort_Endpoints_API(remote.Service):
         db = None
 
         keys = [k for k in IncomingMetadataItem.__dict__.keys()
-                if not k.startswith('_') and
-                (request.__getattribute__(k) or request.__getattribute__(k.lower()))]
+                if not k.startswith('_') and request.__getattribute__(k)]
 
         values = (request.__getattribute__(k) for k in keys)
         query_dict = dict(zip(keys, values))
 
-        if not query_dict:
-            sorted_keys = sorted(k for k in IncomingMetadataItem.__dict__.keys() if not k.startswith('_'))
+        if request._Message__unrecognized_fields or not query_dict:
+            bad_keys = request._Message__unrecognized_fields.keys()
+            bad_key_str = "'" + "', '".join(bad_keys) + "'"
+            sorted_keys = sorted([k for k in IncomingMetadataItem.__dict__.keys() if not k.startswith('_')],
+                                 key=lambda s: s.lower())
             raise endpoints.BadRequestException(
-                "You must specify at least one filter to preview a cohort. "
-                "Possible filters are: {}".format(sorted_keys))
+                "The following filters were not recognized: {}. "
+                "You must specify at least one of the following case-sensitive "
+                "filters to preview a cohort: {}"
+                    .format(bad_key_str, sorted_keys))
 
         patient_query_str = 'SELECT DISTINCT(IF(ParticipantBarcode="", LEFT(SampleBarcode,12), ParticipantBarcode)) ' \
                             'AS ParticipantBarcode ' \
