@@ -170,6 +170,23 @@ class GoogleGenomicsList(messages.Message):
     count = messages.IntegerField(2)
 
 
+def check_for_bad_keys(request, query_dict):
+
+    bad_keys = [k for k in request._Message__unrecognized_fields.keys() if k != 'alt']
+
+    if bad_keys or not query_dict:
+
+        sorted_keys = sorted([k for k in IncomingMetadataItem.__dict__.keys() if not k.startswith('_')],
+                             key=lambda s: s.lower())
+        err_msg = ''
+        if bad_keys:
+            bad_key_str = "'" + "', '".join(bad_keys) + "'"
+            err_msg += "The following filters were not recognized: {}. ".format(bad_key_str)
+        err_msg += "You must specify at least one of the following case-sensitive " \
+                   "filters to preview a cohort: {}".format(sorted_keys)
+        raise endpoints.BadRequestException(err_msg)
+
+
 Cohort_Endpoints = endpoints.api(name='cohort_api', version='v1', description="Get information about "
                                 "cohorts, patients, and samples. Create and delete cohorts.",
                                  allowed_client_ids=[INSTALLED_APP_CLIENT_ID, endpoints.API_EXPLORER_CLIENT_ID])
@@ -817,7 +834,7 @@ class Cohort_Endpoints_API(remote.Service):
                 query_str += ' and metadata_data.Pipeline=%s '
                 query_tuple += (pipeline,)
 
-            query_str += ' GROUP BY DataFileNameKey'
+            query_str += ' GROUP BY DataFileNameKey, SecurityProtocol, Repository'
 
             try:
                 db = sql_connection()
@@ -904,7 +921,7 @@ class Cohort_Endpoints_API(remote.Service):
             query_str += ' and Pipeline=%s '
             query_tuple += (pipeline,)
 
-        query_str += ' GROUP BY DataFileNameKey'
+        query_str += ' GROUP BY DataFileNameKey, SecurityProtocol, Repository'
 
         try:
             db = sql_connection()
@@ -981,17 +998,7 @@ class Cohort_Endpoints_API(remote.Service):
             values = (request.__getattribute__(k) for k in keys)
             query_dict = dict(zip(keys, values))
 
-            if request._Message__unrecognized_fields or not query_dict:
-                bad_keys = request._Message__unrecognized_fields.keys()
-                sorted_keys = sorted([k for k in IncomingMetadataItem.__dict__.keys() if not k.startswith('_')],
-                                     key=lambda s: s.lower())
-                err_msg = ''
-                if bad_keys:
-                    bad_key_str = "'" + "', '".join(bad_keys) + "'"
-                    err_msg += "The following filters were not recognized: {}. ".format(bad_key_str)
-                err_msg += "You must specify at least one of the following case-sensitive " \
-                           "filters to preview a cohort: {}".format(sorted_keys)
-                raise endpoints.BadRequestException(err_msg)
+            check_for_bad_keys(request, query_dict)  #, extra_fields=['name', 'token'])
 
             patient_query_str = 'SELECT DISTINCT(IF(ParticipantBarcode="", LEFT(SampleBarcode,12), ParticipantBarcode)) AS ParticipantBarcode ' \
                                 'FROM metadata_samples '
@@ -1155,17 +1162,7 @@ class Cohort_Endpoints_API(remote.Service):
         values = (request.__getattribute__(k) for k in keys)
         query_dict = dict(zip(keys, values))
 
-        if request._Message__unrecognized_fields or not query_dict:
-            bad_keys = request._Message__unrecognized_fields.keys()
-            sorted_keys = sorted([k for k in IncomingMetadataItem.__dict__.keys() if not k.startswith('_')],
-                                 key=lambda s: s.lower())
-            err_msg = ''
-            if bad_keys:
-                bad_key_str = "'" + "', '".join(bad_keys) + "'"
-                err_msg += "The following filters were not recognized: {}. ".format(bad_key_str)
-            err_msg += "You must specify at least one of the following case-sensitive " \
-                       "filters to preview a cohort: {}".format(sorted_keys)
-            raise endpoints.BadRequestException(err_msg)
+        check_for_bad_keys(request, query_dict)
 
         patient_query_str = 'SELECT DISTINCT(IF(ParticipantBarcode="", LEFT(SampleBarcode,12), ParticipantBarcode)) ' \
                             'AS ParticipantBarcode ' \
