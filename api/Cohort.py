@@ -944,8 +944,7 @@ class Cohort_Endpoints_API(remote.Service):
                 raise endpoints.NotFoundException("%s does not have an entry in the user database." % user_email)
 
             keys = [k for k in IncomingMetadataItem.__dict__.keys()
-                    if not k.startswith('_') and
-                    (request.__getattribute__(k) or request.__getattribute__(k.lower()))]
+                    if not k.startswith('_') and request.__getattribute__(k)]
             values = (request.__getattribute__(k) for k in keys)
             query_dict = dict(zip(keys, values))
 
