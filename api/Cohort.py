@@ -804,7 +804,6 @@ class Cohort_Endpoints_API(remote.Service):
         """
         Returns a list of cloud storage paths for files associated with either a sample barcode.
         :param sample_barcode: Required.
-        :param cohort_id: Required if sample_barcode is absent, else optional.
         :param platform: Optional. Filter results by platform.
         :param pipeline: Optional. Filter results by pipeline.
         :param token: Optional. Access token with email scope to verify user's google identity.
@@ -833,61 +832,57 @@ class Cohort_Endpoints_API(remote.Service):
         if user_email:
             dbGaP_authorized = is_dbgap_authorized(user_email)
 
-            query_str = 'SELECT DataFileNameKey, SecurityProtocol, Repository ' \
-                        'FROM metadata_data WHERE SampleBarcode=%s '
+        query_str = 'SELECT DataFileNameKey, SecurityProtocol, Repository ' \
+                    'FROM metadata_data WHERE SampleBarcode=%s '
 
-            query_tuple = (sample_barcode,)
+        query_tuple = (sample_barcode,)
 
-            if platform:
-                query_str += ' and Platform=%s '
-                query_tuple += (platform,)
+        if platform:
+            query_str += ' and Platform=%s '
+            query_tuple += (platform,)
 
-            if pipeline:
-                query_str += ' and Pipeline=%s '
-                query_tuple += (pipeline,)
+        if pipeline:
+            query_str += ' and Pipeline=%s '
+            query_tuple += (pipeline,)
 
-            query_str += ' GROUP BY DataFileNameKey'
+        query_str += ' GROUP BY DataFileNameKey'
 
-            try:
-                db = sql_connection()
-                cursor = db.cursor(MySQLdb.cursors.DictCursor)
-                cursor.execute(query_str, query_tuple)
-                logger.info(query_str)
-                logger.info(query_tuple)
+        try:
+            db = sql_connection()
+            cursor = db.cursor(MySQLdb.cursors.DictCursor)
+            cursor.execute(query_str, query_tuple)
+            logger.info(query_str)
+            logger.info(query_tuple)
 
-                datafilenamekeys = []
-                for row in cursor.fetchall():
-                    file_path = row.get('DataFileNameKey') if len(row.get('DataFileNameKey', '')) else '/file-path-currently-unavailable'
-                    if 'controlled' not in str(row['SecurityProtocol']).lower():
-                        datafilenamekeys.append("gs://{}{}".format(settings.OPEN_DATA_BUCKET, file_path))
-                    elif dbGaP_authorized:
-                        bucket_name = ''
-                        # hard-coding mock bucket names for now --testing purposes only
-                        if row['Repository'].lower() == 'dcc':
-                            bucket_name = 'gs://62f2c827-mock-mock-mock-1cde698a4f77'
-                        elif row['Repository'].lower() == 'cghub':
-                            bucket_name = 'gs://360ee3ad-mock-mock-mock-52f9a5e7f99a'
-                        datafilenamekeys.append("{}{}".format(bucket_name, file_path))
+            datafilenamekeys = []
+            for row in cursor.fetchall():
+                file_path = row.get('DataFileNameKey') if len(row.get('DataFileNameKey', '')) else '/file-path-currently-unavailable'
+                if 'controlled' not in str(row['SecurityProtocol']).lower():
+                    datafilenamekeys.append("gs://{}{}".format(settings.OPEN_DATA_BUCKET, file_path))
+                elif dbGaP_authorized:
+                    bucket_name = ''
+                    # hard-coding mock bucket names for now --testing purposes only
+                    if row['Repository'].lower() == 'dcc':
+                        bucket_name = 'gs://62f2c827-mock-mock-mock-1cde698a4f77'
+                    elif row['Repository'].lower() == 'cghub':
+                        bucket_name = 'gs://360ee3ad-mock-mock-mock-52f9a5e7f99a'
+                    datafilenamekeys.append("{}{}".format(bucket_name, file_path))
 
-                return DataFileNameKeyList(datafilenamekeys=datafilenamekeys, count=len(datafilenamekeys))
+            return DataFileNameKeyList(datafilenamekeys=datafilenamekeys, count=len(datafilenamekeys))
 
-            except (IndexError, TypeError), e:
-                logger.warn(e)
-                raise endpoints.NotFoundException("File paths for sample {} not found.".format(sample_barcode))
+        except (IndexError, TypeError), e:
+            logger.warn(e)
+            raise endpoints.NotFoundException("File paths for sample {} not found.".format(sample_barcode))
 
-            finally:
-                if cursor: cursor.close()
-                if db and db.open: db.close()
-
-        else:
-            raise endpoints.UnauthorizedException("Authentication failed.")
-
-
+        finally:
+            if cursor: cursor.close()
+            if db and db.open: db.close()
 
     POST_RESOURCE = endpoints.ResourceContainer(IncomingMetadataItem,
                                                 name=messages.StringField(2, required=True),
                                                 token=messages.StringField(3)
                                                 )
+
     @endpoints.method(POST_RESOURCE, Cohort,
                       path='save_cohort', http_method='POST', name='cohort.save')
     def save_cohort(self, request):
