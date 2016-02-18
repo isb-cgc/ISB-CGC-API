@@ -817,7 +817,7 @@ class Cohort_Endpoints_API(remote.Service):
                 query_str += ' and metadata_data.Pipeline=%s '
                 query_tuple += (pipeline,)
 
-            query_str += ' GROUP BY DataFileNameKey'
+            query_str += ' GROUP BY DataFileNameKey, SecurityProtocol, Repository'
 
             try:
                 db = sql_connection()
@@ -904,11 +904,14 @@ class Cohort_Endpoints_API(remote.Service):
             query_str += ' and Pipeline=%s '
             query_tuple += (pipeline,)
 
-        query_str += ' GROUP BY DataFileNameKey'
+        query_str += ' GROUP BY DataFileNameKey, SecurityProtocol, Repository'
 
         try:
             db = sql_connection()
             cursor = db.cursor(MySQLdb.cursors.DictCursor)
+            print >> sys.stderr, '\nquery_string:'
+            print >> sys.stderr, query_str
+            print >> sys.stderr, query_tuple
             cursor.execute(query_str, query_tuple)
             logger.info(query_str)
             logger.info(query_tuple)
