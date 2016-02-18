@@ -943,12 +943,22 @@ class Cohort_Endpoints_API(remote.Service):
                 logger.warn(e)
                 raise endpoints.NotFoundException("%s does not have an entry in the user database." % user_email)
 
-            keys = [k for k in IncomingMetadataItem.__dict__.keys() if not k.startswith('_') and request.__getattribute__(k)]
+            keys = [k for k in IncomingMetadataItem.__dict__.keys()
+                    if not k.startswith('_') and request.__getattribute__(k)]
             values = (request.__getattribute__(k) for k in keys)
             query_dict = dict(zip(keys, values))
 
-            if not query_dict:
-                raise endpoints.BadRequestException("You must specify at least one filter in the request body to save a cohort.")
+            if request._Message__unrecognized_fields or not query_dict:
+                bad_keys = request._Message__unrecognized_fields.keys()
+                sorted_keys = sorted([k for k in IncomingMetadataItem.__dict__.keys() if not k.startswith('_')],
+                                     key=lambda s: s.lower())
+                err_msg = ''
+                if bad_keys:
+                    bad_key_str = "'" + "', '".join(bad_keys) + "'"
+                    err_msg += "The following filters were not recognized: {}. ".format(bad_key_str)
+                err_msg += "You must specify at least one of the following case-sensitive " \
+                           "filters to preview a cohort: {}".format(sorted_keys)
+                raise endpoints.BadRequestException(err_msg)
 
             patient_query_str = 'SELECT DISTINCT(IF(ParticipantBarcode="", LEFT(SampleBarcode,12), ParticipantBarcode)) AS ParticipantBarcode ' \
                                 'FROM metadata_samples '
@@ -1101,19 +1111,28 @@ class Cohort_Endpoints_API(remote.Service):
         :return: Information about the cohort, including the number of patients and the number
         of samples in that cohort.
         """
+        print >> sys.stderr,'Called '+sys._getframe().f_code.co_name
         patient_cursor = None
         sample_cursor = None
         db = None
 
-        keys = [k for k in IncomingMetadataItem.__dict__.keys() if not k.startswith('_') and request.__getattribute__(k)]
+        keys = [k for k in IncomingMetadataItem.__dict__.keys()
+                if not k.startswith('_') and request.__getattribute__(k)]
+
         values = (request.__getattribute__(k) for k in keys)
         query_dict = dict(zip(keys, values))
 
-        if not query_dict:
-            sorted_keys = sorted(k for k in IncomingMetadataItem.__dict__.keys() if not k.startswith('_'))
-            raise endpoints.BadRequestException(
-                "You must specify at least one filter to preview a cohort. "
-                "Possible filters are: {}".format(sorted_keys))
+        if request._Message__unrecognized_fields or not query_dict:
+            bad_keys = request._Message__unrecognized_fields.keys()
+            sorted_keys = sorted([k for k in IncomingMetadataItem.__dict__.keys() if not k.startswith('_')],
+                                 key=lambda s: s.lower())
+            err_msg = ''
+            if bad_keys:
+                bad_key_str = "'" + "', '".join(bad_keys) + "'"
+                err_msg += "The following filters were not recognized: {}. ".format(bad_key_str)
+            err_msg += "You must specify at least one of the following case-sensitive " \
+                       "filters to preview a cohort: {}".format(sorted_keys)
+            raise endpoints.BadRequestException(err_msg)
 
         patient_query_str = 'SELECT DISTINCT(IF(ParticipantBarcode="", LEFT(SampleBarcode,12), ParticipantBarcode)) ' \
                             'AS ParticipantBarcode ' \
