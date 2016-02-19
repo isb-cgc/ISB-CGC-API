@@ -724,10 +724,10 @@ class Cohort_Endpoints_API(remote.Service):
                     bucket_name = ''
                     # hard-coding mock bucket names for now --testing purposes only
                     if row['Repository'].lower() == 'dcc':
-                        bucket_name = 'gs://62f2c827-mock-mock-mock-1cde698a4f77'
+                        bucket_name = settings.DCC_CONTROLLED_DATA_BUCKET
                     elif row['Repository'].lower() == 'cghub':
-                        bucket_name = 'gs://360ee3ad-mock-mock-mock-52f9a5e7f99a'
-                    cloud_storage_path = "{}{}".format(bucket_name, file_path)
+                        bucket_name = settings.CGHUB_CONTROLLED_DATA_BUCKET
+                    cloud_storage_path = "gs://{}{}".format(bucket_name, file_path)
 
                 data_item = DataDetails(
                     SampleBarcode=str(row['SampleBarcode']),
@@ -850,12 +850,11 @@ class Cohort_Endpoints_API(remote.Service):
                         datafilenamekeys.append("gs://{}{}".format(settings.OPEN_DATA_BUCKET, file_path))
                     elif dbGaP_authorized:
                         bucket_name = ''
-                        # hard-coding mock bucket names for now --testing purposes only
                         if row['Repository'].lower() == 'dcc':
-                            bucket_name = 'gs://62f2c827-mock-mock-mock-1cde698a4f77'
+                            bucket_name = settings.DCC_CONTROLLED_DATA_BUCKET
                         elif row['Repository'].lower() == 'cghub':
-                            bucket_name = 'gs://360ee3ad-mock-mock-mock-52f9a5e7f99a'
-                        datafilenamekeys.append("{}{}".format(bucket_name, file_path))
+                            bucket_name = settings.CGHUB_CONTROLLED_DATA_BUCKET
+                        datafilenamekeys.append("gs://{}{}".format(bucket_name, file_path))
 
                 return DataFileNameKeyList(datafilenamekeys=datafilenamekeys, count=len(datafilenamekeys))
 
@@ -931,18 +930,18 @@ class Cohort_Endpoints_API(remote.Service):
             logger.info(query_tuple)
 
             datafilenamekeys = []
+
             for row in cursor.fetchall():
                 file_path = row.get('DataFileNameKey') if len(row.get('DataFileNameKey', '')) else '/file-path-currently-unavailable'
                 if 'controlled' not in str(row['SecurityProtocol']).lower():
                     datafilenamekeys.append("gs://{}{}".format(settings.OPEN_DATA_BUCKET, file_path))
                 elif dbGaP_authorized:
                     bucket_name = ''
-                    # hard-coding mock bucket names for now --testing purposes only
                     if row['Repository'].lower() == 'dcc':
-                        bucket_name = 'gs://62f2c827-mock-mock-mock-1cde698a4f77'
+                        bucket_name = settings.DCC_CONTROLLED_DATA_BUCKET
                     elif row['Repository'].lower() == 'cghub':
-                        bucket_name = 'gs://360ee3ad-mock-mock-mock-52f9a5e7f99a'
-                    datafilenamekeys.append("{}{}".format(bucket_name, file_path))
+                        bucket_name = settings.CGHUB_CONTROLLED_DATA_BUCKET
+                    datafilenamekeys.append("gs://{}{}".format(bucket_name, file_path))
 
             return DataFileNameKeyList(datafilenamekeys=datafilenamekeys, count=len(datafilenamekeys))
 
