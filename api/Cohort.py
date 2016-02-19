@@ -959,7 +959,7 @@ class Cohort_Endpoints_API(remote.Service):
                                                 )
 
     @endpoints.method(POST_RESOURCE, Cohort,
-                      path='save_cohort', http_method='POST', name='cohort.save')
+                      path='save_cohort', http_method='POST', name='cohorts.save')
     def save_cohort(self, request):
         """
         Creates and saves a cohort. Takes a JSON object in the request body to use as the cohort's filters.
@@ -1083,7 +1083,7 @@ class Cohort_Endpoints_API(remote.Service):
                                                   token=messages.StringField(2)
                                                   )
     @endpoints.method(DELETE_RESOURCE, ReturnJSON,
-                      path='delete_cohort', http_method='POST', name='cohort.delete')
+                      path='delete_cohort', http_method='POST', name='cohorts.delete')
     def delete_cohort(self, request):
         """
         Deletes a cohort. User must have owner permissions on the cohort.
@@ -1143,7 +1143,7 @@ class Cohort_Endpoints_API(remote.Service):
 
     POST_RESOURCE = endpoints.ResourceContainer(IncomingMetadataItem)
     @endpoints.method(POST_RESOURCE, CohortPatientsSamplesList,
-                      path='preview_cohort', http_method='POST', name='cohort.preview')
+                      path='preview_cohort', http_method='POST', name='cohorts.preview')
     def preview_cohort(self, request):
         """
         Previews a cohort. Takes a JSON object in the request body to use as the cohort's filters.
