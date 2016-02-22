@@ -1150,7 +1150,7 @@ class Cohort_Endpoints_API(remote.Service):
         :return: Information about the cohort, including the number of patients and the number
         of samples in that cohort.
         """
-        print >> sys.stderr,'Called '+sys._getframe().f_code.co_name
+        # print >> sys.stderr,'Called '+sys._getframe().f_code.co_name
         patient_cursor = None
         sample_cursor = None
         db = None
@@ -1293,7 +1293,7 @@ class Cohort_Endpoints_API(remote.Service):
         :param cohort_id: Required.
         :return: List of google genomics dataset and readgroupset ids.
         """
-        print >> sys.stderr,'Called '+sys._getframe().f_code.co_name
+        # print >> sys.stderr,'Called '+sys._getframe().f_code.co_name
         cursor = None
         db = None
         sample_barcode = request.__getattribute__('sample_barcode')
