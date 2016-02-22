@@ -1068,9 +1068,9 @@ class Cohort_Endpoints_API(remote.Service):
 
 
 
-    POST_RESOURCE = endpoints.ResourceContainer(IncomingMetadataItem)
-    @endpoints.method(POST_RESOURCE, CohortPatientsSamplesList,
-                      path='preview_cohort', http_method='POST', name='cohort.preview')
+    GET_RESOURCE = endpoints.ResourceContainer(IncomingMetadataItem)
+    @endpoints.method(GET_RESOURCE, CohortPatientsSamplesList,
+                      path='preview_cohort', http_method='GET', name='cohort.preview')
     def preview_cohort(self, request):
         """
         Previews a cohort. Takes a JSON object in the request body to use as the cohort's filters.
