@@ -172,6 +172,7 @@ class GoogleGenomicsList(messages.Message):
 
 def check_for_bad_keys(request, query_dict):
 
+    # todo: possibly use request.all_unrecognized_fields() (type list)
     bad_keys = [k for k in request._Message__unrecognized_fields.keys() if k != 'alt']
 
     if bad_keys or not query_dict:
@@ -1141,9 +1142,9 @@ class Cohort_Endpoints_API(remote.Service):
 
 
 
-    POST_RESOURCE = endpoints.ResourceContainer(IncomingMetadataItem)
-    @endpoints.method(POST_RESOURCE, CohortPatientsSamplesList,
-                      path='preview_cohort', http_method='POST', name='cohorts.preview')
+    GET_RESOURCE = endpoints.ResourceContainer(IncomingMetadataItem)
+    @endpoints.method(GET_RESOURCE, CohortPatientsSamplesList,
+                      path='preview_cohort', http_method='GET', name='cohorts.preview')
     def preview_cohort(self, request):
         """
         Previews a cohort. Takes a JSON object in the request body to use as the cohort's filters.
@@ -1158,8 +1159,10 @@ class Cohort_Endpoints_API(remote.Service):
         keys = [k for k in IncomingMetadataItem.__dict__.keys()
                 if not k.startswith('_') and request.__getattribute__(k)]
 
+
         values = (request.__getattribute__(k) for k in keys)
         query_dict = dict(zip(keys, values))
+
 
         check_for_bad_keys(request, query_dict)
 
@@ -1171,6 +1174,7 @@ class Cohort_Endpoints_API(remote.Service):
                            'FROM metadata_samples '
 
         value_tuple = ()
+
         if len(query_dict) > 0:
             where_clause = build_where_clause(query_dict)
             patient_query_str += ' WHERE ' + where_clause['query_str']
@@ -1181,6 +1185,7 @@ class Cohort_Endpoints_API(remote.Service):
 
         patient_barcodes = []
         sample_barcodes = []
+
         try:
             db = sql_connection()
             patient_cursor = db.cursor(MySQLdb.cursors.DictCursor)
