@@ -85,6 +85,9 @@ if os.environ.has_key('DB_SSL_CERT'):
 BASE_URL = CLOUD_BASE_URL
 BASE_API_URL = CLOUD_API_URL
 SITE_ID = 4
+DEVELOPER_COHORT_TABLE_ID = os.environ.get('CLOUD_COHORT_TABLE')
+NIH_AUTH_ON = True
+
 
 # For running local unit tests for models
 import sys

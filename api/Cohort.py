@@ -1159,10 +1159,8 @@ class Cohort_Endpoints_API(remote.Service):
         keys = [k for k in IncomingMetadataItem.__dict__.keys()
                 if not k.startswith('_') and request.__getattribute__(k)]
 
-
         values = (request.__getattribute__(k) for k in keys)
         query_dict = dict(zip(keys, values))
-
 
         check_for_bad_keys(request, query_dict)
 
