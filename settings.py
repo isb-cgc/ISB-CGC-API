@@ -88,6 +88,7 @@ SITE_ID = 4
 DEVELOPER_COHORT_TABLE_ID = os.environ.get('CLOUD_COHORT_TABLE')
 NIH_AUTH_ON = True
 
+
 # For running local unit tests for models
 import sys
 if 'test' in sys.argv:
