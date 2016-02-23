@@ -52,7 +52,8 @@ PAIRWISE_SERVICE_URL = os.environ.get('PAIRWISE_SERVICE_URL')
 
 # Data Buckets
 OPEN_DATA_BUCKET = os.environ.get('OPEN_DATA_BUCKET')
-CONTROLLED_DATA_BUCKET = os.environ.get('CONTROLLED_DATA_BUCKET')
+DCC_CONTROLLED_DATA_BUCKET = os.environ.get('DCC_CONTROLLED_DATA_BUCKET')
+CGHUB_CONTROLLED_DATA_BUCKET = os.environ.get('CGHUB_CONTROLLED_DATA_BUCKET')
 
 GCLOUD_BUCKET = os.environ.get('GCLOUD_BUCKET')
 
@@ -84,8 +85,6 @@ if os.environ.has_key('DB_SSL_CERT'):
 BASE_URL = CLOUD_BASE_URL
 BASE_API_URL = CLOUD_API_URL
 SITE_ID = 4
-DEVELOPER_COHORT_TABLE_ID = os.environ.get('CLOUD_COHORT_TABLE')
-NIH_AUTH_ON = True
 
 # For running local unit tests for models
 import sys
