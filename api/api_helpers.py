@@ -165,7 +165,7 @@ def normalize_ages(ages):
                 elif int_age < 50:
                     new_age_list['40 to 49'] += int(age.count)
                 elif int_age < 60:
-                    new_age_list['40 to 49'] += int(age.count)
+                    new_age_list['50 to 59'] += int(age.count)
                 elif int_age < 70:
                     new_age_list['60 to 69'] += int(age.count)
                 elif int_age < 80:
