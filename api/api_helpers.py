@@ -110,7 +110,6 @@ def sql_age_by_ranges(value):
         elif str(value) == 'None':
             result += ' age_at_initial_pathologic_diagnosis is null'
 
-    # print '\n\nresult is ' + result
     return result
 
 def gql_age_by_ranges(q, key, value):
@@ -157,8 +156,6 @@ def normalize_ages(ages):
     result = []
     new_age_list = {'10 to 39': 0, '40 to 49': 0, '50 to 59': 0, '60 to 69': 0, '70 to 79': 0, 'Over 80': 0, 'None': 0}
     for age in ages:
-        # print 'type(age):'
-        # print type(age)
         if type(age) != dict:
 
             if age.value != 'None':
@@ -177,8 +174,7 @@ def normalize_ages(ages):
                     new_age_list['Over 80'] += int(age.count)
             else:
                 new_age_list['None'] += int(age.count)
-        else:
-            print age
+
 
     for key, value in new_age_list.items():
         result.append({'count': value, 'value': key})

@@ -79,6 +79,19 @@ IMPORTANT_FEATURES = [
     'rppaPlatform'
 ]
 
+BUILTIN_ENDPOINTS_PARAMETERS = [
+    'alt',
+    'fields',
+    'enum',
+    'enumDescriptions',
+    'key',
+    'oauth_token',
+    'prettyPrint',
+    'quotaUser',
+    'userIp'
+]
+
+
 
 class ReturnJSON(messages.Message):
     msg = messages.StringField(1)
@@ -171,15 +184,25 @@ class GoogleGenomicsList(messages.Message):
 
 
 def are_there_bad_keys(request):
+    '''
+    Checks for unrecognized fields in an endpoint request
+    :param request: the request object from the endpoint
+    :return: boolean indicating True if bad (unrecognized) fields are present in the request
+    '''
     unrecognized_param_dict = {
         k: request.get_unrecognized_field_info(k)[0]
         for k in request.all_unrecognized_fields()
-        if k != 'alt'
+        if k not in BUILTIN_ENDPOINTS_PARAMETERS
     }
     return unrecognized_param_dict != {}
 
 
 def are_there_no_acceptable_keys(request):
+    '''
+    Checks for a lack of recognized fields in an endpoints request. Used in save_cohort and preview_cohort endpoints.
+    :param request: the request object from the endpoint
+    :return: boolean indicating True if there are no recognized fields in the request.
+    '''
     param_dict = {
         k.name: request.get_assigned_value(k.name)
         for k in request.all_fields()
@@ -194,7 +217,7 @@ def construct_parameter_error_message(request, filter_required):
     unrecognized_param_dict = {
         k: request.get_unrecognized_field_info(k)[0]
         for k in request.all_unrecognized_fields()
-        if k != 'alt'
+        if k not in BUILTIN_ENDPOINTS_PARAMETERS
     }
     if unrecognized_param_dict:
         bad_key_str = "'" + "', '".join(unrecognized_param_dict.keys()) + "'"
