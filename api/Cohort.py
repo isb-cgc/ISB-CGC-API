@@ -32,7 +32,6 @@ import json
 
 from metadata import MetadataItem, IncomingMetadataItem
 
-from accounts.models import NIH_User
 from cohorts.models import Cohort as Django_Cohort, Cohort_Perms, Patients, Samples, Filters
 from bq_data_access.cohort_bigquery import BigQueryCohortSupport
 from api_helpers import *
@@ -167,34 +166,6 @@ class GoogleGenomicsItem(messages.Message):
 class GoogleGenomicsList(messages.Message):
     items = messages.MessageField(GoogleGenomicsItem, 1, repeated=True)
     count = messages.IntegerField(2)
-
-
-# def check_for_bad_keys(request, filter_required=True, allow_fields=None):
-#
-#     param_dict = {
-#         k.name: request.get_assigned_value(k.name)
-#         for k in request.all_fields()
-#         if request.get_assigned_value(k.name)
-#     }
-#
-#     unrecognized_param_dict = {
-#         k: request.get_unrecognized_field_info(k)[0]
-#         for k in request.all_unrecognized_fields()
-#         if k != 'alt'
-#     }
-#
-#     if unrecognized_param_dict or (filter_required and not param_dict):
-#         sorted_keys = sorted(request._Message__by_name.keys(), key=lambda s: s.lower())
-#         err_msg = ''
-#         if unrecognized_param_dict:
-#             bad_key_str = "'" + "', '".join(unrecognized_param_dict.keys()) + "'"
-#             err_msg += "The following filters were not recognized: {}. ".format(bad_key_str)
-#         if filter_required:
-#             err_msg += "You must specify at least one of the following " \
-#                        "case-sensitive filters: {}".format(sorted_keys)
-#         else:
-#             err_msg += "Acceptable filters are: {}".format(sorted_keys)
-#         raise endpoints.BadRequestException(err_msg)
 
 
 def are_there_bad_keys(request):
@@ -833,7 +804,6 @@ class Cohort_Endpoints_API(remote.Service):
         pipeline = request.get_assigned_value('pipeline')
         cohort_id = request.get_assigned_value('cohort_id')
 
-        # check_for_bad_keys(request, filter_required=False)
         if are_there_bad_keys(request):
             err_msg = construct_parameter_error_message(request, False)
             raise endpoints.BadRequestException(err_msg)
@@ -940,7 +910,6 @@ class Cohort_Endpoints_API(remote.Service):
         platform = request.get_assigned_value('platform')
         pipeline = request.get_assigned_value('pipeline')
 
-        # check_for_bad_keys(request, filter_required=False)
         if are_there_bad_keys(request):
             err_msg = construct_parameter_error_message(request, False)
             raise endpoints.BadRequestException(err_msg)
@@ -1049,7 +1018,6 @@ class Cohort_Endpoints_API(remote.Service):
                 and k.name is not 'name' and k.name is not 'token'
             }
 
-            # check_for_bad_keys(request)
             if are_there_bad_keys(request) or are_there_no_acceptable_keys(request):
                 err_msg = construct_parameter_error_message(request, True)
                 raise endpoints.BadRequestException(err_msg)
@@ -1216,7 +1184,6 @@ class Cohort_Endpoints_API(remote.Service):
             if request.get_assigned_value(k.name)
         }
 
-        # check_for_bad_keys(request)
         if are_there_bad_keys(request) or are_there_no_acceptable_keys(request):
             err_msg = construct_parameter_error_message(request, True)
             raise endpoints.BadRequestException(err_msg)
@@ -1283,7 +1250,6 @@ class Cohort_Endpoints_API(remote.Service):
         db = None
         cohort_id = request.get_assigned_value('cohort_id')
 
-        # check_for_bad_keys(request, filter_required=False)
         if are_there_bad_keys(request):
             err_msg = construct_parameter_error_message(request, False)
             raise endpoints.BadRequestException(err_msg)
@@ -1363,7 +1329,6 @@ class Cohort_Endpoints_API(remote.Service):
         db = None
         sample_barcode = request.get_assigned_value('sample_barcode')
 
-        # check_for_bad_keys(request, filter_required=False)
         if are_there_bad_keys(request):
             err_msg = construct_parameter_error_message(request, False)
             raise endpoints.BadRequestException(err_msg)
