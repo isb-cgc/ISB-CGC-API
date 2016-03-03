@@ -218,10 +218,9 @@ class Cohort_Endpoints_API(remote.Service):
                       path='cohorts_list', http_method='GET', name='cohorts.list')
     def cohorts_list(self, request):
         '''
-        Lists cohorts a user has either READER or OWNER permission on.
-        :param token: Optional. Access token with email scope to verify user's google identity.
-        :param cohort_id: Optional. Cohort id to get information about.
-        :return: List of one or more cohorts along with information about each cohort.
+        Returns information about cohorts a user has either READER or OWNER permission on.
+        Authentication is required. Optionally takes a cohort id as a parameter to
+        only list information about one cohort.
         '''
         user_email = None
         cursor = None
@@ -329,12 +328,9 @@ class Cohort_Endpoints_API(remote.Service):
                       name='cohorts.cohort_patients_samples_list')
     def cohort_patients_samples_list(self, request):
         """
-        Returns information about the participants and samples in a particular cohort.
-        :param cohort_id: Required.
-        :param token: Optional. Access token with email scope to verify user's google identity.
-        :return: List of participant barcodes, sample barcodes, and a total count of each.
-        Returns error message if the cohort id is invalid or if the user does not have reader or
-        owner permissions on that cohort.
+        Takes a cohort id as a required parameter and returns information about the participants
+        and samples in a particular cohort. Authentication is required.
+        User must have either READER or OWNER permissions on the cohort.
         """
 
         db = None
@@ -574,12 +570,10 @@ class Cohort_Endpoints_API(remote.Service):
                       path='sample_details', http_method='GET', name='cohorts.sample_details')
     def sample_details(self, request):
         """
-        Returns information about a particular sample.
-        :param sample_barcode: Required.
-        :param platform: Optional. Filter results by a particular platform.
-        :param pipeline: Optional. Filter results by a particular pipeline.
-        :return: Biospecimen data about the sample, a list of aliquots associated with the sample barcode,
-        and a list of details about each aliquot.
+        Given a sample barcode (of length 16, *eg* TCGA-B9-7268-01A), this endpoint returns
+        all available "biospecimen" information about this sample,
+        the associated patient barcode, a list of associated aliquots,
+        and a list of "data_details" blocks describing each of the data files associated with this sample
         """
 
         biospecimen_cursor = None
@@ -763,20 +757,13 @@ class Cohort_Endpoints_API(remote.Service):
                       path='datafilenamekey_list_from_cohort', http_method='GET', name='cohorts.datafilenamekey_list_from_cohort')
     def datafilenamekey_list_from_cohort(self, request):
         """
-        Returns a list of cloud storage paths for files associated with
-        all the samples in a specified cohort.
-        :param cohort_id: Required.
-        :param platform: Optional. Filter results by platform.
-        :param pipeline: Optional. Filter results by pipeline.
-        :param token: Optional. Access token with email scope to verify user's google identity.
-        :return: List of cloud storage file paths. If the user is dbGaP authorized, controlled-access file paths
-        will appear in the list.
+        Takes a cohort id as a required parameter and
+        returns cloud storage paths to files associated with all the samples in that cohort.
+        Authentication is required. User must have READER or OWNER permissions on the cohort.
         """
         user_email = None
         cursor = None
         db = None
-        dbGaP_authorized = False
-        cohort_id = None
 
         platform = request.get_assigned_value('platform')
         pipeline = request.get_assigned_value('pipeline')
@@ -867,12 +854,8 @@ class Cohort_Endpoints_API(remote.Service):
                       path='datafilenamekey_list_from_sample', http_method='GET', name='cohorts.datafilenamekey_list_from_sample')
     def datafilenamekey_list_from_sample(self, request):
         """
-        Returns a list of cloud storage paths for files associated with either a sample barcode.
-        :param sample_barcode: Required.
-        :param platform: Optional. Filter results by platform.
-        :param pipeline: Optional. Filter results by pipeline.
-        :return: List of cloud storage file paths. If the user is dbGaP authorized, controlled-access file paths
-        will appear in the list.
+        Takes a sample barcode as a required parameter and
+        returns cloud storage paths to files associated with that sample.
         """
         cursor = None
         db = None
@@ -940,9 +923,8 @@ class Cohort_Endpoints_API(remote.Service):
     def save_cohort(self, request):
         """
         Creates and saves a cohort. Takes a JSON object in the request body to use as the cohort's filters.
-        :param name: Required. Name of cohort to be saved.
-        :param token: Optional. Access token with email scope to verify user's google identity.
-        :return: Information about the saved cohort, including the number of patients and the number
+        Authentication is required.
+        Returns information about the saved cohort, including the number of patients and the number
         of samples in that cohort.
         """
         user_email = None
@@ -1068,9 +1050,6 @@ class Cohort_Endpoints_API(remote.Service):
     def delete_cohort(self, request):
         """
         Deletes a cohort. User must have owner permissions on the cohort.
-        :param cohort_id: Required. Id of cohort to delete.
-        :param token: Optional. Access token with email scope to verify user's google identity.
-        :return: Message indicating whether the cohort was deleted or not.
         """
         user_email = None
         return_message = None
@@ -1127,9 +1106,10 @@ class Cohort_Endpoints_API(remote.Service):
                       path='preview_cohort', http_method='POST', name='cohorts.preview')
     def preview_cohort(self, request):
         """
-        Previews a cohort. Takes a JSON object in the request body to use as the cohort's filters.
-        :return: Information about the cohort, including the number of patients and the number
-        of samples in that cohort.
+        Takes a JSON object of filters in the request body and returns a "preview" of the cohort that would
+        result from passing a similar request to the cohort **save** endpoint.  This preview consists of
+        two lists: the lists of participant (aka patient) barcodes, and the list of sample barcodes.
+        Authentication is not required.
         """
         print >> sys.stderr,'Called '+sys._getframe().f_code.co_name
         patient_cursor = None
@@ -1200,9 +1180,7 @@ class Cohort_Endpoints_API(remote.Service):
         """
         Returns a list of Google Genomics dataset and readgroupset ids associated with
         all the samples in a specified cohort.
-        :param cohort_id: Required.
-        :param token: Optional. Access token to verify a user's identity
-        :return: List of google genomics dataset and readgroupset ids.
+        Authentication is required. User must have either READER or OWNER permissions on the cohort.
         """
         cursor = None
         db = None
@@ -1277,10 +1255,8 @@ class Cohort_Endpoints_API(remote.Service):
                       path='google_genomics_from_sample', http_method='GET', name='cohorts.google_genomics_from_sample')
     def google_genomics_from_sample(self, request):
         """
-        Returns a list of Google Genomics dataset and readgroupset ids associated with
-        all the samples in a specified cohort.
-        :param cohort_id: Required.
-        :return: List of google genomics dataset and readgroupset ids.
+        Takes a sample barcode as a required parameter and returns the Google Genomics dataset id
+        and readgroupset id associated with the sample, if any.
         """
         print >> sys.stderr,'Called '+sys._getframe().f_code.co_name
         cursor = None
