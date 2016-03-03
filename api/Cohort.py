@@ -446,10 +446,10 @@ class Cohort_Endpoints_API(remote.Service):
                       path='patient_details', http_method='GET', name='cohorts.patient_details')
     def patient_details(self, request):
         """
-        Returns information about a particular participant.
-        :param patient_barcode: Required.
-        :return: List of samples and a list of aliquots associated with the participant barcode
-        as well as clinical data on that participant.
+        Returns information about a specific participant,
+        including a list of samples and aliquots derived from this patient.
+        Takes a participant barcode (of length 12, *eg* TCGA-B9-7268) as a required parameter.
+        User does not need to be authenticated.
         """
 
         clinical_cursor = None
@@ -569,8 +569,7 @@ class Cohort_Endpoints_API(remote.Service):
 
     GET_RESOURCE = endpoints.ResourceContainer(sample_barcode=messages.StringField(1, required=True),
                                                platform=messages.StringField(2),
-                                               pipeline=messages.StringField(3),
-                                               token=messages.StringField(4))
+                                               pipeline=messages.StringField(3))
     @endpoints.method(GET_RESOURCE, SampleDetails,
                       path='sample_details', http_method='GET', name='cohorts.sample_details')
     def sample_details(self, request):
@@ -579,7 +578,6 @@ class Cohort_Endpoints_API(remote.Service):
         :param sample_barcode: Required.
         :param platform: Optional. Filter results by a particular platform.
         :param pipeline: Optional. Filter results by a particular pipeline.
-        :param token: Optional. Access token with email scope to verify user's google identity.
         :return: Biospecimen data about the sample, a list of aliquots associated with the sample barcode,
         and a list of details about each aliquot.
         """
@@ -589,22 +587,6 @@ class Cohort_Endpoints_API(remote.Service):
         patient_cursor = None
         data_cursor = None
         db = None
-
-        user_email = None
-        dbGaP_authorized = False
-
-        if endpoints.get_current_user() is not None:
-            user_email = endpoints.get_current_user().email()
-
-        # users have the option of pasting the access token in the query string
-        # or in the 'token' field in the api explorer
-        # but this is not required
-        access_token = request.get_assigned_value('token')
-        if access_token:
-            user_email = get_user_email_from_token(access_token)
-
-        if user_email:
-            dbGaP_authorized = is_dbgap_authorized(user_email)
 
         sample_barcode = request.get_assigned_value('sample_barcode')
         biospecimen_query_str = 'select * ' \
@@ -644,9 +626,6 @@ class Cohort_Endpoints_API(remote.Service):
                          'SecurityProtocol ' \
                          'from metadata_data ' \
                          'where SampleBarcode=%s '
-
-        if not dbGaP_authorized:
-            data_query_str += 'and SecurityProtocol != "dbGap controlled-access" '
 
         if request.get_assigned_value('platform') is not None:
             platform = request.get_assigned_value('platform')
@@ -727,16 +706,15 @@ class Cohort_Endpoints_API(remote.Service):
             for row in data_cursor.fetchall():
                 if not row.get('DataFileNameKey'):
                     continue
-                cloud_storage_path = ''
                 if 'controlled' not in str(row['SecurityProtocol']).lower():
                     cloud_storage_path = "gs://{}{}".format(settings.OPEN_DATA_BUCKET, row.get('DataFileNameKey'))
-                elif dbGaP_authorized:
-                    bucket_name = ''
-                    # hard-coding mock bucket names for now --testing purposes only
+                else:  # not filtering on dbGaP_authorized:
                     if row['Repository'].lower() == 'dcc':
                         bucket_name = settings.DCC_CONTROLLED_DATA_BUCKET
                     elif row['Repository'].lower() == 'cghub':
                         bucket_name = settings.CGHUB_CONTROLLED_DATA_BUCKET
+                    else:  # shouldn't ever happen
+                        continue
                     cloud_storage_path = "gs://{}{}".format(bucket_name, row.get('DataFileNameKey'))
 
                 data_item = DataDetails(
@@ -820,7 +798,6 @@ class Cohort_Endpoints_API(remote.Service):
 
         if user_email:
             django.setup()
-            dbGaP_authorized = is_dbgap_authorized(user_email)
 
             query_str = 'SELECT DataFileNameKey, SecurityProtocol, Repository ' \
                         'FROM metadata_data '
@@ -855,8 +832,6 @@ class Cohort_Endpoints_API(remote.Service):
                 db = sql_connection()
                 cursor = db.cursor(MySQLdb.cursors.DictCursor)
                 cursor.execute(query_str, query_tuple)
-                logger.info(query_str)
-                logger.info(query_tuple)
 
                 datafilenamekeys = []
                 for row in cursor.fetchall():
@@ -864,7 +839,7 @@ class Cohort_Endpoints_API(remote.Service):
                         continue
                     if 'controlled' not in str(row['SecurityProtocol']).lower():
                         datafilenamekeys.append("gs://{}{}".format(settings.OPEN_DATA_BUCKET, row.get('DataFileNameKey')))
-                    elif dbGaP_authorized:
+                    else:  # not filtering on dbGaP_authorized
                         bucket_name = ''
                         if row['Repository'].lower() == 'dcc':
                             bucket_name = settings.DCC_CONTROLLED_DATA_BUCKET
@@ -887,8 +862,7 @@ class Cohort_Endpoints_API(remote.Service):
 
     GET_RESOURCE = endpoints.ResourceContainer(sample_barcode=messages.StringField(1, required=True),
                                                platform=messages.StringField(2),
-                                               pipeline=messages.StringField(3),
-                                               token=messages.StringField(4))
+                                               pipeline=messages.StringField(3))
     @endpoints.method(GET_RESOURCE, DataFileNameKeyList,
                       path='datafilenamekey_list_from_sample', http_method='GET', name='cohorts.datafilenamekey_list_from_sample')
     def datafilenamekey_list_from_sample(self, request):
@@ -897,14 +871,11 @@ class Cohort_Endpoints_API(remote.Service):
         :param sample_barcode: Required.
         :param platform: Optional. Filter results by platform.
         :param pipeline: Optional. Filter results by pipeline.
-        :param token: Optional. Access token with email scope to verify user's google identity.
         :return: List of cloud storage file paths. If the user is dbGaP authorized, controlled-access file paths
         will appear in the list.
         """
-        user_email = None
         cursor = None
         db = None
-        dbGaP_authorized = False
 
         sample_barcode = request.get_assigned_value('sample_barcode')
         platform = request.get_assigned_value('platform')
@@ -913,19 +884,6 @@ class Cohort_Endpoints_API(remote.Service):
         if are_there_bad_keys(request):
             err_msg = construct_parameter_error_message(request, False)
             raise endpoints.BadRequestException(err_msg)
-
-        if endpoints.get_current_user() is not None:
-            user_email = endpoints.get_current_user().email()
-
-        # users have the option of pasting the access token in the query string
-        # or in the 'token' field in the api explorer
-        # but this is not required
-        access_token = request.get_assigned_value('token')
-        if access_token:
-            user_email = get_user_email_from_token(access_token)
-
-        if user_email:
-            dbGaP_authorized = is_dbgap_authorized(user_email)
 
         query_str = 'SELECT DataFileNameKey, SecurityProtocol, Repository ' \
                     'FROM metadata_data WHERE SampleBarcode=%s '
@@ -954,7 +912,7 @@ class Cohort_Endpoints_API(remote.Service):
                     continue
                 if 'controlled' not in str(row['SecurityProtocol']).lower():
                     datafilenamekeys.append("gs://{}{}".format(settings.OPEN_DATA_BUCKET, row.get('DataFileNameKey')))
-                elif dbGaP_authorized:
+                else:  # not filtering on dbGaP_authorized
                     bucket_name = ''
                     if row['Repository'].lower() == 'dcc':
                         bucket_name = settings.DCC_CONTROLLED_DATA_BUCKET
