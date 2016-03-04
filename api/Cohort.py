@@ -724,6 +724,8 @@ class Cohort_Endpoints_API(remote.Service):
             data_cursor = db.cursor(MySQLdb.cursors.DictCursor)
             data_cursor.execute(data_query_str, extra_query_tuple)
             data_data = []
+            bad_repo_count = 0
+            bad_repo_set = set()
             for row in data_cursor.fetchall():
                 if not row.get('DataFileNameKey'):
                     continue
@@ -735,6 +737,8 @@ class Cohort_Endpoints_API(remote.Service):
                     elif row['Repository'].lower() == 'cghub':
                         bucket_name = settings.CGHUB_CONTROLLED_DATA_BUCKET
                     else:  # shouldn't ever happen
+                        bad_repo_count += 1
+                        bad_repo_set.add(row['Repository'])
                         continue
                     cloud_storage_path = "gs://{}{}".format(bucket_name, row.get('DataFileNameKey'))
 
@@ -760,7 +764,9 @@ class Cohort_Endpoints_API(remote.Service):
                     CloudStoragePath=cloud_storage_path
                 )
                 data_data.append(data_item)
-
+            if bad_repo_count > 0:
+                logger.warn("not returning {count} row(s) in sample_details due to repositories: {bad_repo_list}"
+                            .format(count=bad_repo_count, bad_repo_list=list(bad_repo_set)))
             return SampleDetails(biospecimen_data=item, aliquots=aliquot_data,
                                  patient=patient_barcode, data_details=data_data,
                                  data_details_count=len(data_data))
@@ -850,6 +856,8 @@ class Cohort_Endpoints_API(remote.Service):
                 cursor.execute(query_str, query_tuple)
 
                 datafilenamekeys = []
+                bad_repo_count = 0
+                bad_repo_set = set()
                 for row in cursor.fetchall():
                     if not row.get('DataFileNameKey'):
                         continue
@@ -861,8 +869,14 @@ class Cohort_Endpoints_API(remote.Service):
                             bucket_name = settings.DCC_CONTROLLED_DATA_BUCKET
                         elif row['Repository'].lower() == 'cghub':
                             bucket_name = settings.CGHUB_CONTROLLED_DATA_BUCKET
+                        else:  # shouldn't ever happen
+                            bad_repo_count += 1
+                            bad_repo_set.add(row['Repository'])
+                            continue
                         datafilenamekeys.append("gs://{}{}".format(bucket_name, row.get('DataFileNameKey')))
-
+                if bad_repo_count > 0:
+                    logger.warn("not returning {count} row(s) in sample_details due to repositories: {bad_repo_list}"
+                                .format(count=bad_repo_count, bad_repo_list=list(bad_repo_set)))
                 return DataFileNameKeyList(datafilenamekeys=datafilenamekeys, count=len(datafilenamekeys))
 
             except (IndexError, TypeError), e:
@@ -918,7 +932,8 @@ class Cohort_Endpoints_API(remote.Service):
             cursor.execute(query_str, query_tuple)
 
             datafilenamekeys = []
-
+            bad_repo_count = 0
+            bad_repo_set = set()
             for row in cursor.fetchall():
                 if not row.get('DataFileNameKey'):
                     continue
@@ -930,8 +945,14 @@ class Cohort_Endpoints_API(remote.Service):
                         bucket_name = settings.DCC_CONTROLLED_DATA_BUCKET
                     elif row['Repository'].lower() == 'cghub':
                         bucket_name = settings.CGHUB_CONTROLLED_DATA_BUCKET
+                    else:  # shouldn't ever happen
+                        bad_repo_count += 0
+                        bad_repo_set.add(row['Repository'])
+                        continue
                     datafilenamekeys.append("gs://{}{}".format(bucket_name, row.get('DataFileNameKey')))
-
+            if bad_repo_count > 0:
+                logger.warn("not returning {count} row(s) in sample_details due to repositories: {bad_repo_list}"
+                            .format(count=bad_repo_count, bad_repo_list=list(bad_repo_set)))
             return DataFileNameKeyList(datafilenamekeys=datafilenamekeys, count=len(datafilenamekeys))
 
         except (IndexError, TypeError), e:
