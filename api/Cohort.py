@@ -79,6 +79,19 @@ IMPORTANT_FEATURES = [
     'rppaPlatform'
 ]
 
+BUILTIN_ENDPOINTS_PARAMETERS = [
+    'alt',
+    'fields',
+    'enum',
+    'enumDescriptions',
+    'key',
+    'oauth_token',
+    'prettyPrint',
+    'quotaUser',
+    'userIp'
+]
+
+
 
 class ReturnJSON(messages.Message):
     msg = messages.StringField(1)
@@ -133,14 +146,16 @@ class DataDetails(messages.Message):
     DataLevel = messages.StringField(7)
     Datatype = messages.StringField(8)
     GenomeReference = messages.StringField(9)
-    Pipeline = messages.StringField(10)
-    Platform = messages.StringField(11)
-    platform_full_name = messages.StringField(12)
-    Project = messages.StringField(13)
-    Repository = messages.StringField(14)
-    SDRFFileName = messages.StringField(15)
-    SecurityProtocol = messages.StringField(16)
-    CloudStoragePath = messages.StringField(17)
+    GG_dataset_id = messages.StringField(10)
+    GG_readgroupset_id = messages.StringField(11)
+    Pipeline = messages.StringField(12)
+    Platform = messages.StringField(13)
+    platform_full_name = messages.StringField(14)
+    Project = messages.StringField(15)
+    Repository = messages.StringField(16)
+    SDRFFileName = messages.StringField(17)
+    SecurityProtocol = messages.StringField(18)
+    CloudStoragePath = messages.StringField(19)
 
 
 class SampleDetails(messages.Message):
@@ -169,15 +184,25 @@ class GoogleGenomicsList(messages.Message):
 
 
 def are_there_bad_keys(request):
+    '''
+    Checks for unrecognized fields in an endpoint request
+    :param request: the request object from the endpoint
+    :return: boolean indicating True if bad (unrecognized) fields are present in the request
+    '''
     unrecognized_param_dict = {
         k: request.get_unrecognized_field_info(k)[0]
         for k in request.all_unrecognized_fields()
-        if k != 'alt'
+        if k not in BUILTIN_ENDPOINTS_PARAMETERS
     }
     return unrecognized_param_dict != {}
 
 
 def are_there_no_acceptable_keys(request):
+    '''
+    Checks for a lack of recognized fields in an endpoints request. Used in save_cohort and preview_cohort endpoints.
+    :param request: the request object from the endpoint
+    :return: boolean indicating True if there are no recognized fields in the request.
+    '''
     param_dict = {
         k.name: request.get_assigned_value(k.name)
         for k in request.all_fields()
@@ -192,7 +217,7 @@ def construct_parameter_error_message(request, filter_required):
     unrecognized_param_dict = {
         k: request.get_unrecognized_field_info(k)[0]
         for k in request.all_unrecognized_fields()
-        if k != 'alt'
+        if k not in BUILTIN_ENDPOINTS_PARAMETERS
     }
     if unrecognized_param_dict:
         bad_key_str = "'" + "', '".join(unrecognized_param_dict.keys()) + "'"
@@ -611,6 +636,8 @@ class Cohort_Endpoints_API(remote.Service):
                          'DataLevel,' \
                          'Datatype,' \
                          'GenomeReference,' \
+                         'GG_dataset_id, ' \
+                         'GG_readgroupset_id, ' \
                          'Pipeline,' \
                          'Platform,' \
                          'platform_full_name,' \
@@ -721,6 +748,8 @@ class Cohort_Endpoints_API(remote.Service):
                     DataLevel=str(row['DataLevel']),
                     Datatype=str(row['Datatype']),
                     GenomeReference=str(row['GenomeReference']),
+                    GG_dataset_id=str(row['GG_dataset_id']),
+                    GG_readgroupset_id=str(row['GG_readgroupset_id']),
                     Pipeline=str(row['Pipeline']),
                     Platform=str(row['Platform']),
                     platform_full_name=str(row['platform_full_name']),
