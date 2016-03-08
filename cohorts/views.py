@@ -41,7 +41,7 @@ from google.appengine.api import urlfetch
 from allauth.socialaccount.models import SocialToken
 
 from models import Cohort, Patients, Samples, Cohort_Perms, Source, Filters, Cohort_Comments
-from workbooks.models import Workbook, Worksheet
+from workbooks.models import Workbook, Worksheet, Worksheet_plot
 from projects.models import Project, Study, User_Feature_Counts, User_Feature_Definitions
 from visualizations.models import Plot_Cohorts, Plot
 from bq_data_access.cohort_bigquery import BigQueryCohortSupport
@@ -59,6 +59,7 @@ def convert(data):
     else:
         return data
 
+USER_DATA_ON = settings.USER_DATA_ON
 BIG_QUERY_API_URL = settings.BASE_API_URL + '/_ah/api/bq_api/v1'
 COHORT_API = settings.BASE_API_URL + '/_ah/api/cohort_api/v1'
 METADATA_API = settings.BASE_API_URL + '/_ah/api/meta_api/'
@@ -160,9 +161,13 @@ def cohorts_list(request, is_public=False, workbook_id=0, worksheet_id=0, create
 
     workbook = None
     worksheet = None
+    previously_selected_cohort_ids = []
     if workbook_id != 0:
         workbook = Workbook.objects.get(owner=request.user, id=workbook_id)
         worksheet = workbook.worksheet_set.get(id=worksheet_id)
+        worksheet_cohorts = worksheet.worksheet_cohort_set.all()
+        for wc in worksheet_cohorts :
+            previously_selected_cohort_ids.append(wc.cohort_id)
 
     return render(request, 'cohorts/cohort_list.html', {'request': request,
                                                         'cohorts': cohorts,
@@ -174,8 +179,9 @@ def cohorts_list(request, is_public=False, workbook_id=0, worksheet_id=0, create
                                                         'is_public': is_public,
                                                         'workbook': workbook,
                                                         'worksheet': worksheet,
+                                                        'previously_selected_cohort_ids' : previously_selected_cohort_ids,
                                                         'create_workbook': create_workbook,
-                                                        'from_workbook': bool(create_workbook or workbook),
+                                                        'from_workbook': bool(workbook),
                                                         })
 
 @login_required
@@ -197,14 +203,14 @@ def cohort_create_for_existing_workbook(request, workbook_id, worksheet_id):
 @login_required
 def cohort_detail(request, cohort_id=0, workbook_id=0, worksheet_id=0, create_workbook=False):
     if debug: print >> sys.stderr,'Called '+sys._getframe().f_code.co_name
-    users = User.objects.filter(is_superuser=0)
+    users = User.objects.filter(is_superuser=0).exclude(id=request.user.id)
     cohort = None
     shared_with_users = []
 
     # service = build('meta', 'v1', discoveryServiceUrl=META_DISCOVERY_URL)
     clin_attr = [
-        # 'Project',
-        # 'Study',
+        'Project',
+        'Study',
         'vital_status',
         # 'survival_time',
         'gender',
@@ -260,7 +266,6 @@ def cohort_detail(request, cohort_id=0, workbook_id=0, worksheet_id=0, create_wo
 
     clin_attr_dsp = []
     clin_attr_dsp += clin_attr
-    user_attr = ['user_project','user_study']
 
     token = SocialToken.objects.filter(account__user=request.user, account__provider='Google')[0].token
     data_url = METADATA_API + ('v2/metadata_counts?token=%s' % (token,))
@@ -269,50 +274,53 @@ def cohort_detail(request, cohort_id=0, workbook_id=0, worksheet_id=0, create_wo
     results = json.loads(results.content)
     totals = results['total']
 
-    # Add in user data
-    projects = Project.get_user_projects(request.user, True)
-    studies = Study.get_user_studies(request.user, True)
-    features = User_Feature_Definitions.objects.filter(study__in=studies)
-    study_counts = {}
-    project_counts = {}
+    if USER_DATA_ON:
+        # Add in user data
+        user_attr = ['user_project','user_study']
+        projects = Project.get_user_projects(request.user, True)
+        studies = Study.get_user_studies(request.user, True)
+        features = User_Feature_Definitions.objects.filter(study__in=studies)
+        study_counts = {}
+        project_counts = {}
 
-    for count in results['count']:
-        if 'id' in count and count['id'].startswith('study:'):
-            split = count['id'].split(':')
-            study_id = split[1]
-            feature_name = split[2]
-            study_counts[study_id] = count['total']
+        for count in results['count']:
+            if 'id' in count and count['id'].startswith('study:'):
+                split = count['id'].split(':')
+                study_id = split[1]
+                feature_name = split[2]
+                study_counts[study_id] = count['total']
 
-    user_studies = []
-    for study in studies:
-        count = study_counts[study.id] if study.id in study_counts else 0
+        user_studies = []
+        for study in studies:
+            count = study_counts[study.id] if study.id in study_counts else 0
 
-        if not study.project_id in project_counts:
-            project_counts[study.project_id] = 0
-        project_counts[study.project_id] += count
+            if not study.project_id in project_counts:
+                project_counts[study.project_id] = 0
+            project_counts[study.project_id] += count
 
-        user_studies += ({
-                        'count': str(count),
-                        'value': study.name,
-                        'id'   : study.id
-                      },)
+            user_studies += ({
+                            'count': str(count),
+                            'value': study.name,
+                            'id'   : study.id
+                          },)
 
-    user_projects = []
-    for project in projects:
-        user_projects += ({
-                            'count': str(project_counts[project.id]) if project.id in project_counts else 0,
-                            'value': project.name,
-                            'id'   : project.id
-                            },)
+        user_projects = []
+        for project in projects:
+            user_projects += ({
+                                'count': str(project_counts[project.id]) if project.id in project_counts else 0,
+                                'value': project.name,
+                                'id'   : project.id
+                                },)
 
-    results['count'].append({
-        'name': 'user_projects',
-        'values': user_projects
-    })
-    results['count'].append({
-        'name': 'user_studies',
-        'values': user_studies
-    })
+        results['count'].append({
+            'name': 'user_projects',
+            'values': user_projects
+        })
+        results['count'].append({
+            'name': 'user_studies',
+            'values': user_studies
+        })
+
     # Get and sort counts
     attr_details = {
         'RNA_sequencing': [],
@@ -350,11 +358,14 @@ def cohort_detail(request, cohort_id=0, workbook_id=0, worksheet_id=0, create_wo
         'clin_attr': clin_attr_dsp,
         'data_attr': data_attr,
         'molec_attr': molec_attr,
-        'user_attr': user_attr,
         'base_url': settings.BASE_URL,
         'base_api_url': settings.BASE_API_URL,
         'token': token
     }
+
+    if USER_DATA_ON:
+        template_values['user_attr'] = user_attr
+
     if workbook_id and worksheet_id :
         template_values['workbook']  = Workbook.objects.get(id=workbook_id)
         template_values['worksheet'] = Worksheet.objects.get(id=worksheet_id)
@@ -410,7 +421,18 @@ def add_cohorts_to_worksheet(request, workbook_id=0, worksheet_id=0):
         workbook = request.user.workbook_set.get(id=workbook_id)
         worksheet = workbook.worksheet_set.get(id=worksheet_id)
 
+        existing_w_cohorts = worksheet.worksheet_cohort_set.all()
+        existing_cohort_ids = []
+        for wc in existing_w_cohorts :
+            existing_cohort_ids.append(str(wc.cohort_id))
+
+        for ec in existing_cohort_ids:
+            if ec not in cohorts :
+                missing_cohort = Cohort.objects.get(id=ec)
+                worksheet.remove_cohort(missing_cohort)
+
         cohort_perms = request.user.cohort_perms_set.filter(cohort__active=True)
+
         for cohort in cohorts:
             cohort_model = cohort_perms.get(cohort__id=cohort).cohort
             worksheet.add_cohort(cohort_model)
@@ -493,69 +515,78 @@ def save_cohort(request, workbook_id=None, worksheet_id=None, create_workbook=Fa
 
         result = urlfetch.fetch(data_url, deadline=60)
         items = json.loads(result.content)
-        items = items['items']
-        for item in items:
-            samples.append(item['sample_barcode'])
-            #patients.append(item['ParticipantBarcode'])
 
-        # Create new cohort
-        cohort = Cohort.objects.create(name=name)
-        cohort.save()
+        #it is possible the the filters are creating a cohort with no samples
+        if int(items['count']) == 0 :
+            messages.error(request, 'The filters selected returned 0 samples. Please alter your filters and try again')
+            redirect_url = reverse('cohort')
+        else :
+            items = items['items']
+            for item in items:
+                samples.append(item['sample_barcode'])
+                #patients.append(item['ParticipantBarcode'])
 
-        # If there are sample ids
-        sample_list = []
-        for item in items:
-            study = None
-            if 'study_id' in item:
-                study = item['study_id']
-            sample_list.append(Samples(cohort=cohort, sample_id=item['sample_barcode'], study_id=study))
-        Samples.objects.bulk_create(sample_list)
+            # Create new cohort
+            cohort = Cohort.objects.create(name=name)
+            cohort.save()
 
-        # TODO This would be a nice to have if we have a mapped ParticipantBarcode value
-        # TODO Also this gets weird with mixed mapped and unmapped ParticipantBarcode columns in cohorts
-        # If there are patient ids
-        # patient_list = []
-        # if len(patients):
-        #     patients = list(set(patients))
-        #     for patient_code in patients:
-        #         patient_list.append(Patients(cohort=cohort, patient_id=patient_code))
-        # Patients.objects.bulk_create(patient_list)
+            # If there are sample ids
+            sample_list = []
+            for item in items:
+                study = None
+                if 'study_id' in item:
+                    study = item['study_id']
+                sample_list.append(Samples(cohort=cohort, sample_id=item['sample_barcode'], study_id=study))
+            Samples.objects.bulk_create(sample_list)
 
-        # Set permission for user to be owner
-        perm = Cohort_Perms(cohort=cohort, user=request.user, perm=Cohort_Perms.OWNER)
-        perm.save()
+            # TODO This would be a nice to have if we have a mapped ParticipantBarcode value
+            # TODO Also this gets weird with mixed mapped and unmapped ParticipantBarcode columns in cohorts
+            # If there are patient ids
+            # If we are *not* using user data, get participant barcodes from metadata_data
+            if not USER_DATA_ON:
+                participant_url = METADATA_API + ('v2/metadata_participant_list?cohort_id=%s' % (str(cohort.id),))
+                participant_result = urlfetch.fetch(participant_url, deadline=60)
+                participant_items = json.loads(participant_result.content)
+                participant_list = []
+                for item in participant_items['items']:
+                    participant_list.append(Patients(cohort=cohort, patient_id=item['sample_barcode']))
+                Patients.objects.bulk_create(participant_list)
 
-        # Create the source if it was given
-        if source:
-            Source.objects.create(parent=parent, cohort=cohort, type=Source.FILTERS).save()
+            # Set permission for user to be owner
+            perm = Cohort_Perms(cohort=cohort, user=request.user, perm=Cohort_Perms.OWNER)
+            perm.save()
 
-        # Create filters applied
-        if filters:
-            for filter in filter_obj:
-                Filters.objects.create(resulting_cohort=cohort, name=filter['key'], value=filter['value']).save()
+            # Create the source if it was given
+            if source:
+                Source.objects.create(parent=parent, cohort=cohort, type=Source.FILTERS).save()
 
-        # Store cohort to BigQuery
-        project_id = settings.BQ_PROJECT_ID
-        cohort_settings = settings.GET_BQ_COHORT_SETTINGS()
-        bcs = BigQueryCohortSupport(project_id, cohort_settings.dataset_id, cohort_settings.table_id)
-        bcs.add_cohort_with_sample_barcodes(cohort.id, cohort.samples_set.values_list('sample_id','study_id'))
+            # Create filters applied
+            if filters:
+                for filter in filter_obj:
+                    Filters.objects.create(resulting_cohort=cohort, name=filter['key'], value=filter['value']).save()
 
-        # Check if coming from applying filters and redirect accordingly
-        if 'apply-filters' in request.POST:
-            redirect_url = reverse('cohort_details',args=[cohort.id])
-            messages.info(request, 'Filters applied successfully.')
-        else:
-            redirect_url = reverse('cohort_list')
-            messages.info(request, 'Cohort, %s, created successfully.' % cohort.name)
+            # Store cohort to BigQuery
+            project_id = settings.BQ_PROJECT_ID
+            cohort_settings = settings.GET_BQ_COHORT_SETTINGS()
+            bcs = BigQueryCohortSupport(project_id, cohort_settings.dataset_id, cohort_settings.table_id)
+            bcs.add_cohort_with_sample_barcodes(cohort.id, cohort.samples_set.values_list('sample_id','study_id'))
 
-        if workbook_id and worksheet_id :
-            Worksheet.objects.get(id=worksheet_id).add_cohort(cohort)
-            redirect_url = reverse('worksheet_display', kwargs={'workbook_id':workbook_id, 'worksheet_id' : worksheet_id})
-        elif create_workbook :
-            workbook_model  = Workbook.create("default name", "This is a default workbook description", request.user)
-            worksheet_model = Worksheet.create(workbook_model.id, "worksheet 1","This is a default description")
-            worksheet_model.add_cohort(cohort)
-            redirect_url = reverse('worksheet_display', kwargs={'workbook_id':workbook_model.id, 'worksheet_id' : worksheet_model.id})
+            # Check if coming from applying filters and redirect accordingly
+            if 'apply-filters' in request.POST:
+                redirect_url = reverse('cohort_details',args=[cohort.id])
+                messages.info(request, 'Filters applied successfully.')
+            else:
+                redirect_url = reverse('cohort_list')
+                messages.info(request, 'Cohort, %s, created successfully.' % cohort.name)
+
+            if workbook_id and worksheet_id :
+                Worksheet.objects.get(id=worksheet_id).add_cohort(cohort)
+                redirect_url = reverse('worksheet_display', kwargs={'workbook_id':workbook_id, 'worksheet_id' : worksheet_id})
+            elif create_workbook :
+                workbook_model  = Workbook.create("default name", "This is a default workbook description", request.user)
+                worksheet_model = Worksheet.create(workbook_model.id, "worksheet 1","This is a default description")
+                worksheet_model.add_cohort(cohort)
+                redirect_url = reverse('worksheet_display', kwargs={'workbook_id':workbook_model.id, 'worksheet_id' : worksheet_model.id})
 
     return redirect(redirect_url) # redirect to search/ with search parameters just saved
 
@@ -806,6 +837,8 @@ def save_comment(request):
 def save_cohort_from_plot(request):
     if debug: print >> sys.stderr,'Called '+sys._getframe().f_code.co_name
     cohort_name = request.POST.get('cohort-name', 'Plot Selected Cohort')
+    result = {}
+
     if cohort_name:
         # Create Cohort
         cohort = Cohort.objects.create(name=cohort_name)
@@ -815,12 +848,13 @@ def save_cohort_from_plot(request):
         perm = Cohort_Perms.objects.create(cohort=cohort, user=request.user, perm=Cohort_Perms.OWNER)
         perm.save()
 
-        # Create Sources
-        plot_id = request.POST.get('plot_id')
-        source_cohorts = Plot_Cohorts.objects.filter(plot=Plot.objects.get(id=plot_id))
+        # Create Sources, at this point only one cohort for a plot
+        plot_id = request.POST.get('plot-id')
+        source_plot = Worksheet_plot.objects.get(id=plot_id)
+        plot_cohorts = source_plot.get_cohorts()
         source_list = []
-        for source in source_cohorts:
-            source_list.append(Source(parent=source.cohort, cohort=cohort, type=Source.PLOT_SEL))
+        for c in plot_cohorts :
+            source_list.append(Source(parent=c, cohort=cohort, type=Source.PLOT_SEL))
         Source.objects.bulk_create(source_list)
 
         # Create Samples
@@ -848,20 +882,16 @@ def save_cohort_from_plot(request):
         bcs = BigQueryCohortSupport(project_id, cohort_settings.dataset_id, cohort_settings.table_id)
         bcs.add_cohort_with_sample_barcodes(cohort.id, cohort.samples_set.all().values_list('sample_id', 'study_id'))
 
-        response_str = '<div class="row">' \
-                        '<div class="col-lg-12">' \
-                        '<div class="alert alert-info alert-dismissible">' \
-                        '<button type="button" class="close" data-dismiss="alert"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>' \
-                        'Cohort, {name}, created successfully.' \
-                        '</div></div></div>'.format(name=cohort.name)
-        return HttpResponse(response_str, status=200)
-    response_str = '<div class="row">' \
-                    '<div class="col-lg-12">' \
-                    '<div class="alert alert-danger alert-dismissible">' \
-                    '<button type="button" class="close" data-dismiss="alert"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>' \
-                    'Cohort failed to save.' \
-                    '</div></div></div>'
-    return HttpResponse(response_str, status=500)
+        workbook_id  = source_plot.worksheet.workbook_id
+        worksheet_id = source_plot.worksheet_id
+
+
+        result['message'] = "Cohort '" + cohort.name + "' created from the selected sample"
+    else :
+        result['error'] = "parameters were not correct"
+
+    return HttpResponse(json.dumps(result), status=200)
+
 
 @login_required
 @csrf_protect
@@ -948,7 +978,7 @@ def streaming_csv_view(request, cohort_id=0):
         writer = csv.writer(pseudo_buffer)
         response = StreamingHttpResponse((writer.writerow(row) for row in rows),
                                          content_type="text/csv")
-        response['Content-Disposition'] = 'attachment; filename="somefilename.csv"'
+        response['Content-Disposition'] = 'attachment; filename="file_list.csv"'
         return response
 
     elif 'error' in items:
