@@ -1202,7 +1202,7 @@ class Cohort_Endpoints_API(remote.Service):
                     "or you do not have owner or reader permissions on this cohort." % cohort_id)
         else:
             raise endpoints.UnauthorizedException("Unsuccessful authentication.")
-        request_finished.send(self)
+
         return ReturnJSON(msg=return_message)
 
 
