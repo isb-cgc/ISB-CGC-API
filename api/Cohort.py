@@ -829,7 +829,8 @@ class Cohort_Endpoints_API(remote.Service):
                                                pipeline=messages.StringField(3),
                                                token=messages.StringField(4))
     @endpoints.method(GET_RESOURCE, DataFileNameKeyList,
-                      path='datafilenamekey_list_from_cohort', http_method='GET', name='cohorts.datafilenamekey_list_from_cohort')
+                      path='datafilenamekey_list_from_cohort', http_method='GET',
+                      name='cohorts.datafilenamekey_list_from_cohort')
     def datafilenamekey_list_from_cohort(self, request):
         """
         Takes a cohort id as a required parameter and
@@ -1004,7 +1005,10 @@ class Cohort_Endpoints_API(remote.Service):
         except (IndexError, TypeError), e:
             logger.warn(e)
             raise endpoints.NotFoundException("File paths for sample {} not found.".format(sample_barcode))
-
+        except MySQLdb.ProgrammingError as e:
+            msg = '{}:\n\t query: {} {}'.format(e, query_str, query_tuple)
+            logger.warn(msg)
+            raise endpoints.BadRequestException("Error retrieving file paths. {}".format(msg))
         finally:
             if cursor: cursor.close()
             if db and db.open: db.close()
