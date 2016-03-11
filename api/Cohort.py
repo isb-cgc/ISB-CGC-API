@@ -923,6 +923,10 @@ class Cohort_Endpoints_API(remote.Service):
             except (IndexError, TypeError), e:
                 logger.warn(e)
                 raise endpoints.NotFoundException("File paths for cohort {} not found.".format(cohort_id))
+            except MySQLdb.ProgrammingError as e:
+                msg = '{}:\n\t query: {} {}'.format(e, query_str, query_tuple)
+                logger.warn(msg)
+                raise endpoints.BadRequestException("Error retrieving file paths. {}".format(msg))
             finally:
                 if cursor: cursor.close()
                 if db and db.open: db.close()
