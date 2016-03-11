@@ -1101,7 +1101,7 @@ class Cohort_Endpoints_API(remote.Service):
                 msg = '{}:\n\tpatient query: {} {}\n\tsample query: {} {}'\
                     .format(e, patient_query_str, value_tuple, sample_query_str, value_tuple)
                 logger.warn(msg)
-                raise endpoints.BadRequestException("Error retrieving saving cohort. {}".format(msg))
+                raise endpoints.BadRequestException("Error saving cohort. {}".format(msg))
             finally:
                 if patient_cursor: patient_cursor.close()
                 if sample_cursor: sample_cursor.close()
@@ -1218,7 +1218,7 @@ class Cohort_Endpoints_API(remote.Service):
         two lists: the lists of participant (aka patient) barcodes, and the list of sample barcodes.
         Authentication is not required.
         """
-        print >> sys.stderr,'Called '+sys._getframe().f_code.co_name
+        # print >> sys.stderr,'Called '+sys._getframe().f_code.co_name
         patient_cursor = None
         sample_cursor = None
         db = None
@@ -1268,6 +1268,11 @@ class Cohort_Endpoints_API(remote.Service):
         except (IndexError, TypeError), e:
             logger.warn(e)
             raise endpoints.NotFoundException("Error retrieving samples or patients: {}".format(e))
+        except MySQLdb.ProgrammingError as e:
+            msg = '{}:\n\tpatient query: {} {}\n\tsample query: {} {}'\
+                .format(e, patient_query_str, value_tuple, sample_query_str, value_tuple)
+            logger.warn(msg)
+            raise endpoints.BadRequestException("Error previewing cohort. {}".format(msg))
         finally:
             if patient_cursor: patient_cursor.close()
             if sample_cursor: sample_cursor.close()
@@ -1291,6 +1296,7 @@ class Cohort_Endpoints_API(remote.Service):
         """
         cursor = None
         db = None
+        user_email = None
         cohort_id = request.get_assigned_value('cohort_id')
 
         if are_there_bad_keys(request):
@@ -1350,7 +1356,14 @@ class Cohort_Endpoints_API(remote.Service):
 
             except (IndexError, TypeError), e:
                 logger.warn(e)
-                raise endpoints.NotFoundException("Google Genomics dataset and readgroupset id's for cohort {} not found.".format(cohort_id))
+                raise endpoints.NotFoundException(
+                    "Google Genomics dataset and readgroupset id's for cohort {} not found."
+                        .format(cohort_id))
+            except MySQLdb.ProgrammingError as e:
+                msg = '{}:\n\tquery: {} {}'\
+                    .format(e, query_str, query_tuple)
+                logger.warn(msg)
+                raise endpoints.BadRequestException("Error retrieving genomics data for cohort. {}".format(msg))
             finally:
                 if cursor: cursor.close()
                 if db and db.open: db.close()
@@ -1367,7 +1380,7 @@ class Cohort_Endpoints_API(remote.Service):
         Takes a sample barcode as a required parameter and returns the Google Genomics dataset id
         and readgroupset id associated with the sample, if any.
         """
-        print >> sys.stderr,'Called '+sys._getframe().f_code.co_name
+        # print >> sys.stderr,'Called '+sys._getframe().f_code.co_name
         cursor = None
         db = None
         sample_barcode = request.get_assigned_value('sample_barcode')
@@ -1402,7 +1415,14 @@ class Cohort_Endpoints_API(remote.Service):
 
         except (IndexError, TypeError), e:
             logger.warn(e)
-            raise endpoints.NotFoundException("Google Genomics dataset and readgroupset id's for sample {} not found.".format(sample_barcode))
+            raise endpoints.NotFoundException(
+                "Google Genomics dataset and readgroupset id's for sample {} not found."
+                    .format(sample_barcode))
+        except MySQLdb.ProgrammingError as e:
+            msg = '{}:\n\tquery: {} {}'\
+                .format(e, query_str, query_tuple)
+            logger.warn(msg)
+            raise endpoints.BadRequestException("Error retrieving genomics data for sample. {}".format(msg))
         finally:
             if cursor: cursor.close()
             if db and db.open: db.close()
