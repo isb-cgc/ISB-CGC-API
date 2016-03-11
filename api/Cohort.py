@@ -1063,7 +1063,8 @@ class Cohort_Endpoints_API(remote.Service):
                 err_msg = construct_parameter_error_message(request, True)
                 raise endpoints.BadRequestException(err_msg)
 
-            patient_query_str = 'SELECT DISTINCT(IF(ParticipantBarcode="", LEFT(SampleBarcode,12), ParticipantBarcode)) AS ParticipantBarcode ' \
+            patient_query_str = 'SELECT DISTINCT(IF(ParticipantBarcode="", LEFT(SampleBarcode,12), ParticipantBarcode)) ' \
+                                'AS ParticipantBarcode ' \
                                 'FROM metadata_samples '
 
             sample_query_str = 'SELECT SampleBarcode ' \
@@ -1076,7 +1077,6 @@ class Cohort_Endpoints_API(remote.Service):
                 sample_query_str += ' WHERE ' + where_clause['query_str']
                 value_tuple = where_clause['value_tuple']
 
-            # patient_query_str += ' GROUP BY ParticipantBarcode'
             sample_query_str += ' GROUP BY SampleBarcode'
 
             patient_barcodes = []
@@ -1096,6 +1096,11 @@ class Cohort_Endpoints_API(remote.Service):
             except (IndexError, TypeError), e:
                 logger.warn(e)
                 raise endpoints.NotFoundException("Error retrieving samples or patients")
+            except MySQLdb.ProgrammingError as e:
+                msg = '{}:\n\tpatient query: {} {}\n\tsample query: {} {}'\
+                    .format(e, patient_query_str, value_tuple, sample_query_str, value_tuple)
+                logger.warn(msg)
+                raise endpoints.BadRequestException("Error retrieving saving cohort. {}".format(msg))
             finally:
                 if patient_cursor: patient_cursor.close()
                 if sample_cursor: sample_cursor.close()
