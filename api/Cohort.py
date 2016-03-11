@@ -809,6 +809,12 @@ class Cohort_Endpoints_API(remote.Service):
             logger.info("Sample details for barcode {} not found. Error: {}".format(sample_barcode, e))
             raise endpoints.NotFoundException(
                 "Sample details for barcode {} not found.".format(sample_barcode))
+        except MySQLdb.ProgrammingError as e:
+            msg = '{}:\n\tbiospecimen query: {} {}\n\tpatient query: {} {}\n\tdata query: {} {}'\
+                .format(e, biospecimen_query_str, query_tuple, patient_query_str, query_tuple,
+                        data_query_str, extra_query_tuple)
+            logger.warn(msg)
+            raise endpoints.BadRequestException("Error retrieving biospecimen, patient, or other data. {}".format(msg))
         finally:
             if biospecimen_cursor: biospecimen_cursor.close()
             if aliquot_cursor: aliquot_cursor.close()
