@@ -301,11 +301,14 @@ class Cohort_Endpoints_API(remote.Service):
                 query_str += ' where ' + '=%s and '.join(key for key in query_dict.keys()) + '=%s'
                 query_tuple = tuple(value for value in query_dict.values())
 
+            filter_query_str = ''
+
             try:
                 db = sql_connection()
                 cursor = db.cursor(MySQLdb.cursors.DictCursor)
                 cursor.execute(query_str, query_tuple)
                 data = []
+
                 for row in cursor.fetchall():
                     filter_query_str = 'SELECT name, value ' \
                                        'FROM cohorts_filters ' \
@@ -337,6 +340,10 @@ class Cohort_Endpoints_API(remote.Service):
             except (IndexError, TypeError) as e:
                 raise endpoints.NotFoundException(
                     "User {}'s cohorts not found. {}: {}".format(user_email, type(e), e))
+            except MySQLdb.ProgrammingError as e:
+                msg = '{}:\n\tcohort query: {}\n\tfilter query: {}'.format(e, query_str, filter_query_str)
+                logger.warn(msg)
+                raise endpoints.BadRequestException("Error retrieving cohorts or filters. {}".format(msg))
             finally:
                 if cursor: cursor.close()
                 if filter_cursor: filter_cursor.close()
