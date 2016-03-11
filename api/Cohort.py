@@ -392,16 +392,14 @@ class Cohort_Endpoints_API(remote.Service):
                 request_finished.send(self)
                 raise endpoints.UnauthorizedException("%s does not have an entry in the user database." % user_email)
 
-            cohort_perms_query = ''
-            cohort_perms_tuple = ()
-            cohort_query = ''
-            cohort_tuple = ()
+            cohort_perms_query = "select count(*) from cohorts_cohort_perms where user_id=%s and cohort_id=%s"
+            cohort_perms_tuple = (user_id, cohort_id)
+            cohort_query = "select count(*) from cohorts_cohort where id=%s and active=%s"
+            cohort_tuple = (cohort_id, unicode('0'))
 
             try:
                 db = sql_connection()
                 cursor = db.cursor(MySQLdb.cursors.DictCursor)
-                cohort_perms_query = "select count(*) from cohorts_cohort_perms where user_id=%s and cohort_id=%s"
-                cohort_perms_tuple = (user_id, cohort_id)
                 cursor.execute(cohort_perms_query, cohort_perms_tuple)
                 result = cursor.fetchone()
                 if int(result['count(*)']) == 0:
@@ -409,8 +407,6 @@ class Cohort_Endpoints_API(remote.Service):
                     request_finished.send(self)
                     raise endpoints.ForbiddenException(error_message)
 
-                cohort_query = "select count(*) from cohorts_cohort where id=%s and active=%s"
-                cohort_tuple = (cohort_id, unicode('0'))
                 cursor.execute(cohort_query, cohort_tuple)
                 result = cursor.fetchone()
                 if int(result['count(*)']) > 0:
@@ -479,6 +475,11 @@ class Cohort_Endpoints_API(remote.Service):
             except (IndexError, TypeError) as e:
                 logger.warn(e)
                 raise endpoints.NotFoundException("Cohort {} not found.".format(cohort_id))
+            except MySQLdb.ProgrammingError as e:
+                msg = '{}:\n\tpatient query: {} {}\n\tsample query: {} {}'\
+                    .format(e, patient_query_str, patient_query_tuple, sample_query_str, sample_query_tuple)
+                logger.warn(msg)
+                raise endpoints.BadRequestException("Error retrieving patients or samples. {}".format(msg))
             finally:
                 if cursor: cursor.close()
                 if db and db.open: db.close()
