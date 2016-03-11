@@ -408,9 +408,14 @@ class Cohort_Endpoints_API(remote.Service):
             except (IndexError, TypeError) as e:
                 logger.warn(e)
                 raise endpoints.NotFoundException("Cohort {} not found.".format(cohort_id))
+            # except MySQLdb.ProgrammingError as e:
+            #     msg = '{}:\n\tcohort query: {}\n\tfilter query: {}'.format(e, query_str, filter_query_str)
+            #     logger.warn(msg)
+            #     raise endpoints.BadRequestException("Error retrieving cohorts or filters. {}".format(msg))
             finally:
                 if cursor: cursor.close()
                 if db and db.open: db.close()
+                request_finished.send(self)
 
             patient_query_str = 'select cohorts_patients.patient_id ' \
                         'from cohorts_patients ' \
