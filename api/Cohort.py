@@ -302,6 +302,7 @@ class Cohort_Endpoints_API(remote.Service):
                 query_tuple = tuple(value for value in query_dict.values())
 
             filter_query_str = ''
+            row = None
 
             try:
                 db = sql_connection()
@@ -341,7 +342,8 @@ class Cohort_Endpoints_API(remote.Service):
                 raise endpoints.NotFoundException(
                     "User {}'s cohorts not found. {}: {}".format(user_email, type(e), e))
             except MySQLdb.ProgrammingError as e:
-                msg = '{}:\n\tcohort query: {}\n\tfilter query: {}'.format(e, query_str, filter_query_str)
+                msg = '{}:\n\tcohort query: {} {}\n\tfilter query: {} {}'\
+                    .format(e, query_str, query_tuple, filter_query_str, str(row))
                 logger.warn(msg)
                 raise endpoints.BadRequestException("Error retrieving cohorts or filters. {}".format(msg))
             finally:
@@ -390,17 +392,26 @@ class Cohort_Endpoints_API(remote.Service):
                 request_finished.send(self)
                 raise endpoints.UnauthorizedException("%s does not have an entry in the user database." % user_email)
 
+            cohort_perms_query = ''
+            cohort_perms_tuple = ()
+            cohort_query = ''
+            cohort_tuple = ()
+
             try:
                 db = sql_connection()
                 cursor = db.cursor(MySQLdb.cursors.DictCursor)
-                cursor.execute("select count(*) from cohorts_cohort_perms where user_id=%s and cohort_id=%s", (user_id, cohort_id))
+                cohort_perms_query = "select count(*) from cohorts_cohort_perms where user_id=%s and cohort_id=%s"
+                cohort_perms_tuple = (user_id, cohort_id)
+                cursor.execute(cohort_perms_query, cohort_perms_tuple)
                 result = cursor.fetchone()
                 if int(result['count(*)']) == 0:
                     error_message = "{} does not have owner or reader permissions on cohort {}.".format(user_email, cohort_id)
                     request_finished.send(self)
                     raise endpoints.ForbiddenException(error_message)
 
-                cursor.execute("select count(*) from cohorts_cohort where id=%s and active=%s", (cohort_id, unicode('0')))
+                cohort_query = "select count(*) from cohorts_cohort where id=%s and active=%s"
+                cohort_tuple = (cohort_id, unicode('0'))
+                cursor.execute(cohort_query, cohort_tuple)
                 result = cursor.fetchone()
                 if int(result['count(*)']) > 0:
                     error_message = "Cohort {} was deleted.".format(cohort_id)
@@ -409,12 +420,12 @@ class Cohort_Endpoints_API(remote.Service):
 
             except (IndexError, TypeError) as e:
                 logger.warn(e)
-                request_finished.send(self)
                 raise endpoints.NotFoundException("Cohort {} not found.".format(cohort_id))
-            # except MySQLdb.ProgrammingError as e:
-            #     msg = '{}:\n\tcohort query: {}\n\tfilter query: {}'.format(e, query_str, filter_query_str)
-            #     logger.warn(msg)
-            #     raise endpoints.BadRequestException("Error retrieving cohorts or filters. {}".format(msg))
+            except MySQLdb.ProgrammingError as e:
+                msg = '{}:\n\tcohort permissions query: {} {}\n\tcohort query: {} {}'\
+                    .format(e, cohort_perms_query, cohort_perms_tuple, cohort_query, cohort_tuple)
+                logger.warn(msg)
+                raise endpoints.BadRequestException("Error retrieving cohorts or cohort permissions. {}".format(msg))
             finally:
                 if cursor: cursor.close()
                 if db and db.open: db.close()
