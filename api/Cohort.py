@@ -1061,6 +1061,7 @@ class Cohort_Endpoints_API(remote.Service):
 
             if are_there_bad_keys(request) or are_there_no_acceptable_keys(request):
                 err_msg = construct_parameter_error_message(request, True)
+                request_finished.send(self)
                 raise endpoints.BadRequestException(err_msg)
 
             patient_query_str = 'SELECT DISTINCT(IF(ParticipantBarcode="", LEFT(SampleBarcode,12), ParticipantBarcode)) ' \
