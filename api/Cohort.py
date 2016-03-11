@@ -609,6 +609,12 @@ class Cohort_Endpoints_API(remote.Service):
         except (IndexError, TypeError), e:
             logger.info("Patient {} not found. Error: {}".format(patient_barcode, e))
             raise endpoints.NotFoundException("Patient {} not found.".format(patient_barcode))
+        except MySQLdb.ProgrammingError as e:
+            msg = '{}:\n\tpatient query: {} {}\n\tsample query: {} {}\n\taliquot query: {} {}'\
+                .format(e, clinical_query_str, query_tuple, sample_query_str, query_tuple,
+                        aliquot_query_str, query_tuple)
+            logger.warn(msg)
+            raise endpoints.BadRequestException("Error retrieving patient, sample, or aliquot data. {}".format(msg))
         finally:
             if clinical_cursor: clinical_cursor.close()
             if sample_cursor: sample_cursor.close()
