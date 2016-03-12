@@ -833,8 +833,8 @@ class Cohort_Endpoints_API(remote.Service):
                       name='cohorts.datafilenamekey_list_from_cohort')
     def datafilenamekey_list_from_cohort(self, request):
         """
-        Takes a cohort id as a required parameter and
-        returns cloud storage paths to files associated with all the samples in that cohort.
+        Takes a cohort id as a required parameter and returns cloud storage paths to files
+        associated with all the samples in that cohort, up to 10,000,000 files.
         Authentication is required. User must have READER or OWNER permissions on the cohort.
         """
         user_email = None
@@ -890,7 +890,8 @@ class Cohort_Endpoints_API(remote.Service):
                 query_str += ' and metadata_data.Pipeline=%s '
                 query_tuple += (pipeline,)
 
-            query_str += ' GROUP BY DataFileNameKey, SecurityProtocol, Repository'
+            query_str += ' GROUP BY DataFileNameKey, SecurityProtocol, Repository '
+            query_str += ' LIMIT 10000000'
 
             try:
                 db = sql_connection()
