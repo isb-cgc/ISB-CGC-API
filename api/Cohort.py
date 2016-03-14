@@ -1139,6 +1139,7 @@ class Cohort_Endpoints_API(remote.Service):
             bcs = BigQueryCohortSupport(project_id, cohort_settings.dataset_id, cohort_settings.table_id)
             bcs.add_cohort_with_sample_barcodes(created_cohort.id, sample_barcodes)
 
+            request_finished.send(self)
             return Cohort(id=str(created_cohort.id),
                           name=cohort_name,
                           last_date_saved=str(datetime.utcnow()),
@@ -1198,10 +1199,11 @@ class Cohort_Endpoints_API(remote.Service):
 
             except (ObjectDoesNotExist, MultipleObjectsReturned), e:
                 logger.warn(e)
-                request_finished.send(self)
                 raise endpoints.NotFoundException(
                     "Either cohort %d does not have an entry in the database "
                     "or you do not have owner or reader permissions on this cohort." % cohort_id)
+            finally:
+                request_finished.send(self)
         else:
             raise endpoints.UnauthorizedException("Unsuccessful authentication.")
 
