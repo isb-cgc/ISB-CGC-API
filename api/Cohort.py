@@ -1050,6 +1050,7 @@ class Cohort_Endpoints_API(remote.Service):
             except (ObjectDoesNotExist, MultipleObjectsReturned), e:
                 logger.warn(e)
                 request_finished.send(self)
+                django.db.connection.close()
                 raise endpoints.NotFoundException("%s does not have an entry in the user database." % user_email)
 
             query_dict = {
@@ -1062,6 +1063,7 @@ class Cohort_Endpoints_API(remote.Service):
             if are_there_bad_keys(request) or are_there_no_acceptable_keys(request):
                 err_msg = construct_parameter_error_message(request, True)
                 request_finished.send(self)
+                django.db.connection.close()
                 raise endpoints.BadRequestException(err_msg)
 
             patient_query_str = 'SELECT DISTINCT(IF(ParticipantBarcode="", LEFT(SampleBarcode,12), ParticipantBarcode)) ' \
@@ -1107,6 +1109,7 @@ class Cohort_Endpoints_API(remote.Service):
                 if sample_cursor: sample_cursor.close()
                 if db and db.open: db.close()
                 request_finished.send(self)
+                django.db.connection.close()
 
             cohort_name = request.get_assigned_value('name')
 
