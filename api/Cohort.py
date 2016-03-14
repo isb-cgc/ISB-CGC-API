@@ -825,22 +825,24 @@ class Cohort_Endpoints_API(remote.Service):
 
 
     GET_RESOURCE = endpoints.ResourceContainer(cohort_id=messages.IntegerField(1, required=True),
-                                               platform=messages.StringField(2),
-                                               pipeline=messages.StringField(3),
-                                               token=messages.StringField(4))
+                                               limit=messages.IntegerField(2),
+                                               platform=messages.StringField(3),
+                                               pipeline=messages.StringField(4),
+                                               token=messages.StringField(5))
     @endpoints.method(GET_RESOURCE, DataFileNameKeyList,
                       path='datafilenamekey_list_from_cohort', http_method='GET',
                       name='cohorts.datafilenamekey_list_from_cohort')
     def datafilenamekey_list_from_cohort(self, request):
         """
         Takes a cohort id as a required parameter and returns cloud storage paths to files
-        associated with all the samples in that cohort, up to 10,000,000 files.
+        associated with all the samples in that cohort, up to a default limit of 10,000 files.
         Authentication is required. User must have READER or OWNER permissions on the cohort.
         """
         user_email = None
         cursor = None
         db = None
 
+        limit = request.get_assigned_value('limit')
         platform = request.get_assigned_value('platform')
         pipeline = request.get_assigned_value('pipeline')
         cohort_id = request.get_assigned_value('cohort_id')
@@ -879,7 +881,8 @@ class Cohort_Endpoints_API(remote.Service):
                 raise endpoints.UnauthorizedException(err_msg)
 
             query_str += 'JOIN cohorts_samples ON metadata_data.SampleBarcode=cohorts_samples.sample_id ' \
-                         'WHERE cohorts_samples.cohort_id=%s '
+                         'WHERE cohorts_samples.cohort_id=%s ' \
+                         'AND DataFileNameKey != "" AND DataFileNameKey is not null '
             query_tuple = (cohort_id,)
 
             if platform:
@@ -891,7 +894,11 @@ class Cohort_Endpoints_API(remote.Service):
                 query_tuple += (pipeline,)
 
             query_str += ' GROUP BY DataFileNameKey, SecurityProtocol, Repository '
-            query_str += ' LIMIT 10000000'
+            if limit is None:
+                query_str += ' LIMIT 10000'
+            else:
+                query_str += ' LIMIT %s'
+                query_tuple += (limit,)
 
             try:
                 db = sql_connection()
