@@ -44,10 +44,10 @@ def sql_connection():
                 db = database['NAME'],
                 user = database['USER'],
                 passwd = database['PASSWORD'],
-                ssl = database['OPTIONS']['ssl'])            
+                ssl = database['OPTIONS']['ssl'])
         except:
             print >> sys.stderr, "Unexpected ERROR in sql_connection(): ", sys.exc_info()[0]
-            #return HttpResponse( traceback.format_exc() ) 
+            #return HttpResponse( traceback.format_exc() )
             raise # if you want to soldier bravely on despite the exception, but comment to stderr
     else:
         # Connecting to localhost
@@ -192,7 +192,7 @@ def applyFilter(field, dict):
 
     return where_clause
 
-def build_where_clause(dict, alt_key_map=False):
+def build_where_clause(filters, alt_key_map=False):
 # this one gets called a lot
 #    if debug: print >> sys.stderr,'Called '+sys._getframe().f_code.co_name
     first = True
@@ -200,7 +200,10 @@ def build_where_clause(dict, alt_key_map=False):
     big_query_str = ''  # todo: make this work for non-string values -- use {}.format
     value_tuple = ()
     key_order = []
-    for key, value in dict.items():
+    for key, value in filters.items():
+        if isinstance(value, dict) and 'values' in value:
+            value = value['values']
+
         if isinstance(value, list) and len(value) == 1:
             value = value[0]
         # Check if we need to map to a different column name for a given key
