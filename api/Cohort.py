@@ -318,8 +318,7 @@ class Cohort_Endpoints_API(remote.Service):
                         'auth_user.email, ' \
                         'cohorts_cohort_comments.content as comments, ' \
                         'cohorts_source.type as source_type, ' \
-                        'cohorts_source.notes as source_notes, ' \
-                        'cohorts_source.parent_id ' \
+                        'cohorts_source.notes as source_notes ' \
                         'from cohorts_cohort_perms ' \
                         'join cohorts_cohort ' \
                         'on cohorts_cohort.id=cohorts_cohort_perms.cohort_id ' \
@@ -332,8 +331,18 @@ class Cohort_Endpoints_API(remote.Service):
 
             query_tuple = ()
             if query_dict:
-                query_str += ' where ' + '=%s and '.join(key for key in query_dict.keys()) + '=%s'
+                query_str += ' where ' + '=%s and '.join(key for key in query_dict.keys()) + '=%s '
                 query_tuple = tuple(value for value in query_dict.values())
+
+            query_str += 'group by  ' \
+            'cohorts_cohort.id,  ' \
+            'cohorts_cohort.name,  ' \
+            'cohorts_cohort.last_date_saved,  ' \
+            'cohorts_cohort_perms.perm,  ' \
+            'auth_user.email,  ' \
+            'comments,  ' \
+            'source_type,  ' \
+            'source_notes '
 
             filter_query_str = ''
             row = None
@@ -367,7 +376,7 @@ class Cohort_Endpoints_API(remote.Service):
                         comments=str(row['comments']),
                         source_type=None if row['source_type'] is None else str(row['source_type']),
                         source_notes=None if row['source_notes'] is None else str(row['source_notes']),
-                        parent_id=None if row['parent_id'] is None else int(row['parent_id']),
+                        # parent_id=None if row['parent_id'] is None else int(row['parent_id']),
                         filters=filter_data
                     ))
 
