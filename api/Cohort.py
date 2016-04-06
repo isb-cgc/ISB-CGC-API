@@ -91,6 +91,7 @@ BUILTIN_ENDPOINTS_PARAMETERS = [
     'userIp'
 ]
 
+MAX_FILTER_VALUE_LENGTH = 496  # max_len of Filter.value is 512, but 507 is too long. 495 is ok.
 
 
 class ReturnJSON(messages.Message):
@@ -229,6 +230,39 @@ def construct_parameter_error_message(request, filter_required):
         err_msg += "Acceptable filters are: {}".format(sorted_acceptable_keys)
 
     return err_msg
+
+
+def get_list_of_split_values_for_filter_model(large_value_list):
+    '''
+    :rtype: list
+    :param large_value_list: protorpc.messages.FieldList
+    :return: list of smaller protorpc.messages.FieldLists
+    '''
+
+    return_list = []
+
+    # if length_of_list is larger than 512 characters,
+    # the Filter model will not be able to be saved
+    # with this as the value field
+    length_of_list = len('"' + '", "'.join(large_value_list) + '"')
+    while length_of_list > MAX_FILTER_VALUE_LENGTH:
+        new_smaller_list = []
+        length_of_smaller_list = len('"' + '", "'.join(new_smaller_list) + '"')
+        while length_of_smaller_list < MAX_FILTER_VALUE_LENGTH:
+            try:
+                new_smaller_list.append(large_value_list.pop())
+            except IndexError:
+                break
+            length_of_smaller_list = len('"' + '", "'.join(new_smaller_list) + '"')
+        large_value_list.append(new_smaller_list.pop())
+        return_list.append(new_smaller_list)
+        length_of_list = len('"' + '", "'.join(large_value_list) + '"')
+
+    if len(large_value_list):
+        return_list.append(large_value_list)
+
+    return return_list
+
 
 Cohort_Endpoints = endpoints.api(name='cohort_api', version='v1', description="Get information about "
                                 "cohorts, patients, and samples. Create and delete cohorts.",
@@ -1138,7 +1172,12 @@ class Cohort_Endpoints_API(remote.Service):
 
             # 5. Create filters applied
             for key, val in query_dict.items():
-                Filters.objects.create(resulting_cohort=created_cohort, name=key, value=val).save()
+                if len('", "'.join(val)) > MAX_FILTER_VALUE_LENGTH:
+                    new_val_list = get_list_of_split_values_for_filter_model(val)
+                    for new_val in new_val_list:
+                        Filters.objects.create(resulting_cohort=created_cohort, name=key, value=new_val).save()
+                else:
+                    Filters.objects.create(resulting_cohort=created_cohort, name=key, value=val).save()
 
             # 6. Store cohort to BigQuery
             project_id = settings.BQ_PROJECT_ID
