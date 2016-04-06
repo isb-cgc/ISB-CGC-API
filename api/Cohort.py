@@ -337,6 +337,10 @@ class Cohort_Endpoints_API(remote.Service):
                         filters=filter_data
                     ))
 
+                if len(data) == 0:
+                    optional_message = " matching cohort id " + str(cohort_id) if cohort_id is not None else ""
+                    raise endpoints.NotFoundException("{} has no active cohorts{}."
+                                                      .format(user_email, optional_message))
                 return CohortsList(items=data, count=len(data))
             except (IndexError, TypeError) as e:
                 raise endpoints.NotFoundException(
