@@ -184,6 +184,159 @@ class GoogleGenomicsList(messages.Message):
     count = messages.IntegerField(2)
 
 
+class IncomingRangesMetadataItem(messages.Message):
+    age_at_initial_pathologic_diagnosis                            = messages.IntegerField(1)
+    age_at_initial_pathologic_diagnosis_lte                        = messages.IntegerField(2)
+    age_at_initial_pathologic_diagnosis_gte                        = messages.IntegerField(3)
+
+    avg_percent_lymphocyte_infiltration                            = messages.FloatField(5)
+    avg_percent_lymphocyte_infiltration_lte                        = messages.FloatField(6)
+    avg_percent_lymphocyte_infiltration_gte                        = messages.FloatField(7)
+
+    avg_percent_monocyte_infiltration                               = messages.FloatField(8)
+    avg_percent_monocyte_infiltration_lte                           = messages.FloatField(9)
+    avg_percent_monocyte_infiltration_gte                           = messages.FloatField(10)
+
+    avg_percent_necrosis                                            = messages.FloatField(11)
+    avg_percent_necrosis_lte                                        = messages.FloatField(12)
+    avg_percent_necrosis_gte                                        = messages.FloatField(13)
+
+    avg_percent_neutrophil_infiltration                             = messages.FloatField(14)
+    avg_percent_neutrophil_infiltration_lte                         = messages.FloatField(15)
+    avg_percent_neutrophil_infiltration_gte                         = messages.FloatField(16)
+
+    avg_percent_normal_cells                                        = messages.FloatField(17)
+    avg_percent_normal_cells_lte                                    = messages.FloatField(18)
+    avg_percent_normal_cells_gte                                    = messages.FloatField(19)
+
+    avg_percent_stromal_cells                                       = messages.FloatField(20)
+    avg_percent_stromal_cells_lte                                   = messages.FloatField(21)
+    avg_percent_stromal_cells_gte                                   = messages.FloatField(22)
+
+    avg_percent_tumor_cells                                         = messages.FloatField(23)
+    avg_percent_tumor_cells_lte                                     = messages.FloatField(24)
+    avg_percent_tumor_cells_gte                                     = messages.FloatField(25)
+
+    avg_percent_tumor_nuclei                                        = messages.FloatField(26)
+    avg_percent_tumor_nuclei_lte                                    = messages.FloatField(27)
+    avg_percent_tumor_nuclei_gte                                    = messages.FloatField(28)
+
+    days_to_birth                                                   = messages.IntegerField(29)
+    days_to_birth_lte                                               = messages.IntegerField(30)
+    days_to_birth_gte                                               = messages.IntegerField(31)
+
+    days_to_collection                                              = messages.IntegerField(32)
+    days_to_collection_lte                                          = messages.IntegerField(33)
+    days_to_collection_gte                                          = messages.IntegerField(34)
+
+    days_to_death                                                   = messages.IntegerField(35)
+    days_to_death_lte                                               = messages.IntegerField(36)
+    days_to_death_gte                                               = messages.IntegerField(37)
+
+    days_to_initial_pathologic_diagnosis                            = messages.IntegerField(38)
+    days_to_initial_pathologic_diagnosis_lte                        = messages.IntegerField(39)
+    days_to_initial_pathologic_diagnosis_gte                        = messages.IntegerField(40)
+
+    days_to_last_followup                                           = messages.IntegerField(41)
+    days_to_last_followup_lte                                       = messages.IntegerField(42)
+    days_to_last_followup_gte                                       = messages.IntegerField(43)
+
+    days_to_submitted_specimen_dx                                   = messages.IntegerField(44)
+    days_to_submitted_specimen_dx_lte                               = messages.IntegerField(45)
+    days_to_submitted_specimen_dx_gte                               = messages.IntegerField(46)
+
+    height                                                          = messages.IntegerField(47)
+    height_lte                                                      = messages.IntegerField(48)
+    height_gte                                                      = messages.IntegerField(49)
+
+    max_percent_lymphocyte_infiltration                             = messages.IntegerField(50)
+    max_percent_lymphocyte_infiltration_lte                         = messages.IntegerField(51)
+    max_percent_lymphocyte_infiltration_gte                         = messages.IntegerField(52)
+
+    max_percent_monocyte_infiltration                               = messages.IntegerField(53)
+    max_percent_monocyte_infiltration_lte                           = messages.IntegerField(54)
+    max_percent_monocyte_infiltration_gte                           = messages.IntegerField(55)
+
+    max_percent_necrosis                                            = messages.IntegerField(56)
+    max_percent_necrosis_lte                                        = messages.IntegerField(57)
+    max_percent_necrosis_gte                                        = messages.IntegerField(58)
+
+    max_percent_neutrophil_infiltration                             = messages.IntegerField(59)
+    max_percent_neutrophil_infiltration_lte                         = messages.IntegerField(60)
+    max_percent_neutrophil_infiltration_gte                         = messages.IntegerField(61)
+
+    max_percent_normal_cells                                        = messages.IntegerField(62)
+    max_percent_normal_cells_lte                                    = messages.IntegerField(63)
+    max_percent_normal_cells_gte                                    = messages.IntegerField(64)
+
+    max_percent_stromal_cells                                       = messages.IntegerField(65)
+    max_percent_stromal_cells_lte                                   = messages.IntegerField(66)
+    max_percent_stromal_cells_gte                                   = messages.IntegerField(67)
+
+    max_percent_tumor_cells                                         = messages.IntegerField(68)
+    max_percent_tumor_cells_lte                                     = messages.IntegerField(69)
+    max_percent_tumor_cells_gte                                     = messages.IntegerField(70)
+
+    max_percent_tumor_nuclei                                        = messages.IntegerField(71)
+    max_percent_tumor_nuclei_lte                                    = messages.IntegerField(72)
+    max_percent_tumor_nuclei_gte                                    = messages.IntegerField(73)
+
+    min_percent_lymphocyte_infiltration                             = messages.IntegerField(74)
+    min_percent_lymphocyte_infiltration_lte                         = messages.IntegerField(75)
+    min_percent_lymphocyte_infiltration_gte                         = messages.IntegerField(76)
+
+    min_percent_monocyte_infiltration                               = messages.IntegerField(77)
+    min_percent_monocyte_infiltration_lte                           = messages.IntegerField(78)
+    min_percent_monocyte_infiltration_gte                           = messages.IntegerField(79)
+
+    min_percent_necrosis                                            = messages.IntegerField(80)
+    min_percent_necrosis_lte                                        = messages.IntegerField(81)
+    min_percent_necrosis_gte                                        = messages.IntegerField(82)
+
+    min_percent_neutrophil_infiltration                             = messages.IntegerField(83)
+    min_percent_neutrophil_infiltration_lte                         = messages.IntegerField(84)
+    min_percent_neutrophil_infiltration_gte                         = messages.IntegerField(85)
+
+    min_percent_normal_cells                                        = messages.IntegerField(86)
+    min_percent_normal_cells_lte                                    = messages.IntegerField(87)
+    min_percent_normal_cells_gte                                    = messages.IntegerField(88)
+
+    min_percent_stromal_cells                                       = messages.IntegerField(89)
+    min_percent_stromal_cells_lte                                   = messages.IntegerField(90)
+    min_percent_stromal_cells_gte                                   = messages.IntegerField(91)
+
+    min_percent_tumor_cells                                         = messages.IntegerField(92)
+    min_percent_tumor_cells_lte                                     = messages.IntegerField(93)
+    min_percent_tumor_cells_gte                                     = messages.IntegerField(94)
+
+    min_percent_tumor_nuclei                                        = messages.IntegerField(95)
+    min_percent_tumor_nuclei_lte                                    = messages.IntegerField(96)
+    min_percent_tumor_nuclei_gte                                    = messages.IntegerField(97)
+
+    number_of_lymphnodes_examined                                   = messages.IntegerField(98)
+    number_of_lymphnodes_examined_lte                               = messages.IntegerField(99)
+    number_of_lymphnodes_examined_gte                               = messages.IntegerField(100)
+
+    number_of_lymphnodes_positive_by_he                             = messages.IntegerField(101)
+    number_of_lymphnodes_positive_by_he_lte                         = messages.IntegerField(102)
+    number_of_lymphnodes_positive_by_he_gte                         = messages.IntegerField(103)
+
+    psa_value                                                       = messages.FloatField(104)
+    psa_value_lte                                                   = messages.FloatField(105)
+    psa_value_gte                                                   = messages.FloatField(106)
+
+    weight                                                          = messages.IntegerField(107)
+    weight_lte                                                      = messages.IntegerField(108)
+    weight_gte                                                      = messages.IntegerField(109)
+
+    year_of_initial_pathologic_diagnosis                            = messages.IntegerField(110)
+    year_of_initial_pathologic_diagnosis_lte                        = messages.IntegerField(111)
+    year_of_initial_pathologic_diagnosis_gte                        = messages.IntegerField(112)
+
+    # def describe_field(self, age_at_initial_pathologic_diagnosis):
+    #     pass
+
+
 def are_there_bad_keys(request):
     '''
     Checks for unrecognized fields in an endpoint request
@@ -1272,7 +1425,7 @@ class Cohort_Endpoints_API(remote.Service):
 
     POST_RESOURCE = endpoints.ResourceContainer(IncomingMetadataItem)
     @endpoints.method(POST_RESOURCE, CohortPatientsSamplesList,
-                      path='preview_cohort', http_method='POST', name='cohorts.preview')
+                      path='preview_cohort', http_method='POST', name='cohorts.preview_cohort')
     def preview_cohort(self, request):
         """
         Takes a JSON object of filters in the request body and returns a "preview" of the cohort that would
@@ -1341,9 +1494,119 @@ class Cohort_Endpoints_API(remote.Service):
             if db and db.open: db.close()
 
         return CohortPatientsSamplesList(patients=patient_barcodes,
-                                          patient_count=len(patient_barcodes),
-                                          samples=sample_barcodes,
-                                          sample_count=len(sample_barcodes))
+                                         patient_count=len(patient_barcodes),
+                                         samples=sample_barcodes,
+                                         sample_count=len(sample_barcodes))
+
+
+    POST_RESOURCE = endpoints.ResourceContainer(IncomingRangesMetadataItem)
+    @endpoints.method(POST_RESOURCE, CohortPatientsSamplesList,
+                      path='test_preview_cohort', http_method='POST', name='cohorts.test_preview_cohort')
+    def test_preview_cohort(self, request):
+        """
+        Takes a JSON object of filters in the request body and returns a "preview" of the cohort that would
+        result from passing a similar request to the cohort **save** endpoint.  This preview consists of
+        two lists: the lists of participant (aka patient) barcodes, and the list of sample barcodes.
+        Authentication is not required.
+        """
+        # print >> sys.stderr,'Called '+sys._getframe().f_code.co_name
+        patient_cursor = None
+        sample_cursor = None
+        db = None
+
+        query_dict = {
+            k.name: request.get_assigned_value(k.name)
+            for k in request.all_fields()
+            if request.get_assigned_value(k.name)
+            and not k.name.endswith('_gte')
+            and not k.name.endswith('_lte')
+        }
+
+        gte_query_dict = {
+            k.name: request.get_assigned_value(k.name)
+            for k in request.all_fields()
+            if request.get_assigned_value(k.name)
+            and k.name.endswith('_gte')
+        }
+
+        lte_query_dict = {
+            k.name: request.get_assigned_value(k.name)
+            for k in request.all_fields()
+            if request.get_assigned_value(k.name)
+            and k.name.endswith('_lte')
+        }
+
+        if are_there_bad_keys(request) or are_there_no_acceptable_keys(request):
+            err_msg = construct_parameter_error_message(request, True)
+            raise endpoints.BadRequestException(err_msg)
+
+        patient_query_str = 'SELECT DISTINCT(IF(ParticipantBarcode="", LEFT(SampleBarcode,12), ParticipantBarcode)) ' \
+                            'AS ParticipantBarcode ' \
+                            'FROM metadata_samples ' \
+                            'WHERE '
+
+        sample_query_str = 'SELECT SampleBarcode ' \
+                           'FROM metadata_samples ' \
+                           'WHERE '
+
+        value_tuple = ()
+
+        if len(query_dict) > 0:
+            patient_query_str += '=%s and '.join(query_dict.keys()) + '=%s '
+            sample_query_str += '=%s and '.join(query_dict.keys()) + '=%s '
+            value_tuple += tuple(query_dict.values())
+
+        if len(gte_query_dict) > 0:
+            patient_query_str += ' AND ' if not patient_query_str.endswith('WHERE ') else ''
+            sample_query_str += ' AND ' if not sample_query_str.endswith('WHERE ') else ''
+            patient_query_str += '>=%s and '.join([k.replace('_gte', '') for k in gte_query_dict.keys()]) + '>=%s '
+            sample_query_str += '>=%s and '.join([k.replace('_gte', '') for k in gte_query_dict.keys()]) + '>=%s '
+            value_tuple += tuple(gte_query_dict.values())
+
+        if len(lte_query_dict) > 0:
+            patient_query_str += ' AND ' if not patient_query_str.endswith('WHERE ') else ''
+            sample_query_str += ' AND ' if not sample_query_str.endswith('WHERE ') else ''
+            patient_query_str += '<=%s and '.join([k.replace('_lte', '') for k in lte_query_dict.keys()]) + '<=%s '
+            sample_query_str += '<=%s and '.join([k.replace('_lte', '') for k in lte_query_dict.keys()]) + '<=%s '
+            value_tuple += tuple(lte_query_dict.values())
+
+        sample_query_str += ' GROUP BY SampleBarcode'
+
+        print patient_query_str
+        print sample_query_str
+
+        patient_barcodes = []
+        sample_barcodes = []
+
+        try:
+            db = sql_connection()
+            patient_cursor = db.cursor(MySQLdb.cursors.DictCursor)
+            patient_cursor.execute(patient_query_str, value_tuple)
+            for row in patient_cursor.fetchall():
+                patient_barcodes.append(row['ParticipantBarcode'])
+
+            sample_cursor = db.cursor(MySQLdb.cursors.DictCursor)
+            sample_cursor.execute(sample_query_str, value_tuple)
+            for row in sample_cursor.fetchall():
+                sample_barcodes.append(row['SampleBarcode'])
+
+        except (IndexError, TypeError), e:
+            logger.warn(e)
+            raise endpoints.NotFoundException("Error retrieving samples or patients: {}".format(e))
+        except MySQLdb.ProgrammingError as e:
+            msg = '{}:\n\tpatient query: {} {}\n\tsample query: {} {}'\
+                .format(e, patient_query_str, value_tuple, sample_query_str, value_tuple)
+            logger.warn(msg)
+            raise endpoints.BadRequestException("Error previewing cohort. {}".format(msg))
+        finally:
+            if patient_cursor: patient_cursor.close()
+            if sample_cursor: sample_cursor.close()
+            if db and db.open: db.close()
+
+        return CohortPatientsSamplesList(patients=patient_barcodes,
+                                         patient_count=len(patient_barcodes),
+                                         samples=sample_barcodes,
+                                         sample_count=len(sample_barcodes))
 
 
     GET_RESOURCE = endpoints.ResourceContainer(cohort_id=messages.IntegerField(1, required=True),
