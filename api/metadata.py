@@ -830,6 +830,10 @@ class IncomingPlatformSelection(messages.Message):
     Mixed_DNASeq_curated                = messages.StringField(29)
     RocheGSFLX_DNASeq                   = messages.StringField(30)
 
+class IncomingMetadataCount(messages.Message):
+    filters=messages.StringField(1)
+    cohort_id=messages.IntegerField(2)
+    token=messages.StringField(3)
 
 def get_current_user(request):
     user_email = None
@@ -1726,10 +1730,7 @@ class Meta_Endpoints_API_v2(remote.Service):
             if db: db.close()
             request_finished.send(self)
 
-    POST_RESOURCE = endpoints.ResourceContainer(
-                                               filters=messages.StringField(1),
-                                               token=messages.StringField(3),
-                                               cohort_id=messages.IntegerField(2))
+    POST_RESOURCE = endpoints.ResourceContainer(IncomingMetadataCount)
     @endpoints.method(POST_RESOURCE, MetadataCountsItem,
                           path='metadata_counts', http_method='POST',
                       name='meta.metadata_counts')
