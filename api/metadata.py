@@ -1748,6 +1748,7 @@ class Meta_Endpoints_API_v2(remote.Service):
         if request.__getattribute__('filters') is not None:
             try:
                 tmp = json.loads(request.filters)
+                print tmp
                 for filter in tmp:
                     key = filter['key']
                     if key not in filters:
