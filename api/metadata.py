@@ -1743,7 +1743,7 @@ class Meta_Endpoints_API_v2(remote.Service):
         sample_ids = None
         study_ids = ()
         cohort_id = None
-        user = get_current_user(request)
+        user = get_current_user(request.filters)
         print request
         if request.__getattribute__('filters') is not None:
             try:
