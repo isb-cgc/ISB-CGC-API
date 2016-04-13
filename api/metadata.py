@@ -1745,11 +1745,10 @@ class Meta_Endpoints_API_v2(remote.Service):
         study_ids = ()
         cohort_id = None
         user = get_current_user(request)
-        print >> sys.stderr, request
+
         if request.__getattribute__('filters') is not None:
             try:
                 tmp = json.loads(request.filters)
-                print tmp
                 for filter in tmp:
                     key = filter['key']
                     if key not in filters:
