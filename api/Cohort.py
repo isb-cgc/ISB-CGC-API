@@ -776,8 +776,8 @@ class Cohort_Endpoints_API(remote.Service):
 
         clinical_query_str = 'select * ' \
                              'from metadata_clinical ' \
-                             'where ParticipantBarcode=%s' \
- \
+                             'where ParticipantBarcode=%s'
+
         query_tuple = (str(patient_barcode),)
 
         sample_query_str = 'select SampleBarcode ' \
