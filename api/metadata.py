@@ -1726,11 +1726,11 @@ class Meta_Endpoints_API_v2(remote.Service):
             if db: db.close()
             request_finished.send(self)
 
-    GET_RESOURCE = endpoints.ResourceContainer(
+    POST_RESOURCE = endpoints.ResourceContainer(
                                                filters=messages.StringField(1),
                                                token=messages.StringField(3),
                                                cohort_id=messages.IntegerField(2))
-    @endpoints.method(GET_RESOURCE, MetadataCountsItem,
+    @endpoints.method(POST_RESOURCE, MetadataCountsItem,
                           path='metadata_counts', http_method='POST',
                       name='meta.metadata_counts')
     def metadata_counts(self, request):
@@ -1744,7 +1744,7 @@ class Meta_Endpoints_API_v2(remote.Service):
         study_ids = ()
         cohort_id = None
         user = get_current_user(request)
-        print request.filters
+        print >> sys.stderr, request.items()
         if request.__getattribute__('filters') is not None:
             try:
                 tmp = json.loads(request.filters)
