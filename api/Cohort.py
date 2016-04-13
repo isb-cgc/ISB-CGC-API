@@ -399,9 +399,6 @@ class MetadataRangesItem(messages.Message):
     year_of_initial_pathologic_diagnosis_lte = messages.IntegerField(171)
     year_of_initial_pathologic_diagnosis_gte = messages.IntegerField(172)
 
-    # def describe_field(self, age_at_initial_pathologic_diagnosis):
-    #     pass
-
 
 def are_there_bad_keys(request):
     '''
