@@ -1385,6 +1385,11 @@ class Cohort_Endpoints_API(remote.Service):
                 request_finished.send(self)
                 raise endpoints.NotFoundException("%s does not have an entry in the user database." % user_email)
 
+            if are_there_bad_keys(request) or are_there_no_acceptable_keys(request):
+                err_msg = construct_parameter_error_message(request, True)
+                request_finished.send(self)
+                raise endpoints.BadRequestException(err_msg)
+
             query_dict = {
                 k.name: request.get_assigned_value(k.name)
                 for k in request.all_fields()
@@ -1402,11 +1407,6 @@ class Cohort_Endpoints_API(remote.Service):
                 for k in request.all_fields()
                 if request.get_assigned_value(k.name) and k.name.endswith('_lte')
                 }
-
-            if are_there_bad_keys(request) or are_there_no_acceptable_keys(request):
-                err_msg = construct_parameter_error_message(request, True)
-                request_finished.send(self)
-                raise endpoints.BadRequestException(err_msg)
 
             patient_query_str = 'SELECT DISTINCT(IF(ParticipantBarcode="", LEFT(SampleBarcode,12), ParticipantBarcode)) ' \
                                 'AS ParticipantBarcode ' \
@@ -1590,6 +1590,10 @@ class Cohort_Endpoints_API(remote.Service):
         sample_cursor = None
         db = None
 
+        if are_there_bad_keys(request) or are_there_no_acceptable_keys(request):
+            err_msg = construct_parameter_error_message(request, True)
+            raise endpoints.BadRequestException(err_msg)
+
         query_dict = {
             k.name: request.get_assigned_value(k.name)
             for k in request.all_fields()
@@ -1607,10 +1611,6 @@ class Cohort_Endpoints_API(remote.Service):
             for k in request.all_fields()
             if request.get_assigned_value(k.name) and k.name.endswith('_lte')
             }
-
-        if are_there_bad_keys(request) or are_there_no_acceptable_keys(request):
-            err_msg = construct_parameter_error_message(request, True)
-            raise endpoints.BadRequestException(err_msg)
 
         patient_query_str = 'SELECT DISTINCT(IF(ParticipantBarcode="", LEFT(SampleBarcode,12), ParticipantBarcode)) ' \
                             'AS ParticipantBarcode ' \
