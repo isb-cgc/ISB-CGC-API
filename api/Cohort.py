@@ -1397,13 +1397,13 @@ class Cohort_Endpoints_API(remote.Service):
                 }
 
             gte_query_dict = {
-                k.name: request.get_assigned_value(k.name)
+                k.name.replace('_gte', ''): request.get_assigned_value(k.name)
                 for k in request.all_fields()
                 if request.get_assigned_value(k.name) and k.name.endswith('_gte')
                 }
 
             lte_query_dict = {
-                k.name: request.get_assigned_value(k.name)
+                k.name.replace('_lte', ''): request.get_assigned_value(k.name)
                 for k in request.all_fields()
                 if request.get_assigned_value(k.name) and k.name.endswith('_lte')
                 }
@@ -1420,23 +1420,23 @@ class Cohort_Endpoints_API(remote.Service):
 
             for key, value_list in query_dict.iteritems():
                 patient_query_str += ' AND ' if not patient_query_str.endswith('WHERE ') else ''
-                patient_query_str += ' ' + key + ' IN ({}) '.format(', '.join(['%s' for v in value_list]))
+                patient_query_str += ' ' + key + ' IN ({}) '.format(', '.join(['%s']*len(value_list)))
                 sample_query_str += ' AND ' if not sample_query_str.endswith('WHERE ') else ''
-                sample_query_str += ' ' + key + ' IN ({}) '.format(', '.join(['%s' for v in value_list]))
+                sample_query_str += ' ' + key + ' IN ({}) '.format(', '.join(['%s']*len(value_list)))
                 value_tuple += tuple(value_list)
 
             for key, value in gte_query_dict.iteritems():
                 patient_query_str += ' AND ' if not patient_query_str.endswith('WHERE ') else ''
-                patient_query_str += ' ' + key.replace('_gte', '') + ' >=%s '
+                patient_query_str += ' {} >=%s '.format(key)
                 sample_query_str += ' AND ' if not sample_query_str.endswith('WHERE ') else ''
-                sample_query_str += ' ' + key.replace('_gte', '') + ' >=%s '
+                sample_query_str += ' {} >=%s '.format(key)
                 value_tuple += (value,)
 
             for key, value in lte_query_dict.iteritems():
                 patient_query_str += ' AND ' if not patient_query_str.endswith('WHERE ') else ''
-                patient_query_str += ' ' + key.replace('_lte', '') + ' <=%s '
+                patient_query_str += ' {} <=%s '.format(key)
                 sample_query_str += ' AND ' if not sample_query_str.endswith('WHERE ') else ''
-                sample_query_str += ' ' + key.replace('_lte', '') + ' <=%s '
+                sample_query_str += ' {} <=%s '.format(key)
                 value_tuple += (value,)
 
             sample_query_str += ' GROUP BY SampleBarcode'
@@ -1602,13 +1602,13 @@ class Cohort_Endpoints_API(remote.Service):
             }
 
         gte_query_dict = {
-            k.name: request.get_assigned_value(k.name)
+            k.name.replace('_gte', ''): request.get_assigned_value(k.name)
             for k in request.all_fields()
             if request.get_assigned_value(k.name) and k.name.endswith('_gte')
             }
 
         lte_query_dict = {
-            k.name: request.get_assigned_value(k.name)
+            k.name.replace('_lte', ''): request.get_assigned_value(k.name)
             for k in request.all_fields()
             if request.get_assigned_value(k.name) and k.name.endswith('_lte')
             }
@@ -1626,23 +1626,23 @@ class Cohort_Endpoints_API(remote.Service):
 
         for key, value_list in query_dict.iteritems():
             patient_query_str += ' AND ' if not patient_query_str.endswith('WHERE ') else ''
-            patient_query_str += ' ' + key + ' IN ({}) '.format(', '.join(['%s' for v in value_list]))
+            patient_query_str += ' ' + key + ' IN ({}) '.format(', '.join(['%s']*len(value_list)))
             sample_query_str += ' AND ' if not sample_query_str.endswith('WHERE ') else ''
-            sample_query_str += ' ' + key + ' IN ({}) '.format(', '.join(['%s' for v in value_list]))
+            sample_query_str += ' ' + key + ' IN ({}) '.format(', '.join(['%s']*len(value_list)))
             value_tuple += tuple(value_list)
 
         for key, value in gte_query_dict.iteritems():
             patient_query_str += ' AND ' if not patient_query_str.endswith('WHERE ') else ''
-            patient_query_str += ' ' + key.replace('_gte', '') + ' >=%s '
+            patient_query_str += ' {} >=%s '.format(key)
             sample_query_str += ' AND ' if not sample_query_str.endswith('WHERE ') else ''
-            sample_query_str += ' ' + key.replace('_gte', '') + ' >=%s '
+            sample_query_str += ' {} >=%s '.format(key)
             value_tuple += (value,)
 
         for key, value in lte_query_dict.iteritems():
             patient_query_str += ' AND ' if not patient_query_str.endswith('WHERE ') else ''
-            patient_query_str += ' ' + key.replace('_lte', '') + ' <=%s '
+            patient_query_str += ' {} <=%s '.format(key)
             sample_query_str += ' AND ' if not sample_query_str.endswith('WHERE ') else ''
-            sample_query_str += ' ' + key.replace('_lte', '') + ' <=%s '
+            sample_query_str += ' {} <=%s '.format(key)
             value_tuple += (value,)
 
         sample_query_str += ' GROUP BY SampleBarcode'
