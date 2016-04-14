@@ -585,6 +585,8 @@ class Cohort_Endpoints_API(remote.Service):
                             value=str(filter_row['value'])
                         ))
 
+                    # getting the parent_id is a separate query since a single cohort
+                    # may have multiple parent cohorts
                     parent_id_query_str = 'SELECT parent_id ' \
                                           'FROM cohorts_source ' \
                                           'WHERE cohort_id=%s'
