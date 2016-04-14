@@ -1643,9 +1643,6 @@ class Cohort_Endpoints_API(remote.Service):
 
         sample_query_str += ' GROUP BY SampleBarcode'
 
-        print sample_query_str
-        print value_tuple
-
         patient_barcodes = []
         sample_barcodes = []
 
