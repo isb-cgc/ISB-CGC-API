@@ -108,7 +108,7 @@ class Cohort(messages.Message):
     comments = messages.StringField(6)
     source_type = messages.StringField(7)
     source_notes = messages.StringField(8)
-    parent_id = messages.IntegerField(9)
+    parent_id = messages.IntegerField(9, repeated=True)
     filters = messages.MessageField(FilterDetails, 10, repeated=True)
     num_patients = messages.StringField(11)
     num_samples = messages.StringField(12)
@@ -500,6 +500,7 @@ class Cohort_Endpoints_API(remote.Service):
         user_email = None
         cursor = None
         filter_cursor = None
+        parent_cursor = None
         db = None
 
         if endpoints.get_current_user() is not None:
@@ -561,6 +562,7 @@ class Cohort_Endpoints_API(remote.Service):
                          'source_notes '
 
             filter_query_str = ''
+            parent_id_query_str = ''
             row = None
 
             try:
@@ -583,6 +585,17 @@ class Cohort_Endpoints_API(remote.Service):
                             value=str(filter_row['value'])
                         ))
 
+                    parent_id_query_str = 'SELECT parent_id ' \
+                                          'FROM cohorts_source ' \
+                                          'WHERE cohort_id=%s'
+
+                    parent_cursor = db.cursor(MySQLdb.cursors.DictCursor)
+                    parent_cursor.execute(parent_id_query_str, (str(row['id']),))
+                    parent_id_data = []
+                    for parent_row in parent_cursor.fetchall():
+                        if row['parent_id'] is not None:
+                            parent_id_data.append(int(parent_row['parent_id']))
+
                     data.append(Cohort(
                         id=str(row['id']),
                         name=str(row['name']),
@@ -592,7 +605,7 @@ class Cohort_Endpoints_API(remote.Service):
                         comments=str(row['comments']),
                         source_type=None if row['source_type'] is None else str(row['source_type']),
                         source_notes=None if row['source_notes'] is None else str(row['source_notes']),
-                        # parent_id=None if row['parent_id'] is None else int(row['parent_id']),
+                        parent_id=parent_id_data,
                         filters=filter_data
                     ))
 
@@ -605,13 +618,14 @@ class Cohort_Endpoints_API(remote.Service):
                 raise endpoints.NotFoundException(
                     "User {}'s cohorts not found. {}: {}".format(user_email, type(e), e))
             except MySQLdb.ProgrammingError as e:
-                msg = '{}:\n\tcohort query: {} {}\n\tfilter query: {} {}' \
-                    .format(e, query_str, query_tuple, filter_query_str, str(row))
+                msg = '{}:\n\tcohort query: {} {}\n\tfilter query: {} {}\n\tparent id query: {} {}' \
+                    .format(e, query_str, query_tuple, filter_query_str, str(row['id']), parent_id_query_str, str(row['id']))
                 logger.warn(msg)
                 raise endpoints.BadRequestException("Error retrieving cohorts or filters. {}".format(msg))
             finally:
                 if cursor: cursor.close()
                 if filter_cursor: filter_cursor.close()
+                if parent_cursor: parent_cursor.close()
                 if db and db.open: db.close()
                 request_finished.send(self)
         else:
