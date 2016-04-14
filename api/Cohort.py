@@ -1418,12 +1418,12 @@ class Cohort_Endpoints_API(remote.Service):
                                'WHERE '
             value_tuple = ()
 
-            for key, value in query_dict.iteritems():
+            for key, value_list in query_dict.iteritems():
                 patient_query_str += ' AND ' if not patient_query_str.endswith('WHERE ') else ''
-                patient_query_str += ' ' + key + ' IN (%s) '
+                patient_query_str += ' ' + key + ' IN ({}) '.format(', '.join(['%s' for v in value_list]))
                 sample_query_str += ' AND ' if not sample_query_str.endswith('WHERE ') else ''
-                sample_query_str += ' ' + key + ' IN (%s) '
-                value_tuple += (value,)
+                sample_query_str += ' ' + key + ' IN ({}) '.format(', '.join(['%s' for v in value_list]))
+                value_tuple += tuple(value_list)
 
             for key, value in gte_query_dict.iteritems():
                 patient_query_str += ' AND ' if not patient_query_str.endswith('WHERE ') else ''
@@ -1624,12 +1624,12 @@ class Cohort_Endpoints_API(remote.Service):
 
         value_tuple = ()
 
-        for key, value in query_dict.iteritems():
+        for key, value_list in query_dict.iteritems():
             patient_query_str += ' AND ' if not patient_query_str.endswith('WHERE ') else ''
-            patient_query_str += ' ' + key + ' IN (%s) '
+            patient_query_str += ' ' + key + ' IN ({}) '.format(', '.join(['%s' for v in value_list]))
             sample_query_str += ' AND ' if not sample_query_str.endswith('WHERE ') else ''
-            sample_query_str += ' ' + key + ' IN (%s) '
-            value_tuple += (value,)
+            sample_query_str += ' ' + key + ' IN ({}) '.format(', '.join(['%s' for v in value_list]))
+            value_tuple += tuple(value_list)
 
         for key, value in gte_query_dict.iteritems():
             patient_query_str += ' AND ' if not patient_query_str.endswith('WHERE ') else ''
