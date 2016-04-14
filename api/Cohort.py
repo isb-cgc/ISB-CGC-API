@@ -1419,10 +1419,9 @@ class Cohort_Endpoints_API(remote.Service):
             value_tuple = ()
 
             if len(query_dict) > 0:
-                where_clause = build_where_clause(query_dict)
-                patient_query_str += where_clause['query_str']
-                sample_query_str += where_clause['query_str']
-                value_tuple = where_clause['value_tuple']
+                patient_query_str += ' IN (%s) and '.join(query_dict.keys()) + ' IN (%s) '
+                sample_query_str += ' IN (%s) and '.join(query_dict.keys()) + ' IN (%s) '
+                value_tuple += tuple([', '.join([str(v) for v in value]) for value in query_dict.values()])
 
             if len(gte_query_dict) > 0:
                 patient_query_str += ' AND ' if not patient_query_str.endswith('WHERE ') else ''
@@ -1624,10 +1623,9 @@ class Cohort_Endpoints_API(remote.Service):
         value_tuple = ()
 
         if len(query_dict) > 0:
-            where_clause = build_where_clause(query_dict)
-            patient_query_str += where_clause['query_str']
-            sample_query_str += where_clause['query_str']
-            value_tuple = where_clause['value_tuple']
+            patient_query_str += ' IN (%s) and '.join(query_dict.keys()) + ' IN (%s) '
+            sample_query_str += ' IN (%s) and '.join(query_dict.keys()) + ' IN (%s) '
+            value_tuple += tuple([', '.join([str(v) for v in value]) for value in query_dict.values()])
 
         if len(gte_query_dict) > 0:
             patient_query_str += ' AND ' if not patient_query_str.endswith('WHERE ') else ''
@@ -1644,6 +1642,9 @@ class Cohort_Endpoints_API(remote.Service):
             value_tuple += tuple(lte_query_dict.values())
 
         sample_query_str += ' GROUP BY SampleBarcode'
+
+        print sample_query_str
+        print value_tuple
 
         patient_barcodes = []
         sample_barcodes = []
