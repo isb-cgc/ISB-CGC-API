@@ -37,6 +37,7 @@ logger = logging.getLogger(__name__)
 
 INSTALLED_APP_CLIENT_ID = settings.INSTALLED_APP_CLIENT_ID
 CONTROLLED_ACL_GOOGLE_GROUP = settings.ACL_GOOGLE_GROUP
+BASE_URL = settings.BASE_URL
 
 DEFAULT_COHORT_NAME = 'Untitled Cohort'
 
@@ -621,7 +622,8 @@ class Cohort_Endpoints_API(remote.Service):
                     "User {}'s cohorts not found. {}: {}".format(user_email, type(e), e))
             except MySQLdb.ProgrammingError as e:
                 msg = '{}:\n\tcohort query: {} {}\n\tfilter query: {} {}\n\tparent id query: {} {}' \
-                    .format(e, query_str, query_tuple, filter_query_str, str(row['id']), parent_id_query_str, str(row['id']))
+                    .format(e, query_str, query_tuple, filter_query_str, str(row['id']), parent_id_query_str,
+                            str(row['id']))
                 logger.warn(msg)
                 raise endpoints.BadRequestException("Error retrieving cohorts or filters. {}".format(msg))
             finally:
@@ -631,7 +633,9 @@ class Cohort_Endpoints_API(remote.Service):
                 if db and db.open: db.close()
                 request_finished.send(self)
         else:
-            raise endpoints.UnauthorizedException("Authentication failed.")
+            raise endpoints.UnauthorizedException(
+                "Authentication failed. Try signing in to {} to register with the web application."
+                    .format(BASE_URL))
 
     GET_RESOURCE = endpoints.ResourceContainer(cohort_id=messages.IntegerField(1, required=True),
                                                token=messages.StringField(2))
@@ -669,7 +673,9 @@ class Cohort_Endpoints_API(remote.Service):
             except (ObjectDoesNotExist, MultipleObjectsReturned), e:
                 logger.warn(e)
                 request_finished.send(self)
-                raise endpoints.UnauthorizedException("%s does not have an entry in the user database." % user_email)
+                raise endpoints.UnauthorizedException(
+                    "Authentication failed. Try signing in to {} to register with the web application."
+                    .format(BASE_URL))
 
             cohort_perms_query = "select count(*) from cohorts_cohort_perms where user_id=%s and cohort_id=%s"
             cohort_perms_tuple = (user_id, cohort_id)
@@ -766,7 +772,9 @@ class Cohort_Endpoints_API(remote.Service):
                 request_finished.send(self)
 
         else:
-            raise endpoints.UnauthorizedException("Authentication failed.")
+            raise endpoints.UnauthorizedException(
+                "Authentication failed. Try signing in to {} to register with the web application."
+                    .format(BASE_URL))
 
     GET_RESOURCE = endpoints.ResourceContainer(patient_barcode=messages.StringField(1, required=True))
 
@@ -1283,7 +1291,9 @@ class Cohort_Endpoints_API(remote.Service):
                 request_finished.send(self)
 
         else:
-            raise endpoints.UnauthorizedException("Authentication failed.")
+            raise endpoints.UnauthorizedException(
+                "Authentication failed. Try signing in to {} to register with the web application."
+                    .format(BASE_URL))
 
     GET_RESOURCE = endpoints.ResourceContainer(sample_barcode=messages.StringField(1, required=True),
                                                platform=messages.StringField(2),
@@ -1436,9 +1446,9 @@ class Cohort_Endpoints_API(remote.Service):
 
             for key, value_list in query_dict.iteritems():
                 patient_query_str += ' AND ' if not patient_query_str.endswith('WHERE ') else ''
-                patient_query_str += ' ' + key + ' IN ({}) '.format(', '.join(['%s']*len(value_list)))
+                patient_query_str += ' ' + key + ' IN ({}) '.format(', '.join(['%s'] * len(value_list)))
                 sample_query_str += ' AND ' if not sample_query_str.endswith('WHERE ') else ''
-                sample_query_str += ' ' + key + ' IN ({}) '.format(', '.join(['%s']*len(value_list)))
+                sample_query_str += ' ' + key + ' IN ({}) '.format(', '.join(['%s'] * len(value_list)))
                 value_tuple += tuple(value_list)
 
             for key, value in gte_query_dict.iteritems():
@@ -1531,7 +1541,9 @@ class Cohort_Endpoints_API(remote.Service):
                           )
 
         else:
-            raise endpoints.UnauthorizedException("Authentication failed.")
+            raise endpoints.UnauthorizedException(
+                "Authentication failed. Try signing in to {} to register with the web application."
+                    .format(BASE_URL))
 
     DELETE_RESOURCE = endpoints.ResourceContainer(cohort_id=messages.IntegerField(1, required=True),
                                                   token=messages.StringField(2))
@@ -1587,7 +1599,9 @@ class Cohort_Endpoints_API(remote.Service):
             finally:
                 request_finished.send(self)
         else:
-            raise endpoints.UnauthorizedException("Unsuccessful authentication.")
+            raise endpoints.UnauthorizedException(
+                "Authentication failed. Try signing in to {} to register with the web application."
+                    .format(BASE_URL))
 
         return ReturnJSON(msg=return_message)
 
@@ -1642,9 +1656,9 @@ class Cohort_Endpoints_API(remote.Service):
 
         for key, value_list in query_dict.iteritems():
             patient_query_str += ' AND ' if not patient_query_str.endswith('WHERE ') else ''
-            patient_query_str += ' ' + key + ' IN ({}) '.format(', '.join(['%s']*len(value_list)))
+            patient_query_str += ' ' + key + ' IN ({}) '.format(', '.join(['%s'] * len(value_list)))
             sample_query_str += ' AND ' if not sample_query_str.endswith('WHERE ') else ''
-            sample_query_str += ' ' + key + ' IN ({}) '.format(', '.join(['%s']*len(value_list)))
+            sample_query_str += ' ' + key + ' IN ({}) '.format(', '.join(['%s'] * len(value_list)))
             value_tuple += tuple(value_list)
 
         for key, value in gte_query_dict.iteritems():
@@ -1781,7 +1795,9 @@ class Cohort_Endpoints_API(remote.Service):
                 if db and db.open: db.close()
                 request_finished.send(self)
         else:
-            raise endpoints.UnauthorizedException("Authentication failed.")
+            raise endpoints.UnauthorizedException(
+                "Authentication failed. Try signing in to {} to register with the web application."
+                    .format(BASE_URL))
 
     GET_RESOURCE = endpoints.ResourceContainer(sample_barcode=messages.StringField(1, required=True))
 
