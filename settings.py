@@ -1,6 +1,6 @@
 """
 
-Copyright 2015, Institute for Systems Biology
+Copyright 2016, Institute for Systems Biology
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -28,8 +28,6 @@ ALLOWED_HOSTS = [
 
 ### added for connecting to CloudSQL with SSL certs on MVM platform
 SSL_DIR = os.path.abspath(os.path.dirname(__file__))+os.sep
-MVM_ON = True
-###
 
 #ADMINS = (
     # ('Your Name', 'your_email@example.com'),
@@ -185,19 +183,10 @@ STATICFILES_DIRS = (
 STATICFILES_FINDERS = (
     'django.contrib.staticfiles.finders.FileSystemFinder',
     'django.contrib.staticfiles.finders.AppDirectoriesFinder',
-#    'django.contrib.staticfiles.finders.DefaultStorageFinder',
-#    'django.core.context_processors.tz' # moved this to template_context_processors
 )
 
 # Make this unique, and don't share it with anybody.
 # SECRET_KEY = os.environ.get('SECRET_KEY')
-
-# List of callables that know how to import templates from various sources.
-TEMPLATE_LOADERS = (
-    'django.template.loaders.filesystem.Loader',
-    'django.template.loaders.app_directories.Loader',
-    # 'django.template.loaders.eggs.Loader',
-)
 
 MIDDLEWARE_CLASSES = (
     # For using NDB with Django
@@ -218,14 +207,6 @@ ROOT_URLCONF = 'GenespotRE.urls'
 
 # Python dotted path to the WSGI application used by Django's runserver.
 WSGI_APPLICATION = 'GenespotRE.wsgi.application'
-
-TEMPLATE_DIRS = (
-    # Put strings here, like "/home/html/django_templates" or "C:/www/django/templates".
-    # Always use forward slashes, even on Windows.
-    # Don't forget to use absolute paths, not relative paths.
-    os.path.join(BASE_DIR, 'templates'),
-    # os.path.join(BASE_DIR, 'lib/django/contrib/admin/templates'),
-)
 
 INSTALLED_APPS = (
     'django.contrib.auth',
@@ -310,18 +291,36 @@ INSTALLED_APPS += (
     'allauth.socialaccount',
     'allauth.socialaccount.providers.google')
 
-TEMPLATE_CONTEXT_PROCESSORS = (
-    'allauth.socialaccount.context_processors.socialaccount',
-    # 'allauth.account.context_processors.account', # deprecated in django-allauth
-    'django.core.context_processors.request',
-    'django.contrib.auth.context_processors.auth',
-    'django.contrib.messages.context_processors.messages',
-    'django.core.context_processors.tz'
-)
-
-TEMPLATE_DIRS += (
-    os.path.join(BASE_DIR, 'templates', 'accounts'),
-    )
+# Template Engine Settings
+TEMPLATES = [
+    {
+        'BACKEND': 'django.template.backends.django.DjangoTemplates',
+        # add any necessary template paths here
+        'DIRS': [
+            os.path.join(BASE_DIR, 'templates'),
+            os.path.join(BASE_DIR, 'templates', 'accounts'),
+        ],
+        'APP_DIRS': True,
+        'OPTIONS': {
+            # add any context processors here
+            'context_processors': (
+                'allauth.socialaccount.context_processors.socialaccount',
+                'django.template.context_processors.request',
+                'django.contrib.auth.context_processors.auth',
+                'django.contrib.messages.context_processors.messages',
+                'django.template.context_processors.tz',
+                'finalware.context_processors.contextify',
+                'GenespotRE.context_processor.additional_context',
+            ),
+            # add any loaders here; if using the defaults, we can comment it out
+            # 'loaders': (
+            #     'django.template.loaders.filesystem.Loader',
+            #     'django.template.loaders.app_directories.Loader'
+            # ),
+            'debug': DEBUG,
+        },
+    },
+]
 
 AUTHENTICATION_BACKENDS = (
     # Needed to login by username in Django admin, regardless of `allauth`
@@ -372,13 +371,10 @@ SAML_FOLDER                         = os.environ.get('SAML_FOLDER')
 
 INSTALLED_APPS += (
     'finalware',)
-TEMPLATE_CONTEXT_PROCESSORS += (
-    'finalware.context_processors.contextify',)
 
 SITE_SUPERUSER_USERNAME = os.environ.get('SU_USER')
 SITE_SUPERUSER_EMAIL = ''
 SITE_SUPERUSER_PASSWORD = os.environ.get('SU_PASS')
-
 
 ############################
 #   End django-finalware   #

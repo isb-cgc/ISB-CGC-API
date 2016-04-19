@@ -596,7 +596,7 @@ class Cohort_Endpoints_API(remote.Service):
                     parent_cursor.execute(parent_id_query_str, (str(row['id']),))
                     parent_id_data = []
                     for parent_row in parent_cursor.fetchall():
-                        if row['parent_id'] is not None:
+                        if row.get('parent_id') is not None:
                             parent_id_data.append(int(parent_row['parent_id']))
 
                     data.append(Cohort(
