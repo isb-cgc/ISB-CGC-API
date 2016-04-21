@@ -1655,10 +1655,21 @@ class Cohort_Endpoints_API(remote.Service):
         value_tuple = ()
 
         for key, value_list in query_dict.iteritems():
+
             patient_query_str += ' AND ' if not patient_query_str.endswith('WHERE ') else ''
-            patient_query_str += ' ' + key + ' IN ({}) '.format(', '.join(['%s'] * len(value_list)))
             sample_query_str += ' AND ' if not sample_query_str.endswith('WHERE ') else ''
-            sample_query_str += ' ' + key + ' IN ({}) '.format(', '.join(['%s'] * len(value_list)))
+            if "None" in value_list:
+                value_list.remove("None")
+                patient_query_str += ' ( {key} is null '.format(key=key)
+                sample_query_str += ' ( {key} is null '.format(key=key)
+                if len(value_list) > 0:
+                    patient_query_str += ' OR {key} IN ({vals}) '.format(key=key, vals=', '.join(['%s'] * len(value_list)))
+                    sample_query_str += ' OR {key} IN ({vals}) '.format(key=key, vals=', '.join(['%s'] * len(value_list)))
+                patient_query_str += ') '
+                sample_query_str += ') '
+            else:
+                patient_query_str += ' {key} IN ({vals}) '.format(key=key, vals=', '.join(['%s'] * len(value_list)))
+                sample_query_str += ' {key} IN ({vals}) '.format(key=key, vals=', '.join(['%s'] * len(value_list)))
             value_tuple += tuple(value_list)
 
         for key, value in gte_query_dict.iteritems():
