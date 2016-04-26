@@ -49,14 +49,22 @@ class Project(models.Model):
         return last_view
 
     @classmethod
-    def get_user_projects(cls, user, includeShared=True):
+    def get_user_projects(cls, user, includeShared=True, includePublic=False):
         projects = user.project_set.all().filter(active=True)
         if includeShared:
             sharedProjects = cls.objects.filter(shared__matched_user=user, shared__active=True, active=True)
             projects = projects | sharedProjects
-            projects = projects.distinct()
+        if includePublic:
+            publicProjects = cls.objects.filter(is_public=True, active=True)
+            projects = projects | publicProjects
+
+        projects = projects.distinct()
 
         return projects
+
+    @classmethod
+    def get_public_projects(cls):
+        return cls.objects.filter(is_public=True, active=True)
 
     def __str__(self):
         return self.name
@@ -64,7 +72,7 @@ class Project(models.Model):
 class Project_Last_View(models.Model):
     project = models.ForeignKey(Project, blank=False)
     user = models.ForeignKey(User, null=False, blank=False)
-    last_view = models.DateTimeField(auto_now_add=True, auto_now=True)
+    last_view = models.DateTimeField(auto_now=True)
 
 class Study(models.Model):
     name = models.CharField(max_length=255)
@@ -122,7 +130,7 @@ class Study(models.Model):
 class Study_Last_View(models.Model):
     study = models.ForeignKey(Study, blank=False)
     user = models.ForeignKey(User, null=False, blank=False)
-    last_view = models.DateTimeField(auto_now_add=True, auto_now=True)
+    last_view = models.DateTimeField(auto_now=True)
 
 
 class User_Feature_Definitions(models.Model):
