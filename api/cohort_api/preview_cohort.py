@@ -300,7 +300,7 @@ def construct_parameter_error_message(request, filter_required):
 
 
 @Cohort_Endpoints.api_class(resource_name='cohort_endpoints')
-class PreviewCohortAPI(remote.Service):
+class PreviewCohort(remote.Service):
 
     POST_RESOURCE = endpoints.ResourceContainer(MetadataRangesItem)
 

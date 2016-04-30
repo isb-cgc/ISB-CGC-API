@@ -1,9 +1,11 @@
 
+import MySQLdb
 import endpoints
 
 from django.conf import settings
 from functools import wraps
-from django.db import close_connection
+# from django.db import close_connection
+
 
 INSTALLED_APP_CLIENT_ID = settings.INSTALLED_APP_CLIENT_ID
 CONTROLLED_ACL_GOOGLE_GROUP = settings.ACL_GOOGLE_GROUP
@@ -15,14 +17,15 @@ Cohort_Endpoints = endpoints.api(name='cohort_api', version='v1',
 
 
 def cloud_endpoints_close_connection(f):
+    # parameter is a list containing a MySQLdb.connections.Connection object and one or more MySQLdb.cursors
     @wraps(f)
     def decorated(*args, **kwargs):
         try:
             endpoint = f(*args, **kwargs)
-            close_connection()
+            # close_connection()
             return endpoint
         except:
-            close_connection()
+            # close_connection()
             raise
 
     return decorated
