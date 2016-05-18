@@ -135,8 +135,8 @@ class CohortsList(remote.Service):
     GET_RESOURCE = endpoints.ResourceContainer(token=messages.StringField(1), cohort_id=messages.IntegerField(2))
 
     @endpoints.method(GET_RESOURCE, CohortsList,
-                      path='cohorts_list', http_method='GET', name='cohorts.list')
-    def cohorts_list(self, request):
+                      path='cohorts_list2', http_method='GET', name='cohorts.list2')
+    def cohorts_list2(self, request):
         '''
         Returns information about cohorts a user has either READER or OWNER permission on.
         Authentication is required. Optionally takes a cohort id as a parameter to

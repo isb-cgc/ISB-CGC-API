@@ -26,6 +26,12 @@ from api.data_access import FeatureDataEndpoints                # class FeatureD
 from api.Cohort import Cohort_Endpoints_API                     # class Cohort_Endpoints_API(remote.Service): decorated with @Cohort_Endpoints.api_class which is defined as Cohort_Endpoints = endpoints.api(name='cohort_api',..)
 from api.cohort_api.preview_cohort import PreviewCohort
 from api.cohort_api.cohorts_list import CohortsList
+from api.cohort_api.cohort_patients_samples_list import CohortsPatientsSamplesList
+from api.cohort_api.patient_details import PatientDetails
+from api.cohort_api.sample_details import SampleDetails
+from api.cohort_api.datafilenamekey_list import DataFileNameKeyList
+from api.cohort_api.save_cohort import SaveCohort
+from api.cohort_api.delete_cohort import DeleteCohort
 # from api.Cohort import Cohort_Endpoints                       # endpoints.api(name='cohort_api', ...) @Cohort_Endpoints.api_class
 
 from api.metadata import Meta_Endpoints, Meta_Endpoints_v2      # endpoints.api(name='meta_api', ...) @Meta_Endpoints.api_class
@@ -39,8 +45,15 @@ package = 'isb-cgc-api'
 APPLICATION = endpoints.api_server([
     PreviewCohort,
     CohortsList,
+    CohortsPatientsSamplesList,
+    PatientDetails,
+    SampleDetails,
+    DataFileNameKeyList,
+    SaveCohort,
+    DeleteCohort,
     Cohort_Endpoints_API,
     # Cohort_Endpoints,
+
     FeatureAccessEndpoints,
     Meta_Endpoints,
     Meta_Endpoints_v2,
