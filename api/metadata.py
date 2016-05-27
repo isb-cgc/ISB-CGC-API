@@ -2028,7 +2028,13 @@ class Meta_Endpoints_API_v2(remote.Service):
                       name='meta.attr_list')
     def metadata_attr_list(self, request):
 
+        cursor = None
+        db = None
+
         user = get_current_user(request)
+        if user is None:
+            request_finished.send(self)
+
         query_dict = {}
         value_tuple = ()
         for key, value in MetadataAttr.__dict__.items():
@@ -2075,12 +2081,10 @@ class Meta_Endpoints_API_v2(remote.Service):
 
             cursor.close()
             db.close()
-
+            request_finished.send(self)
             return MetadataAttrList(items=data, count=len(data))
 
         except (IndexError, TypeError):
-            if cursor: cursor.close()
-            if db: db.close()
             raise endpoints.InternalServerErrorException('Error retrieving attribute list')
         finally:
             if cursor: cursor.close()
@@ -2096,6 +2100,8 @@ class Meta_Endpoints_API_v2(remote.Service):
         sample_ids = None
         cohort_id = None
         user = get_current_user(request)
+        if user is None:
+            request_finished.send(self)
 
         if request.__getattribute__('filters') is not None:
             try:
@@ -2108,6 +2114,7 @@ class Meta_Endpoints_API_v2(remote.Service):
 
             except Exception, e:
                 print traceback.format_exc()
+                request_finished.send(self)
                 raise endpoints.BadRequestException(
                     'Filters must be a valid JSON formatted array with objects containing both key and value properties')
 
@@ -2133,7 +2140,12 @@ class Meta_Endpoints_API_v2(remote.Service):
         sample_ids = None
         study_ids = ()
         cohort_id = None
+        cursor = None
+        db = None
+
         user = get_current_user(request)
+        if user is None:
+            request_finished.send(self)
 
         if request.__getattribute__('filters')is not None:
             try:
@@ -2146,6 +2158,7 @@ class Meta_Endpoints_API_v2(remote.Service):
 
             except Exception, e:
                 print traceback.format_exc()
+                request_finished.send(self)
                 raise endpoints.BadRequestException('Filters must be a valid JSON formatted array with objects containing both key and value properties')
 
         db = sql_connection()
@@ -2159,7 +2172,7 @@ class Meta_Endpoints_API_v2(remote.Service):
 
         # Add TCGA attributes to the list of available attributes
         if 'user_studies' not in filters or 'tcga' in filters['user_studies']['values']:
-            sample_tables['metadata_samples'] = {'features':{}, 'barcode':'SampleBarcode', 'study_id':None}
+            sample_tables['metadata_samples'] = {'features': {}, 'barcode': 'SampleBarcode', 'study_id': None}
             cursor = db.cursor(MySQLdb.cursors.DictCursor)
             cursor.execute('SELECT attribute, spec FROM metadata_attr')
             for row in cursor.fetchall():
@@ -2236,6 +2249,7 @@ class Meta_Endpoints_API_v2(remote.Service):
 
                 results.append( SampleBarcodeItem(sample_barcode=row[0], study_id=table_settings['study_id']) )
             cursor.close()
+
         db.close()
         request_finished.send(self)
         return SampleBarcodeList( items=results, count=len(results) )
@@ -2247,12 +2261,14 @@ class Meta_Endpoints_API_v2(remote.Service):
                       path='metadata_participant_list', http_method='GET',
                       name='meta.metadata_participant_list')
     def metadata_participant_list(self, request):
-        db = sql_connection()
+        cursor = None
+        db = None
 
         cohort_id = str(request.cohort_id)
         sample_query_str = 'SELECT sample_id, study_id FROM cohorts_samples WHERE cohort_id=%s;'
 
         try:
+            db = sql_connection()
             cursor = db.cursor(MySQLdb.cursors.DictCursor)
             cursor.execute(sample_query_str, (cohort_id,))
             sample_ids = []
@@ -2282,9 +2298,10 @@ class Meta_Endpoints_API_v2(remote.Service):
             return SampleBarcodeList(items=results, count=len(results))
 
         except (TypeError, IndexError) as e:
-            if cursor: cursor.close()
-            if db: db.close()
             raise endpoints.NotFoundException('Error in retrieving barcodes.')
+        finally:
+            if cursor: cursor.close()
+            if db and db.open: db.close()
 
     POST_RESOURCE = endpoints.ResourceContainer(IncomingMetadataCount)
 
@@ -2295,6 +2312,7 @@ class Meta_Endpoints_API_v2(remote.Service):
         """ Used by the web application."""
         filters = {}
         sample_ids = None
+        cursor = None
 
         if request.__getattribute__('filters')is not None:
             try:
@@ -2329,6 +2347,8 @@ class Meta_Endpoints_API_v2(remote.Service):
 
             except (TypeError, IndexError) as e:
                 print e
+                cursor.close()
+                db.close()
                 raise endpoints.NotFoundException('Error in retrieving barcodes.')
 
         query_str = "SELECT " \
