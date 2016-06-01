@@ -14,8 +14,8 @@ libraries:
   version: 1.0
 - name: MySQLdb
   version: "latest"
-- name: django
-  version: "latest"
+#- name: django
+#  version: "latest"
 
 handlers:
 - url: /_ah/spi/.*
