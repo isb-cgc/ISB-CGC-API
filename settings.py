@@ -221,7 +221,7 @@ INSTALLED_APPS = (
     # 'GenespotRE',
     # 'visualizations',
     # 'seqpeek',
-    # 'sharing',
+    'sharing',
     'cohorts',
     'projects',
     # 'genes',
