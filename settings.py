@@ -15,6 +15,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 
 """
+import django
 
 # Django settings for GAE_Django17 project.
 import os
@@ -220,7 +221,7 @@ INSTALLED_APPS = (
     # 'GenespotRE',
     # 'visualizations',
     # 'seqpeek',
-    # 'sharing',
+    'sharing',
     'cohorts',
     'projects',
     # 'genes',
@@ -381,3 +382,5 @@ SITE_SUPERUSER_PASSWORD = os.environ.get('SU_PASS')
 ############################
 
 CONN_MAX_AGE = 0
+
+django.setup()
