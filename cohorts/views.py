@@ -25,7 +25,7 @@ import re
 
 from django.utils import formats
 from django.shortcuts import render, redirect
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.core.urlresolvers import reverse
 from django.core.exceptions import ObjectDoesNotExist
 from django.views.decorators.csrf import csrf_protect
@@ -64,7 +64,6 @@ BIG_QUERY_API_URL = settings.BASE_API_URL + '/_ah/api/bq_api/v1'
 COHORT_API = settings.BASE_API_URL + '/_ah/api/cohort_api/v1'
 METADATA_API = settings.BASE_API_URL + '/_ah/api/meta_api/'
 # This URL is not used : META_DISCOVERY_URL = settings.BASE_API_URL + '/_ah/api/discovery/v1/apis/meta_api/v1/rest'
-
 
 
 def data_availability_sort(key, value, data_attr, attr_details):
@@ -152,13 +151,13 @@ def cohorts_list(request, is_public=False, workbook_id=0, worksheet_id=0, create
         # print local_zone.localize(item.last_date_saved)
 
     # Used for autocomplete listing
-    cohort_listing = Cohort.objects.filter(id__in=cohort_perms, active=True).values('id', 'name')
-    for cohort in cohort_listing:
-        cohort['value'] = int(cohort['id'])
-        cohort['label'] = cohort['name'].encode('utf8')
-        del cohort['id']
-        del cohort['name']
-
+    cohort_id_names = Cohort.objects.filter(id__in=cohort_perms, active=True).values('id', 'name')
+    cohort_listing = []
+    for cohort in cohort_id_names:
+        cohort_listing.append({
+            'value': int(cohort['id']),
+            'label': cohort['name'].encode('utf8')
+        })
     workbook = None
     worksheet = None
     previously_selected_cohort_ids = []
@@ -268,9 +267,11 @@ def cohort_detail(request, cohort_id=0, workbook_id=0, worksheet_id=0, create_wo
     clin_attr_dsp += clin_attr
 
     token = SocialToken.objects.filter(account__user=request.user, account__provider='Google')[0].token
-    data_url = METADATA_API + ('v2/metadata_counts?token=%s' % (token,))
-
-    results = urlfetch.fetch(data_url, deadline=60)
+    data_url = METADATA_API + 'v2/metadata_counts'
+    payload = {
+        'token': token
+    }
+    results = urlfetch.fetch(data_url, method=urlfetch.POST, payload=json.dumps(payload), deadline=60, headers={'Content-Type': 'application/json'})
     results = json.loads(results.content)
     totals = results['total']
 
@@ -479,14 +480,18 @@ def save_cohort(request, workbook_id=None, worksheet_id=None, create_workbook=Fa
         source = request.POST.get('source')
         deactivate_sources = request.POST.get('deactivate_sources')
         filters = request.POST.getlist('filters')
+        projects = request.user.project_set.all()
 
         token = SocialToken.objects.filter(account__user=request.user, account__provider='Google')[0].token
-        data_url = METADATA_API + ('v2/metadata_sample_list?token=%s' % (token,))
-
+        data_url = METADATA_API + 'v2/metadata_sample_list'
+        payload = {
+            'token': token
+        }
         # Given cohort_id is the only source id.
         if source:
             # Only ever one source
-            data_url += '&cohort_id=' + source
+            # data_url += '&cohort_id=' + source
+            payload['cohort_id'] = source
             parent = Cohort.objects.get(id=source)
             if deactivate_sources:
                 parent.active = False
@@ -505,15 +510,25 @@ def save_cohort(request, workbook_id=None, worksheet_id=None, create_workbook=Fa
                 if 'id' in tmp['value'] and tmp['value']['id']:
                     val = tmp['value']['id']
 
-                filter_obj.append({
-                    'key': key,
-                    'value': val
-                })
+                if key == 'user_projects':
+                    proj = projects.get(id=val)
+                    studies = proj.study_set.all()
+                    for study in studies:
+                        filter_obj.append({
+                            'key': 'user_studies',
+                            'value': str(study.id)
+                        })
+
+                else :
+                    filter_obj.append({
+                        'key': key,
+                        'value': val
+                    })
 
             if len(filter_obj):
-                data_url += '&filters=' + re.sub(r'\s+', '', urllib.quote( json.dumps(filter_obj) ))
-
-        result = urlfetch.fetch(data_url, deadline=60)
+                # data_url += '&filters=' + re.sub(r'\s+', '', urllib.quote( json.dumps(filter_obj) ))
+                payload['filters'] = json.dumps(filter_obj)
+        result = urlfetch.fetch(data_url, method=urlfetch.POST, payload=json.dumps(payload), deadline=60, headers={'Content-Type': 'application/json'})
         items = json.loads(result.content)
 
         #it is possible the the filters are creating a cohort with no samples
@@ -545,7 +560,7 @@ def save_cohort(request, workbook_id=None, worksheet_id=None, create_workbook=Fa
             # If we are *not* using user data, get participant barcodes from metadata_data
             if not USER_DATA_ON:
                 participant_url = METADATA_API + ('v2/metadata_participant_list?cohort_id=%s' % (str(cohort.id),))
-                participant_result = urlfetch.fetch(participant_url, deadline=60)
+                participant_result = urlfetch.fetch(participant_url, deadline=120)
                 participant_items = json.loads(participant_result.content)
                 participant_list = []
                 for item in participant_items['items']:
@@ -574,7 +589,7 @@ def save_cohort(request, workbook_id=None, worksheet_id=None, create_workbook=Fa
             # Check if coming from applying filters and redirect accordingly
             if 'apply-filters' in request.POST:
                 redirect_url = reverse('cohort_details',args=[cohort.id])
-                messages.info(request, 'Filters applied successfully.')
+                messages.info(request, 'Changes applied successfully.')
             else:
                 redirect_url = reverse('cohort_list')
                 messages.info(request, 'Cohort, %s, created successfully.' % cohort.name)
@@ -646,6 +661,15 @@ def clone_cohort(request, cohort_id):
         patient_list.append(Patients(cohort=cohort, patient_id=patient_code))
     Patients.objects.bulk_create(patient_list)
 
+    # Clone the filters
+    filters = Filters.objects.filter(resulting_cohort=parent_cohort).values_list('name', 'value')
+    # ...but only if there are any (there may not be)
+    if filters.__len__() > 0:
+        filters_list = []
+        for filter_pair in filters:
+            filters_list.append(Filters(name=filter_pair[0], value=filter_pair[1], resulting_cohort=cohort))
+        Filters.objects.bulk_create(filters_list)
+
     # Set source
     source = Source(parent=parent_cohort, cohort=cohort, type=Source.CLONE)
     source.save()
@@ -698,32 +722,40 @@ def set_operation(request):
             cohorts = Cohort.objects.filter(id__in=cohort_ids, active=True, cohort_perms__in=request.user.cohort_perms_set.all())
             request.user.cohort_perms_set.all()
             if len(cohorts):
-                cohort_patients = Patients.objects.filter(cohort=cohorts[0])
-                cohort_samples = Samples.objects.filter(cohort=cohorts[0])
+                cohort_patients = set(Patients.objects.filter(cohort=cohorts[0]).values_list('patient_id', flat=True))
+                cohort_samples = set(Samples.objects.filter(cohort=cohorts[0]).values_list('sample_id', 'study_id'))
+
                 notes = 'Intersection of ' + cohorts[0].name
 
-                print "Start of intersection with %s has %d" % (cohorts[0].name, len(cohort_samples))
+                # print "Start of intersection with %s has %d" % (cohorts[0].name, len(cohort_samples))
                 for i in range(1, len(cohorts)):
                     cohort = cohorts[i]
                     notes += ', ' + cohort.name
 
-                    cohort_samples = cohort_samples.extra(
-                            tables=[Samples._meta.db_table+"` AS `t"+str(1)], # TODO This is ugly :(
-                            where=[
-                                't'+str(i)+'.sample_id = ' + Samples._meta.db_table + '.sample_id',
-                                't'+str(i)+'.study_id = ' + Samples._meta.db_table + '.study_id',
-                                't'+str(i)+'.cohort_id = ' + Samples._meta.db_table + '.cohort_id',
-                            ]
-                    )
-                    cohort_patients = cohort_patients.extra(
-                            tables=[Patients._meta.db_table+"` AS `t"+str(1)], # TODO This is ugly :(
-                            where=[
-                                't'+str(i)+'.patient_id = ' + Patients._meta.db_table + '.patient_id',
-                                't'+str(i)+'.cohort_id = ' + Patients._meta.db_table + '.cohort_id',
-                            ]
-                    )
-                patients = cohort_patients.values_list('patient_id', flat=True)
-                samples = cohort_samples.values_list('sample_id', 'study_id')
+                    cohort_patients = cohort_patients.intersection(Patients.objects.filter(cohort=cohort).values_list('patient_id', flat=True))
+                    cohort_samples = cohort_samples.intersection(Samples.objects.filter(cohort=cohort).values_list('sample_id', 'study_id'))
+
+                    # se1 = set(x[0] for x in s1)
+                    # se2 = set(x[0] for x in s2)
+                    # TODO: work this out with user data when activated
+                    # cohort_samples = cohort_samples.extra(
+                    #         tables=[Samples._meta.db_table+"` AS `t"+str(1)], # TODO This is ugly :(
+                    #         where=[
+                    #             't'+str(i)+'.sample_id = ' + Samples._meta.db_table + '.sample_id',
+                    #             't'+str(i)+'.study_id = ' + Samples._meta.db_table + '.study_id',
+                    #             't'+str(i)+'.cohort_id = ' + Samples._meta.db_table + '.cohort_id',
+                    #         ]
+                    # )
+                    # cohort_patients = cohort_patients.extra(
+                    #         tables=[Patients._meta.db_table+"` AS `t"+str(1)], # TODO This is ugly :(
+                    #         where=[
+                    #             't'+str(i)+'.patient_id = ' + Patients._meta.db_table + '.patient_id',
+                    #             't'+str(i)+'.cohort_id = ' + Patients._meta.db_table + '.cohort_id',
+                    #         ]
+                    # )
+
+                patients = list(cohort_patients)
+                samples = list(cohort_samples)
 
         elif op == 'complement':
             base_id = request.POST.get('base-id')
@@ -731,12 +763,12 @@ def set_operation(request):
 
             base_patients = Patients.objects.filter(cohort_id=base_id)
             subtract_patients = Patients.objects.filter(cohort_id__in=subtract_ids).distinct()
-            cohort_patients = base_patients.exclude(pk__in=subtract_patients.values_list('pk', flat=True))
+            cohort_patients = base_patients.exclude(patient_id__in=subtract_patients.values_list('patient_id', flat=True))
             patients = cohort_patients.values_list('patient_id', flat=True)
 
             base_samples = Samples.objects.filter(cohort_id=base_id)
             subtract_samples = Samples.objects.filter(cohort_id__in=subtract_ids).distinct()
-            cohort_samples = base_samples.exclude(pk__in=subtract_samples.values_list('pk', flat=True))
+            cohort_samples = base_samples.exclude(sample_id__in=subtract_samples.values_list('sample_id', flat=True))
             samples = cohort_samples.values_list('sample_id', 'study_id')
 
             notes = 'Subtracted '
@@ -940,6 +972,40 @@ def cohort_filelist_ajax(request, cohort_id=0):
 
     return HttpResponse(result.content, status=200)
 
+
+@login_required
+@csrf_protect
+def cohort_samples_patients(request, cohort_id=0):
+    if debug: print >> sys.stderr, 'Called '+sys._getframe().f_code.co_name
+    if cohort_id == 0:
+        messages.error(request, 'Cohort provided does not exist.')
+        return redirect('/user_landing')
+
+    cohort_name = Cohort.objects.filter(id=cohort_id).values_list('name', flat=True)[0].__str__()
+
+    # Sample IDs
+    samples = Samples.objects.filter(cohort=cohort_id).values_list('sample_id', flat=True)
+
+    # Patient IDs, may be empty!
+    patients = Patients.objects.filter(cohort=cohort_id).values_list('patient_id', flat=True)
+
+    rows = (["Sample and Patient List for Cohort '"+cohort_name+"'"],)
+    rows += (["ID", "Type"],)
+
+    for sample_id in samples:
+        rows += ([sample_id, "Sample"],)
+
+    for patient_id in patients:
+        rows += ([patient_id, "Patient"],)
+
+    pseudo_buffer = Echo()
+    writer = csv.writer(pseudo_buffer)
+    response = StreamingHttpResponse((writer.writerow(row) for row in rows),
+                                     content_type="text/csv")
+    response['Content-Disposition'] = 'attachment; filename="samples_patients_in_cohort.csv"'
+    return response
+
+
 class Echo(object):
     """An object that implements just the write method of the file-like
     interface.
@@ -971,9 +1037,9 @@ def streaming_csv_view(request, cohort_id=0):
         # rows that can be handled by a single sheet in most spreadsheet
         # applications.
         rows = ()
-        rows = (["Sample", "Platform", "Pipeline", "DataLevel", "CloudStorageLocation"],)
+        rows = (["Sample", "Platform", "Pipeline", "DataLevel", "Data Type", "CloudStorageLocation"],)
         for file in file_list:
-            rows += ([file['sample'], file['platform'], file['pipeline'], file['datalevel'], file['cloudstorage_location']],)
+            rows += ([file['sample'], file['platform'], file['pipeline'], file['datalevel'], file['datatype'], file['cloudstorage_location']],)
         pseudo_buffer = Echo()
         writer = csv.writer(pseudo_buffer)
         response = StreamingHttpResponse((writer.writerow(row) for row in rows),
@@ -985,3 +1051,48 @@ def streaming_csv_view(request, cohort_id=0):
         messages.error(request, items['error']['message'])
         return redirect(reverse('cohort_filelist', kwargs={'cohort_id':cohort_id}))
     return render(request)
+
+@login_required
+def unshare_cohort(request, cohort_id=0):
+
+    if request.POST.get('owner'):
+        # The owner of the resource should also be able to remove users they shared with.
+        # Get user_id from post
+        user_id = request.POST.get('user_id')
+        resc = Cohort_Perms.objects.get(cohort_id=cohort_id, user_id=user_id)
+    else:
+        # This allows users to remove resources shared with them
+        resc = Cohort_Perms.objects.get(cohort_id=cohort_id, user_id=request.user.id)
+
+    resc.delete()
+
+    return JsonResponse({
+        'status': 'success'
+    })
+
+@login_required
+def get_metadata(request):
+    endpoint = request.GET.get('endpoint', 'metadata_counts')
+    version = request.GET.get('version', 'v1')
+    filters = request.GET.get('filters', '{}')
+    cohort = request.GET.get('cohort_id', None)
+    limit = request.GET.get('limit', None)
+    token = SocialToken.objects.filter(account__user=request.user, account__provider='Google')[0].token
+
+    payload = {
+        'token': token,
+        'filters': filters
+    }
+    data_url = METADATA_API + ('%s/%s/' % (version, endpoint))
+    if cohort:
+        # data_url += ('&cohort_id=%s' % (cohort,))
+        payload['cohort_id'] = cohort
+
+    if limit:
+        # data_url += ('&limit=%s' % (limit,))
+        payload['limit'] = limit
+
+    results = urlfetch.fetch(data_url, method=urlfetch.POST, payload=json.dumps(payload), deadline=60, headers={'Content-Type': 'application/json'})
+    results = json.loads(results.content)
+
+    return JsonResponse(results)
