@@ -15,6 +15,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 
 """
+import django
+django.setup()
 
 # Django settings for GAE_Django17 project.
 import os
