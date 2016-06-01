@@ -16,7 +16,6 @@ limitations under the License.
 
 """
 import django
-django.setup()
 
 # Django settings for GAE_Django17 project.
 import os
@@ -383,3 +382,5 @@ SITE_SUPERUSER_PASSWORD = os.environ.get('SU_PASS')
 ############################
 
 CONN_MAX_AGE = 0
+
+django.setup()
