@@ -15,6 +15,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 
 """
+import django
 
 # Django settings for GAE_Django17 project.
 import os
@@ -220,7 +221,7 @@ INSTALLED_APPS = (
     # 'GenespotRE',
     # 'visualizations',
     # 'seqpeek',
-    # 'sharing',
+    'sharing',
     'cohorts',
     'projects',
     # 'genes',
@@ -234,13 +235,13 @@ INSTALLED_APPS = (
 #############################
 
 # testing "session security works at the moment" commit
-INSTALLED_APPS += ('session_security',)
-SESSION_SECURITY_WARN_AFTER = 540
-SESSION_SECURITY_EXPIRE_AFTER = 600
+# INSTALLED_APPS += ('session_security',)
+# SESSION_SECURITY_WARN_AFTER = 540
+# SESSION_SECURITY_EXPIRE_AFTER = 600
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 MIDDLEWARE_CLASSES += (
     # for django-session-security -- must go *after* AuthenticationMiddleware
-    'session_security.middleware.SessionSecurityMiddleware',
+    # 'session_security.middleware.SessionSecurityMiddleware',
 )
 
 ###############################
@@ -381,3 +382,5 @@ SITE_SUPERUSER_PASSWORD = os.environ.get('SU_PASS')
 ############################
 
 CONN_MAX_AGE = 0
+
+django.setup()
