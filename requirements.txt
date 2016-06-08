@@ -1,5 +1,5 @@
 requests==2.3.0
-django==1.8.12
+django==1.9.6
 django-allauth==0.21
 ecdsa==0.13
 google-api-python-client==1.4.2
