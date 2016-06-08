@@ -58,8 +58,8 @@ def sql_connection():
                 'passwd': database['PASSWORD']
             }
 
-            if 'OPTIONS' in database:
-                connect_options['OPTIONS'] = database['OPTIONS']
+            if 'OPTIONS' in database and 'ssl' in database['OPTIONS']:
+                connect_options['ssl'] = database['OPTIONS']['ssl']
 
             db = MySQLdb.connect(**connect_options)
         except:
