@@ -8,7 +8,7 @@ vendor.add('lib')
 BASE_DIR                = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir)) + os.sep
 
 SHARED_SOURCE_DIRECTORIES = [
-   os.path.abspath(os.environ.get('ISB_CGC_COMMON_MODULE_PATH'))
+   os.path.abspath('./ISB-CGC-Common')
 ]
 
 # Add the shared Django application subdirectory to the Python module search path
