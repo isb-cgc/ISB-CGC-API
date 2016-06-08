@@ -41,22 +41,27 @@ def sql_connection():
             db = MySQLdb.connect(
                 unix_socket = database['HOST'],
                 # port = 3306,
-                db = database['NAME'],
-                user = database['USER'],
-                passwd = database['PASSWORD'],
-                ssl = database['OPTIONS']['ssl'])
+                db=database['NAME'],
+                user=database['USER'],
+                passwd=database['PASSWORD'],
+                ssl=database['OPTIONS']['ssl'])
         except:
             print >> sys.stderr, "Unexpected ERROR in sql_connection(): ", sys.exc_info()[0]
             #return HttpResponse( traceback.format_exc() )
             raise # if you want to soldier bravely on despite the exception, but comment to stderr
     else:
-        # Connecting to localhost
         try:
-            db = MySQLdb.connect(
-                host='127.0.0.1',
-                db=database['NAME'],
-                user=database['USER'],
-                passwd=database['PASSWORD'])
+            connect_options = {
+                'host': database['HOST'],
+                'db': database['NAME'],
+                'user': database['USER'],
+                'passwd': database['PASSWORD']
+            }
+
+            if 'OPTIONS' in database:
+                connect_options['OPTIONS'] = database['OPTIONS']
+
+            db = MySQLdb.connect(**connect_options)
         except:
             print >> sys.stderr, "Unexpected ERROR in sql_connection(): ", sys.exc_info()[0]
             #return HttpResponse( traceback.format_exc() )
