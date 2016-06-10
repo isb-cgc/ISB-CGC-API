@@ -24,25 +24,25 @@ from django.conf import settings
 from django.core.signals import request_finished
 from protorpc import remote, messages
 
-from cohort_helpers import Cohort_Endpoints
+from cohort_helpers import Cohort_Endpoints2
 from api.api_helpers import sql_connection
 from api.metadata import MetadataItem
 
 logger = logging.getLogger(__name__)
 
 
-class PatientDetails(messages.Message):
+class PatientDetailsItem(messages.Message):
     clinical_data = messages.MessageField(MetadataItem, 1)
     samples = messages.StringField(2, repeated=True)
     aliquots = messages.StringField(3, repeated=True)
 
 
-@Cohort_Endpoints.api_class(resource_name='cohort_endpoints')
+@Cohort_Endpoints2.api_class(resource_name='patient_cohort_endpoints')
 class PatientDetails(remote.Service):
 
     GET_RESOURCE = endpoints.ResourceContainer(patient_barcode=messages.StringField(1, required=True))
 
-    @endpoints.method(GET_RESOURCE, PatientDetails,
+    @endpoints.method(GET_RESOURCE, PatientDetailsItem,
                       path='patient_details2', http_method='GET', name='cohorts.patient_details2')
     def patient_details2(self, request):
         """

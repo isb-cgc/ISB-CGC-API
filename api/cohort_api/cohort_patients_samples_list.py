@@ -27,7 +27,7 @@ from django.contrib.auth.models import User as Django_User
 from django.core.signals import request_finished
 from protorpc import remote, messages
 
-from cohort_helpers import Cohort_Endpoints
+from cohort_helpers import Cohort_Endpoints2
 from api.api_helpers import sql_connection, get_user_email_from_token
 
 logger = logging.getLogger(__name__)
@@ -35,7 +35,7 @@ logger = logging.getLogger(__name__)
 BASE_URL = settings.BASE_URL
 
 
-class CohortPatientsSamplesList(messages.Message):
+class CohortPatientsSamplesListItem(messages.Message):
     patients = messages.StringField(1, repeated=True)
     patient_count = messages.IntegerField(2)
     samples = messages.StringField(3, repeated=True)
@@ -43,11 +43,11 @@ class CohortPatientsSamplesList(messages.Message):
     cohort_id = messages.IntegerField(5)
 
 
-@Cohort_Endpoints.api_class(resource_name='cohort_endpoints')
+@Cohort_Endpoints2.api_class(resource_name='cohort_patients_samples_list_endpoints')
 class CohortsPatientsSamplesList(remote.Service):
     GET_RESOURCE = endpoints.ResourceContainer(token=messages.StringField(1), cohort_id=messages.IntegerField(2))
 
-    @endpoints.method(GET_RESOURCE, CohortPatientsSamplesList,
+    @endpoints.method(GET_RESOURCE, CohortPatientsSamplesListItem,
                       path='cohort_patients_samples_list2', http_method='GET',
                       name='cohorts.cohort_patients_samples_list2')
     def cohort_patients_samples_list2(self, request):

@@ -91,7 +91,7 @@ def get_list_of_split_values_for_filter_model(large_value_list):
     return return_list
 
 
-@cohort_helpers.Cohort_Endpoints.api_class(resource_name='cohort_endpoints')
+@cohort_helpers.Cohort_Endpoints2.api_class(resource_name='save_cohort_endpoints')
 class SaveCohort(remote.Service):
 
     POST_RESOURCE = endpoints.ResourceContainer(cohort_helpers.MetadataRangesItem,

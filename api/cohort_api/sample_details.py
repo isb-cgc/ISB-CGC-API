@@ -24,7 +24,7 @@ from django.conf import settings
 from django.core.signals import request_finished
 from protorpc import remote, messages
 
-from cohort_helpers import Cohort_Endpoints
+from cohort_helpers import Cohort_Endpoints2
 from api.api_helpers import sql_connection
 from api.metadata import MetadataItem
 
@@ -53,7 +53,7 @@ class DataDetails(messages.Message):
     CloudStoragePath = messages.StringField(19)
 
 
-class SampleDetails(messages.Message):
+class SampleDetailsItem(messages.Message):
     biospecimen_data = messages.MessageField(MetadataItem, 1)
     aliquots = messages.StringField(2, repeated=True)
     patient = messages.StringField(3)
@@ -62,12 +62,14 @@ class SampleDetails(messages.Message):
     error = messages.StringField(6)
 
 
-@Cohort_Endpoints.api_class(resource_name='cohort_endpoints')
+@Cohort_Endpoints2.api_class(resource_name='sample_cohort_endpoints')
 class SampleDetails(remote.Service):
 
-    GET_RESOURCE = endpoints.ResourceContainer(patient_barcode=messages.StringField(1, required=True))
+    GET_RESOURCE = endpoints.ResourceContainer(sample_barcode=messages.StringField(1, required=True),
+                                               platform=messages.StringField(2),
+                                               pipeline=messages.StringField(3))
 
-    @endpoints.method(GET_RESOURCE, SampleDetails,
+    @endpoints.method(GET_RESOURCE, SampleDetailsItem,
                       path='sample_details2', http_method='GET', name='cohorts.sample_details2')
     def sample_details2(self, request):
         """
@@ -291,7 +293,7 @@ class SampleDetails(remote.Service):
             if bad_repo_count > 0:
                 logger.warn("not returning {count} row(s) in sample_details due to repositories: {bad_repo_list}"
                             .format(count=bad_repo_count, bad_repo_list=list(bad_repo_set)))
-            return SampleDetails(biospecimen_data=item, aliquots=aliquot_data,
+            return SampleDetailsItem(biospecimen_data=item, aliquots=aliquot_data,
                                  patient=patient_barcode, data_details=data_data,
                                  data_details_count=len(data_data))
 

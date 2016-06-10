@@ -32,17 +32,21 @@ from api.cohort_api.sample_details import SampleDetails
 from api.cohort_api.datafilenamekey_list import DataFileNameKeyList
 from api.cohort_api.save_cohort import SaveCohort
 from api.cohort_api.delete_cohort import DeleteCohort
-# from api.Cohort import Cohort_Endpoints                       # endpoints.api(name='cohort_api', ...) @Cohort_Endpoints.api_class
+# from api.cohort_api.cohort_helpers import Cohort_Endpoints2                       # endpoints.api(name='cohort_api', ...) @Cohort_Endpoints.api_class
+
+from api.isb_cgc_api.cohort_resource import CohortAPI
 
 from api.metadata import Meta_Endpoints, Meta_Endpoints_v2      # endpoints.api(name='meta_api', ...) @Meta_Endpoints.api_class
 from api.pairwise_api import Pairwise_Endpoints                 # endpoints.api(name='pairwise',...) @Pairwise_Endpoints.api_class
 from api.seqpeek_view_api import SeqPeekViewDataAccessAPI       # class SeqPeekViewDataAccessAPI(remote.Service): decprated with @SeqPeekDataEndpointsAPI.api_class which is defined as SeqPeekDataEndpointsAPI = endpoints_api(name='seqpeek_data_api', ...)
-from api.users import User_Endpoints
+# from api.users import User_Endpoints
 
 package = 'isb-cgc-api'
 
 
 APPLICATION = endpoints.api_server([
+    Cohort_Endpoints_API,  # original
+
     PreviewCohort,
     CohortsList,
     CohortsPatientsSamplesList,
@@ -51,8 +55,8 @@ APPLICATION = endpoints.api_server([
     DataFileNameKeyList,
     SaveCohort,
     DeleteCohort,
-    Cohort_Endpoints_API,
-    # Cohort_Endpoints,
+
+    CohortAPI,
 
     FeatureAccessEndpoints,
     Meta_Endpoints,
@@ -60,7 +64,7 @@ APPLICATION = endpoints.api_server([
     FeatureDataEndpoints,
     SingleFeatureDataAccess,
     Pairwise_Endpoints,
-    SeqPeekViewDataAccessAPI,
-    User_Endpoints
+    SeqPeekViewDataAccessAPI
+    # User_Endpoints
 ])
 

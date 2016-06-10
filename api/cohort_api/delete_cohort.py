@@ -26,7 +26,7 @@ from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 from django.contrib.auth.models import User as Django_User
 from protorpc import remote, messages
 
-from cohort_helpers import Cohort_Endpoints
+from cohort_helpers import Cohort_Endpoints2
 from api.api_helpers import get_user_email_from_token
 from cohorts.models import Cohort as Django_Cohort, Cohort_Perms
 
@@ -39,7 +39,7 @@ class ReturnJSON(messages.Message):
     msg = messages.StringField(1)
 
 
-@Cohort_Endpoints.api_class(resource_name='cohort_endpoints')
+@Cohort_Endpoints2.api_class(resource_name='delete_cohort_endpoints')
 class DeleteCohort(remote.Service):
 
     DELETE_RESOURCE = endpoints.ResourceContainer(cohort_id=messages.IntegerField(1, required=True),

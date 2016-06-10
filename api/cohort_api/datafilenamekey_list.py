@@ -27,7 +27,7 @@ from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 from django.contrib.auth.models import User as Django_User
 from protorpc import remote, messages
 
-from cohort_helpers import Cohort_Endpoints, are_there_bad_keys, construct_parameter_error_message
+from cohort_helpers import Cohort_Endpoints2, are_there_bad_keys, construct_parameter_error_message
 from api.api_helpers import sql_connection, get_user_email_from_token
 from cohorts.models import Cohort as Django_Cohort, Cohort_Perms
 
@@ -36,12 +36,12 @@ logger = logging.getLogger(__name__)
 BASE_URL = settings.BASE_URL
 
 
-class DataFileNameKeyList(messages.Message):
+class DataFileNameKeyListItem(messages.Message):
     datafilenamekeys = messages.StringField(1, repeated=True)
     count = messages.IntegerField(2)
 
 
-@Cohort_Endpoints.api_class(resource_name='cohort_endpoints')
+@Cohort_Endpoints2.api_class(resource_name='datafilenamekey_list_endpoints')
 class DataFileNameKeyList(remote.Service):
     GET_RESOURCE = endpoints.ResourceContainer(cohort_id=messages.IntegerField(1, required=True),
                                                limit=messages.IntegerField(2),
@@ -50,7 +50,7 @@ class DataFileNameKeyList(remote.Service):
                                                token=messages.StringField(5))
 
 
-    @endpoints.method(GET_RESOURCE, DataFileNameKeyList,
+    @endpoints.method(GET_RESOURCE, DataFileNameKeyListItem,
                       path='datafilenamekey_list_from_cohort2', http_method='GET',
                       name='cohorts.datafilenamekey_list_from_cohort2')
     def datafilenamekey_list_from_cohort2(self, request):
@@ -172,7 +172,7 @@ class DataFileNameKeyList(remote.Service):
                                                platform=messages.StringField(2),
                                                pipeline=messages.StringField(3))
 
-    @endpoints.method(GET_RESOURCE, DataFileNameKeyList,
+    @endpoints.method(GET_RESOURCE, DataFileNameKeyListItem,
                       path='datafilenamekey_list_from_sample2', http_method='GET',
                       name='cohorts.datafilenamekey_list_from_sample2')
     def datafilenamekey_list_from_sample2(self, request):

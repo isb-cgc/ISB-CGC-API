@@ -31,7 +31,6 @@ import json
 from metadata import MetadataItem
 from cohorts.models import Cohort as Django_Cohort, Cohort_Perms, Patients, Samples, Filters
 from bq_data_access.cohort_bigquery import BigQueryCohortSupport
-from cohort_api.cohort_helpers import Cohort_Endpoints
 from api_helpers import *
 
 logger = logging.getLogger(__name__)
@@ -482,9 +481,9 @@ def get_list_of_split_values_for_filter_model(large_value_list):
     return return_list
 
 
-# Cohort_Endpoints = endpoints.api(name='cohort_api', version='v1',
-#                                  description="Get information about cohorts, patients, and samples. Create and delete cohorts.",
-#                                  allowed_client_ids=[INSTALLED_APP_CLIENT_ID, endpoints.API_EXPLORER_CLIENT_ID])
+Cohort_Endpoints = endpoints.api(name='cohort_api', version='v1',
+                                 description="Get information about cohorts, patients, and samples. Create and delete cohorts.",
+                                 allowed_client_ids=[INSTALLED_APP_CLIENT_ID, endpoints.API_EXPLORER_CLIENT_ID])
 
 
 @Cohort_Endpoints.api_class(resource_name='cohort_endpoints')

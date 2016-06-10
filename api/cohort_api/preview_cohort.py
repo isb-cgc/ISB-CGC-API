@@ -36,10 +36,37 @@ class CohortPatientsSamplesList(messages.Message):
     sample_count = messages.IntegerField(4)
     cohort_id = messages.IntegerField(5)
 
+# for v1, looks like this:
+# service = discovery.build('cohort_api', 'v1', discoveryServiceURL='', http=httplib2.Http())
+# data = service.cohort_endpoints().cohorts().preview_cohort( body = payload).execute
 
-@cohort_helpers.Cohort_Endpoints.api_class(resource_name='cohort_endpoints')
+# 'cohort_api' comes from name in the endpoints.api class
+# Cohort_Endpoints = endpoints.api(name='cohort_api', version='v1',
+#                                  description="Get information about cohorts, patients, and samples. Create and delete cohorts.",
+#                                  allowed_client_ids=[INSTALLED_APP_CLIENT_ID, endpoints.API_EXPLORER_CLIENT_ID])
+
+# 'cohort_endpoints' comes from resource_name in the @Cohort_Endpoints.api_class decorator
+# change this to 'cohorts', 'participants'
+# @Cohort_Endpoints.api_class(resource_name='cohort_endpoints')
+
+# 'cohorts().preview_cohort' comes from name='cohorts.preview_cohort' in @endpoints.method decorator
+#     @endpoints.method(POST_RESOURCE, CohortPatientsSamplesList,
+#                       path='preview_cohort', http_method='POST', name='cohorts.preview_cohort')
+
+# changes for v2
+# in isb_cgc_api/isb_cgc_api_helpers.py:
+# ISB_CGC_Endpoints = endpoints.api(name='isb_cgc_api', version='v2', description=..., allowed_client_ids=...)
+
+# in isb_cgc_api/cohort_resource.py:
+# @isb_cgc_api_helpers.ISB_CGC_Endpoints.api_class(resource_name='cohorts')
+# class CohortAPI(remote.Service):
+#   POST_RESOURCE = ...
+#   @endpoints.method(POST_RESOURCE, CohortPatientSamplesList, path='preview', name='preview')  # is name='preview' necessary?
+#       def preview(self, request):
+#           ...
+
+@cohort_helpers.Cohort_Endpoints2.api_class(resource_name='preview_cohort_endpoints')
 class PreviewCohort(remote.Service):
-
     POST_RESOURCE = endpoints.ResourceContainer(cohort_helpers.MetadataRangesItem)
 
     @endpoints.method(POST_RESOURCE, CohortPatientsSamplesList,
