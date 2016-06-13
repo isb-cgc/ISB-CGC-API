@@ -35,14 +35,6 @@ logger = logging.getLogger(__name__)
 BASE_URL = settings.BASE_URL
 
 
-class CohortPatientsSamplesList(messages.Message):
-    patients = messages.StringField(1, repeated=True)
-    patient_count = messages.IntegerField(2)
-    samples = messages.StringField(3, repeated=True)
-    sample_count = messages.IntegerField(4)
-    cohort_id = messages.IntegerField(5)
-
-
 class FilterDetails(messages.Message):
     name = messages.StringField(1)
     value = messages.StringField(2)
@@ -52,15 +44,15 @@ class CohortDetails(messages.Message):
     id = messages.StringField(1)
     name = messages.StringField(2)
     last_date_saved = messages.StringField(3)
-    perm = messages.StringField(4)
+    permission = messages.StringField(4)
     email = messages.StringField(5)
     comments = messages.StringField(6)
     source_type = messages.StringField(7)
     source_notes = messages.StringField(8)
-    parent_id = messages.IntegerField(9, repeated=True)
+    parent_id = messages.StringField(9, repeated=True)
     filters = messages.MessageField(FilterDetails, 10, repeated=True)
-    num_patients = messages.StringField(11)
-    num_samples = messages.StringField(12)
+    patient_count = messages.IntegerField(11)
+    sample_count = messages.IntegerField(12)
 
 
 class CohortDetailsList(messages.Message):
@@ -139,10 +131,38 @@ class CohortsListQueryBuilder(object):
 
         return parent_query_str, parent_query_tuple
 
+    def build_patients_query(self, patient_query_dict):
+        """
+        Builds the query that selects the patient count for a particular cohort
+        :param patient_query_dict: should be {'cohort_id': str(row['id])}
+        :return: patient_query_str, patient_query_tuple
+        """
+        patients_query_str = 'SELECT count(patient_id) ' \
+                             'FROM cohorts_patients '
+
+        patients_query_str += ' WHERE ' + '=%s AND '.join(key for key in patient_query_dict.keys()) + '=%s '
+        patient_query_tuple = tuple(value for value in patient_query_dict.values())
+
+        return patients_query_str, patient_query_tuple
+
+    def build_samples_query(self, sample_query_dict):
+        """
+        Builds the query that selects the sample count for a particular cohort
+        :param sample_query_dict: should be {'cohort_id': str(row['id])}
+        :return: sample_query_str, sample_query_tuple
+        """
+        samples_query_str = 'SELECT count(sample_id) ' \
+                            'FROM cohorts_samples '
+
+        samples_query_str += ' WHERE ' + '=%s AND '.join(key for key in sample_query_dict.keys()) + '=%s '
+        sample_query_tuple = tuple(value for value in sample_query_dict.values())
+
+        return samples_query_str, sample_query_tuple
+
 
 @ISB_CGC_Endpoints.api_class(resource_name='cohorts')
-class CohortAPI(remote.Service):
-    GET_RESOURCE = endpoints.ResourceContainer(token=messages.StringField(1), cohort_id=messages.IntegerField(2))
+class CohortsListAPI(remote.Service):
+    GET_RESOURCE = endpoints.ResourceContainer(token=messages.StringField(1))
 
     @endpoints.method(GET_RESOURCE, CohortDetailsList, http_method='GET')
     def list(self, request):
@@ -167,7 +187,7 @@ class CohortAPI(remote.Service):
         if access_token:
             user_email = get_user_email_from_token(access_token)
 
-        cohort_id = request.get_assigned_value('cohort_id')
+        # cohort_id = request.get_assigned_value('cohort_id')
 
         if user_email is None:
             raise endpoints.UnauthorizedException(
@@ -183,8 +203,8 @@ class CohortAPI(remote.Service):
 
         query_dict = {'cohorts_cohort_perms.user_id': user_id, 'cohorts_cohort.active': unicode('1')}
 
-        if cohort_id:
-            query_dict['cohorts_cohort.id'] = cohort_id
+        # if cohort_id:
+        #     query_dict['cohorts_cohort.id'] = cohort_id
 
         query_str, query_tuple = CohortsListQueryBuilder().build_cohort_query(query_dict)
 
@@ -211,6 +231,12 @@ class CohortAPI(remote.Service):
                         value=str(filter_row['value'])
                     ))
 
+                if filter_data == []:
+                    filter_data.append(FilterDetails(
+                        name="None",
+                        value="None"
+                    ))
+
                 # filter_data = CohortsListMessageListBuilder().build_message_list(FilterDetails,
                 #                                                                  filter_cursor.fetchall())
 
@@ -221,25 +247,45 @@ class CohortAPI(remote.Service):
 
                 parent_cursor = db.cursor(MySQLdb.cursors.DictCursor)
                 parent_cursor.execute(parent_query_str, parent_query_tuple)
-                parent_id_data = [int(p_row['parent_id']) for p_row in parent_cursor.fetchall() if row.get('parent_id')]
+                parent_id_data = [str(p_row['parent_id']) for p_row in parent_cursor.fetchall() if row.get('parent_id')]
+
+                if parent_id_data == []:
+                    parent_id_data.append("None")
+
+                patient_query_dict = {'cohort_id': str(row['id'])}
+                patient_query_str, patient_query_tuple = CohortsListQueryBuilder().build_patients_query(patient_query_dict)
+                patient_cursor = db.cursor(MySQLdb.cursors.DictCursor)
+                patient_cursor.execute(patient_query_str, patient_query_tuple)
+                patient_row = patient_cursor.fetchone()
+                patient_count = int(patient_row.get('count(patient_id)')) if patient_row.get('count(patient_id)') else 0
+                patient_cursor.close()  # todo: initialize and close in finally clause
+
+                sample_query_dict = {'cohort_id': str(row['id'])}
+                sample_query_str, sample_query_tuple = CohortsListQueryBuilder().build_samples_query(sample_query_dict)
+                sample_cursor = db.cursor(MySQLdb.cursors.DictCursor)
+                sample_cursor.execute(sample_query_str, sample_query_tuple)
+                sample_row = sample_cursor.fetchone()
+                sample_count = int(sample_row.get('count(sample_id)')) if sample_row.get('count(sample_id)') else 0
+                sample_cursor.close()  # todo: initialize and close in finally clause
 
                 data.append(CohortDetails(
                     id=str(row['id']),
                     name=str(row['name']),
                     last_date_saved=str(row['last_date_saved']),
-                    perm=str(row['perm']),
+                    permission=str(row['perm']),
                     email=str(row['email']),
                     comments=str(row['comments']),
-                    source_type=None if row['source_type'] is None else str(row['source_type']),
-                    source_notes=None if row['source_notes'] is None else str(row['source_notes']),
+                    source_type=str(row['source_type']),
+                    source_notes=str(row['source_notes']),
                     parent_id=parent_id_data,
-                    filters=filter_data
+                    filters=filter_data,
+                    patient_count=patient_count,
+                    sample_count=sample_count
                 ))
 
             if len(data) == 0:
-                optional_message = " matching cohort id " + str(cohort_id) if cohort_id is not None else ""
-                raise endpoints.NotFoundException("{} has no active cohorts{}."
-                                                  .format(user_email, optional_message))
+                # optional_message = " matching cohort id " + str(cohort_id) if cohort_id is not None else ""
+                raise endpoints.NotFoundException("{} has no active cohorts.".format(user_email))
             return CohortDetailsList(items=data, count=len(data))
 
         except (IndexError, TypeError) as e:
@@ -259,117 +305,3 @@ class CohortAPI(remote.Service):
             if parent_cursor: parent_cursor.close()
             if db and db.open: db.close()
             request_finished.send(self)
-
-    POST_RESOURCE = endpoints.ResourceContainer(MetadataRangesItem)
-    @endpoints.method(POST_RESOURCE, CohortPatientsSamplesList)
-    def preview(self, request):
-        """
-        Takes a JSON object of filters in the request body and returns a "preview" of the cohort that would
-        result from passing a similar request to the cohort **save** endpoint.  This preview consists of
-        two lists: the lists of participant (aka patient) barcodes, and the list of sample barcodes.
-        Authentication is not required.
-        """
-        patient_cursor = None
-        sample_cursor = None
-        db = None
-
-        if are_there_bad_keys(request) or are_there_no_acceptable_keys(request):
-            err_msg = construct_parameter_error_message(request, True)
-            raise endpoints.BadRequestException(err_msg)
-
-        query_dict = {
-            k.name: request.get_assigned_value(k.name)
-            for k in request.all_fields()
-            if request.get_assigned_value(k.name) and not k.name.endswith('_gte') and not k.name.endswith('_lte')
-            }
-
-        gte_query_dict = {
-            k.name.replace('_gte', ''): request.get_assigned_value(k.name)
-            for k in request.all_fields()
-            if request.get_assigned_value(k.name) and k.name.endswith('_gte')
-            }
-
-        lte_query_dict = {
-            k.name.replace('_lte', ''): request.get_assigned_value(k.name)
-            for k in request.all_fields()
-            if request.get_assigned_value(k.name) and k.name.endswith('_lte')
-            }
-
-        patient_query_str = 'SELECT DISTINCT(IF(ParticipantBarcode="", LEFT(SampleBarcode,12), ParticipantBarcode)) ' \
-                            'AS ParticipantBarcode ' \
-                            'FROM metadata_samples ' \
-                            'WHERE '
-
-        sample_query_str = 'SELECT SampleBarcode ' \
-                           'FROM metadata_samples ' \
-                           'WHERE '
-
-        value_tuple = ()
-
-        for key, value_list in query_dict.iteritems():
-
-            patient_query_str += ' AND ' if not patient_query_str.endswith('WHERE ') else ''
-            sample_query_str += ' AND ' if not sample_query_str.endswith('WHERE ') else ''
-            if "None" in value_list:
-                value_list.remove("None")
-                patient_query_str += ' ( {key} is null '.format(key=key)
-                sample_query_str += ' ( {key} is null '.format(key=key)
-                if len(value_list) > 0:
-                    patient_query_str += ' OR {key} IN ({vals}) '.format(key=key, vals=', '.join(['%s'] * len(value_list)))
-                    sample_query_str += ' OR {key} IN ({vals}) '.format(key=key, vals=', '.join(['%s'] * len(value_list)))
-                patient_query_str += ') '
-                sample_query_str += ') '
-            else:
-                patient_query_str += ' {key} IN ({vals}) '.format(key=key, vals=', '.join(['%s'] * len(value_list)))
-                sample_query_str += ' {key} IN ({vals}) '.format(key=key, vals=', '.join(['%s'] * len(value_list)))
-            value_tuple += tuple(value_list)
-
-        for key, value in gte_query_dict.iteritems():
-            patient_query_str += ' AND ' if not patient_query_str.endswith('WHERE ') else ''
-            patient_query_str += ' {} >=%s '.format(key)
-            sample_query_str += ' AND ' if not sample_query_str.endswith('WHERE ') else ''
-            sample_query_str += ' {} >=%s '.format(key)
-            value_tuple += (value,)
-
-        for key, value in lte_query_dict.iteritems():
-            patient_query_str += ' AND ' if not patient_query_str.endswith('WHERE ') else ''
-            patient_query_str += ' {} <=%s '.format(key)
-            sample_query_str += ' AND ' if not sample_query_str.endswith('WHERE ') else ''
-            sample_query_str += ' {} <=%s '.format(key)
-            value_tuple += (value,)
-
-        sample_query_str += ' GROUP BY SampleBarcode'
-
-        patient_barcodes = []
-        sample_barcodes = []
-
-        try:
-            db = sql_connection()
-            patient_cursor = db.cursor(MySQLdb.cursors.DictCursor)
-            patient_cursor.execute(patient_query_str, value_tuple)
-            for row in patient_cursor.fetchall():
-                patient_barcodes.append(row['ParticipantBarcode'])
-
-            sample_cursor = db.cursor(MySQLdb.cursors.DictCursor)
-            sample_cursor.execute(sample_query_str, value_tuple)
-            for row in sample_cursor.fetchall():
-                sample_barcodes.append(row['SampleBarcode'])
-
-        except (IndexError, TypeError), e:
-            logger.warn(e)
-            raise endpoints.NotFoundException("Error retrieving samples or patients: {}".format(e))
-        except MySQLdb.ProgrammingError as e:
-            msg = '{}:\n\tpatient query: {} {}\n\tsample query: {} {}' \
-                .format(e, patient_query_str, value_tuple, sample_query_str, value_tuple)
-            logger.warn(msg)
-            raise endpoints.BadRequestException("Error previewing cohort. {}".format(msg))
-        finally:
-            if patient_cursor: patient_cursor.close()
-            if sample_cursor: sample_cursor.close()
-            if db and db.open: db.close()
-            request_finished.send(self)
-
-        return CohortPatientsSamplesList(patients=patient_barcodes,
-                                         patient_count=len(patient_barcodes),
-                                         samples=sample_barcodes,
-                                         sample_count=len(sample_barcodes))

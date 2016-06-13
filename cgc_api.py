@@ -34,7 +34,9 @@ from api.cohort_api.save_cohort import SaveCohort
 from api.cohort_api.delete_cohort import DeleteCohort
 # from api.cohort_api.cohort_helpers import Cohort_Endpoints2                       # endpoints.api(name='cohort_api', ...) @Cohort_Endpoints.api_class
 
-from api.isb_cgc_api.cohort_resource import CohortAPI
+from api.isb_cgc_api.cohorts_list import CohortsListAPI
+from api.isb_cgc_api.cohorts_preview import CohortsPreviewAPI
+from api.isb_cgc_api.cohorts_get import CohortsGetAPI
 
 from api.metadata import Meta_Endpoints, Meta_Endpoints_v2      # endpoints.api(name='meta_api', ...) @Meta_Endpoints.api_class
 from api.pairwise_api import Pairwise_Endpoints                 # endpoints.api(name='pairwise',...) @Pairwise_Endpoints.api_class
@@ -56,7 +58,9 @@ APPLICATION = endpoints.api_server([
     SaveCohort,
     DeleteCohort,
 
-    CohortAPI,
+    CohortsListAPI,
+    CohortsPreviewAPI,
+    CohortsGetAPI,
 
     FeatureAccessEndpoints,
     Meta_Endpoints,
