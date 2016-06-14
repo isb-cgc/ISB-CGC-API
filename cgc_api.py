@@ -39,6 +39,8 @@ from api.isb_cgc_api.cohorts_preview import CohortsPreviewAPI
 from api.isb_cgc_api.cohorts_get import CohortsGetAPI
 from api.isb_cgc_api.cohorts_delete import CohortsDeleteAPI
 from api.isb_cgc_api.cohorts_create import CohortsCreateAPI
+from api.isb_cgc_api.cohorts_datafilenamekeys import CohortsDatafilenamekeysAPI
+from api.isb_cgc_api.cohorts_googlegenomics import CohortsGoogleGenomicssAPI
 
 from api.metadata import Meta_Endpoints, Meta_Endpoints_v2      # endpoints.api(name='meta_api', ...) @Meta_Endpoints.api_class
 from api.pairwise_api import Pairwise_Endpoints                 # endpoints.api(name='pairwise',...) @Pairwise_Endpoints.api_class
@@ -62,11 +64,11 @@ APPLICATION = endpoints.api_server([
 
     CohortsListAPI,
     CohortsPreviewAPI,
-
     CohortsGetAPI,
     CohortsDeleteAPI,
     CohortsCreateAPI,
-
+    CohortsDatafilenamekeysAPI,
+    CohortsGoogleGenomicssAPI,
 
     FeatureAccessEndpoints,
     Meta_Endpoints,
