@@ -24,15 +24,6 @@ from api.single_feature_access import SingleFeatureDataAccess   # class SingleFe
 from api.data_access import FeatureDataEndpoints                # class FeatureDataEndpoints(remote.Service): decorated with @FeatureDataEndpointsAPI.api_class which is defined as FeatureAccessEndpointsAPI = endpoints_api(name='feature_type_api', ...)
 
 from api.Cohort import Cohort_Endpoints_API                     # class Cohort_Endpoints_API(remote.Service): decorated with @Cohort_Endpoints.api_class which is defined as Cohort_Endpoints = endpoints.api(name='cohort_api',..)
-from api.cohort_api.preview_cohort import PreviewCohort
-from api.cohort_api.cohorts_list import CohortsList
-from api.cohort_api.cohort_patients_samples_list import CohortsPatientsSamplesList
-from api.cohort_api.patient_details import PatientDetails
-from api.cohort_api.sample_details import SampleDetails
-from api.cohort_api.datafilenamekey_list import DataFileNameKeyList
-from api.cohort_api.save_cohort import SaveCohort
-from api.cohort_api.delete_cohort import DeleteCohort
-# from api.cohort_api.cohort_helpers import Cohort_Endpoints2                       # endpoints.api(name='cohort_api', ...) @Cohort_Endpoints.api_class
 
 from api.isb_cgc_api.cohorts_list import CohortsListAPI
 from api.isb_cgc_api.cohorts_preview import CohortsPreviewAPI
@@ -55,16 +46,7 @@ package = 'isb-cgc-api'
 
 
 APPLICATION = endpoints.api_server([
-    Cohort_Endpoints_API,  # original
-
-    PreviewCohort,
-    CohortsList,
-    CohortsPatientsSamplesList,
-    PatientDetails,
-    SampleDetails,
-    DataFileNameKeyList,
-    SaveCohort,
-    DeleteCohort,
+    Cohort_Endpoints_API,  # v1
 
     CohortsListAPI,
     CohortsPreviewAPI,
