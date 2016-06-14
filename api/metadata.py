@@ -1180,7 +1180,7 @@ def query_samples_and_studies(parameter, bucket_by=None):
 
     except (TypeError, IndexError) as e:
         if cursor: cursor.close()
-        if db: db.close()
+        if db and db.open: db.close()
         raise endpoints.NotFoundException('Error in retrieving barcodes.')
 
 
@@ -1321,7 +1321,7 @@ class Meta_Endpoints_API(remote.Service):
 
         except (IndexError, TypeError) as e:
             if cursor: cursor.close()
-            if db: db.close()
+            if db and db.open: db.close()
             raise endpoints.NotFoundException('Sample not found.')
 
 
@@ -1464,7 +1464,7 @@ class Meta_Endpoints_API(remote.Service):
 
         except (IndexError, TypeError) as e:
             if cursor: cursor.close()
-            if db: db.close()
+            if db and db.open: db.close()
             raise endpoints.NotFoundException('Sample not found.')
 
     # UNUSED ENDPOINT
@@ -1611,7 +1611,7 @@ class Meta_Endpoints_API(remote.Service):
                 db.close()
             except (KeyError, TypeError) as e:
                 if cursor: cursor.close()
-                if db: db.close()
+                if db and db.open: db.close()
                 raise endpoints.NotFoundException('Error in getting value counts.')
 
         value_list_item = MetaAttrValuesList()
@@ -1661,7 +1661,7 @@ class Meta_Endpoints_API(remote.Service):
 
         except (IndexError, TypeError):
             if cursor: cursor.close()
-            if db: db.close()
+            if db and db.open: db.close()
             raise endpoints.NotFoundException('Sample %s not found.' % (request.id,))
 
     # UNUSED ENDPOINT
@@ -1753,7 +1753,7 @@ class Meta_Endpoints_API(remote.Service):
 
         except (IndexError, TypeError):
             if cursor: cursor.close()
-            if db: db.close()
+            if db and db.open: db.close()
             raise endpoints.NotFoundException('Error in meta_domains')
 
 
@@ -1838,7 +1838,7 @@ class Meta_Endpoints_API(remote.Service):
             raise endpoints.ServiceException('Error getting sample list')
         finally:
             if cursor: cursor.close()
-            if db: db.close()
+            if db and db.open: db.close()
             request_finished.send(self)
 
         platform_count_query = 'select Platform, count(Platform) as platform_count from metadata_data where SampleBarcode in {0} and DatafileUploaded="true"  group by Platform order by SampleBarcode;'.format(in_clause)
@@ -1909,7 +1909,7 @@ class Meta_Endpoints_API(remote.Service):
             raise endpoints.ServiceException('Error getting counts')
         finally:
             if cursor: cursor.close()
-            if db: db.close()
+            if db and db.open: db.close()
             request_finished.send(self)
 
     GET_RESOURCE = endpoints.ResourceContainer(sample_id=messages.StringField(1, required=True))
@@ -2004,7 +2004,7 @@ class Meta_Endpoints_API(remote.Service):
             return SampleFiles(total_file_count=len(file_list), page=1, platform_count_list=platform_list, file_list=file_list)
         except Exception as e:
             if cursor: cursor.close()
-            if db: db.close()
+            if db and db.open: db.close()
             raise endpoints.NotFoundException('Error getting file details: {}'.format(str(e)))
 
 """
@@ -2088,7 +2088,7 @@ class Meta_Endpoints_API_v2(remote.Service):
             raise endpoints.InternalServerErrorException('Error retrieving attribute list')
         finally:
             if cursor: cursor.close()
-            if db: db.close()
+            if db and db.open: db.close()
             request_finished.send(self)
 
     POST_RESOURCE = endpoints.ResourceContainer(IncomingMetadataCount)
