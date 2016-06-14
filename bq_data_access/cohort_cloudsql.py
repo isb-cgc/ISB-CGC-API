@@ -16,6 +16,8 @@ limitations under the License.
 
 """
 
+import logging
+
 from api.api_helpers import sql_connection
 
 from MySQLdb.cursors import DictCursor
@@ -23,6 +25,9 @@ from MySQLdb.cursors import DictCursor
 DJANGO_COHORT_TABLE = 'cohorts_samples'
 DJANGO_COHORT_INFO_TABLE = 'cohorts_cohort'
 DJANGO_COHORT_SAMPLES_TABLE = 'cohorts_samples'
+
+logger = logging
+
 
 class CohortException(Exception):
     def __init__(self, message):
@@ -96,6 +101,7 @@ class CloudSQLCohortAccess(object):
             return cohort_per_samples
 
         except Exception as e:
+            logger.exception(e)
             raise CohortException('get_cohorts_for_datapoints CloudSQL error, cohort IDs {cohort_ids}: {message}'.format(
                 cohort_ids=cohort_id_array,
                 message=str(e.message)))
