@@ -803,6 +803,7 @@ class FileDetails(messages.Message):
     datatype = messages.StringField(6)
     gg_readgroupset_id = messages.StringField(7)
     cloudstorage_location = messages.StringField(8)
+    access = messages.StringField(9)
 
 
 class SampleFiles(messages.Message):
@@ -1852,7 +1853,7 @@ class Meta_Endpoints_API(remote.Service):
             request_finished.send(self)
 
         platform_count_query = 'select Platform, count(Platform) as platform_count from metadata_data where SampleBarcode in {0} and DatafileUploaded="true"  group by Platform order by SampleBarcode;'.format(in_clause)
-        query = 'select SampleBarcode, DatafileName, DatafileNameKey, Pipeline, Platform, DataLevel, Datatype, GG_readgroupset_id, Repository, SecurityProtocol from metadata_data where SampleBarcode in {0} and DatafileUploaded="true" '.format(in_clause)
+        query = 'select SampleBarcode, DatafileName, DatafileNameKey, SecurityProtocol, Pipeline, Platform, DataLevel, Datatype, GG_readgroupset_id, Repository, SecurityProtocol from metadata_data where SampleBarcode in {0} and DatafileUploaded="true" '.format(in_clause)
 
         # Check for incoming platform selectors
         platform_selector_list = []
@@ -1898,7 +1899,7 @@ class Meta_Endpoints_API(remote.Service):
                 cursor.execute(query, query_tuple)
                 if cursor.rowcount > 0:
                     for item in cursor.fetchall():
-                        if 'controlled' not in str(item['SecurityProtocol']).lower() and 'DatafileNameKey' in item and item['DatafileNameKey'] != '':
+                        if 'DatafileNameKey' in item and item['DatafileNameKey'] != '':
                             item['DatafileNameKey'] = "gs://{}{}".format(settings.OPEN_DATA_BUCKET, item['DatafileNameKey'])
 
                         else:  # not filtering on dbGaP_authorized
@@ -1912,7 +1913,7 @@ class Meta_Endpoints_API(remote.Service):
                             else:
                                 item['DatafileNameKey'] = ''
 
-                        file_list.append(FileDetails(sample=item['SampleBarcode'], cloudstorage_location=item['DatafileNameKey'], filename=item['DatafileName'], pipeline=item['Pipeline'], platform=item['Platform'], datalevel=item['DataLevel'], datatype=(item['Datatype'] or " "), gg_readgroupset_id=item['GG_readgroupset_id']))
+                        file_list.append(FileDetails(sample=item['SampleBarcode'], cloudstorage_location=item['DatafileNameKey'], access=(item['SecurityProtocol'] or 'N/A'), filename=item['DatafileName'], pipeline=item['Pipeline'], platform=item['Platform'], datalevel=item['DataLevel'], datatype=(item['Datatype'] or " "), gg_readgroupset_id=item['GG_readgroupset_id']))
                 else:
                     file_list.append(FileDetails(sample='None', filename='', pipeline='', platform='', datalevel=''))
             return SampleFiles(total_file_count=count, page=page, platform_count_list=platform_count_list, file_list=file_list)
