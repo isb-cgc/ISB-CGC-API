@@ -15,24 +15,18 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-import django
 import endpoints
 import logging
 import MySQLdb
 
-from django.conf import settings
-from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
-from django.contrib.auth.models import User as Django_User
 from django.core.signals import request_finished
 from protorpc import remote, messages
 
 from isb_cgc_api_helpers import ISB_CGC_Endpoints, MetadataRangesItem, \
     are_there_bad_keys, are_there_no_acceptable_keys, construct_parameter_error_message
-from api.api_helpers import sql_connection, get_user_email_from_token
+from api.api_helpers import sql_connection
 
 logger = logging.getLogger(__name__)
-
-BASE_URL = settings.BASE_URL
 
 
 class CohortPatientsSamplesList(messages.Message):

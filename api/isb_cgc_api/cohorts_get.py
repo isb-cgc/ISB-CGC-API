@@ -26,8 +26,7 @@ from django.contrib.auth.models import User as Django_User
 from django.core.signals import request_finished
 from protorpc import remote, messages
 
-from isb_cgc_api_helpers import ISB_CGC_Endpoints, MetadataRangesItem, \
-    are_there_bad_keys, are_there_no_acceptable_keys, construct_parameter_error_message
+from isb_cgc_api_helpers import ISB_CGC_Endpoints
 from api.api_helpers import sql_connection, get_user_email_from_token
 
 logger = logging.getLogger(__name__)

@@ -20,7 +20,6 @@ import endpoints
 import logging
 import MySQLdb
 
-from django.conf import settings
 from django.core.signals import request_finished
 from protorpc import remote, messages
 

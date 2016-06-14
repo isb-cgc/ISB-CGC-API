@@ -19,18 +19,15 @@ limitations under the License.
 import endpoints
 import logging
 import MySQLdb
-import django
 
 from django.conf import settings
 from django.core.signals import request_finished
 from protorpc import remote, messages
 
 from isb_cgc_api_helpers import ISB_CGC_Endpoints, are_there_bad_keys, construct_parameter_error_message
-from api.api_helpers import sql_connection, get_user_email_from_token
+from api.api_helpers import sql_connection
 
 logger = logging.getLogger(__name__)
-
-BASE_URL = settings.BASE_URL
 
 
 class DataFileNameKeyList(messages.Message):

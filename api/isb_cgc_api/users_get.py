@@ -41,6 +41,7 @@ INSTALLED_APP_CLIENT_ID = settings.INSTALLED_APP_CLIENT_ID
 
 class ReturnJSON(messages.Message):
     message = messages.StringField(1)
+    dbGaP_authorized = messages.BooleanField(2)
 
 
 @ISB_CGC_Endpoints.api_class(resource_name='users')
@@ -51,7 +52,7 @@ class UserGetAPI(remote.Service):
     @endpoints.method(GET_RESOURCE, ReturnJSON, http_method='GET', path='users')
     def get(self, request):
         '''
-        Returns information about the user.
+        Returns the dbGaP authorization status of the user.
         '''
         user_email = None
 
@@ -70,7 +71,8 @@ class UserGetAPI(remote.Service):
             am_dbgap_authorized = is_dbgap_authorized(user_email)
 
             if not am_dbgap_authorized:
-                return ReturnJSON(message="{} is not on the controlled-access google group.".format(user_email))
+                return ReturnJSON(message="{} is not on the controlled-access google group.".format(user_email),
+                                  dbGaP_authorized=False)
 
             django.setup()
             # all the following five situations should never happen
@@ -131,9 +133,7 @@ class UserGetAPI(remote.Service):
 
             # all checks have passed
             return ReturnJSON(message="{} has dbGaP authorization and is a member of the controlled-access google group."
-                              .format(user_email))
+                              .format(user_email),
+                              dbGaP_authorized=True)
         else:
             raise endpoints.UnauthorizedException("Authentication unsuccessful.")
-
-
-

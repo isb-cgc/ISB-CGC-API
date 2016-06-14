@@ -26,8 +26,7 @@ from django.contrib.auth.models import User as Django_User
 from django.core.signals import request_finished
 from protorpc import remote, messages
 
-from isb_cgc_api_helpers import ISB_CGC_Endpoints, MetadataRangesItem, \
-    are_there_bad_keys, are_there_no_acceptable_keys, construct_parameter_error_message
+from isb_cgc_api_helpers import ISB_CGC_Endpoints
 from api.api_helpers import sql_connection, get_user_email_from_token
 
 logger = logging.getLogger(__name__)
@@ -187,8 +186,6 @@ class CohortsListAPI(remote.Service):
         if access_token:
             user_email = get_user_email_from_token(access_token)
 
-        # cohort_id = request.get_assigned_value('cohort_id')
-
         if user_email is None:
             raise endpoints.UnauthorizedException(
                 "Authentication failed. Try signing in to {} to register with the web application."
@@ -202,9 +199,6 @@ class CohortsListAPI(remote.Service):
             raise endpoints.NotFoundException("%s does not have an entry in the user database." % user_email)
 
         query_dict = {'cohorts_cohort_perms.user_id': user_id, 'cohorts_cohort.active': unicode('1')}
-
-        # if cohort_id:
-        #     query_dict['cohorts_cohort.id'] = cohort_id
 
         query_str, query_tuple = CohortsListQueryBuilder().build_cohort_query(query_dict)
 
