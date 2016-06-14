@@ -20,16 +20,18 @@ import endpoints
 import django
 import pytz
 import datetime
+import logging
 from protorpc import messages
 from protorpc import remote
 
 from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 from django.contrib.auth.models import User as Django_User
-from accounts.models import NIH_User
 from django.core.signals import request_finished
+from django.conf import settings
 
-
-from api_helpers import *
+from isb_cgc_api_helpers import ISB_CGC_Endpoints
+from api.api_helpers import get_user_email_from_token, is_dbgap_authorized
+from accounts.models import NIH_User
 
 logger = logging.getLogger(__name__)
 
@@ -38,25 +40,19 @@ INSTALLED_APP_CLIENT_ID = settings.INSTALLED_APP_CLIENT_ID
 
 
 class ReturnJSON(messages.Message):
-    msg = messages.StringField(1)
+    message = messages.StringField(1)
 
 
-User_Endpoints = endpoints.api(name='user_api', version='v1', description='Get information about users.',
-                               allowed_client_ids=[INSTALLED_APP_CLIENT_ID, endpoints.API_EXPLORER_CLIENT_ID])
-
-@User_Endpoints.api_class(resource_name='user_endpoints')
-class User_Endpoints_API(remote.Service):
+@ISB_CGC_Endpoints.api_class(resource_name='users')
+class UserGetAPI(remote.Service):
 
     GET_RESOURCE = endpoints.ResourceContainer(token=messages.StringField(1, required=False))
-    @endpoints.method(GET_RESOURCE, ReturnJSON,
-                      path='am_i_dbgap_authorized', http_method='GET', name='user.amiauthorized')
-    def am_i_dbgap_authorized(self, request):
+
+    @endpoints.method(GET_RESOURCE, ReturnJSON, http_method='GET', path='users')
+    def get(self, request):
         '''
         Returns information about the user.
-        :param token: Optional. Access token with email scope to verify user's google identity.
-        :return: ReturnJSON with msg string indicating presence or absence on the controlled-access list.
         '''
-        print >> sys.stderr,'Called '+sys._getframe().f_code.co_name
         user_email = None
 
         if endpoints.get_current_user() is not None:
@@ -74,7 +70,7 @@ class User_Endpoints_API(remote.Service):
             am_dbgap_authorized = is_dbgap_authorized(user_email)
 
             if not am_dbgap_authorized:
-                return ReturnJSON(msg="You are not on the controlled-access google group.")
+                return ReturnJSON(message="{} is not on the controlled-access google group.".format(user_email))
 
             django.setup()
             # all the following five situations should never happen
@@ -134,7 +130,7 @@ class User_Endpoints_API(remote.Service):
                                                   .format(user_email))
 
             # all checks have passed
-            return ReturnJSON(msg="{} has dbGaP authorization and is a member of the controlled-access google group."
+            return ReturnJSON(message="{} has dbGaP authorization and is a member of the controlled-access google group."
                               .format(user_email))
         else:
             raise endpoints.UnauthorizedException("Authentication unsuccessful.")

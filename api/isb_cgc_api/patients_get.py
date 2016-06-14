@@ -37,18 +37,18 @@ class PatientDetails(messages.Message):
     aliquots = messages.StringField(3, repeated=True)
 
 
-@ISB_CGC_Endpoints.api_class(resource_name='participants')
-class ParticipantsGetAPI(remote.Service):
+@ISB_CGC_Endpoints.api_class(resource_name='patients')
+class PatientsGetAPI(remote.Service):
 
     GET_RESOURCE = endpoints.ResourceContainer(patient_barcode=messages.StringField(1, required=True))
 
     @endpoints.method(GET_RESOURCE, PatientDetails,
-                      path='participants/{patient_barcode}', http_method='GET')
+                      path='patients/{patient_barcode}', http_method='GET')
     def get(self, request):
         """
-        Returns information about a specific participant,
+        Returns information about a specific patient,
         including a list of samples and aliquots derived from this patient.
-        Takes a participant barcode (of length 12, *eg* TCGA-B9-7268) as a required parameter.
+        Takes a patient barcode (of length 12, *eg* TCGA-B9-7268) as a required parameter.
         User does not need to be authenticated.
         """
 
