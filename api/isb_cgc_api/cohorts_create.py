@@ -228,6 +228,10 @@ class CohortsCreateAPI(remote.Service):
 
             cohort_name = request.get_assigned_value('name')
 
+            if len(patient_barcodes) == 0 or len(sample_barcodes) == 0:
+                raise endpoints.BadRequestException(
+                    "The cohort could not be saved because no samples meet the specified parameters.")
+
             # 1. create new cohorts_cohort with name, active=True, last_date_saved=now
             created_cohort = Django_Cohort.objects.create(name=cohort_name, active=True,
                                                           last_date_saved=datetime.utcnow())

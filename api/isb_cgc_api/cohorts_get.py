@@ -256,17 +256,20 @@ class CohortsGetAPI(remote.Service):
 
             patient_query_dict = {'cohort_id': str(row['id'])}
             patient_query_str, patient_query_tuple = CohortsListQueryBuilder().build_patients_query(patient_query_dict)
-            patient_cursor = db.cursor(MySQLdb.cursors.DictCursor)
-            patient_cursor.execute(patient_query_str, patient_query_tuple)
-            patient_list = [str(patient_row.get('patient_id')) for patient_row in patient_cursor.fetchall() if patient_row.get('patient_id')]
-            patient_cursor.close()  # todo: initialize and close in finally clause
+            cursor.execute(patient_query_str, patient_query_tuple)
+            patient_list = [str(patient_row.get('patient_id')) for patient_row in cursor.fetchall() if patient_row.get('patient_id')]
+
+            if patient_list == []:
+                patient_list.append("None")
 
             sample_query_dict = {'cohort_id': str(row['id'])}
             sample_query_str, sample_query_tuple = CohortsListQueryBuilder().build_samples_query(sample_query_dict)
-            sample_cursor = db.cursor(MySQLdb.cursors.DictCursor)
-            sample_cursor.execute(sample_query_str, sample_query_tuple)
-            sample_list = [str(sample_row.get('sample_id')) for sample_row in sample_cursor.fetchall() if sample_row.get('sample_id')]
-            sample_cursor.close()  # todo: initialize and close in finally clause
+            cursor.execute(sample_query_str, sample_query_tuple)
+            sample_list = [str(sample_row.get('sample_id')) for sample_row in cursor.fetchall() if sample_row.get('sample_id')]
+
+            if sample_list == []:
+                sample_list.append("None")
+
 
             return CohortDetails(
                 id=str(row['id']),
