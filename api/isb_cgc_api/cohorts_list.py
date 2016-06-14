@@ -164,7 +164,7 @@ class CohortsListQueryBuilder(object):
 class CohortsListAPI(remote.Service):
     GET_RESOURCE = endpoints.ResourceContainer(token=messages.StringField(1))
 
-    @endpoints.method(GET_RESOURCE, CohortDetailsList, http_method='GET')
+    @endpoints.method(GET_RESOURCE, CohortDetailsList, http_method='GET', path='cohorts')
     def list(self, request):
         """
         Returns information about cohorts a user has either READER or OWNER permission on.

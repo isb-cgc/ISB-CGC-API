@@ -47,7 +47,8 @@ class CohortPatientsSamplesList(messages.Message):
 class CohortsPreviewAPI(remote.Service):
 
     POST_RESOURCE = endpoints.ResourceContainer(MetadataRangesItem)
-    @endpoints.method(POST_RESOURCE, CohortPatientsSamplesList)
+
+    @endpoints.method(POST_RESOURCE, CohortPatientsSamplesList, path='cohorts/preview')
     def preview(self, request):
         """
         Takes a JSON object of filters in the request body and returns a "preview" of the cohort that would

@@ -214,9 +214,12 @@ class CohortsGetAPI(remote.Service):
             db = sql_connection()
             cursor = db.cursor(MySQLdb.cursors.DictCursor)
             cursor.execute(query_str, query_tuple)
-            data = []
 
             row = cursor.fetchone()
+            if row is None:
+                raise endpoints.NotFoundException(
+                    "Cohort {id} not found. Either it never existed, it was deleted, "
+                    "or {user_email} does not have permission to view it.".format(id=cohort_id, user_email=user_email))
 
             filter_query_dict = {'cohorts_filters.resulting_cohort_id': str(row['id'])}
             filter_query_str, filter_query_tuple = CohortsListQueryBuilder().build_filter_query(filter_query_dict)
@@ -289,7 +292,7 @@ class CohortsGetAPI(remote.Service):
 
         except (IndexError, TypeError) as e:
             raise endpoints.NotFoundException(
-                "User {}'s cohorts not found. {}: {}".format(user_email, type(e), e))
+                "Cohort {} for user {} not found. {}: {}".format(cohort_id, user_email, type(e), e))
 
         except MySQLdb.ProgrammingError as e:
             msg = '{}:\n\tcohort query: {} {}\n\tfilter query: {} {}\n\tparent query: {} {}' \

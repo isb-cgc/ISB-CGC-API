@@ -95,8 +95,7 @@ class CohortsCreateAPI(remote.Service):
                                                 name=messages.StringField(2, required=True),
                                                 token=messages.StringField(3))
 
-    @endpoints.method(POST_RESOURCE, CreatedCohort, path='cohorts/create',
-                      http_method='POST', name='cohorts.create')
+    @endpoints.method(POST_RESOURCE, CreatedCohort, path='cohorts/create', http_method='POST')
     def create(self, request):
         """
         Creates and saves a cohort. Takes a JSON object in the request body to use as the cohort's filters.

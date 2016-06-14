@@ -62,9 +62,11 @@ APPLICATION = endpoints.api_server([
 
     CohortsListAPI,
     CohortsPreviewAPI,
+
     CohortsGetAPI,
     CohortsDeleteAPI,
     CohortsCreateAPI,
+
 
     FeatureAccessEndpoints,
     Meta_Endpoints,
