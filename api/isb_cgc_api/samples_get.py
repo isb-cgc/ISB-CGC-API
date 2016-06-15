@@ -58,7 +58,7 @@ class SampleDetails(messages.Message):
     aliquots = messages.StringField(2, repeated=True)
     patient = messages.StringField(3)
     data_details = messages.MessageField(DataDetails, 4, repeated=True)
-    data_details_count = messages.IntegerField(5)
+    data_details_count = messages.IntegerField(5, variant=messages.Variant.INT32)
     error = messages.StringField(6)
 
 

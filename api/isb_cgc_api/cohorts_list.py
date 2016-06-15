@@ -50,13 +50,13 @@ class CohortDetails(messages.Message):
     source_notes = messages.StringField(8)
     parent_id = messages.StringField(9, repeated=True)
     filters = messages.MessageField(FilterDetails, 10, repeated=True)
-    patient_count = messages.IntegerField(11)
-    sample_count = messages.IntegerField(12)
+    patient_count = messages.IntegerField(11, variant=messages.Variant.INT32)
+    sample_count = messages.IntegerField(12, variant=messages.Variant.INT32)
 
 
 class CohortDetailsList(messages.Message):
     items = messages.MessageField(CohortDetails, 1, repeated=True)
-    count = messages.IntegerField(2)
+    count = messages.IntegerField(2, variant=messages.Variant.INT32)
 
 
 class CohortsListQueryBuilder(object):

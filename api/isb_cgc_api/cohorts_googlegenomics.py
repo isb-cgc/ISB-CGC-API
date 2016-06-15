@@ -44,7 +44,7 @@ class GoogleGenomicsItem(messages.Message):
 
 class GoogleGenomicsList(messages.Message):
     items = messages.MessageField(GoogleGenomicsItem, 1, repeated=True)
-    count = messages.IntegerField(2)
+    count = messages.IntegerField(2, variant=messages.Variant.INT32)
 
 
 @ISB_CGC_Endpoints.api_class(resource_name='cohorts')
