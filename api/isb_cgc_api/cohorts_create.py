@@ -171,17 +171,18 @@ class CohortsCreateAPI(remote.Service):
 
         except (IndexError, TypeError), e:
             logger.warn(e)
+            request_finished.send(self)
             raise endpoints.NotFoundException("Error retrieving samples or patients")
         except MySQLdb.ProgrammingError as e:
             msg = '{}:\n\tpatient query: {} {}\n\tsample query: {} {}' \
                 .format(e, patient_query_str, value_tuple, sample_query_str, value_tuple)
             logger.warn(msg)
+            request_finished.send(self)
             raise endpoints.BadRequestException("Error saving cohort. {}".format(msg))
         finally:
             if patient_cursor: patient_cursor.close()
             if sample_cursor: sample_cursor.close()
             if db and db.open: db.close()
-            request_finished.send(self)
 
         cohort_name = request.get_assigned_value('name')
 
@@ -228,6 +229,7 @@ class CohortsCreateAPI(remote.Service):
         bcs.add_cohort_with_sample_barcodes(created_cohort.id, sample_barcodes)
 
         request_finished.send(self)
+
         return CreatedCohort(id=str(created_cohort.id),
                              name=cohort_name,
                              last_date_saved=str(datetime.utcnow()),

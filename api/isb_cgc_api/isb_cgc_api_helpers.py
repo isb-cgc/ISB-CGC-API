@@ -287,3 +287,103 @@ class MetadataRangesItem(messages.Message):
     year_of_initial_pathologic_diagnosis = messages.IntegerField(170, repeated=True)
     year_of_initial_pathologic_diagnosis_lte = messages.IntegerField(171)
     year_of_initial_pathologic_diagnosis_gte = messages.IntegerField(172)
+
+
+class CohortsListQueryBuilder(object):
+
+    def build_cohort_query(self, query_dict):
+        """
+        Builds the query that will select cohort id, name, last_date_saved,
+        perms, comments, source type, and source notes
+        :param query_dict: should contain {'cohorts_cohort_perms.user_id': user_id, 'cohorts_cohort.active': unicode('1')}
+        :return: query_str, query_tuple
+        """
+        query_str = 'SELECT cohorts_cohort.id, ' \
+                    'cohorts_cohort.name, ' \
+                    'cohorts_cohort.last_date_saved, ' \
+                    'cohorts_cohort_perms.perm, ' \
+                    'auth_user.email, ' \
+                    'cohorts_cohort_comments.content AS comments, ' \
+                    'cohorts_source.type AS source_type, ' \
+                    'cohorts_source.notes AS source_notes ' \
+                    'FROM cohorts_cohort_perms ' \
+                    'JOIN cohorts_cohort ' \
+                    'ON cohorts_cohort.id=cohorts_cohort_perms.cohort_id ' \
+                    'JOIN auth_user ' \
+                    'ON auth_user.id=cohorts_cohort_perms.user_id ' \
+                    'LEFT JOIN cohorts_cohort_comments ' \
+                    'ON cohorts_cohort_comments.user_id=cohorts_cohort_perms.user_id ' \
+                    'LEFT JOIN cohorts_source ' \
+                    'ON cohorts_source.cohort_id=cohorts_cohort_perms.cohort_id '
+
+        query_tuple = ()
+        if query_dict:
+            query_str += ' WHERE ' + '=%s and '.join(key for key in query_dict.keys()) + '=%s '
+            query_tuple = tuple(value for value in query_dict.values())
+
+        query_str += 'GROUP BY ' \
+                     'cohorts_cohort.id,  ' \
+                     'cohorts_cohort.name,  ' \
+                     'cohorts_cohort.last_date_saved,  ' \
+                     'cohorts_cohort_perms.perm,  ' \
+                     'auth_user.email,  ' \
+                     'comments,  ' \
+                     'source_type,  ' \
+                     'source_notes '
+
+        return query_str, query_tuple
+
+    def build_filter_query(self, filter_query_dict):
+        """
+        Builds the query that selects the filter name and value for a particular cohort
+        :param filter_query_dict: should be {'cohorts_filters.resulting_cohort_id:': id}
+        :return: filter_query_str, filter_query_tuple
+        """
+        filter_query_str = 'SELECT name, value ' \
+                           'FROM cohorts_filters '
+
+        filter_query_str += ' WHERE ' + '=%s AND '.join(key for key in filter_query_dict.keys()) + '=%s '
+        filter_query_tuple = tuple(value for value in filter_query_dict.values())
+
+        return filter_query_str, filter_query_tuple
+
+    def build_parent_query(self, parent_query_dict):
+        """
+        Builds the query that selects parent_ids for a particular cohort
+        :param parent_query_dict: should be {'cohort_id': str(row['id'])}
+        :return: parent_query_str, parent_query_tuple
+        """
+        parent_query_str = 'SELECT parent_id ' \
+                           'FROM cohorts_source '
+        parent_query_str += ' WHERE ' + '=%s AND '.join(key for key in parent_query_dict.keys()) + '=%s '
+        parent_query_tuple = tuple(value for value in parent_query_dict.values())
+
+        return parent_query_str, parent_query_tuple
+
+    def build_patients_query(self, patient_query_dict):
+        """
+        Builds the query that selects the patient count for a particular cohort
+        :param patient_query_dict: should be {'cohort_id': str(row['id])}
+        :return: patient_query_str, patient_query_tuple
+        """
+        patients_query_str = 'SELECT patient_id ' \
+                             'FROM cohorts_patients '
+
+        patients_query_str += ' WHERE ' + '=%s AND '.join(key for key in patient_query_dict.keys()) + '=%s '
+        patient_query_tuple = tuple(value for value in patient_query_dict.values())
+
+        return patients_query_str, patient_query_tuple
+
+    def build_samples_query(self, sample_query_dict):
+        """
+        Builds the query that selects the sample count for a particular cohort
+        :param sample_query_dict: should be {'cohort_id': str(row['id])}
+        :return: sample_query_str, sample_query_tuple
+        """
+        samples_query_str = 'SELECT sample_id ' \
+                            'FROM cohorts_samples '
+
+        samples_query_str += ' WHERE ' + '=%s AND '.join(key for key in sample_query_dict.keys()) + '=%s '
+        sample_query_tuple = tuple(value for value in sample_query_dict.values())
+
+        return samples_query_str, sample_query_tuple

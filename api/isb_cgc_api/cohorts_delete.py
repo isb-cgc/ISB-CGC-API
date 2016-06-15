@@ -48,7 +48,6 @@ class CohortsDeleteAPI(remote.Service):
         Deletes a cohort. User must have owner permissions on the cohort.
         """
         user_email = None
-        return_message = None
 
         if endpoints.get_current_user() is not None:
             user_email = endpoints.get_current_user().email()
