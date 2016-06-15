@@ -24,10 +24,10 @@ from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 from django.contrib.auth.models import User as Django_User
 from django.core.signals import request_finished
-from protorpc import remote, messages
+from protorpc import remote, messages, message_types
 
 from isb_cgc_api_helpers import ISB_CGC_Endpoints
-from api.api_helpers import sql_connection, get_user_email_from_token
+from api.api_helpers import sql_connection
 
 logger = logging.getLogger(__name__)
 
@@ -161,9 +161,8 @@ class CohortsListQueryBuilder(object):
 
 @ISB_CGC_Endpoints.api_class(resource_name='cohorts')
 class CohortsListAPI(remote.Service):
-    GET_RESOURCE = endpoints.ResourceContainer(token=messages.StringField(1))
 
-    @endpoints.method(GET_RESOURCE, CohortDetailsList, http_method='GET', path='cohorts')
+    @endpoints.method(message_types.VoidMessage, CohortDetailsList, http_method='GET', path='cohorts')
     def list(self, request):
         """
         Returns information about cohorts a user has either READER or OWNER permission on.
@@ -178,13 +177,6 @@ class CohortsListAPI(remote.Service):
 
         if endpoints.get_current_user() is not None:
             user_email = endpoints.get_current_user().email()
-
-        # users have the option of pasting the access token in the query string
-        # or in the 'token' field in the api explorer
-        # but this is not required
-        access_token = request.get_assigned_value('token')
-        if access_token:
-            user_email = get_user_email_from_token(access_token)
 
         if user_email is None:
             raise endpoints.UnauthorizedException(

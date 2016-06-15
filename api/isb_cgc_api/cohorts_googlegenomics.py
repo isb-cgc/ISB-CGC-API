@@ -50,8 +50,7 @@ class GoogleGenomicsList(messages.Message):
 @ISB_CGC_Endpoints.api_class(resource_name='cohorts')
 class CohortsGoogleGenomicssAPI(remote.Service):
 
-    GET_RESOURCE = endpoints.ResourceContainer(cohort_id=messages.IntegerField(1, required=True),
-                                               token=messages.StringField(2))
+    GET_RESOURCE = endpoints.ResourceContainer(cohort_id=messages.IntegerField(1, required=True))
 
     @endpoints.method(GET_RESOURCE, GoogleGenomicsList, http_method='GET',
                       path='cohorts/{cohort_id}/googlegenomics')
@@ -73,68 +72,61 @@ class CohortsGoogleGenomicssAPI(remote.Service):
         if endpoints.get_current_user() is not None:
             user_email = endpoints.get_current_user().email()
 
-        # users have the option of pasting the access token in the query string
-        # or in the 'token' field in the api explorer
-        # but this is not required
-        access_token = request.get_assigned_value('token')
-        if access_token:
-            user_email = get_user_email_from_token(access_token)
-
-        if user_email:
-            django.setup()
-            try:
-                user_id = Django_User.objects.get(email=user_email).id
-                django_cohort = Django_Cohort.objects.get(id=cohort_id)
-                cohort_perm = Cohort_Perms.objects.get(cohort_id=cohort_id, user_id=user_id)
-            except (ObjectDoesNotExist, MultipleObjectsReturned), e:
-                logger.warn(e)
-                err_msg = "Error retrieving cohort {} for user {}: {}".format(cohort_id, user_email, e)
-                if 'Cohort_Perms' in e.message:
-                    err_msg = "User {} does not have permissions on cohort {}. Error: {}" \
-                        .format(user_email, cohort_id, e)
-                request_finished.send(self)
-                raise endpoints.UnauthorizedException(err_msg)
-
-            query_str = 'SELECT SampleBarcode, GG_dataset_id, GG_readgroupset_id ' \
-                        'FROM metadata_data ' \
-                        'JOIN cohorts_samples ON metadata_data.SampleBarcode=cohorts_samples.sample_id ' \
-                        'WHERE cohorts_samples.cohort_id=%s ' \
-                        'AND GG_dataset_id !="" AND GG_readgroupset_id !="" ' \
-                        'GROUP BY SampleBarcode, GG_dataset_id, GG_readgroupset_id;'
-
-            query_tuple = (cohort_id,)
-            try:
-                db = sql_connection()
-                cursor = db.cursor(MySQLdb.cursors.DictCursor)
-                cursor.execute(query_str, query_tuple)
-
-                google_genomics_items = []
-                for row in cursor.fetchall():
-                    google_genomics_items.append(
-                        GoogleGenomicsItem(
-                            SampleBarcode=row['SampleBarcode'],
-                            GG_dataset_id=row['GG_dataset_id'],
-                            GG_readgroupset_id=row['GG_readgroupset_id']
-                        )
-                    )
-
-                return GoogleGenomicsList(items=google_genomics_items, count=len(google_genomics_items))
-
-            except (IndexError, TypeError), e:
-                logger.warn(e)
-                raise endpoints.NotFoundException(
-                    "Google Genomics dataset and readgroupset id's for cohort {} not found."
-                        .format(cohort_id))
-            except MySQLdb.ProgrammingError as e:
-                msg = '{}:\n\tquery: {} {}' \
-                    .format(e, query_str, query_tuple)
-                logger.warn(msg)
-                raise endpoints.BadRequestException("Error retrieving genomics data for cohort. {}".format(msg))
-            finally:
-                if cursor: cursor.close()
-                if db and db.open: db.close()
-                request_finished.send(self)
-        else:
+        if user_email is None:
             raise endpoints.UnauthorizedException(
                 "Authentication failed. Try signing in to {} to register with the web application."
                     .format(BASE_URL))
+
+        django.setup()
+        try:
+            user_id = Django_User.objects.get(email=user_email).id
+            django_cohort = Django_Cohort.objects.get(id=cohort_id)
+            cohort_perm = Cohort_Perms.objects.get(cohort_id=cohort_id, user_id=user_id)
+        except (ObjectDoesNotExist, MultipleObjectsReturned), e:
+            logger.warn(e)
+            err_msg = "Error retrieving cohort {} for user {}: {}".format(cohort_id, user_email, e)
+            if 'Cohort_Perms' in e.message:
+                err_msg = "User {} does not have permissions on cohort {}. Error: {}" \
+                    .format(user_email, cohort_id, e)
+            request_finished.send(self)
+            raise endpoints.UnauthorizedException(err_msg)
+
+        query_str = 'SELECT SampleBarcode, GG_dataset_id, GG_readgroupset_id ' \
+                    'FROM metadata_data ' \
+                    'JOIN cohorts_samples ON metadata_data.SampleBarcode=cohorts_samples.sample_id ' \
+                    'WHERE cohorts_samples.cohort_id=%s ' \
+                    'AND GG_dataset_id !="" AND GG_readgroupset_id !="" ' \
+                    'GROUP BY SampleBarcode, GG_dataset_id, GG_readgroupset_id;'
+
+        query_tuple = (cohort_id,)
+        try:
+            db = sql_connection()
+            cursor = db.cursor(MySQLdb.cursors.DictCursor)
+            cursor.execute(query_str, query_tuple)
+
+            google_genomics_items = []
+            for row in cursor.fetchall():
+                google_genomics_items.append(
+                    GoogleGenomicsItem(
+                        SampleBarcode=row['SampleBarcode'],
+                        GG_dataset_id=row['GG_dataset_id'],
+                        GG_readgroupset_id=row['GG_readgroupset_id']
+                    )
+                )
+
+            return GoogleGenomicsList(items=google_genomics_items, count=len(google_genomics_items))
+
+        except (IndexError, TypeError), e:
+            logger.warn(e)
+            raise endpoints.NotFoundException(
+                "Google Genomics dataset and readgroupset id's for cohort {} not found."
+                    .format(cohort_id))
+        except MySQLdb.ProgrammingError as e:
+            msg = '{}:\n\tquery: {} {}' \
+                .format(e, query_str, query_tuple)
+            logger.warn(msg)
+            raise endpoints.BadRequestException("Error retrieving genomics data for cohort. {}".format(msg))
+        finally:
+            if cursor: cursor.close()
+            if db and db.open: db.close()
+            request_finished.send(self)

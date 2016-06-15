@@ -27,7 +27,7 @@ from django.contrib.auth.models import User as Django_User
 from django.core.signals import request_finished
 from isb_cgc_api_helpers import ISB_CGC_Endpoints, MetadataRangesItem, \
     are_there_bad_keys, are_there_no_acceptable_keys, construct_parameter_error_message
-from api.api_helpers import sql_connection, get_user_email_from_token
+from api.api_helpers import sql_connection
 from cohorts.models import Cohort as Django_Cohort, Cohort_Perms, Patients, Samples, Filters
 from bq_data_access.cohort_bigquery import BigQueryCohortSupport
 
@@ -53,8 +53,7 @@ class CreatedCohort(messages.Message):
 @ISB_CGC_Endpoints.api_class(resource_name='cohorts')
 class CohortsCreateAPI(remote.Service):
     POST_RESOURCE = endpoints.ResourceContainer(MetadataRangesItem,
-                                                name=messages.StringField(2, required=True),
-                                                token=messages.StringField(3))
+                                                name=messages.StringField(2, required=True))
 
     @endpoints.method(POST_RESOURCE, CreatedCohort, path='cohorts/create', http_method='POST')
     def create(self, request):
@@ -72,13 +71,6 @@ class CohortsCreateAPI(remote.Service):
         if endpoints.get_current_user() is not None:
             user_email = endpoints.get_current_user().email()
 
-        # users have the option of pasting the access token in the query string
-        # or in the 'token' field in the api explorer
-        # but this is not required
-        access_token = request.get_assigned_value('token')
-        if access_token:
-            user_email = get_user_email_from_token(access_token)
-
         if user_email is None:
             raise endpoints.UnauthorizedException(
                 "Authentication failed. Try signing in to {} to register with the web application."
@@ -87,7 +79,6 @@ class CohortsCreateAPI(remote.Service):
         django.setup()
         try:
             django_user = Django_User.objects.get(email=user_email)
-            user_id = django_user.id
         except (ObjectDoesNotExist, MultipleObjectsReturned), e:
             logger.warn(e)
             request_finished.send(self)
@@ -101,9 +92,10 @@ class CohortsCreateAPI(remote.Service):
         query_dict = {
             k.name: request.get_assigned_value(k.name)
             for k in request.all_fields()
-            if request.get_assigned_value(
-            k.name) and k.name is not 'name' and k.name is not 'token' and not k.name.endswith(
-            '_gte') and not k.name.endswith('_lte')
+            if request.get_assigned_value(k.name)
+            and k.name is not 'name'
+            and not k.name.endswith('_gte')
+            and not k.name.endswith('_lte')
             }
 
         gte_query_dict = {
