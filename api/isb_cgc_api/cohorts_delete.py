@@ -82,11 +82,11 @@ class CohortsDeleteAPI(remote.Service):
                     if cohort_perm.perm == 'OWNER':
                         cohort_to_deactivate.active = False
                         cohort_to_deactivate.save()
-                        return_message = 'Cohort %d successfully deactivated.' % cohort_id
+                        return_message = 'Cohort %d successfully deleted.' % cohort_id
                     else:
                         return_message = 'You do not have owner permission on cohort %d.' % cohort_id
                 else:
-                    return_message = "Cohort %d was already deactivated." % cohort_id
+                    return_message = "Cohort %d was already deleted." % cohort_id
 
             except (ObjectDoesNotExist, MultipleObjectsReturned), e:
                 logger.warn(e)
