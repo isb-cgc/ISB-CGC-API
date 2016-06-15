@@ -50,8 +50,8 @@ class CohortDetails(messages.Message):
     source_notes = messages.StringField(8)
     parent_id = messages.StringField(9, repeated=True)
     filters = messages.MessageField(FilterDetails, 10, repeated=True)
-    patient_count = messages.IntegerField(11)
-    sample_count = messages.IntegerField(12)
+    patient_count = messages.IntegerField(11, variant=messages.Variant.INT32)
+    sample_count = messages.IntegerField(12, variant=messages.Variant.INT32)
     patients = messages.StringField(13, repeated=True)
     samples = messages.StringField(14, repeated=True)
 
