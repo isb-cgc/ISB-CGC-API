@@ -27,7 +27,7 @@ from django.core.signals import request_finished
 from protorpc import remote, messages
 
 from isb_cgc_api_helpers import ISB_CGC_Endpoints, CohortsListQueryBuilder
-from api.api_helpers import sql_connection, get_user_email_from_token
+from api.api_helpers import sql_connection
 
 logger = logging.getLogger(__name__)
 
@@ -58,8 +58,7 @@ class CohortDetails(messages.Message):
 
 @ISB_CGC_Endpoints.api_class(resource_name='cohorts')
 class CohortsGetAPI(remote.Service):
-    GET_RESOURCE = endpoints.ResourceContainer(cohort_id=messages.IntegerField(1, required=True),
-                                               token=messages.StringField(2))
+    GET_RESOURCE = endpoints.ResourceContainer(cohort_id=messages.IntegerField(1, required=True))
 
     @endpoints.method(GET_RESOURCE, CohortDetails, http_method='GET', path='cohorts/{cohort_id}')
     def get(self, request):
@@ -76,13 +75,6 @@ class CohortsGetAPI(remote.Service):
 
         if endpoints.get_current_user() is not None:
             user_email = endpoints.get_current_user().email()
-
-        # users have the option of pasting the access token in the query string
-        # or in the 'token' field in the api explorer
-        # but this is not required
-        access_token = request.get_assigned_value('token')
-        if access_token:
-            user_email = get_user_email_from_token(access_token)
 
         cohort_id = request.get_assigned_value('cohort_id')
 
