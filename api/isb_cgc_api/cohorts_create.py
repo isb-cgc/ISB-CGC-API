@@ -34,7 +34,6 @@ from bq_data_access.cohort_bigquery import BigQueryCohortSupport
 logger = logging.getLogger(__name__)
 
 BASE_URL = settings.BASE_URL
-MAX_FILTER_VALUE_LENGTH = 496  # max_len of Filter.value is 512, but 507 is too long. 495 is ok.
 
 
 class FilterDetails(messages.Message):
@@ -46,47 +45,9 @@ class CreatedCohort(messages.Message):
     id = messages.StringField(1)
     name = messages.StringField(2)
     last_date_saved = messages.StringField(3)
-    perm = messages.StringField(4)
-    email = messages.StringField(5)
-    comments = messages.StringField(6)
-    source_type = messages.StringField(7)
-    source_notes = messages.StringField(8)
-    parent_id = messages.IntegerField(9, repeated=True)
-    filters = messages.MessageField(FilterDetails, 10, repeated=True)
-    patient_count = messages.IntegerField(11)
-    sample_count = messages.IntegerField(12)
-
-
-def get_list_of_split_values_for_filter_model(large_value_list):
-    '''
-    :rtype: list
-    :param large_value_list: protorpc.messages.FieldList
-    :return: list of smaller protorpc.messages.FieldLists
-    '''
-
-    return_list = []
-
-    # if length_of_list is larger than 512 characters,
-    # the Filter model will not be able to be saved
-    # with this as the value field
-    length_of_list = len('"' + '", "'.join(large_value_list) + '"')
-    while length_of_list > MAX_FILTER_VALUE_LENGTH:
-        new_smaller_list = []
-        length_of_smaller_list = len('"' + '", "'.join(new_smaller_list) + '"')
-        while length_of_smaller_list < MAX_FILTER_VALUE_LENGTH:
-            try:
-                new_smaller_list.append(large_value_list.pop())
-            except IndexError:
-                break
-            length_of_smaller_list = len('"' + '", "'.join(new_smaller_list) + '"')
-        large_value_list.append(new_smaller_list.pop())
-        return_list.append(new_smaller_list)
-        length_of_list = len('"' + '", "'.join(large_value_list) + '"')
-
-    if len(large_value_list):
-        return_list.append(large_value_list)
-
-    return return_list
+    filters = messages.MessageField(FilterDetails, 4, repeated=True)
+    patient_count = messages.IntegerField(5, variant=messages.Variant.INT32)
+    sample_count = messages.IntegerField(6, variant=messages.Variant.INT32)
 
 
 @ISB_CGC_Endpoints.api_class(resource_name='cohorts')
@@ -236,6 +197,7 @@ class CohortsCreateAPI(remote.Service):
             raise endpoints.BadRequestException(
                 "The cohort could not be saved because no samples meet the specified parameters.")
 
+        # todo: maybe create all objects first, then save them all at the end?
         # 1. create new cohorts_cohort with name, active=True, last_date_saved=now
         created_cohort = Django_Cohort.objects.create(name=cohort_name, active=True,
                                                       last_date_saved=datetime.utcnow())
@@ -257,13 +219,15 @@ class CohortsCreateAPI(remote.Service):
         perm.save()
 
         # 5. Create filters applied
-        for key, val in query_dict.items():
-            if len('", "'.join(val)) > MAX_FILTER_VALUE_LENGTH:
-                new_val_list = get_list_of_split_values_for_filter_model(val)
-                for new_val in new_val_list:
-                    Filters.objects.create(resulting_cohort=created_cohort, name=key, value=new_val).save()
-            else:
+        filter_data = []
+        for key, value_list in query_dict.items():
+            for val in value_list:
+                filter_data.append(FilterDetails(name=key, value=str(val)))
                 Filters.objects.create(resulting_cohort=created_cohort, name=key, value=val).save()
+
+        for key, val in [(k + '_lte', v) for k, v in lte_query_dict.items()] + [(k + '_gte', v) for k, v in gte_query_dict.items()]:
+            filter_data.append(FilterDetails(name=key, value=str(val)))
+            Filters.objects.create(resulting_cohort=created_cohort, name=key, value=val).save()
 
         # 6. Store cohort to BigQuery
         project_id = settings.BQ_PROJECT_ID
@@ -275,6 +239,7 @@ class CohortsCreateAPI(remote.Service):
         return CreatedCohort(id=str(created_cohort.id),
                              name=cohort_name,
                              last_date_saved=str(datetime.utcnow()),
+                             filters=filter_data,
                              patient_count=len(patient_barcodes),
                              sample_count=len(sample_barcodes)
                              )
