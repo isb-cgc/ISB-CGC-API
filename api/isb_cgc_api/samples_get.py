@@ -59,7 +59,6 @@ class SampleDetails(messages.Message):
     patient = messages.StringField(3)
     data_details = messages.MessageField(DataDetails, 4, repeated=True)
     data_details_count = messages.IntegerField(5, variant=messages.Variant.INT32)
-    error = messages.StringField(6)
 
 
 @ISB_CGC_Endpoints.api_class(resource_name='samples')
