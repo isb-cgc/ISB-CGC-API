@@ -34,7 +34,6 @@ class CohortPatientsSamplesList(messages.Message):
     patient_count = messages.IntegerField(2, variant=messages.Variant.INT32)
     samples = messages.StringField(3, repeated=True)
     sample_count = messages.IntegerField(4, variant=messages.Variant.INT32)
-    cohort_id = messages.IntegerField(5, variant=messages.Variant.INT32)
 
 
 @ISB_CGC_Endpoints.api_class(resource_name='cohorts')
