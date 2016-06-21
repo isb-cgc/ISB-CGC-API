@@ -31,6 +31,67 @@ from api.metadata import MetadataItem
 logger = logging.getLogger(__name__)
 
 
+class SamplesGetQueryBuilder(object):
+
+    def build_aliquot_query(self, platform=None, pipeline=None):
+
+        aliquot_query_str = 'select AliquotBarcode ' \
+                            'from metadata_data ' \
+                            'where SampleBarcode=%s '
+
+        aliquot_query_str += ' and platform=%s ' if platform is not None else ''
+        aliquot_query_str += ' and pipeline=%s ' if pipeline is not None else ''
+        aliquot_query_str += ' group by AliquotBarcode'
+
+        return aliquot_query_str
+
+    def build_biospecimen_query(self):
+
+        biospecimen_query_str = 'select * ' \
+                                'from metadata_biospecimen ' \
+                                'where SampleBarcode=%s'
+
+        return biospecimen_query_str
+
+    def build_data_query(self, platform=None, pipeline=None):
+
+        data_query_str = 'select ' \
+                         'SampleBarcode, ' \
+                         'DataCenterName, ' \
+                         'DataCenterType, ' \
+                         'DataFileName, ' \
+                         'DataFileNameKey, ' \
+                         'DatafileUploaded, ' \
+                         'DataLevel,' \
+                         'Datatype,' \
+                         'GenomeReference,' \
+                         'GG_dataset_id, ' \
+                         'GG_readgroupset_id, ' \
+                         'Pipeline,' \
+                         'Platform,' \
+                         'platform_full_name,' \
+                         'Project,' \
+                         'Repository,' \
+                         'SDRFFileName,' \
+                         'SecurityProtocol ' \
+                         'from metadata_data ' \
+                         'where SampleBarcode=%s '
+
+        data_query_str += ' and platform=%s ' if platform is not None else ''
+        data_query_str += ' and pipeline=%s ' if pipeline is not None else ''
+
+        return data_query_str
+
+    def build_patient_query(self):
+
+        patient_query_str = 'select ParticipantBarcode ' \
+                            'from metadata_biospecimen ' \
+                            'where SampleBarcode=%s ' \
+                            'group by ParticipantBarcode'
+
+        return patient_query_str
+
+
 class DataDetails(messages.Message):
     SampleBarcode = messages.StringField(1)
     DataCenterName = messages.StringField(2)
@@ -85,57 +146,18 @@ class SamplesGetAPI(remote.Service):
         db = None
 
         sample_barcode = request.get_assigned_value('sample_barcode')
-        biospecimen_query_str = 'select * ' \
-                                'from metadata_biospecimen ' \
-                                'where SampleBarcode=%s'
+        pipeline = request.get_assigned_value('pipeline')
+        platform = request.get_assigned_value('platform')
+
+        aliquot_query_str = SamplesGetQueryBuilder().build_aliquot_query(platform=platform, pipeline=pipeline)
+        biospecimen_query_str = SamplesGetQueryBuilder().build_biospecimen_query()
+        data_query_str = SamplesGetQueryBuilder().build_data_query(platform=platform, pipeline=pipeline)
+        patient_query_str = SamplesGetQueryBuilder().build_patient_query()
 
         query_tuple = (str(sample_barcode),)
         extra_query_tuple = query_tuple
-
-        aliquot_query_str = 'select AliquotBarcode ' \
-                            'from metadata_data ' \
-                            'where SampleBarcode=%s '
-
-        patient_query_str = 'select ParticipantBarcode ' \
-                            'from metadata_biospecimen ' \
-                            'where SampleBarcode=%s '
-
-        data_query_str = 'select ' \
-                         'SampleBarcode, ' \
-                         'DataCenterName, ' \
-                         'DataCenterType, ' \
-                         'DataFileName, ' \
-                         'DataFileNameKey, ' \
-                         'DatafileUploaded, ' \
-                         'DataLevel,' \
-                         'Datatype,' \
-                         'GenomeReference,' \
-                         'GG_dataset_id, ' \
-                         'GG_readgroupset_id, ' \
-                         'Pipeline,' \
-                         'Platform,' \
-                         'platform_full_name,' \
-                         'Project,' \
-                         'Repository,' \
-                         'SDRFFileName,' \
-                         'SecurityProtocol ' \
-                         'from metadata_data ' \
-                         'where SampleBarcode=%s '
-
-        if request.get_assigned_value('platform') is not None:
-            platform = request.get_assigned_value('platform')
-            aliquot_query_str += ' and platform=%s '
-            data_query_str += ' and platform=%s '
-            extra_query_tuple += (str(platform),)
-
-        if request.get_assigned_value('pipeline') is not None:
-            pipeline = request.get_assigned_value('pipeline')
-            aliquot_query_str += ' and pipeline=%s '
-            data_query_str += ' and pipeline=%s '
-            extra_query_tuple += (str(pipeline),)
-
-        aliquot_query_str += ' group by AliquotBarcode'
-        patient_query_str += ' group by ParticipantBarcode'
+        if pipeline is not None: extra_query_tuple += (pipeline,)
+        if platform is not None: extra_query_tuple += (platform,)
 
         try:
             db = sql_connection()
