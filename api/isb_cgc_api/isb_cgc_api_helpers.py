@@ -289,7 +289,7 @@ class MetadataRangesItem(messages.Message):
     year_of_initial_pathologic_diagnosis_gte = messages.IntegerField(172)
 
 
-class CohortsListQueryBuilder(object):
+class CohortsGetListQueryBuilder(object):
 
     def build_cohort_query(self, query_dict):
         """

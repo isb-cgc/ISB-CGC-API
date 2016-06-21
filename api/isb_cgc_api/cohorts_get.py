@@ -26,7 +26,7 @@ from django.contrib.auth.models import User as Django_User
 from django.core.signals import request_finished
 from protorpc import remote, messages
 
-from isb_cgc_api_helpers import ISB_CGC_Endpoints, CohortsListQueryBuilder
+from isb_cgc_api_helpers import ISB_CGC_Endpoints, CohortsGetListQueryBuilder
 from api.api_helpers import sql_connection
 
 logger = logging.getLogger(__name__)
@@ -95,7 +95,7 @@ class CohortsGetAPI(remote.Service):
         if cohort_id:
             query_dict['cohorts_cohort.id'] = cohort_id
 
-        query_str, query_tuple = CohortsListQueryBuilder().build_cohort_query(query_dict)
+        query_str, query_tuple = CohortsGetListQueryBuilder().build_cohort_query(query_dict)
 
         filter_query_str = ''
         parent_query_str = ''
@@ -113,7 +113,7 @@ class CohortsGetAPI(remote.Service):
                     "or {user_email} does not have permission to view it.".format(id=cohort_id, user_email=user_email))
 
             filter_query_dict = {'cohorts_filters.resulting_cohort_id': str(row['id'])}
-            filter_query_str, filter_query_tuple = CohortsListQueryBuilder().build_filter_query(filter_query_dict)
+            filter_query_str, filter_query_tuple = CohortsGetListQueryBuilder().build_filter_query(filter_query_dict)
 
             filter_cursor = db.cursor(MySQLdb.cursors.DictCursor)
             filter_cursor.execute(filter_query_str, filter_query_tuple)
@@ -136,7 +136,7 @@ class CohortsGetAPI(remote.Service):
             # getting the parent_id is a separate query since a single cohort
             # may have multiple parent cohorts
             parent_query_dict = {'cohort_id': str(row['id'])}
-            parent_query_str, parent_query_tuple = CohortsListQueryBuilder().build_parent_query(parent_query_dict)
+            parent_query_str, parent_query_tuple = CohortsGetListQueryBuilder().build_parent_query(parent_query_dict)
 
             parent_cursor = db.cursor(MySQLdb.cursors.DictCursor)
             parent_cursor.execute(parent_query_str, parent_query_tuple)
@@ -146,7 +146,7 @@ class CohortsGetAPI(remote.Service):
                 parent_id_data.append("None")
 
             patient_query_dict = {'cohort_id': str(row['id'])}
-            patient_query_str, patient_query_tuple = CohortsListQueryBuilder().build_patients_query(patient_query_dict)
+            patient_query_str, patient_query_tuple = CohortsGetListQueryBuilder().build_patients_query(patient_query_dict)
             cursor.execute(patient_query_str, patient_query_tuple)
             patient_list = [str(patient_row.get('patient_id')) for patient_row in cursor.fetchall() if patient_row.get('patient_id')]
 
@@ -154,7 +154,7 @@ class CohortsGetAPI(remote.Service):
                 patient_list.append("None")
 
             sample_query_dict = {'cohort_id': str(row['id'])}
-            sample_query_str, sample_query_tuple = CohortsListQueryBuilder().build_samples_query(sample_query_dict)
+            sample_query_str, sample_query_tuple = CohortsGetListQueryBuilder().build_samples_query(sample_query_dict)
             cursor.execute(sample_query_str, sample_query_tuple)
             sample_list = [str(sample_row.get('sample_id')) for sample_row in cursor.fetchall() if sample_row.get('sample_id')]
 

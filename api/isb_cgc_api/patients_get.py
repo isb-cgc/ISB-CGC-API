@@ -30,6 +30,26 @@ from api.metadata import MetadataItem
 logger = logging.getLogger(__name__)
 
 
+class PatientsGetQueryBuilder(object):
+
+    def build_queries(self):
+        clinical_query_str = 'select * ' \
+                             'from metadata_clinical ' \
+                             'where ParticipantBarcode=%s'
+
+        sample_query_str = 'select SampleBarcode ' \
+                           'from metadata_biospecimen ' \
+                           'where ParticipantBarcode=%s'
+
+        aliquot_query_str = 'select AliquotBarcode ' \
+                            'from metadata_data ' \
+                            'where ParticipantBarcode=%s ' \
+                            'group by AliquotBarcode'
+
+        return clinical_query_str, sample_query_str, aliquot_query_str
+
+
+
 class PatientDetails(messages.Message):
     clinical_data = messages.MessageField(MetadataItem, 1)
     samples = messages.StringField(2, repeated=True)
@@ -58,20 +78,10 @@ class PatientsGetAPI(remote.Service):
 
         patient_barcode = request.get_assigned_value('patient_barcode')
 
-        clinical_query_str = 'select * ' \
-                             'from metadata_clinical ' \
-                             'where ParticipantBarcode=%s'
-
         query_tuple = (str(patient_barcode),)
 
-        sample_query_str = 'select SampleBarcode ' \
-                           'from metadata_biospecimen ' \
-                           'where ParticipantBarcode=%s'
+        clinical_query_str, sample_query_str, aliquot_query_str = PatientsGetQueryBuilder().build_queries()
 
-        aliquot_query_str = 'select AliquotBarcode ' \
-                            'from metadata_data ' \
-                            'where ParticipantBarcode=%s ' \
-                            'group by AliquotBarcode'
         try:
             db = sql_connection()
             clinical_cursor = db.cursor(MySQLdb.cursors.DictCursor)
