@@ -387,3 +387,80 @@ class CohortsListQueryBuilder(object):
         sample_query_tuple = tuple(value for value in sample_query_dict.values())
 
         return samples_query_str, sample_query_tuple
+
+
+class CohortsCreatePreviewQueryBuilder(object):
+
+    def build_query(self, request):
+        """
+        Builds the queries that selects the patient and sample barcodes
+        that meet the criteria specified in the request body.
+        Returns patient query string,  sample query string, value tuple, and 3 query dicts.
+        """
+        query_dict = {
+            k.name: request.get_assigned_value(k.name)
+            for k in request.all_fields()
+            if request.get_assigned_value(k.name)
+            and k.name is not 'name'
+            and not k.name.endswith('_gte')
+            and not k.name.endswith('_lte')
+            }
+
+        gte_query_dict = {
+            k.name.replace('_gte', ''): request.get_assigned_value(k.name)
+            for k in request.all_fields()
+            if request.get_assigned_value(k.name) and k.name.endswith('_gte')
+            }
+
+        lte_query_dict = {
+            k.name.replace('_lte', ''): request.get_assigned_value(k.name)
+            for k in request.all_fields()
+            if request.get_assigned_value(k.name) and k.name.endswith('_lte')
+            }
+
+        patient_query_str = 'SELECT DISTINCT(IF(ParticipantBarcode="", LEFT(SampleBarcode,12), ParticipantBarcode)) ' \
+                            'AS ParticipantBarcode ' \
+                            'FROM metadata_samples ' \
+                            'WHERE '
+
+        sample_query_str = 'SELECT SampleBarcode ' \
+                           'FROM metadata_samples ' \
+                           'WHERE '
+        value_tuple = ()
+
+        for key, value_list in query_dict.iteritems():
+            patient_query_str += ' AND ' if not patient_query_str.endswith('WHERE ') else ''
+            sample_query_str += ' AND ' if not sample_query_str.endswith('WHERE ') else ''
+            if "None" in value_list:
+                value_list.remove("None")
+                patient_query_str += ' ( {key} is null '.format(key=key)
+                sample_query_str += ' ( {key} is null '.format(key=key)
+                if len(value_list) > 0:
+                    patient_query_str += ' OR {key} IN ({vals}) '.format(key=key,
+                                                                         vals=', '.join(['%s'] * len(value_list)))
+                    sample_query_str += ' OR {key} IN ({vals}) '.format(key=key,
+                                                                        vals=', '.join(['%s'] * len(value_list)))
+                patient_query_str += ') '
+                sample_query_str += ') '
+            else:
+                patient_query_str += ' {key} IN ({vals}) '.format(key=key, vals=', '.join(['%s'] * len(value_list)))
+                sample_query_str += ' {key} IN ({vals}) '.format(key=key, vals=', '.join(['%s'] * len(value_list)))
+            value_tuple += tuple(value_list)
+
+        for key, value in gte_query_dict.iteritems():
+            patient_query_str += ' AND ' if not patient_query_str.endswith('WHERE ') else ''
+            patient_query_str += ' {} >=%s '.format(key)
+            sample_query_str += ' AND ' if not sample_query_str.endswith('WHERE ') else ''
+            sample_query_str += ' {} >=%s '.format(key)
+            value_tuple += (value,)
+
+        for key, value in lte_query_dict.iteritems():
+            patient_query_str += ' AND ' if not patient_query_str.endswith('WHERE ') else ''
+            patient_query_str += ' {} <=%s '.format(key)
+            sample_query_str += ' AND ' if not sample_query_str.endswith('WHERE ') else ''
+            sample_query_str += ' {} <=%s '.format(key)
+            value_tuple += (value,)
+
+        sample_query_str += ' GROUP BY SampleBarcode'
+
+        return patient_query_str, sample_query_str, value_tuple, query_dict, lte_query_dict, gte_query_dict
