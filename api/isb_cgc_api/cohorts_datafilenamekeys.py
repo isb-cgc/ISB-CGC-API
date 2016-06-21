@@ -36,6 +36,25 @@ logger = logging.getLogger(__name__)
 BASE_URL = settings.BASE_URL
 
 
+class CohortsFilesQueryBuilder(object):
+
+    def build_query(self, platform=None, pipeline=None, limit=None):
+
+        query_str = 'SELECT DataFileNameKey, SecurityProtocol, Repository ' \
+                    'FROM metadata_data ' \
+                    'JOIN cohorts_samples ON metadata_data.SampleBarcode=cohorts_samples.sample_id ' \
+                    'WHERE cohorts_samples.cohort_id=%s ' \
+                    'AND DataFileNameKey != "" AND DataFileNameKey is not null '
+
+        query_str += ' and metadata_data.Platform=%s ' if platform is not None else ''
+        query_str += ' and metadata_data.Pipeline=%s ' if pipeline is not None else ''
+
+        query_str += ' GROUP BY DataFileNameKey, SecurityProtocol, Repository '
+        query_str += ' LIMIT %s' if limit is not None else ' LIMIT 10000'
+
+        return query_str
+
+
 class DataFileNameKeyList(messages.Message):
     datafilenamekeys = messages.StringField(1, repeated=True)
     count = messages.IntegerField(2, variant=messages.Variant.INT32)
@@ -80,9 +99,6 @@ class CohortsDatafilenamekeysAPI(remote.Service):
 
         django.setup()
 
-        query_str = 'SELECT DataFileNameKey, SecurityProtocol, Repository ' \
-                    'FROM metadata_data '
-
         try:
             user_id = Django_User.objects.get(email=user_email).id
             django_cohort = Django_Cohort.objects.get(id=cohort_id)
@@ -96,25 +112,12 @@ class CohortsDatafilenamekeysAPI(remote.Service):
             request_finished.send(self)
             raise endpoints.UnauthorizedException(err_msg)
 
-        query_str += 'JOIN cohorts_samples ON metadata_data.SampleBarcode=cohorts_samples.sample_id ' \
-                     'WHERE cohorts_samples.cohort_id=%s ' \
-                     'AND DataFileNameKey != "" AND DataFileNameKey is not null '
+        query_str = CohortsFilesQueryBuilder().build_query()
+
         query_tuple = (cohort_id,)
-
-        if platform:
-            query_str += ' and metadata_data.Platform=%s '
-            query_tuple += (platform,)
-
-        if pipeline:
-            query_str += ' and metadata_data.Pipeline=%s '
-            query_tuple += (pipeline,)
-
-        query_str += ' GROUP BY DataFileNameKey, SecurityProtocol, Repository '
-        if limit is None:
-            query_str += ' LIMIT 10000'
-        else:
-            query_str += ' LIMIT %s'
-            query_tuple += (limit,)
+        if platform is not None: query_tuple += (platform,)
+        if pipeline is not None: query_tuple += (pipeline,)
+        if limit is not None: query_tuple += (limit,)
 
         try:
             db = sql_connection()
