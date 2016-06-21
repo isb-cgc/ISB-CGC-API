@@ -391,11 +391,10 @@ class CohortsListQueryBuilder(object):
 
 class CohortsCreatePreviewQueryBuilder(object):
 
-    def build_query(self, request):
+    def build_query_dictionaries(self, request):
         """
-        Builds the queries that selects the patient and sample barcodes
-        that meet the criteria specified in the request body.
-        Returns patient query string,  sample query string, value tuple, and 3 query dicts.
+        Builds the query dictionaries for create and preview cohort endpoints.
+        Returns query_dict, gte_query_dict, lte_query_dict.
         """
         query_dict = {
             k.name: request.get_assigned_value(k.name)
@@ -417,6 +416,16 @@ class CohortsCreatePreviewQueryBuilder(object):
             for k in request.all_fields()
             if request.get_assigned_value(k.name) and k.name.endswith('_lte')
             }
+
+        return query_dict, gte_query_dict, lte_query_dict
+
+
+    def build_query(self, query_dict, gte_query_dict, lte_query_dict):
+        """
+        Builds the queries that selects the patient and sample barcodes
+        that meet the criteria specified in the request body.
+        Returns patient query string,  sample query string, value tuple.
+        """
 
         patient_query_str = 'SELECT DISTINCT(IF(ParticipantBarcode="", LEFT(SampleBarcode,12), ParticipantBarcode)) ' \
                             'AS ParticipantBarcode ' \
@@ -463,4 +472,4 @@ class CohortsCreatePreviewQueryBuilder(object):
 
         sample_query_str += ' GROUP BY SampleBarcode'
 
-        return patient_query_str, sample_query_str, value_tuple, query_dict, lte_query_dict, gte_query_dict
+        return patient_query_str, sample_query_str, value_tuple
