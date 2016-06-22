@@ -56,32 +56,29 @@ class CohortDetails(messages.Message):
 
 class CohortsListMessageListBuilder(object):
 
-    def make_filter_details_from_cursor(self, filter_cursor):
+    def make_filter_details_from_cursor(self, filter_cursor_dict):
         """
 
         :param filter_cursor:
         :return:
         """
         filter_data = []
-        for filter_row in filter_cursor.fetchall():
+        for filter_row in filter_cursor_dict:
             filter_data.append(FilterDetails(
                 name=str(filter_row['name']),
                 value=str(filter_row['value'])
             ))
 
-        if filter_data == []:
+        if len(filter_data) == 0:
             filter_data.append(FilterDetails(
                 name="None",
                 value="None"
             ))
 
-        filter_cursor.close()
-
         return filter_data
 
-
-    def make_parent_id_list_from_cursor(self, parent_cursor, row):
-        parent_id_data = [str(p_row['parent_id']) for p_row in parent_cursor.fetchall() if row.get('parent_id')]
+    def make_parent_id_list_from_cursor(self, parent_cursor_dict, row):
+        parent_id_data = [str(p_row['parent_id']) for p_row in parent_cursor_dict if row.get('parent_id')]
         if parent_id_data == []:
             parent_id_data.append("None")
 
@@ -149,7 +146,7 @@ class CohortsGetAPI(remote.Service):
             filter_query_str, filter_query_tuple = CohortsGetListQueryBuilder().build_filter_query(filter_query_dict)
             filter_cursor = db.cursor(MySQLdb.cursors.DictCursor)
             filter_cursor.execute(filter_query_str, filter_query_tuple)
-            filter_data = CohortsListMessageListBuilder().make_filter_details_from_cursor(filter_cursor)
+            filter_data = CohortsListMessageListBuilder().make_filter_details_from_cursor(filter_cursor.fetchall())
 
             # getting the parent_id's for this cohort is a separate query
             # since a single cohort may have multiple parent cohorts
@@ -157,7 +154,7 @@ class CohortsGetAPI(remote.Service):
             parent_query_str, parent_query_tuple = CohortsGetListQueryBuilder().build_parent_query(parent_query_dict)
             parent_cursor = db.cursor(MySQLdb.cursors.DictCursor)
             parent_cursor.execute(parent_query_str, parent_query_tuple)
-            parent_id_data = CohortsListMessageListBuilder().make_parent_id_list_from_cursor(parent_cursor, row)
+            parent_id_data = CohortsListMessageListBuilder().make_parent_id_list_from_cursor(parent_cursor.fetchall(), row)
 
             # get list of patients in this cohort
             patient_query_dict = {'cohort_id': str(row['id'])}
