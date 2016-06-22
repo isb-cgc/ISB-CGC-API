@@ -24,17 +24,13 @@ from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 from django.contrib.auth.models import User as Django_User
 from django.core.signals import request_finished
 from protorpc import remote, messages
-from isb_cgc_api_helpers import ISB_CGC_Endpoints, CohortsGetListQueryBuilder
+from isb_cgc_api_helpers import ISB_CGC_Endpoints, CohortsGetListQueryBuilder, \
+    CohortsGetListMessageBuilder, FilterDetails, CohortGetDetails
 from api.api_helpers import sql_connection
 
 logger = logging.getLogger(__name__)
 
 BASE_URL = settings.BASE_URL
-
-
-class FilterDetails(messages.Message):
-    name = messages.StringField(1)
-    value = messages.StringField(2)
 
 
 class CohortDetails(messages.Message):
@@ -54,36 +50,6 @@ class CohortDetails(messages.Message):
     samples = messages.StringField(14, repeated=True)
 
 
-class CohortsGetListMessageListBuilder(object):
-
-    def make_filter_details_from_cursor(self, filter_cursor_dict):
-        """
-
-        :param filter_cursor:
-        :return:
-        """
-        filter_data = []
-        for filter_row in filter_cursor_dict:
-            filter_data.append(FilterDetails(
-                name=str(filter_row['name']),
-                value=str(filter_row['value'])
-            ))
-
-        if len(filter_data) == 0:
-            filter_data.append(FilterDetails(
-                name="None",
-                value="None"
-            ))
-
-        return filter_data
-
-    def make_parent_id_list_from_cursor(self, parent_cursor_dict, row):
-        parent_id_data = [str(p_row['parent_id']) for p_row in parent_cursor_dict if row.get('parent_id')]
-        if parent_id_data == []:
-            parent_id_data.append("None")
-
-        return parent_id_data
-
 
 @ISB_CGC_Endpoints.api_class(resource_name='cohorts')
 class CohortsGetAPI(remote.Service):
@@ -98,8 +64,6 @@ class CohortsGetAPI(remote.Service):
         """
         user_email = None
         cursor = None
-        filter_cursor = None
-        parent_cursor = None
         db = None
 
         if endpoints.get_current_user() is not None:
@@ -140,17 +104,15 @@ class CohortsGetAPI(remote.Service):
             # get the filters used for this cohort
             filter_query_dict = {'cohorts_filters.resulting_cohort_id': str(row['id'])}
             filter_query_str, filter_query_tuple = CohortsGetListQueryBuilder().build_filter_query(filter_query_dict)
-            filter_cursor = db.cursor(MySQLdb.cursors.DictCursor)
-            filter_cursor.execute(filter_query_str, filter_query_tuple)
-            filter_data = CohortsGetListMessageListBuilder().make_filter_details_from_cursor(filter_cursor.fetchall())
+            cursor.execute(filter_query_str, filter_query_tuple)
+            filter_data = CohortsGetListMessageBuilder().make_filter_details_from_cursor(cursor.fetchall())
 
             # getting the parent_id's for this cohort is a separate query
             # since a single cohort may have multiple parent cohorts
             parent_query_dict = {'cohort_id': str(row['id'])}
             parent_query_str, parent_query_tuple = CohortsGetListQueryBuilder().build_parent_query(parent_query_dict)
-            parent_cursor = db.cursor(MySQLdb.cursors.DictCursor)
-            parent_cursor.execute(parent_query_str, parent_query_tuple)
-            parent_id_data = CohortsGetListMessageListBuilder().make_parent_id_list_from_cursor(parent_cursor.fetchall(), row)
+            cursor.execute(parent_query_str, parent_query_tuple)
+            parent_id_data = CohortsGetListMessageBuilder().make_parent_id_list_from_cursor(cursor.fetchall(), row)
 
             # get list of patients in this cohort
             patient_query_dict = {'cohort_id': str(row['id'])}
@@ -188,11 +150,6 @@ class CohortsGetAPI(remote.Service):
                 samples=sample_list
             )
 
-            # if len(data) == 0:
-            #     # optional_message = " matching cohort id " + str(cohort_id) if cohort_id is not None else ""
-            #     raise endpoints.NotFoundException("{} has no active cohorts.".format(user_email))
-            # return CohortDetailsList(items=data, count=len(data))
-
         except (IndexError, TypeError) as e:
             raise endpoints.NotFoundException(
                 "Cohort {} for user {} not found. {}: {}".format(cohort_id, user_email, type(e), e))
@@ -203,7 +160,5 @@ class CohortsGetAPI(remote.Service):
 
         finally:
             if cursor: cursor.close()
-            if filter_cursor: filter_cursor.close()
-            if parent_cursor: parent_cursor.close()
             if db and db.open: db.close()
             request_finished.send(self)

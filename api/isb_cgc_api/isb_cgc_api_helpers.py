@@ -475,3 +475,64 @@ class CohortsCreatePreviewQueryBuilder(object):
         sample_query_str += ' GROUP BY SampleBarcode'
 
         return patient_query_str, sample_query_str, value_tuple
+
+
+class FilterDetails(messages.Message):
+    name = messages.StringField(1)
+    value = messages.StringField(2)
+
+
+class CohortListDetails(messages.Message):
+    id = messages.StringField(1)
+    name = messages.StringField(2)
+    last_date_saved = messages.StringField(3)
+    permission = messages.StringField(4)
+    email = messages.StringField(5)
+    comments = messages.StringField(6)
+    source_type = messages.StringField(7)
+    source_notes = messages.StringField(8)
+    parent_id = messages.StringField(9, repeated=True)
+    filters = messages.MessageField(FilterDetails, 10, repeated=True)
+
+
+class CohortGetDetails(messages.Message):
+    id = messages.StringField(1)
+    name = messages.StringField(2)
+    last_date_saved = messages.StringField(3)
+    permission = messages.StringField(4)
+    email = messages.StringField(5)
+    comments = messages.StringField(6)
+    source_type = messages.StringField(7)
+    source_notes = messages.StringField(8)
+    parent_id = messages.StringField(9, repeated=True)
+    filters = messages.MessageField(FilterDetails, 10, repeated=True)
+    patient_count = messages.IntegerField(11, variant=messages.Variant.INT32)
+    sample_count = messages.IntegerField(12, variant=messages.Variant.INT32)
+
+
+class CohortsGetListMessageBuilder(object):
+
+    def make_filter_details_from_cursor(self, filter_cursor_dict):
+        """
+        """
+        filter_data = []
+        for filter_row in filter_cursor_dict:
+            filter_data.append(FilterDetails(
+                name=str(filter_row['name']),
+                value=str(filter_row['value'])
+            ))
+
+        if len(filter_data) == 0:
+            filter_data.append(FilterDetails(
+                name="None",
+                value="None"
+            ))
+
+        return filter_data
+
+    def make_parent_id_list_from_cursor(self, parent_cursor_dict, row):
+        parent_id_data = [str(p_row['parent_id']) for p_row in parent_cursor_dict if row.get('parent_id')]
+        if parent_id_data == []:
+            parent_id_data.append("None")
+
+        return parent_id_data

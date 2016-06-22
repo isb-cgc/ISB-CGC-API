@@ -26,7 +26,8 @@ from django.contrib.auth.models import User as Django_User
 from django.core.signals import request_finished
 from protorpc import remote, messages, message_types
 
-from isb_cgc_api_helpers import ISB_CGC_Endpoints, CohortsGetListQueryBuilder
+from isb_cgc_api_helpers import ISB_CGC_Endpoints, CohortsGetListQueryBuilder, \
+    CohortsGetListMessageBuilder, FilterDetails
 from api.api_helpers import sql_connection
 
 logger = logging.getLogger(__name__)
@@ -34,9 +35,9 @@ logger = logging.getLogger(__name__)
 BASE_URL = settings.BASE_URL
 
 
-class FilterDetails(messages.Message):
-    name = messages.StringField(1)
-    value = messages.StringField(2)
+# class FilterDetails(messages.Message):
+#     name = messages.StringField(1)
+#     value = messages.StringField(2)
 
 
 class CohortDetails(messages.Message):
@@ -71,10 +72,6 @@ class CohortsListAPI(remote.Service):
         """
         user_email = None
         cursor = None
-        filter_cursor = None
-        parent_cursor = None
-        sample_cursor = None
-        patient_cursor = None
         db = None
 
         if endpoints.get_current_user() is not None:
@@ -100,55 +97,36 @@ class CohortsListAPI(remote.Service):
         try:
             db = sql_connection()
             cursor = db.cursor(MySQLdb.cursors.DictCursor)
-            filter_cursor = db.cursor(MySQLdb.cursors.DictCursor)
-            parent_cursor = db.cursor(MySQLdb.cursors.DictCursor)
-            patient_cursor = db.cursor(MySQLdb.cursors.DictCursor)
-            sample_cursor = db.cursor(MySQLdb.cursors.DictCursor)
-
             cursor.execute(query_str, query_tuple)
             data = []
 
             for row in cursor.fetchall():
-
+                # get filters for each cohort
                 filter_query_str, filter_query_tuple = CohortsGetListQueryBuilder().build_filter_query(
                     {'cohorts_filters.resulting_cohort_id': str(row['id'])})
+                cursor.execute(filter_query_str, filter_query_tuple)
+                filter_data = CohortsGetListMessageBuilder().make_filter_details_from_cursor(
+                    cursor.fetchall())
 
-                filter_cursor.execute(filter_query_str, filter_query_tuple)
-                filter_data = []
-                for filter_row in filter_cursor.fetchall():
-                    filter_data.append(FilterDetails(
-                        name=str(filter_row['name']),
-                        value=str(filter_row['value'])
-                    ))
+                # getting the parent_id's for each cohort is a separate query
+                # since a single cohort may have multiple parent cohorts
+                parent_query_str, parent_query_tuple = CohortsGetListQueryBuilder().build_parent_query(
+                    {'cohort_id': str(row['id'])})
+                cursor.execute(parent_query_str, parent_query_tuple)
+                parent_id_data = CohortsGetListMessageBuilder().make_parent_id_list_from_cursor(
+                    cursor.fetchall(), row)
 
-                if filter_data == []:
-                    filter_data.append(FilterDetails(
-                        name="None",
-                        value="None"
-                    ))
+                # get number of patients for each cohort
+                patient_query_str, patient_query_tuple = CohortsGetListQueryBuilder().build_patients_query(
+                    {'cohort_id': str(row['id'])})
+                cursor.execute(patient_query_str, patient_query_tuple)
+                patient_count = len(cursor.fetchall())
 
-                # filter_data = CohortsListMessageListBuilder().build_message_list(FilterDetails,
-                #                                                                  filter_cursor.fetchall())
-
-                # getting the parent_id is a separate query since a single cohort
-                # may have multiple parent cohorts
-                parent_query_dict = {'cohort_id': str(row['id'])}
-                parent_query_str, parent_query_tuple = CohortsGetListQueryBuilder().build_parent_query(parent_query_dict)
-                parent_cursor.execute(parent_query_str, parent_query_tuple)
-                parent_id_data = [str(p_row['parent_id']) for p_row in parent_cursor.fetchall() if row.get('parent_id')]
-
-                if parent_id_data == []:
-                    parent_id_data.append("None")
-
-                patient_query_str, patient_query_tuple = CohortsGetListQueryBuilder().build_patients_query({'cohort_id': str(row['id'])})
-                patient_cursor.execute(patient_query_str, patient_query_tuple)
-                patient_rows = patient_cursor.fetchall()
-                patient_count = len(patient_rows)
-
-                sample_query_str, sample_query_tuple = CohortsGetListQueryBuilder().build_samples_query({'cohort_id': str(row['id'])})
-                sample_cursor.execute(sample_query_str, sample_query_tuple)
-                sample_rows = sample_cursor.fetchall()
-                sample_count = len(sample_rows)
+                # get number of samples for each cohort
+                sample_query_str, sample_query_tuple = CohortsGetListQueryBuilder().build_samples_query(
+                    {'cohort_id': str(row['id'])})
+                cursor.execute(sample_query_str, sample_query_tuple)
+                sample_count = len(cursor.fetchall())
 
                 data.append(CohortDetails(
                     id=str(row['id']),
@@ -166,8 +144,8 @@ class CohortsListAPI(remote.Service):
                 ))
 
             if len(data) == 0:
-                # optional_message = " matching cohort id " + str(cohort_id) if cohort_id is not None else ""
                 raise endpoints.NotFoundException("{} has no active cohorts.".format(user_email))
+
             return CohortDetailsList(items=data, count=len(data))
 
         except (IndexError, TypeError) as e:
@@ -180,8 +158,5 @@ class CohortsListAPI(remote.Service):
 
         finally:
             if cursor: cursor.close()
-            if filter_cursor: filter_cursor.close()
-            if parent_cursor: parent_cursor.close()
-            if sample_cursor: sample_cursor.close()
             if db and db.open: db.close()
             request_finished.send(self)
