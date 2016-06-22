@@ -87,9 +87,11 @@ class SamplesDatafilenamekeysAPI(remote.Service):
                 if not row.get('DataFileNameKey'):
                     continue
                 if 'controlled' not in str(row['SecurityProtocol']).lower():
-                    datafilenamekeys.append("gs://{}{}".format(settings.OPEN_DATA_BUCKET, row.get('DataFileNameKey')))
+                    # this may only be necessary for the vagrant db
+                    path = row.get('DataFileNameKey') if row.get('DataFileNameKey') is None \
+                        else row.get('DataFileNameKey').replace('gs://' + settings.OPEN_DATA_BUCKET, '')
+                    datafilenamekeys.append("gs://{}{}".format(settings.OPEN_DATA_BUCKET, path))
                 else:  # not filtering on dbGaP_authorized
-                    bucket_name = ''
                     if row['Repository'].lower() == 'dcc':
                         bucket_name = settings.DCC_CONTROLLED_DATA_BUCKET
                     elif row['Repository'].lower() == 'cghub':
@@ -98,7 +100,10 @@ class SamplesDatafilenamekeysAPI(remote.Service):
                         bad_repo_count += 0
                         bad_repo_set.add(row['Repository'])
                         continue
-                    datafilenamekeys.append("gs://{}{}".format(bucket_name, row.get('DataFileNameKey')))
+                    # this may only be necessary for the vagrant db
+                    path = row.get('DataFileNameKey') if row.get('DataFileNameKey') is None \
+                        else row.get('DataFileNameKey').replace('gs://' + bucket_name, '')
+                    datafilenamekeys.append("gs://{}{}".format(bucket_name, path))
             if bad_repo_count > 0:
                 logger.warn("not returning {count} row(s) in sample_details due to repositories: {bad_repo_list}"
                             .format(count=bad_repo_count, bad_repo_list=list(bad_repo_set)))

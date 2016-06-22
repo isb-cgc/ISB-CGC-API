@@ -19,13 +19,11 @@ import django
 import endpoints
 import logging
 import MySQLdb
-
 from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 from django.contrib.auth.models import User as Django_User
 from django.core.signals import request_finished
 from protorpc import remote, messages
-
 from isb_cgc_api_helpers import ISB_CGC_Endpoints, CohortsGetListQueryBuilder
 from api.api_helpers import sql_connection
 
@@ -54,6 +52,40 @@ class CohortDetails(messages.Message):
     sample_count = messages.IntegerField(12, variant=messages.Variant.INT32)
     patients = messages.StringField(13, repeated=True)
     samples = messages.StringField(14, repeated=True)
+
+
+class CohortsListMessageListBuilder(object):
+
+    def make_filter_details_from_cursor(self, filter_cursor):
+        """
+
+        :param filter_cursor:
+        :return:
+        """
+        filter_data = []
+        for filter_row in filter_cursor.fetchall():
+            filter_data.append(FilterDetails(
+                name=str(filter_row['name']),
+                value=str(filter_row['value'])
+            ))
+
+        if filter_data == []:
+            filter_data.append(FilterDetails(
+                name="None",
+                value="None"
+            ))
+
+        filter_cursor.close()
+
+        return filter_data
+
+
+    def make_parent_id_list_from_cursor(self, parent_cursor, row):
+        parent_id_data = [str(p_row['parent_id']) for p_row in parent_cursor.fetchall() if row.get('parent_id')]
+        if parent_id_data == []:
+            parent_id_data.append("None")
+
+        return parent_id_data
 
 
 @ISB_CGC_Endpoints.api_class(resource_name='cohorts')
@@ -112,55 +144,39 @@ class CohortsGetAPI(remote.Service):
                     "Cohort {id} not found. Either it never existed, it was deleted, "
                     "or {user_email} does not have permission to view it.".format(id=cohort_id, user_email=user_email))
 
+            # get the filters used for this cohort
             filter_query_dict = {'cohorts_filters.resulting_cohort_id': str(row['id'])}
             filter_query_str, filter_query_tuple = CohortsGetListQueryBuilder().build_filter_query(filter_query_dict)
-
             filter_cursor = db.cursor(MySQLdb.cursors.DictCursor)
             filter_cursor.execute(filter_query_str, filter_query_tuple)
-            filter_data = []
-            for filter_row in filter_cursor.fetchall():
-                filter_data.append(FilterDetails(
-                    name=str(filter_row['name']),
-                    value=str(filter_row['value'])
-                ))
+            filter_data = CohortsListMessageListBuilder().make_filter_details_from_cursor(filter_cursor)
 
-            if filter_data == []:
-                filter_data.append(FilterDetails(
-                    name="None",
-                    value="None"
-                ))
-
-            # filter_data = CohortsListMessageListBuilder().build_message_list(FilterDetails,
-            #                                                                  filter_cursor.fetchall())
-
-            # getting the parent_id is a separate query since a single cohort
-            # may have multiple parent cohorts
+            # getting the parent_id's for this cohort is a separate query
+            # since a single cohort may have multiple parent cohorts
             parent_query_dict = {'cohort_id': str(row['id'])}
             parent_query_str, parent_query_tuple = CohortsGetListQueryBuilder().build_parent_query(parent_query_dict)
-
             parent_cursor = db.cursor(MySQLdb.cursors.DictCursor)
             parent_cursor.execute(parent_query_str, parent_query_tuple)
-            parent_id_data = [str(p_row['parent_id']) for p_row in parent_cursor.fetchall() if row.get('parent_id')]
+            parent_id_data = CohortsListMessageListBuilder().make_parent_id_list_from_cursor(parent_cursor, row)
 
-            if parent_id_data == []:
-                parent_id_data.append("None")
-
+            # get list of patients in this cohort
             patient_query_dict = {'cohort_id': str(row['id'])}
-            patient_query_str, patient_query_tuple = CohortsGetListQueryBuilder().build_patients_query(patient_query_dict)
+            patient_query_str, patient_query_tuple = CohortsGetListQueryBuilder().build_patients_query(
+                patient_query_dict)
             cursor.execute(patient_query_str, patient_query_tuple)
-            patient_list = [str(patient_row.get('patient_id')) for patient_row in cursor.fetchall() if patient_row.get('patient_id')]
-
+            patient_list = [str(patient_row.get('patient_id')) for patient_row in cursor.fetchall() if
+                            patient_row.get('patient_id')]
             if patient_list == []:
                 patient_list.append("None")
 
+            # get list of samples in this cohort
             sample_query_dict = {'cohort_id': str(row['id'])}
             sample_query_str, sample_query_tuple = CohortsGetListQueryBuilder().build_samples_query(sample_query_dict)
             cursor.execute(sample_query_str, sample_query_tuple)
-            sample_list = [str(sample_row.get('sample_id')) for sample_row in cursor.fetchall() if sample_row.get('sample_id')]
-
+            sample_list = [str(sample_row.get('sample_id')) for sample_row in cursor.fetchall() if
+                           sample_row.get('sample_id')]
             if sample_list == []:
                 sample_list.append("None")
-
 
             return CohortDetails(
                 id=str(row['id']),

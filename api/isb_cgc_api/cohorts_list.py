@@ -73,6 +73,7 @@ class CohortsListAPI(remote.Service):
         cursor = None
         filter_cursor = None
         parent_cursor = None
+        sample_cursor = None
         db = None
 
         if endpoints.get_current_user() is not None:
@@ -91,9 +92,9 @@ class CohortsListAPI(remote.Service):
             request_finished.send(self)
             raise endpoints.NotFoundException("%s does not have an entry in the user database." % user_email)
 
-        query_dict = {'cohorts_cohort_perms.user_id': user_id, 'cohorts_cohort.active': unicode('1')}
-
-        query_str, query_tuple = CohortsGetListQueryBuilder().build_cohort_query(query_dict)
+        query_str, query_tuple = CohortsGetListQueryBuilder().build_cohort_query(
+            {'cohorts_cohort_perms.user_id': user_id,
+             'cohorts_cohort.active': unicode('1')})
 
         filter_query_str = ''
         parent_query_str = ''
@@ -102,14 +103,19 @@ class CohortsListAPI(remote.Service):
         try:
             db = sql_connection()
             cursor = db.cursor(MySQLdb.cursors.DictCursor)
+            filter_cursor = db.cursor(MySQLdb.cursors.DictCursor)
+            parent_cursor = db.cursor(MySQLdb.cursors.DictCursor)
+            patient_cursor = db.cursor(MySQLdb.cursors.DictCursor)
+            sample_cursor = db.cursor(MySQLdb.cursors.DictCursor)
+
             cursor.execute(query_str, query_tuple)
             data = []
 
             for row in cursor.fetchall():
-                filter_query_dict = {'cohorts_filters.resulting_cohort_id': str(row['id'])}
-                filter_query_str, filter_query_tuple = CohortsGetListQueryBuilder().build_filter_query(filter_query_dict)
 
-                filter_cursor = db.cursor(MySQLdb.cursors.DictCursor)
+                filter_query_str, filter_query_tuple = CohortsGetListQueryBuilder().build_filter_query(
+                    {'cohorts_filters.resulting_cohort_id': str(row['id'])})
+
                 filter_cursor.execute(filter_query_str, filter_query_tuple)
                 filter_data = []
                 for filter_row in filter_cursor.fetchall():
@@ -131,29 +137,23 @@ class CohortsListAPI(remote.Service):
                 # may have multiple parent cohorts
                 parent_query_dict = {'cohort_id': str(row['id'])}
                 parent_query_str, parent_query_tuple = CohortsGetListQueryBuilder().build_parent_query(parent_query_dict)
-
-                parent_cursor = db.cursor(MySQLdb.cursors.DictCursor)
                 parent_cursor.execute(parent_query_str, parent_query_tuple)
                 parent_id_data = [str(p_row['parent_id']) for p_row in parent_cursor.fetchall() if row.get('parent_id')]
 
                 if parent_id_data == []:
                     parent_id_data.append("None")
 
-                patient_query_dict = {'cohort_id': str(row['id'])}
-                patient_query_str, patient_query_tuple = CohortsGetListQueryBuilder().build_patients_query(patient_query_dict)
-                patient_cursor = db.cursor(MySQLdb.cursors.DictCursor)
+                patient_query_str, patient_query_tuple = CohortsGetListQueryBuilder().build_patients_query({'cohort_id': str(row['id'])})
                 patient_cursor.execute(patient_query_str, patient_query_tuple)
                 patient_rows = patient_cursor.fetchall()
                 patient_count = len(patient_rows)
-                patient_cursor.close()  # todo: initialize and close in finally clause
+                patient_cursor.close()
 
-                sample_query_dict = {'cohort_id': str(row['id'])}
-                sample_query_str, sample_query_tuple = CohortsGetListQueryBuilder().build_samples_query(sample_query_dict)
-                sample_cursor = db.cursor(MySQLdb.cursors.DictCursor)
+                sample_query_str, sample_query_tuple = CohortsGetListQueryBuilder().build_samples_query({'cohort_id': str(row['id'])})
                 sample_cursor.execute(sample_query_str, sample_query_tuple)
                 sample_rows = sample_cursor.fetchall()
                 sample_count = len(sample_rows)
-                sample_cursor.close()  # todo: initialize and close in finally clause
+                sample_cursor.close()
 
                 data.append(CohortDetails(
                     id=str(row['id']),
@@ -190,5 +190,6 @@ class CohortsListAPI(remote.Service):
             if cursor: cursor.close()
             if filter_cursor: filter_cursor.close()
             if parent_cursor: parent_cursor.close()
+            if sample_cursor: sample_cursor.close()
             if db and db.open: db.close()
             request_finished.send(self)
