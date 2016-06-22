@@ -143,16 +143,16 @@ class CohortsListAPI(remote.Service):
                 patient_query_str, patient_query_tuple = CohortsGetListQueryBuilder().build_patients_query(patient_query_dict)
                 patient_cursor = db.cursor(MySQLdb.cursors.DictCursor)
                 patient_cursor.execute(patient_query_str, patient_query_tuple)
-                patient_row = patient_cursor.fetchone()
-                patient_count = int(patient_row.get('count(patient_id)')) if patient_row.get('count(patient_id)') else 0
+                patient_rows = patient_cursor.fetchall()
+                patient_count = len(patient_rows)
                 patient_cursor.close()  # todo: initialize and close in finally clause
 
                 sample_query_dict = {'cohort_id': str(row['id'])}
                 sample_query_str, sample_query_tuple = CohortsGetListQueryBuilder().build_samples_query(sample_query_dict)
                 sample_cursor = db.cursor(MySQLdb.cursors.DictCursor)
                 sample_cursor.execute(sample_query_str, sample_query_tuple)
-                sample_row = sample_cursor.fetchone()
-                sample_count = int(sample_row.get('count(sample_id)')) if sample_row.get('count(sample_id)') else 0
+                sample_rows = sample_cursor.fetchall()
+                sample_count = len(sample_rows)
                 sample_cursor.close()  # todo: initialize and close in finally clause
 
                 data.append(CohortDetails(
