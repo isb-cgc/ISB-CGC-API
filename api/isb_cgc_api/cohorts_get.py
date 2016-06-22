@@ -54,7 +54,7 @@ class CohortDetails(messages.Message):
     samples = messages.StringField(14, repeated=True)
 
 
-class CohortsListMessageListBuilder(object):
+class CohortsGetListMessageListBuilder(object):
 
     def make_filter_details_from_cursor(self, filter_cursor_dict):
         """
@@ -126,10 +126,6 @@ class CohortsGetAPI(remote.Service):
 
         query_str, query_tuple = CohortsGetListQueryBuilder().build_cohort_query(query_dict)
 
-        filter_query_str = ''
-        parent_query_str = ''
-        row = None
-
         try:
             db = sql_connection()
             cursor = db.cursor(MySQLdb.cursors.DictCursor)
@@ -146,7 +142,7 @@ class CohortsGetAPI(remote.Service):
             filter_query_str, filter_query_tuple = CohortsGetListQueryBuilder().build_filter_query(filter_query_dict)
             filter_cursor = db.cursor(MySQLdb.cursors.DictCursor)
             filter_cursor.execute(filter_query_str, filter_query_tuple)
-            filter_data = CohortsListMessageListBuilder().make_filter_details_from_cursor(filter_cursor.fetchall())
+            filter_data = CohortsGetListMessageListBuilder().make_filter_details_from_cursor(filter_cursor.fetchall())
 
             # getting the parent_id's for this cohort is a separate query
             # since a single cohort may have multiple parent cohorts
@@ -154,7 +150,7 @@ class CohortsGetAPI(remote.Service):
             parent_query_str, parent_query_tuple = CohortsGetListQueryBuilder().build_parent_query(parent_query_dict)
             parent_cursor = db.cursor(MySQLdb.cursors.DictCursor)
             parent_cursor.execute(parent_query_str, parent_query_tuple)
-            parent_id_data = CohortsListMessageListBuilder().make_parent_id_list_from_cursor(parent_cursor.fetchall(), row)
+            parent_id_data = CohortsGetListMessageListBuilder().make_parent_id_list_from_cursor(parent_cursor.fetchall(), row)
 
             # get list of patients in this cohort
             patient_query_dict = {'cohort_id': str(row['id'])}
@@ -202,10 +198,7 @@ class CohortsGetAPI(remote.Service):
                 "Cohort {} for user {} not found. {}: {}".format(cohort_id, user_email, type(e), e))
 
         except MySQLdb.ProgrammingError as e:
-            msg = '{}:\n\tcohort query: {} {}\n\tfilter query: {} {}\n\tparent query: {} {}' \
-                .format(e, query_str, query_tuple, filter_query_str, str(row['id']), parent_query_str,
-                        str(row['id']))
-            logger.warn(msg)
+            logger.warn("Error retrieving cohorts or filters. {}".format(e))
             raise endpoints.BadRequestException("Error retrieving cohorts or filters. {}".format(msg))
 
         finally:

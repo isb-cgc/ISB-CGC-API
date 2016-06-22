@@ -74,6 +74,7 @@ class CohortsListAPI(remote.Service):
         filter_cursor = None
         parent_cursor = None
         sample_cursor = None
+        patient_cursor = None
         db = None
 
         if endpoints.get_current_user() is not None:
@@ -95,10 +96,6 @@ class CohortsListAPI(remote.Service):
         query_str, query_tuple = CohortsGetListQueryBuilder().build_cohort_query(
             {'cohorts_cohort_perms.user_id': user_id,
              'cohorts_cohort.active': unicode('1')})
-
-        filter_query_str = ''
-        parent_query_str = ''
-        row = None
 
         try:
             db = sql_connection()
@@ -147,13 +144,11 @@ class CohortsListAPI(remote.Service):
                 patient_cursor.execute(patient_query_str, patient_query_tuple)
                 patient_rows = patient_cursor.fetchall()
                 patient_count = len(patient_rows)
-                patient_cursor.close()
 
                 sample_query_str, sample_query_tuple = CohortsGetListQueryBuilder().build_samples_query({'cohort_id': str(row['id'])})
                 sample_cursor.execute(sample_query_str, sample_query_tuple)
                 sample_rows = sample_cursor.fetchall()
                 sample_count = len(sample_rows)
-                sample_cursor.close()
 
                 data.append(CohortDetails(
                     id=str(row['id']),
@@ -180,11 +175,8 @@ class CohortsListAPI(remote.Service):
                 "User {}'s cohorts not found. {}: {}".format(user_email, type(e), e))
 
         except MySQLdb.ProgrammingError as e:
-            msg = '{}:\n\tcohort query: {} {}\n\tfilter query: {} {}\n\tparent query: {} {}' \
-                .format(e, query_str, query_tuple, filter_query_str, str(row['id']), parent_query_str,
-                        str(row['id']))
-            logger.warn(msg)
-            raise endpoints.BadRequestException("Error retrieving cohorts or filters. {}".format(msg))
+            logger.warn("Error retrieving cohorts or filters. {}".format(e))
+            raise endpoints.BadRequestException("Error retrieving cohorts or filters. {}".format(e))
 
         finally:
             if cursor: cursor.close()
