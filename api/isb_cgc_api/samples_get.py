@@ -165,6 +165,13 @@ class SamplesGetAPI(remote.Service):
             biospecimen_cursor.execute(biospecimen_query_str, query_tuple)
             row = biospecimen_cursor.fetchone()
 
+            # todo: [(field.name, field.type) for field in MetadataItem().all_fields()]
+            # constructor_dict = {
+            #     key: value for key, value in row.items()
+            #     if key in [field.name for field in MetadataItem().all_fields()]
+            #     }
+            # item = MetadataItem(**{key: value for key, value in row.items() if key in [field.name for field in MetadataItem().all_fields()]})
+
             item = MetadataItem(
                 avg_percent_lymphocyte_infiltration=None if "avg_percent_lymphocyte_infiltration" not in row or row[
                                                                                                                     "avg_percent_lymphocyte_infiltration"] is None else float(
