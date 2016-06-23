@@ -73,8 +73,8 @@ class CohortsListAPI(remote.Service):
 
         if user_email is None:
             raise endpoints.UnauthorizedException(
-                "Authentication failed. Try signing in to {} to register with the web application."
-                    .format(BASE_URL))
+                "Authentication failed. Try signing in to {} to register "
+                "with the web application.".format(BASE_URL))
 
         django.setup()
         try:

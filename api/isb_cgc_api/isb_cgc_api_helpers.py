@@ -19,9 +19,11 @@ BUILTIN_ENDPOINTS_PARAMETERS = [
 
 ISB_CGC_Endpoints = endpoints.api(name='isb_cgc_api', version='v2',
                                   description="Get information about cohorts, patients, and samples. Create and delete cohorts.",
-                                  allowed_client_ids=[INSTALLED_APP_CLIENT_ID, endpoints.API_EXPLORER_CLIENT_ID, settings.WEB_CLIENT_ID],
+                                  allowed_client_ids=[INSTALLED_APP_CLIENT_ID, endpoints.API_EXPLORER_CLIENT_ID,
+                                                      settings.WEB_CLIENT_ID],
                                   documentation='http://isb-cancer-genomics-cloud.readthedocs.io/en/latest/sections/progapi/Programmatic-API.html',
                                   title="ISB-CGC API")
+
 
 def are_there_bad_keys(request):
     '''
@@ -292,7 +294,6 @@ class MetadataRangesItem(messages.Message):
 
 
 class CohortsGetListQueryBuilder(object):
-
     def build_cohort_query(self, query_dict):
         """
         Builds the query that will select cohort id, name, last_date_saved,
@@ -392,7 +393,6 @@ class CohortsGetListQueryBuilder(object):
 
 
 class CohortsCreatePreviewQueryBuilder(object):
-
     def build_query_dictionaries(self, request):
         """
         Builds the query dictionaries for create and preview cohort endpoints.
@@ -421,7 +421,6 @@ class CohortsCreatePreviewQueryBuilder(object):
 
         return query_dict, gte_query_dict, lte_query_dict
 
-
     def build_query(self, query_dict, gte_query_dict, lte_query_dict):
         """
         Builds the queries that selects the patient and sample barcodes
@@ -447,10 +446,10 @@ class CohortsCreatePreviewQueryBuilder(object):
                 patient_query_str += ' ( {key} is null '.format(key=key)
                 sample_query_str += ' ( {key} is null '.format(key=key)
                 if len(value_list) > 0:
-                    patient_query_str += ' OR {key} IN ({vals}) '.format(key=key,
-                                                                         vals=', '.join(['%s'] * len(value_list)))
-                    sample_query_str += ' OR {key} IN ({vals}) '.format(key=key,
-                                                                        vals=', '.join(['%s'] * len(value_list)))
+                    patient_query_str += ' OR {key} IN ({vals}) '.format(
+                        key=key, vals=', '.join(['%s'] * len(value_list)))
+                    sample_query_str += ' OR {key} IN ({vals}) '.format(
+                        key=key, vals=', '.join(['%s'] * len(value_list)))
                 patient_query_str += ') '
                 sample_query_str += ') '
             else:
@@ -483,9 +482,9 @@ class FilterDetails(messages.Message):
 
 
 class CohortsGetListMessageBuilder(object):
-
     def make_filter_details_from_cursor(self, filter_cursor_dict):
         """
+        Returns list of FilterDetails from a dictionary of
         """
         filter_data = []
         for filter_row in filter_cursor_dict:
@@ -504,7 +503,7 @@ class CohortsGetListMessageBuilder(object):
 
     def make_parent_id_list_from_cursor(self, parent_cursor_dict, row):
         parent_id_data = [str(p_row['parent_id']) for p_row in parent_cursor_dict if row.get('parent_id')]
-        if parent_id_data == []:
+        if len(parent_id_data) == 0:
             parent_id_data.append("None")
 
         return parent_id_data
