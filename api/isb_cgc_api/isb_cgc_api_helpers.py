@@ -482,34 +482,6 @@ class FilterDetails(messages.Message):
     value = messages.StringField(2)
 
 
-class CohortListDetails(messages.Message):
-    id = messages.StringField(1)
-    name = messages.StringField(2)
-    last_date_saved = messages.StringField(3)
-    permission = messages.StringField(4)
-    email = messages.StringField(5)
-    comments = messages.StringField(6)
-    source_type = messages.StringField(7)
-    source_notes = messages.StringField(8)
-    parent_id = messages.StringField(9, repeated=True)
-    filters = messages.MessageField(FilterDetails, 10, repeated=True)
-
-
-class CohortGetDetails(messages.Message):
-    id = messages.StringField(1)
-    name = messages.StringField(2)
-    last_date_saved = messages.StringField(3)
-    permission = messages.StringField(4)
-    email = messages.StringField(5)
-    comments = messages.StringField(6)
-    source_type = messages.StringField(7)
-    source_notes = messages.StringField(8)
-    parent_id = messages.StringField(9, repeated=True)
-    filters = messages.MessageField(FilterDetails, 10, repeated=True)
-    patient_count = messages.IntegerField(11, variant=messages.Variant.INT32)
-    sample_count = messages.IntegerField(12, variant=messages.Variant.INT32)
-
-
 class CohortsGetListMessageBuilder(object):
 
     def make_filter_details_from_cursor(self, filter_cursor_dict):

@@ -35,11 +35,6 @@ logger = logging.getLogger(__name__)
 BASE_URL = settings.BASE_URL
 
 
-# class FilterDetails(messages.Message):
-#     name = messages.StringField(1)
-#     value = messages.StringField(2)
-
-
 class CohortDetails(messages.Message):
     id = messages.StringField(1)
     name = messages.StringField(2)
@@ -62,9 +57,8 @@ class CohortDetailsList(messages.Message):
 
 @ISB_CGC_Endpoints.api_class(resource_name='cohorts')
 class CohortsListAPI(remote.Service):
-
     @endpoints.method(message_types.VoidMessage, CohortDetailsList, http_method='GET', path='cohorts')
-    def list(self, request):
+    def list(self, unused_request):
         """
         Returns information about cohorts a user has either READER or OWNER permission on.
         Authentication is required. Optionally takes a cohort id as a parameter to
@@ -90,9 +84,10 @@ class CohortsListAPI(remote.Service):
             request_finished.send(self)
             raise endpoints.NotFoundException("%s does not have an entry in the user database." % user_email)
 
-        query_str, query_tuple = CohortsGetListQueryBuilder().build_cohort_query(
-            {'cohorts_cohort_perms.user_id': user_id,
-             'cohorts_cohort.active': unicode('1')})
+        query_str, query_tuple = CohortsGetListQueryBuilder().build_cohort_query({
+            'cohorts_cohort_perms.user_id': user_id,
+            'cohorts_cohort.active': unicode('1')
+        })
 
         try:
             db = sql_connection()

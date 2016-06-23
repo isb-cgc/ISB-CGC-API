@@ -25,7 +25,7 @@ from django.contrib.auth.models import User as Django_User
 from django.core.signals import request_finished
 from protorpc import remote, messages
 from isb_cgc_api_helpers import ISB_CGC_Endpoints, CohortsGetListQueryBuilder, \
-    CohortsGetListMessageBuilder, FilterDetails, CohortGetDetails
+    CohortsGetListMessageBuilder, FilterDetails
 from api.api_helpers import sql_connection
 
 logger = logging.getLogger(__name__)
@@ -50,7 +50,6 @@ class CohortDetails(messages.Message):
     samples = messages.StringField(14, repeated=True)
 
 
-
 @ISB_CGC_Endpoints.api_class(resource_name='cohorts')
 class CohortsGetAPI(remote.Service):
     GET_RESOURCE = endpoints.ResourceContainer(cohort_id=messages.IntegerField(1, required=True))
@@ -69,24 +68,23 @@ class CohortsGetAPI(remote.Service):
         if endpoints.get_current_user() is not None:
             user_email = endpoints.get_current_user().email()
 
-        cohort_id = request.get_assigned_value('cohort_id')
-
         if user_email is None:
             raise endpoints.UnauthorizedException(
-                "Authentication failed. Try signing in to {} to register with the web application."
-                    .format(BASE_URL))
+                "Authentication failed. Try signing in to {} to register "
+                "with the web application.".format(BASE_URL))
 
         django.setup()
         try:
             user_id = Django_User.objects.get(email=user_email).id
         except (ObjectDoesNotExist, MultipleObjectsReturned), e:
             logger.warn(e)
+            request_finished.send(self)
             raise endpoints.NotFoundException("%s does not have an entry in the user database." % user_email)
 
-        query_dict = {'cohorts_cohort_perms.user_id': user_id, 'cohorts_cohort.active': unicode('1')}
-
-        if cohort_id:
-            query_dict['cohorts_cohort.id'] = cohort_id
+        cohort_id = request.get_assigned_value('cohort_id')
+        query_dict = {'cohorts_cohort_perms.user_id': user_id,
+                      'cohorts_cohort.active': unicode('1'),
+                      'cohorts_cohort.id': cohort_id}
 
         query_str, query_tuple = CohortsGetListQueryBuilder().build_cohort_query(query_dict)
 
@@ -94,44 +92,44 @@ class CohortsGetAPI(remote.Service):
             db = sql_connection()
             cursor = db.cursor(MySQLdb.cursors.DictCursor)
             cursor.execute(query_str, query_tuple)
-
             row = cursor.fetchone()
+
             if row is None:
                 raise endpoints.NotFoundException(
                     "Cohort {id} not found. Either it never existed, it was deleted, "
-                    "or {user_email} does not have permission to view it.".format(id=cohort_id, user_email=user_email))
+                    "or {user_email} does not have permission to view it.".format(
+                        id=cohort_id, user_email=user_email))
 
             # get the filters used for this cohort
-            filter_query_dict = {'cohorts_filters.resulting_cohort_id': str(row['id'])}
-            filter_query_str, filter_query_tuple = CohortsGetListQueryBuilder().build_filter_query(filter_query_dict)
+            filter_query_str, filter_query_tuple = CohortsGetListQueryBuilder().build_filter_query(
+                {'cohorts_filters.resulting_cohort_id': str(row['id'])})
             cursor.execute(filter_query_str, filter_query_tuple)
-            filter_data = CohortsGetListMessageBuilder().make_filter_details_from_cursor(cursor.fetchall())
+            filter_data = CohortsGetListMessageBuilder().make_filter_details_from_cursor(
+                cursor.fetchall())
 
             # getting the parent_id's for this cohort is a separate query
             # since a single cohort may have multiple parent cohorts
-            parent_query_dict = {'cohort_id': str(row['id'])}
-            parent_query_str, parent_query_tuple = CohortsGetListQueryBuilder().build_parent_query(parent_query_dict)
+            parent_query_str, parent_query_tuple = CohortsGetListQueryBuilder().build_parent_query(
+                {'cohort_id': str(row['id'])})
             cursor.execute(parent_query_str, parent_query_tuple)
-            parent_id_data = CohortsGetListMessageBuilder().make_parent_id_list_from_cursor(cursor.fetchall(), row)
+            parent_id_data = CohortsGetListMessageBuilder().make_parent_id_list_from_cursor(
+                cursor.fetchall(), row)
 
             # get list of patients in this cohort
-            patient_query_dict = {'cohort_id': str(row['id'])}
             patient_query_str, patient_query_tuple = CohortsGetListQueryBuilder().build_patients_query(
-                patient_query_dict)
+                {'cohort_id': str(row['id'])})
             cursor.execute(patient_query_str, patient_query_tuple)
-            patient_list = [str(patient_row.get('patient_id')) for patient_row in cursor.fetchall() if
-                            patient_row.get('patient_id')]
-            if patient_list == []:
-                patient_list.append("None")
+            patient_list = [str(patient_row.get('patient_id'))
+                            for patient_row in cursor.fetchall()
+                            if patient_row.get('patient_id')]
 
             # get list of samples in this cohort
-            sample_query_dict = {'cohort_id': str(row['id'])}
-            sample_query_str, sample_query_tuple = CohortsGetListQueryBuilder().build_samples_query(sample_query_dict)
+            sample_query_str, sample_query_tuple = CohortsGetListQueryBuilder().build_samples_query(
+                {'cohort_id': str(row['id'])})
             cursor.execute(sample_query_str, sample_query_tuple)
-            sample_list = [str(sample_row.get('sample_id')) for sample_row in cursor.fetchall() if
-                           sample_row.get('sample_id')]
-            if sample_list == []:
-                sample_list.append("None")
+            sample_list = [str(sample_row.get('sample_id'))
+                           for sample_row in cursor.fetchall()
+                           if sample_row.get('sample_id')]
 
             return CohortDetails(
                 id=str(row['id']),
@@ -146,8 +144,8 @@ class CohortsGetAPI(remote.Service):
                 filters=filter_data,
                 patient_count=len(patient_list),
                 sample_count=len(sample_list),
-                patients=patient_list,
-                samples=sample_list
+                patients=patient_list if len(patient_list) > 0 else ["None"],
+                samples=sample_list if len(sample_list) > 0 else ["None"]
             )
 
         except (IndexError, TypeError) as e:
@@ -156,7 +154,7 @@ class CohortsGetAPI(remote.Service):
 
         except MySQLdb.ProgrammingError as e:
             logger.warn("Error retrieving cohorts or filters. {}".format(e))
-            raise endpoints.BadRequestException("Error retrieving cohorts or filters. {}".format(msg))
+            raise endpoints.BadRequestException("Error retrieving cohorts or filters. {}".format(e))
 
         finally:
             if cursor: cursor.close()
