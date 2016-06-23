@@ -24,7 +24,8 @@ from django.conf import settings
 from django.core.signals import request_finished
 from protorpc import remote, messages
 
-from isb_cgc_api_helpers import ISB_CGC_Endpoints, are_there_bad_keys, construct_parameter_error_message
+from isb_cgc_api_helpers import ISB_CGC_Endpoints, are_there_bad_keys, construct_parameter_error_message, \
+    CohortsSamplesFilesQueryBuilder, CohortsSamplesFilesMessageBuilder
 from api.api_helpers import sql_connection
 
 logger = logging.getLogger(__name__)
@@ -60,50 +61,15 @@ class SamplesDatafilenamekeysAPI(remote.Service):
             err_msg = construct_parameter_error_message(request, False)
             raise endpoints.BadRequestException(err_msg)
 
-        query_str = 'SELECT DataFileNameKey, SecurityProtocol, Repository ' \
-                    'FROM metadata_data WHERE SampleBarcode=%s '
-
-        query_tuple = (sample_barcode,)
-
-        if platform:
-            query_str += ' and Platform=%s '
-            query_tuple += (platform,)
-
-        if pipeline:
-            query_str += ' and Pipeline=%s '
-            query_tuple += (pipeline,)
-
-        query_str += ' GROUP BY DataFileNameKey, SecurityProtocol, Repository'
+        query_str, query_tuple = CohortsSamplesFilesQueryBuilder().build_query(
+            platform=platform, pipeline=pipeline, sample_barcode=sample_barcode)
 
         try:
             db = sql_connection()
             cursor = db.cursor(MySQLdb.cursors.DictCursor)
             cursor.execute(query_str, query_tuple)
+            datafilenamekeys, bad_repo_count, bad_repo_set = CohortsSamplesFilesMessageBuilder().get_files_and_bad_repos(cursor.fetchall())
 
-            datafilenamekeys = []
-            bad_repo_count = 0
-            bad_repo_set = set()
-            for row in cursor.fetchall():
-                if not row.get('DataFileNameKey'):
-                    continue
-                if 'controlled' not in str(row['SecurityProtocol']).lower():
-                    # this may only be necessary for the vagrant db
-                    path = row.get('DataFileNameKey') if row.get('DataFileNameKey') is None \
-                        else row.get('DataFileNameKey').replace('gs://' + settings.OPEN_DATA_BUCKET, '')
-                    datafilenamekeys.append("gs://{}{}".format(settings.OPEN_DATA_BUCKET, path))
-                else:  # not filtering on dbGaP_authorized
-                    if row['Repository'].lower() == 'dcc':
-                        bucket_name = settings.DCC_CONTROLLED_DATA_BUCKET
-                    elif row['Repository'].lower() == 'cghub':
-                        bucket_name = settings.CGHUB_CONTROLLED_DATA_BUCKET
-                    else:  # shouldn't ever happen
-                        bad_repo_count += 0
-                        bad_repo_set.add(row['Repository'])
-                        continue
-                    # this may only be necessary for the vagrant db
-                    path = row.get('DataFileNameKey') if row.get('DataFileNameKey') is None \
-                        else row.get('DataFileNameKey').replace('gs://' + bucket_name, '')
-                    datafilenamekeys.append("gs://{}{}".format(bucket_name, path))
             if bad_repo_count > 0:
                 logger.warn("not returning {count} row(s) in sample_details due to repositories: {bad_repo_list}"
                             .format(count=bad_repo_count, bad_repo_list=list(bad_repo_set)))

@@ -73,8 +73,8 @@ class CohortsCreateAPI(remote.Service):
 
         if user_email is None:
             raise endpoints.UnauthorizedException(
-                "Authentication failed. Try signing in to {} to register with the web application."
-                    .format(BASE_URL))
+                "Authentication failed. Try signing in to {} to register "
+                "with the web application.".format(BASE_URL))
 
         django.setup()
         try:
@@ -113,11 +113,9 @@ class CohortsCreateAPI(remote.Service):
             request_finished.send(self)
             raise endpoints.NotFoundException("Error retrieving samples or patients")
         except MySQLdb.ProgrammingError as e:
-            msg = '{}:\n\tpatient query: {} {}\n\tsample query: {} {}' \
-                .format(e, patient_query_str, value_tuple, sample_query_str, value_tuple)
-            logger.warn(msg)
+            logger.warn("Error saving cohort. {}".format(e))
             request_finished.send(self)
-            raise endpoints.BadRequestException("Error saving cohort. {}".format(msg))
+            raise endpoints.BadRequestException("Error saving cohort. {}".format(e))
         finally:
             if patient_cursor: patient_cursor.close()
             if sample_cursor: sample_cursor.close()

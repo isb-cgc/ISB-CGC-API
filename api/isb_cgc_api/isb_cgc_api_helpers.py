@@ -484,7 +484,8 @@ class FilterDetails(messages.Message):
 class CohortsGetListMessageBuilder(object):
     def make_filter_details_from_cursor(self, filter_cursor_dict):
         """
-        Returns list of FilterDetails from a dictionary of
+        Returns list of FilterDetails from a dictionary of results
+        from a filter query.
         """
         filter_data = []
         for filter_row in filter_cursor_dict:
@@ -502,8 +503,71 @@ class CohortsGetListMessageBuilder(object):
         return filter_data
 
     def make_parent_id_list_from_cursor(self, parent_cursor_dict, row):
+        """
+        Returns list of parent_id's from a dictionary of results
+        from a parent id query.
+        """
         parent_id_data = [str(p_row['parent_id']) for p_row in parent_cursor_dict if row.get('parent_id')]
         if len(parent_id_data) == 0:
             parent_id_data.append("None")
 
         return parent_id_data
+
+
+class CohortsSamplesFilesQueryBuilder(object):
+
+    def build_query(self, platform=None, pipeline=None, limit=None, cohort_id=None, sample_barcode=None):
+
+        query_str = 'SELECT DataFileNameKey, SecurityProtocol, Repository ' \
+                    'FROM metadata_data '
+
+        if cohort_id is None:
+            query_str += 'WHERE SampleBarcode=%s '
+        else:
+            query_str += 'JOIN cohorts_samples ON metadata_data.SampleBarcode=cohorts_samples.sample_id ' \
+                         'WHERE cohorts_samples.cohort_id=%s '
+
+        query_str += 'AND DataFileNameKey != "" AND DataFileNameKey is not null '
+        query_str += ' and metadata_data.Platform=%s ' if platform is not None else ''
+        query_str += ' and metadata_data.Pipeline=%s ' if pipeline is not None else ''
+        query_str += ' GROUP BY DataFileNameKey, SecurityProtocol, Repository '
+        query_str += ' LIMIT %s' if limit is not None else ' LIMIT 10000'
+
+        query_tuple = (cohort_id,) if cohort_id is not None else (sample_barcode,)
+        query_tuple += (platform,) if platform is not None else ()
+        query_tuple += (pipeline,) if pipeline is not None else ()
+        query_tuple += (limit,) if limit is not None else ()
+
+        return query_str, query_tuple
+
+
+class CohortsSamplesFilesMessageBuilder(object):
+
+    def get_files_and_bad_repos(self, cursor_rows):
+        datafilenamekeys = []
+        bad_repo_count = 0
+        bad_repo_set = set()
+        for row in cursor_rows:
+            if not row.get('DataFileNameKey'):
+                continue
+
+            if 'controlled' not in str(row['SecurityProtocol']).lower():
+                # this may only be necessary for the vagrant db
+                path = row.get('DataFileNameKey') if row.get('DataFileNameKey') is None \
+                    else row.get('DataFileNameKey').replace('gs://' + settings.OPEN_DATA_BUCKET, '')
+                datafilenamekeys.append(
+                    "gs://{}{}".format(settings.OPEN_DATA_BUCKET, path))
+            else:  # not filtering on dbGaP_authorized
+                if row['Repository'].lower() == 'dcc':
+                    bucket_name = settings.DCC_CONTROLLED_DATA_BUCKET
+                elif row['Repository'].lower() == 'cghub':
+                    bucket_name = settings.CGHUB_CONTROLLED_DATA_BUCKET
+                else:  # shouldn't ever happen
+                    bad_repo_count += 1
+                    bad_repo_set.add(row['Repository'])
+                    continue
+                # this may only be necessary for the vagrant db
+                path = row.get('DataFileNameKey') if row.get('DataFileNameKey') is None \
+                    else row.get('DataFileNameKey').replace('gs://' + bucket_name, '')
+                datafilenamekeys.append("gs://{}{}".format(bucket_name, path))
+        return datafilenamekeys, bad_repo_count, bad_repo_set
