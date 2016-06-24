@@ -24,9 +24,8 @@ from django.conf import settings
 from django.core.signals import request_finished
 from protorpc import remote, messages
 
-from isb_cgc_api_helpers import ISB_CGC_Endpoints
+from isb_cgc_api_helpers import ISB_CGC_Endpoints, MetadataItem
 from api.api_helpers import sql_connection
-from api.metadata import MetadataItem
 
 logger = logging.getLogger(__name__)
 
@@ -139,10 +138,7 @@ class SamplesGetAPI(remote.Service):
         and a list of "data_details" blocks describing each of the data files associated with this sample
         """
 
-        biospecimen_cursor = None
-        aliquot_cursor = None
-        patient_cursor = None
-        data_cursor = None
+        cursor = None
         db = None
 
         sample_barcode = request.get_assigned_value('sample_barcode')
@@ -161,126 +157,52 @@ class SamplesGetAPI(remote.Service):
 
         try:
             db = sql_connection()
-            biospecimen_cursor = db.cursor(MySQLdb.cursors.DictCursor)
-            biospecimen_cursor.execute(biospecimen_query_str, query_tuple)
-            row = biospecimen_cursor.fetchone()
+            cursor = db.cursor(MySQLdb.cursors.DictCursor)
+            cursor.execute(biospecimen_query_str, query_tuple)
+            row = cursor.fetchone()
 
-            # todo: [(field.name, field.type) for field in MetadataItem().all_fields()]
-            # constructor_dict = {
-            #     key: value for key, value in row.items()
-            #     if key in [field.name for field in MetadataItem().all_fields()]
-            #     }
-            # item = MetadataItem(**{key: value for key, value in row.items() if key in [field.name for field in MetadataItem().all_fields()]})
+            constructor_dict = {}
+            metadata_item_dict = {field.name: field for field in MetadataItem().all_fields()}
+            for name, field in metadata_item_dict.iteritems():
+                if row.get(name) is not None:
+                    try:
+                        field.validate(row[name])
+                        constructor_dict[name] = row[name]
+                    except messages.ValidationError, e:
+                        constructor_dict[name] = None
+                        print name + ': ' + str(row[name]) + ' was not validated'
+                else:
+                    constructor_dict[name] = None
 
-            item = MetadataItem(
-                avg_percent_lymphocyte_infiltration=None if "avg_percent_lymphocyte_infiltration" not in row or row[
-                                                                                                                    "avg_percent_lymphocyte_infiltration"] is None else float(
-                    row["avg_percent_lymphocyte_infiltration"]),
-                avg_percent_monocyte_infiltration=None if "avg_percent_monocyte_infiltration" not in row or row[
-                                                                                                                "avg_percent_monocyte_infiltration"] is None else float(
-                    row["avg_percent_monocyte_infiltration"]),
-                avg_percent_necrosis=None if "avg_percent_necrosis" not in row or row[
-                                                                                      "avg_percent_necrosis"] is None else float(
-                    row["avg_percent_necrosis"]),
-                avg_percent_neutrophil_infiltration=None if "avg_percent_neutrophil_infiltration" not in row or row[
-                                                                                                                    "avg_percent_neutrophil_infiltration"] is None else float(
-                    row["avg_percent_neutrophil_infiltration"]),
-                avg_percent_normal_cells=None if "avg_percent_normal_cells" not in row or row[
-                                                                                              "avg_percent_normal_cells"] is None else float(
-                    row["avg_percent_normal_cells"]),
-                avg_percent_stromal_cells=None if "avg_percent_stromal_cells" not in row or row[
-                                                                                                "avg_percent_stromal_cells"] is None else float(
-                    row["avg_percent_stromal_cells"]),
-                avg_percent_tumor_cells=None if "avg_percent_tumor_cells" not in row or row[
-                                                                                            "avg_percent_tumor_cells"] is None else float(
-                    row["avg_percent_tumor_cells"]),
-                avg_percent_tumor_nuclei=None if "avg_percent_tumor_nuclei" not in row or row[
-                                                                                              "avg_percent_tumor_nuclei"] is None else float(
-                    row["avg_percent_tumor_nuclei"]),
-                batch_number=None if "batch_number" not in row or row["batch_number"] is None else int(
-                    row["batch_number"]),
-                bcr=str(row["bcr"]),
-                days_to_collection=None if "days_to_collection" not in row or row[
-                                                                                  'days_to_collection'] is None else int(
-                    row["days_to_collection"]),
-                max_percent_lymphocyte_infiltration=None if "max_percent_lymphocyte_infiltration" not in row or row[
-                                                                                                                    "max_percent_lymphocyte_infiltration"] is None else int(
-                    row["max_percent_lymphocyte_infiltration"]),  # 46)
-                max_percent_monocyte_infiltration=None if "max_percent_monocyte_infiltration" not in row or row[
-                                                                                                                "max_percent_monocyte_infiltration"] is None else int(
-                    row["max_percent_monocyte_infiltration"]),  # 47)
-                max_percent_necrosis=None if "max_percent_necrosis" not in row or row[
-                                                                                      "max_percent_necrosis"] is None else int(
-                    row["max_percent_necrosis"]),  # 48)
-                max_percent_neutrophil_infiltration=None if "max_percent_neutrophil_infiltration" not in row or row[
-                                                                                                                    "max_percent_neutrophil_infiltration"] is None else int(
-                    row["max_percent_neutrophil_infiltration"]),  # 49)
-                max_percent_normal_cells=None if "max_percent_normal_cells" not in row or row[
-                                                                                              "max_percent_normal_cells"] is None else int(
-                    row["max_percent_normal_cells"]),  # 50)
-                max_percent_stromal_cells=None if "max_percent_stromal_cells" not in row or row[
-                                                                                                "max_percent_stromal_cells"] is None else int(
-                    row["max_percent_stromal_cells"]),  # 51)
-                max_percent_tumor_cells=None if "max_percent_tumor_cells" not in row or row[
-                                                                                            "max_percent_tumor_cells"] is None else int(
-                    row["max_percent_tumor_cells"]),  # 52)
-                max_percent_tumor_nuclei=None if "max_percent_tumor_nuclei" not in row or row[
-                                                                                              "max_percent_tumor_nuclei"] is None else int(
-                    row["max_percent_tumor_nuclei"]),  # 53)
-                min_percent_lymphocyte_infiltration=None if "min_percent_lymphocyte_infiltration" not in row or row[
-                                                                                                                    "min_percent_lymphocyte_infiltration"] is None else int(
-                    row["min_percent_lymphocyte_infiltration"]),  # 55)
-                min_percent_monocyte_infiltration=None if "min_percent_monocyte_infiltration" not in row or row[
-                                                                                                                "min_percent_monocyte_infiltration"] is None else int(
-                    row["min_percent_monocyte_infiltration"]),  # 56)
-                min_percent_necrosis=None if "min_percent_necrosis" not in row or row[
-                                                                                      "min_percent_necrosis"] is None else int(
-                    row["min_percent_necrosis"]),  # 57)
-                min_percent_neutrophil_infiltration=None if "min_percent_neutrophil_infiltration" not in row or row[
-                                                                                                                    "min_percent_neutrophil_infiltration"] is None else int(
-                    row["min_percent_neutrophil_infiltration"]),  # 58)
-                min_percent_normal_cells=None if "min_percent_normal_cells" not in row or row[
-                                                                                              "min_percent_normal_cells"] is None else int(
-                    row["min_percent_normal_cells"]),  # 59)
-                min_percent_stromal_cells=None if "min_percent_stromal_cells" not in row or row[
-                                                                                                "min_percent_stromal_cells"] is None else int(
-                    row["min_percent_stromal_cells"]),  # 60)
-                min_percent_tumor_cells=None if "min_percent_tumor_cells" not in row or row[
-                                                                                            "min_percent_tumor_cells"] is None else int(
-                    row["min_percent_tumor_cells"]),  # 61)
-                min_percent_tumor_nuclei=None if "min_percent_tumor_nuclei" not in row or row[
-                                                                                              "min_percent_tumor_nuclei"] is None else int(
-                    row["min_percent_tumor_nuclei"]),  # 62)
-                ParticipantBarcode=str(row["ParticipantBarcode"]),
-                Project=str(row["Project"]),
-                SampleBarcode=str(row["SampleBarcode"]),
-                Study=str(row["Study"])
-            )
-            aliquot_cursor = db.cursor(MySQLdb.cursors.DictCursor)
-            aliquot_cursor.execute(aliquot_query_str, extra_query_tuple)
-            aliquot_data = []
-            for row in aliquot_cursor.fetchall():
-                aliquot_data.append(row['AliquotBarcode'])
+            item = MetadataItem(**constructor_dict)
 
-            patient_cursor = db.cursor(MySQLdb.cursors.DictCursor)
-            patient_cursor.execute(patient_query_str, query_tuple)
-            row = patient_cursor.fetchone()
+
+            # aliquot_cursor = db.cursor(MySQLdb.cursors.DictCursor)
+            cursor.execute(aliquot_query_str, extra_query_tuple)
+            aliquot_data = [row['AliquotBarcode'] for row in cursor.fetchall()]
+
+            # patient_cursor = db.cursor(MySQLdb.cursors.DictCursor)
+            cursor.execute(patient_query_str, query_tuple)
+            row = cursor.fetchone()
             if row is None:
-                aliquot_cursor.close()
-                patient_cursor.close()
-                biospecimen_cursor.close()
+                # aliquot_cursor.close()
+                # patient_cursor.close()
+                # biospecimen_cursor.close()
+                cursor.close()
                 db.close()
                 error_message = "Sample barcode {} not found in metadata_biospecimen table.".format(sample_barcode)
                 return SampleDetails(biospecimen_data=None, aliquots=[], patient=None, data_details=[],
                                      data_details_count=None, error=error_message)
             patient_barcode = str(row["ParticipantBarcode"])
 
-            data_cursor = db.cursor(MySQLdb.cursors.DictCursor)
-            data_cursor.execute(data_query_str, extra_query_tuple)
+            # data_cursor = db.cursor(MySQLdb.cursors.DictCursor)
+            cursor.execute(data_query_str, extra_query_tuple)
+
+            # todo: replace with CohortsSamplesFilesMessageBuilder().get_files_and_bad_repos(cursor.fetchall())
             data_data = []
             bad_repo_count = 0
             bad_repo_set = set()
-            for row in data_cursor.fetchall():
+            for row in cursor.fetchall():
                 if not row.get('DataFileNameKey'):
                     continue
                 if 'controlled' not in str(row['SecurityProtocol']).lower():
@@ -330,15 +252,8 @@ class SamplesGetAPI(remote.Service):
             raise endpoints.NotFoundException(
                 "Sample details for barcode {} not found.".format(sample_barcode))
         except MySQLdb.ProgrammingError as e:
-            msg = '{}:\n\tbiospecimen query: {} {}\n\tpatient query: {} {}\n\tdata query: {} {}' \
-                .format(e, biospecimen_query_str, query_tuple, patient_query_str, query_tuple,
-                        data_query_str, extra_query_tuple)
-            logger.warn(msg)
-            raise endpoints.BadRequestException("Error retrieving biospecimen, patient, or other data. {}".format(msg))
+            logger.warn(e)
+            raise endpoints.BadRequestException("Error retrieving biospecimen, patient, or other data. {}".format(e))
         finally:
-            if biospecimen_cursor: biospecimen_cursor.close()
-            if aliquot_cursor: aliquot_cursor.close()
-            if patient_cursor: patient_cursor.close()
-            if data_cursor: data_cursor.close()
+            if cursor: cursor.close()
             if db and db.open: db.close()
-            request_finished.send(self)
