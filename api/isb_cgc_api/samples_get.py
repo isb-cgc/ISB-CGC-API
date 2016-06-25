@@ -109,7 +109,7 @@ class DataDetails(messages.Message):
     Repository = messages.StringField(16)
     SDRFFileName = messages.StringField(17)
     SecurityProtocol = messages.StringField(18)
-    CloudStoragePath = messages.StringField(19)
+    cloud_storage_path = messages.StringField(19)
 
 
 class SampleDetails(messages.Message):
@@ -178,12 +178,15 @@ class SamplesGetAPI(remote.Service):
             row = cursor.fetchone()
             patient_barcode = str(row["ParticipantBarcode"])
 
-            # start building list of data details messages
+            # prepare to build list of data details messages
             cursor.execute(data_query_str, extra_query_tuple)
             cursor_rows = cursor.fetchall()
-            # update every dictionary in cursor_rows to contain the full CloudStoragePath for each sample
-            datafilenamekeys, bad_repo_count, bad_repo_set = \
-                CohortsSamplesFilesMessageBuilder().get_files_and_bad_repos(cursor_rows)
+            # update every dictionary in cursor_rows to contain the full cloud_storage_path for each sample
+            bad_repo_count, bad_repo_set = \
+                CohortsSamplesFilesMessageBuilder().get_GCS_file_paths_and_bad_repos(cursor_rows)
+            if bad_repo_count > 0:
+                logger.warn("not returning {count} row(s) in sample_details due to repositories: {bad_repo_list}"
+                            .format(count=bad_repo_count, bad_repo_list=list(bad_repo_set)))
 
             # build a data details message for each row returned from metadata_data table
             data_details_list = []

@@ -642,14 +642,19 @@ class CohortsSamplesFilesQueryBuilder(object):
 
 class CohortsSamplesFilesMessageBuilder(object):
 
-    def get_files_and_bad_repos(self, cursor_rows):
+    def get_GCS_file_paths_and_bad_repos(self, cursor_rows):
         """
-        Used in cohorts_datafilenamekeys, samples_datafilenamekeys, samples_get?
-        :param cursor_rows:
-        :param samples_get:
-        :return:
+         Used in cohorts.datafilenamekeys, samples.datafilenamekeys, samples.get.
+        Modifies cursor_rows to add the cloud storage path to each row representing a file.
+        A count of bad repositories and a set of bad repositories is returned in case
+        there are any errors with the data repository information in the row.
+        :param cursor_rows: list of dictionaries resulting from a database query.
+        Each dictionary with the key 'DataFileNameKey' must also have a 'SecurityProtocol' key.
+        Each dictionary with 'controlled' in the value for 'SecurityProtocol' must also
+        have the key 'Repository'.
+        :return: bad_repo_count, bad_repo_set
+
         """
-        datafilenamekeys = []
         bad_repo_count = 0
         bad_repo_set = set()
         for row in cursor_rows:
@@ -660,9 +665,7 @@ class CohortsSamplesFilesMessageBuilder(object):
                 # this may only be necessary for the vagrant db
                 path = row.get('DataFileNameKey') if row.get('DataFileNameKey') is None \
                     else row.get('DataFileNameKey').replace('gs://' + settings.OPEN_DATA_BUCKET, '')
-                datafilenamekeys.append(
-                    "gs://{}{}".format(settings.OPEN_DATA_BUCKET, path))
-                row['CloudStoragePath'] = "gs://{}{}".format(settings.OPEN_DATA_BUCKET, path)
+                row['cloud_storage_path'] = "gs://{}{}".format(settings.OPEN_DATA_BUCKET, path)
             else:
                 if row['Repository'].lower() == 'dcc':
                     bucket_name = settings.DCC_CONTROLLED_DATA_BUCKET
@@ -676,9 +679,8 @@ class CohortsSamplesFilesMessageBuilder(object):
                 path = row.get('DataFileNameKey') if row.get('DataFileNameKey') is None \
                     else row.get('DataFileNameKey').replace('gs://' + bucket_name, '')
 
-                datafilenamekeys.append("gs://{}{}".format(bucket_name, path))
-                row['CloudStoragePath'] = "gs://{}{}".format(bucket_name, path)
-        return datafilenamekeys, bad_repo_count, bad_repo_set
+                row['cloud_storage_path'] = "gs://{}{}".format(bucket_name, path)
+        return bad_repo_count, bad_repo_set
 
 
 def build_constructor_dict_for_message(message_class, row):

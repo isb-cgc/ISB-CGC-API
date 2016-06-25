@@ -27,8 +27,7 @@ from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 from django.contrib.auth.models import User as Django_User
 from protorpc import remote, messages
 
-from isb_cgc_api_helpers import ISB_CGC_Endpoints, are_there_bad_keys, construct_parameter_error_message, \
-    CohortsSamplesFilesQueryBuilder, CohortsSamplesFilesMessageBuilder
+from isb_cgc_api_helpers import ISB_CGC_Endpoints, CohortsSamplesFilesQueryBuilder, CohortsSamplesFilesMessageBuilder
 from api.api_helpers import sql_connection
 from cohorts.models import Cohort as Django_Cohort, Cohort_Perms
 
@@ -37,22 +36,22 @@ logger = logging.getLogger(__name__)
 BASE_URL = settings.BASE_URL
 
 
-class DataFileNameKeyList(messages.Message):
-    datafilenamekeys = messages.StringField(1, repeated=True)
+class GCSFilePathList(messages.Message):
+    cloud_storage_file_paths = messages.StringField(1, repeated=True)
     count = messages.IntegerField(2, variant=messages.Variant.INT32)
 
 
 @ISB_CGC_Endpoints.api_class(resource_name='cohorts')
-class CohortsDatafilenamekeysAPI(remote.Service):
+class CohortsCloudStorageFilePathsAPI(remote.Service):
 
     GET_RESOURCE = endpoints.ResourceContainer(cohort_id=messages.IntegerField(1, required=True),
                                                limit=messages.IntegerField(2),
                                                platform=messages.StringField(3),
                                                pipeline=messages.StringField(4))
 
-    @endpoints.method(GET_RESOURCE, DataFileNameKeyList,  http_method='GET',
-                      path='cohorts/{cohort_id}/datafilenamekeys')
-    def datafilenamekeys(self, request):
+    @endpoints.method(GET_RESOURCE, GCSFilePathList,  http_method='GET',
+                      path='cohorts/{cohort_id}/cloud_storage_file_paths')
+    def cloud_storage_file_paths(self, request):
         """
         Takes a cohort id as a required parameter and returns cloud storage paths to files
         associated with all the samples in that cohort, up to a default limit of 10,000 files.
@@ -66,10 +65,6 @@ class CohortsDatafilenamekeysAPI(remote.Service):
         platform = request.get_assigned_value('platform')
         pipeline = request.get_assigned_value('pipeline')
         cohort_id = request.get_assigned_value('cohort_id')
-
-        if are_there_bad_keys(request):
-            err_msg = construct_parameter_error_message(request, False)
-            raise endpoints.BadRequestException(err_msg)
 
         if endpoints.get_current_user() is not None:
             user_email = endpoints.get_current_user().email()
@@ -101,11 +96,13 @@ class CohortsDatafilenamekeysAPI(remote.Service):
             db = sql_connection()
             cursor = db.cursor(MySQLdb.cursors.DictCursor)
             cursor.execute(query_str, query_tuple)
-            datafilenamekeys, bad_repo_count, bad_repo_set = CohortsSamplesFilesMessageBuilder().get_files_and_bad_repos(cursor.fetchall())
+            cursor_rows = cursor.fetchall()
+            bad_repo_count, bad_repo_set = CohortsSamplesFilesMessageBuilder().get_GCS_file_paths_and_bad_repos(cursor_rows)
+            cloud_storage_path_list = [row['cloud_storage_path'] for row in cursor_rows]
             if bad_repo_count > 0:
                 logger.warn("not returning {count} row(s) in sample_details due to repositories: {bad_repo_list}"
                             .format(count=bad_repo_count, bad_repo_list=list(bad_repo_set)))
-            return DataFileNameKeyList(datafilenamekeys=datafilenamekeys, count=len(datafilenamekeys))
+            return GCSFilePathList(cloud_storage_file_paths=cloud_storage_path_list, count=len(cloud_storage_path_list))
 
         except (IndexError, TypeError), e:
             logger.warn(e)

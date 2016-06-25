@@ -23,7 +23,7 @@ import MySQLdb
 from django.conf import settings
 from protorpc import remote, messages
 
-from isb_cgc_api_helpers import ISB_CGC_Endpoints, are_there_bad_keys, construct_parameter_error_message
+from isb_cgc_api_helpers import ISB_CGC_Endpoints
 from api.api_helpers import sql_connection
 
 logger = logging.getLogger(__name__)
@@ -54,14 +54,10 @@ class SamplesGoogleGenomicsAPI(remote.Service):
         Takes a sample barcode as a required parameter and returns the Google Genomics dataset id
         and readgroupset id associated with the sample, if any.
         """
-        # print >> sys.stderr,'Called '+sys._getframe().f_code.co_name
+
         cursor = None
         db = None
         sample_barcode = request.get_assigned_value('sample_barcode')
-
-        if are_there_bad_keys(request):
-            err_msg = construct_parameter_error_message(request, False)
-            raise endpoints.BadRequestException(err_msg)
 
         query_str = 'SELECT SampleBarcode, GG_dataset_id, GG_readgroupset_id ' \
                     'FROM metadata_data ' \
@@ -75,16 +71,14 @@ class SamplesGoogleGenomicsAPI(remote.Service):
             cursor = db.cursor(MySQLdb.cursors.DictCursor)
             cursor.execute(query_str, query_tuple)
 
-            google_genomics_items = []
-            for row in cursor.fetchall():
-                google_genomics_items.append(
-                    GoogleGenomics(
+            google_genomics_items = [
+                GoogleGenomics(
                         SampleBarcode=row['SampleBarcode'],
                         GG_dataset_id=row['GG_dataset_id'],
                         GG_readgroupset_id=row['GG_readgroupset_id']
                     )
-                )
-
+                for row in cursor.fetchall()
+            ]
             return GoogleGenomicsList(items=google_genomics_items, count=len(google_genomics_items))
 
         except (IndexError, TypeError), e:

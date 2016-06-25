@@ -27,8 +27,8 @@ from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 from django.contrib.auth.models import User as Django_User
 from protorpc import remote, messages
 
-from isb_cgc_api_helpers import ISB_CGC_Endpoints, are_there_bad_keys, construct_parameter_error_message
-from api.api_helpers import sql_connection, get_user_email_from_token
+from isb_cgc_api_helpers import ISB_CGC_Endpoints
+from api.api_helpers import sql_connection
 from cohorts.models import Cohort as Django_Cohort, Cohort_Perms
 
 logger = logging.getLogger(__name__)
@@ -36,14 +36,14 @@ logger = logging.getLogger(__name__)
 BASE_URL = settings.BASE_URL
 
 
-class GoogleGenomicsItem(messages.Message):
+class GoogleGenomics(messages.Message):
     SampleBarcode = messages.StringField(1)
     GG_dataset_id = messages.StringField(2)
     GG_readgroupset_id = messages.StringField(3)
 
 
 class GoogleGenomicsList(messages.Message):
-    items = messages.MessageField(GoogleGenomicsItem, 1, repeated=True)
+    items = messages.MessageField(GoogleGenomics, 1, repeated=True)
     count = messages.IntegerField(2, variant=messages.Variant.INT32)
 
 
@@ -65,10 +65,6 @@ class CohortsGoogleGenomicssAPI(remote.Service):
         user_email = None
         cohort_id = request.get_assigned_value('cohort_id')
 
-        if are_there_bad_keys(request):
-            err_msg = construct_parameter_error_message(request, False)
-            raise endpoints.BadRequestException(err_msg)
-
         if endpoints.get_current_user() is not None:
             user_email = endpoints.get_current_user().email()
 
@@ -80,8 +76,8 @@ class CohortsGoogleGenomicssAPI(remote.Service):
         django.setup()
         try:
             user_id = Django_User.objects.get(email=user_email).id
-            django_cohort = Django_Cohort.objects.get(id=cohort_id)
-            cohort_perm = Cohort_Perms.objects.get(cohort_id=cohort_id, user_id=user_id)
+            Django_Cohort.objects.get(id=cohort_id)
+            Cohort_Perms.objects.get(cohort_id=cohort_id, user_id=user_id)
         except (ObjectDoesNotExist, MultipleObjectsReturned), e:
             logger.warn(e)
             err_msg = "Error retrieving cohort {} for user {}: {}".format(cohort_id, user_email, e)
@@ -104,15 +100,14 @@ class CohortsGoogleGenomicssAPI(remote.Service):
             cursor = db.cursor(MySQLdb.cursors.DictCursor)
             cursor.execute(query_str, query_tuple)
 
-            google_genomics_items = []
-            for row in cursor.fetchall():
-                google_genomics_items.append(
-                    GoogleGenomicsItem(
+            google_genomics_items = [
+                GoogleGenomics(
                         SampleBarcode=row['SampleBarcode'],
                         GG_dataset_id=row['GG_dataset_id'],
                         GG_readgroupset_id=row['GG_readgroupset_id']
                     )
-                )
+                for row in cursor.fetchall()
+            ]
 
             return GoogleGenomicsList(items=google_genomics_items, count=len(google_genomics_items))
 

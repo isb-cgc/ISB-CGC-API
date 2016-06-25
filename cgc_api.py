@@ -32,11 +32,11 @@ from api.isb_cgc_api.cohorts_preview import CohortsPreviewAPI
 from api.isb_cgc_api.cohorts_get import CohortsGetAPI
 from api.isb_cgc_api.cohorts_delete import CohortsDeleteAPI
 from api.isb_cgc_api.cohorts_create import CohortsCreateAPI
-from api.isb_cgc_api.cohorts_datafilenamekeys import CohortsDatafilenamekeysAPI
+from api.isb_cgc_api.cohorts_cloudstoragefilepaths import CohortsCloudStorageFilePathsAPI
 from api.isb_cgc_api.cohorts_googlegenomics import CohortsGoogleGenomicssAPI
 from api.isb_cgc_api.patients_get import PatientsGetAPI
 from api.isb_cgc_api.samples_get import SamplesGetAPI
-from api.isb_cgc_api.samples_datafilenamekeys import SamplesDatafilenamekeysAPI
+from api.isb_cgc_api.samples_cloudstoragefilepaths import SamplesCloudStorageFilePathsAPI
 from api.isb_cgc_api.samples_googlegenomics import SamplesGoogleGenomicsAPI
 from api.isb_cgc_api.users_get import UserGetAPI
 
@@ -60,11 +60,11 @@ APPLICATION = endpoints.api_server([
     CohortsGetAPI,
     CohortsDeleteAPI,
     CohortsCreateAPI,
-    CohortsDatafilenamekeysAPI,
+    CohortsCloudStorageFilePathsAPI,
     CohortsGoogleGenomicssAPI,
     PatientsGetAPI,
     SamplesGetAPI,
-    SamplesDatafilenamekeysAPI,
+    SamplesCloudStorageFilePathsAPI,
     SamplesGoogleGenomicsAPI,
     UserGetAPI,
 ])

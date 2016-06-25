@@ -31,21 +31,21 @@ from api.api_helpers import sql_connection
 logger = logging.getLogger(__name__)
 
 
-class DataFileNameKeyList(messages.Message):
-    datafilenamekeys = messages.StringField(1, repeated=True)
+class GCSFilePathList(messages.Message):
+    cloud_storage_file_paths = messages.StringField(1, repeated=True)
     count = messages.IntegerField(2, variant=messages.Variant.INT32)
 
 
 @ISB_CGC_Endpoints.api_class(resource_name='samples')
-class SamplesDatafilenamekeysAPI(remote.Service):
+class SamplesCloudStorageFilePathsAPI(remote.Service):
 
     GET_RESOURCE = endpoints.ResourceContainer(sample_barcode=messages.StringField(1, required=True),
                                                platform=messages.StringField(2),
                                                pipeline=messages.StringField(3))
 
-    @endpoints.method(GET_RESOURCE, DataFileNameKeyList,
-                      path='samples/{sample_barcode}/datafilenamekeys', http_method='GET')
-    def datafilenamekeys(self, request):
+    @endpoints.method(GET_RESOURCE, GCSFilePathList,
+                      path='samples/{sample_barcode}/cloud_storage_file_paths', http_method='GET')
+    def cloud_storage_file_paths(self, request):
         """
         Takes a sample barcode as a required parameter and
         returns cloud storage paths to files associated with that sample.
@@ -68,12 +68,14 @@ class SamplesDatafilenamekeysAPI(remote.Service):
             db = sql_connection()
             cursor = db.cursor(MySQLdb.cursors.DictCursor)
             cursor.execute(query_str, query_tuple)
-            datafilenamekeys, bad_repo_count, bad_repo_set = CohortsSamplesFilesMessageBuilder().get_files_and_bad_repos(cursor.fetchall())
-
+            cursor_rows = cursor.fetchall()
+            # add 'cloud_storage_path' to cursor_rows
+            bad_repo_count, bad_repo_set = CohortsSamplesFilesMessageBuilder().get_GCS_file_paths_and_bad_repos(cursor_rows)
+            cloud_storage_path_list = [row['cloud_storage_path'] for row in cursor_rows]
             if bad_repo_count > 0:
                 logger.warn("not returning {count} row(s) in sample_details due to repositories: {bad_repo_list}"
                             .format(count=bad_repo_count, bad_repo_list=list(bad_repo_set)))
-            return DataFileNameKeyList(datafilenamekeys=datafilenamekeys, count=len(datafilenamekeys))
+            return GCSFilePathList(cloud_storage_file_paths=cloud_storage_path_list, count=len(cloud_storage_path_list))
 
         except (IndexError, TypeError), e:
             logger.warn(e)
