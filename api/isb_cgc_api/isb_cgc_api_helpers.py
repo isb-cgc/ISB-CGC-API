@@ -298,7 +298,7 @@ class MetadataRangesItem(messages.Message):
 
 class MetadataItem(messages.Message):
     adenocarcinoma_invasion                                         = messages.StringField(1)
-    age_at_initial_pathologic_diagnosis                             = messages.IntegerField(2)
+    age_at_initial_pathologic_diagnosis                             = messages.IntegerField(2, variant=messages.Variant.INT32)
     anatomic_neoplasm_subdivision                                   = messages.StringField(3)
     avg_percent_lymphocyte_infiltration                             = messages.FloatField(4)
     avg_percent_monocyte_infiltration                               = messages.FloatField(5)
@@ -308,7 +308,7 @@ class MetadataItem(messages.Message):
     avg_percent_stromal_cells                                       = messages.FloatField(9)
     avg_percent_tumor_cells                                         = messages.FloatField(10)
     avg_percent_tumor_nuclei                                        = messages.FloatField(11)
-    batch_number                                                    = messages.IntegerField(12)
+    batch_number                                                    = messages.IntegerField(12, variant=messages.Variant.INT32)
     bcr                                                             = messages.StringField(13)
     clinical_M                                                      = messages.StringField(14)
     clinical_N                                                      = messages.StringField(15)
@@ -317,17 +317,17 @@ class MetadataItem(messages.Message):
     colorectal_cancer                                               = messages.StringField(18)
     country                                                         = messages.StringField(19)
     country_of_procurement                                          = messages.StringField(20)
-    days_to_birth                                                   = messages.IntegerField(21)
-    days_to_collection                                              = messages.IntegerField(22)
-    days_to_death                                                   = messages.IntegerField(23)
-    days_to_initial_pathologic_diagnosis                            = messages.IntegerField(24)
-    days_to_last_followup                                           = messages.IntegerField(25)
-    days_to_submitted_specimen_dx                                   = messages.IntegerField(26)
+    days_to_birth                                                   = messages.IntegerField(21, variant=messages.Variant.INT32)
+    days_to_collection                                              = messages.IntegerField(22, variant=messages.Variant.INT32)
+    days_to_death                                                   = messages.IntegerField(23, variant=messages.Variant.INT32)
+    days_to_initial_pathologic_diagnosis                            = messages.IntegerField(24, variant=messages.Variant.INT32)
+    days_to_last_followup                                           = messages.IntegerField(25, variant=messages.Variant.INT32)
+    days_to_submitted_specimen_dx                                   = messages.IntegerField(26, variant=messages.Variant.INT32)
     Study                                                           = messages.StringField(27)
     ethnicity                                                       = messages.StringField(28)
     frozen_specimen_anatomic_site                                   = messages.StringField(29)
     gender                                                          = messages.StringField(30)
-    height                                                          = messages.IntegerField(31)
+    height                                                          = messages.IntegerField(31, variant=messages.Variant.INT32)
     histological_type                                               = messages.StringField(32)
     history_of_colon_polyps                                         = messages.StringField(33)
     history_of_neoadjuvant_treatment                                = messages.StringField(34)
@@ -337,7 +337,7 @@ class MetadataItem(messages.Message):
     icd_10                                                          = messages.StringField(38)
     icd_o_3_histology                                               = messages.StringField(39)
     icd_o_3_site                                                    = messages.StringField(40)
-    lymph_node_examined_count                                       = messages.IntegerField(41)
+    lymph_node_examined_count                                       = messages.IntegerField(41, variant=messages.Variant.INT32)
     lymphatic_invasion                                              = messages.StringField(42)
     lymphnodes_examined                                             = messages.StringField(43)
     lymphovascular_invasion_present                                 = messages.StringField(44)
@@ -362,8 +362,8 @@ class MetadataItem(messages.Message):
     mononucleotide_marker_panel_analysis_status                     = messages.StringField(63)
     neoplasm_histologic_grade                                       = messages.StringField(64)
     new_tumor_event_after_initial_treatment                         = messages.StringField(65)
-    number_of_lymphnodes_examined                                   = messages.IntegerField(66)
-    number_of_lymphnodes_positive_by_he                             = messages.IntegerField(67)
+    number_of_lymphnodes_examined                                   = messages.IntegerField(66, variant=messages.Variant.INT32)
+    number_of_lymphnodes_positive_by_he                             = messages.IntegerField(67, variant=messages.Variant.INT32)
     ParticipantBarcode                                              = messages.StringField(68)
     pathologic_M                                                    = messages.StringField(69)
     pathologic_N                                                    = messages.StringField(70)
@@ -381,13 +381,13 @@ class MetadataItem(messages.Message):
     residual_tumor                                                  = messages.StringField(82)
     SampleBarcode                                                   = messages.StringField(83)
     tobacco_smoking_history                                         = messages.StringField(86)
-    total_number_of_pregnancies                                     = messages.IntegerField(87)
+    total_number_of_pregnancies                                     = messages.IntegerField(87, variant=messages.Variant.INT32)
     tumor_tissue_site                                               = messages.StringField(88)
     tumor_pathology                                                 = messages.StringField(89)
     tumor_type                                                      = messages.StringField(90)
     weiss_venous_invasion                                           = messages.StringField(91)
     vital_status                                                    = messages.StringField(92)
-    weight                                                          = messages.IntegerField(93)
+    weight                                                          = messages.IntegerField(93, variant=messages.Variant.INT32)
     year_of_initial_pathologic_diagnosis                            = messages.StringField(94)
     SampleTypeCode                                                  = messages.StringField(95)
 
@@ -698,9 +698,8 @@ def build_constructor_dict_for_message(message_class, row):
                 constructor_dict[name] = row[name]
             except messages.ValidationError, e:
                 constructor_dict[name] = None
-                logger.warn('{name}: {value} was not validated in the biospecimen '
-                            'data section of samples/get/{sample_barcode}. Error: {e}'
-                            .format(name=name, value=str(row[name]), sample_barcode=sample_barcode, e=e))
+                logger.warn('{name}: {value} was not validated while constructing kwargs for {message_class}. Error: {e}'
+                            .format(name=name, value=str(row[name]), message_class=str(message_class), e=e))
         else:
             constructor_dict[name] = None
 
