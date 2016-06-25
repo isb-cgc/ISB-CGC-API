@@ -642,7 +642,7 @@ class CohortsSamplesFilesQueryBuilder(object):
 
 class CohortsSamplesFilesMessageBuilder(object):
 
-    def get_files_and_bad_repos(self, cursor_rows, samples_get=False):
+    def get_files_and_bad_repos(self, cursor_rows):
         """
         Used in cohorts_datafilenamekeys, samples_datafilenamekeys, samples_get?
         :param cursor_rows:
@@ -663,12 +663,12 @@ class CohortsSamplesFilesMessageBuilder(object):
                 datafilenamekeys.append(
                     "gs://{}{}".format(settings.OPEN_DATA_BUCKET, path))
                 row['CloudStoragePath'] = "gs://{}{}".format(settings.OPEN_DATA_BUCKET, path)
-            else:  # not filtering on dbGaP_authorized
+            else:
                 if row['Repository'].lower() == 'dcc':
                     bucket_name = settings.DCC_CONTROLLED_DATA_BUCKET
                 elif row['Repository'].lower() == 'cghub':
                     bucket_name = settings.CGHUB_CONTROLLED_DATA_BUCKET
-                else:  # shouldn't ever happen
+                else:
                     bad_repo_count += 1
                     bad_repo_set.add(row['Repository'])
                     continue
@@ -678,7 +678,7 @@ class CohortsSamplesFilesMessageBuilder(object):
 
                 datafilenamekeys.append("gs://{}{}".format(bucket_name, path))
                 row['CloudStoragePath'] = "gs://{}{}".format(bucket_name, path)
-        return datafilenamekeys, bad_repo_count, bad_repo_set, cursor_rows
+        return datafilenamekeys, bad_repo_count, bad_repo_set
 
 
 def build_constructor_dict_for_message(message_class, row):

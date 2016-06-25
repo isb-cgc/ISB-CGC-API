@@ -182,8 +182,8 @@ class SamplesGetAPI(remote.Service):
             cursor.execute(data_query_str, extra_query_tuple)
             cursor_rows = cursor.fetchall()
             # update every dictionary in cursor_rows to contain the full CloudStoragePath for each sample
-            datafilenamekeys, bad_repo_count, bad_repo_set, cursor_rows = \
-                CohortsSamplesFilesMessageBuilder().get_files_and_bad_repos(cursor_rows, samples_get=True)
+            datafilenamekeys, bad_repo_count, bad_repo_set = \
+                CohortsSamplesFilesMessageBuilder().get_files_and_bad_repos(cursor_rows)
 
             # build a data details message for each row returned from metadata_data table
             data_details_list = []
