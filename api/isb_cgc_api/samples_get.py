@@ -19,12 +19,10 @@ limitations under the License.
 import endpoints
 import logging
 import MySQLdb
-
-from django.conf import settings
-from django.core.signals import request_finished
 from protorpc import remote, messages
 
-from isb_cgc_api_helpers import ISB_CGC_Endpoints, MetadataItem
+from isb_cgc_api_helpers import ISB_CGC_Endpoints, MetadataItem, \
+    CohortsSamplesFilesMessageBuilder, build_constructor_dict_for_message
 from api.api_helpers import sql_connection
 
 logger = logging.getLogger(__name__)
@@ -74,7 +72,8 @@ class SamplesGetQueryBuilder(object):
                          'SDRFFileName,' \
                          'SecurityProtocol ' \
                          'from metadata_data ' \
-                         'where SampleBarcode=%s '
+                         'where SampleBarcode=%s ' \
+                         'and DataFileNameKey is not null and DataFileNameKey !=""'
 
         data_query_str += ' and platform=%s ' if platform is not None else ''
         data_query_str += ' and pipeline=%s ' if pipeline is not None else ''
@@ -158,94 +157,50 @@ class SamplesGetAPI(remote.Service):
         try:
             db = sql_connection()
             cursor = db.cursor(MySQLdb.cursors.DictCursor)
+
+            # build biospecimen data message
             cursor.execute(biospecimen_query_str, query_tuple)
             row = cursor.fetchone()
-
-            constructor_dict = {}
-            metadata_item_dict = {field.name: field for field in MetadataItem().all_fields()}
-            for name, field in metadata_item_dict.iteritems():
-                if row.get(name) is not None:
-                    try:
-                        field.validate(row[name])
-                        constructor_dict[name] = row[name]
-                    except messages.ValidationError, e:
-                        constructor_dict[name] = None
-                        print name + ': ' + str(row[name]) + ' was not validated'
-                else:
-                    constructor_dict[name] = None
-
-            item = MetadataItem(**constructor_dict)
-
-
-            # aliquot_cursor = db.cursor(MySQLdb.cursors.DictCursor)
-            cursor.execute(aliquot_query_str, extra_query_tuple)
-            aliquot_data = [row['AliquotBarcode'] for row in cursor.fetchall()]
-
-            # patient_cursor = db.cursor(MySQLdb.cursors.DictCursor)
-            cursor.execute(patient_query_str, query_tuple)
-            row = cursor.fetchone()
             if row is None:
-                # aliquot_cursor.close()
-                # patient_cursor.close()
-                # biospecimen_cursor.close()
                 cursor.close()
                 db.close()
                 error_message = "Sample barcode {} not found in metadata_biospecimen table.".format(sample_barcode)
-                return SampleDetails(biospecimen_data=None, aliquots=[], patient=None, data_details=[],
-                                     data_details_count=None, error=error_message)
+                raise endpoints.NotFoundException(error_message)
+            constructor_dict = build_constructor_dict_for_message(MetadataItem(), row)
+            biospecimen_data_item = MetadataItem(**constructor_dict)
+
+            # get list of aliquots
+            cursor.execute(aliquot_query_str, extra_query_tuple)
+            aliquot_list = [row['AliquotBarcode'] for row in cursor.fetchall()]
+
+            # get patient barcode (superfluous?)
+            cursor.execute(patient_query_str, query_tuple)
+            row = cursor.fetchone()
             patient_barcode = str(row["ParticipantBarcode"])
 
-            # data_cursor = db.cursor(MySQLdb.cursors.DictCursor)
+            # start building list of data details messages
             cursor.execute(data_query_str, extra_query_tuple)
+            cursor_rows = cursor.fetchall()
+            # update every dictionary in cursor_rows to contain the full CloudStoragePath for each sample
+            datafilenamekeys, bad_repo_count, bad_repo_set, cursor_rows = \
+                CohortsSamplesFilesMessageBuilder().get_files_and_bad_repos(cursor_rows, samples_get=True)
 
-            # todo: replace with CohortsSamplesFilesMessageBuilder().get_files_and_bad_repos(cursor.fetchall())
-            data_data = []
-            bad_repo_count = 0
-            bad_repo_set = set()
-            for row in cursor.fetchall():
-                if not row.get('DataFileNameKey'):
-                    continue
-                if 'controlled' not in str(row['SecurityProtocol']).lower():
-                    cloud_storage_path = "gs://{}{}".format(settings.OPEN_DATA_BUCKET, row.get('DataFileNameKey'))
-                else:  # not filtering on dbGaP_authorized:
-                    if row['Repository'].lower() == 'dcc':
-                        bucket_name = settings.DCC_CONTROLLED_DATA_BUCKET
-                    elif row['Repository'].lower() == 'cghub':
-                        bucket_name = settings.CGHUB_CONTROLLED_DATA_BUCKET
-                    else:  # shouldn't ever happen
-                        bad_repo_count += 1
-                        bad_repo_set.add(row['Repository'])
-                        continue
-                    cloud_storage_path = "gs://{}{}".format(bucket_name, row.get('DataFileNameKey'))
+            # build a data details message for each row returned from metadata_data table
+            data_details_list = []
+            for row in cursor_rows:
+                constructor_dict = build_constructor_dict_for_message(DataDetails(), row)
+                data_details_item = DataDetails(**constructor_dict)
+                data_details_list.append(data_details_item)
 
-                data_item = DataDetails(
-                    SampleBarcode=str(row['SampleBarcode']),
-                    DataCenterName=str(row['DataCenterName']),
-                    DataCenterType=str(row['DataCenterType']),
-                    DataFileName=str(row['DataFileName']),
-                    DataFileNameKey=str(row.get('DataFileNameKey')),
-                    DatafileUploaded=str(row['DatafileUploaded']),
-                    DataLevel=str(row['DataLevel']),
-                    Datatype=str(row['Datatype']),
-                    GenomeReference=str(row['GenomeReference']),
-                    GG_dataset_id=str(row['GG_dataset_id']),
-                    GG_readgroupset_id=str(row['GG_readgroupset_id']),
-                    Pipeline=str(row['Pipeline']),
-                    Platform=str(row['Platform']),
-                    platform_full_name=str(row['platform_full_name']),
-                    Project=str(row['Project']),
-                    Repository=str(row['Repository']),
-                    SDRFFileName=str(row['SDRFFileName']),
-                    SecurityProtocol=str(row['SecurityProtocol']),
-                    CloudStoragePath=cloud_storage_path
-                )
-                data_data.append(data_item)
             if bad_repo_count > 0:
                 logger.warn("not returning {count} row(s) in sample_details due to repositories: {bad_repo_list}"
                             .format(count=bad_repo_count, bad_repo_list=list(bad_repo_set)))
-            return SampleDetails(biospecimen_data=item, aliquots=aliquot_data,
-                                 patient=patient_barcode, data_details=data_data,
-                                 data_details_count=len(data_data))
+
+            return SampleDetails(aliquots=aliquot_list,
+                                 biospecimen_data=biospecimen_data_item,
+                                 data_details=data_details_list,
+                                 data_details_count=len(data_details_list),
+                                 patient=patient_barcode)
 
         except (IndexError, TypeError) as e:
             logger.info("Sample details for barcode {} not found. Error: {}".format(sample_barcode, e))

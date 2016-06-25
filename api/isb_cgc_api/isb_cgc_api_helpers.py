@@ -1,6 +1,9 @@
 import endpoints
 from django.conf import settings
 from protorpc import messages
+import logging
+
+logger = logging.getLogger(__name__)
 
 INSTALLED_APP_CLIENT_ID = settings.INSTALLED_APP_CLIENT_ID
 CONTROLLED_ACL_GOOGLE_GROUP = settings.ACL_GOOGLE_GROUP
@@ -639,7 +642,13 @@ class CohortsSamplesFilesQueryBuilder(object):
 
 class CohortsSamplesFilesMessageBuilder(object):
 
-    def get_files_and_bad_repos(self, cursor_rows):
+    def get_files_and_bad_repos(self, cursor_rows, samples_get=False):
+        """
+        Used in cohorts_datafilenamekeys, samples_datafilenamekeys, samples_get?
+        :param cursor_rows:
+        :param samples_get:
+        :return:
+        """
         datafilenamekeys = []
         bad_repo_count = 0
         bad_repo_set = set()
@@ -653,6 +662,7 @@ class CohortsSamplesFilesMessageBuilder(object):
                     else row.get('DataFileNameKey').replace('gs://' + settings.OPEN_DATA_BUCKET, '')
                 datafilenamekeys.append(
                     "gs://{}{}".format(settings.OPEN_DATA_BUCKET, path))
+                row['CloudStoragePath'] = "gs://{}{}".format(settings.OPEN_DATA_BUCKET, path)
             else:  # not filtering on dbGaP_authorized
                 if row['Repository'].lower() == 'dcc':
                     bucket_name = settings.DCC_CONTROLLED_DATA_BUCKET
@@ -665,5 +675,33 @@ class CohortsSamplesFilesMessageBuilder(object):
                 # this may only be necessary for the vagrant db
                 path = row.get('DataFileNameKey') if row.get('DataFileNameKey') is None \
                     else row.get('DataFileNameKey').replace('gs://' + bucket_name, '')
+
                 datafilenamekeys.append("gs://{}{}".format(bucket_name, path))
-        return datafilenamekeys, bad_repo_count, bad_repo_set
+                row['CloudStoragePath'] = "gs://{}{}".format(bucket_name, path)
+        return datafilenamekeys, bad_repo_count, bad_repo_set, cursor_rows
+
+
+def build_constructor_dict_for_message(message_class, row):
+    """
+    Takes an instance of a message class and a dictionary of values from a database query
+    and first validates the values in the dictionary against the message class fields
+    and then returns a dictionary of all the validated key-value pairs in the database query.
+    This will only work if the headers in the database query have the same name as the names of
+    fields in the message class.
+    """
+    constructor_dict = {}
+    metadata_item_dict = {field.name: field for field in message_class.all_fields()}
+    for name, field in metadata_item_dict.iteritems():
+        if row.get(name) is not None:
+            try:
+                field.validate(row[name])
+                constructor_dict[name] = row[name]
+            except messages.ValidationError, e:
+                constructor_dict[name] = None
+                logger.warn('{name}: {value} was not validated in the biospecimen '
+                            'data section of samples/get/{sample_barcode}. Error: {e}'
+                            .format(name=name, value=str(row[name]), sample_barcode=sample_barcode, e=e))
+        else:
+            constructor_dict[name] = None
+
+    return constructor_dict

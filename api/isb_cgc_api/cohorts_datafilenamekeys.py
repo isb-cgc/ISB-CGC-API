@@ -101,7 +101,7 @@ class CohortsDatafilenamekeysAPI(remote.Service):
             db = sql_connection()
             cursor = db.cursor(MySQLdb.cursors.DictCursor)
             cursor.execute(query_str, query_tuple)
-            datafilenamekeys, bad_repo_count, bad_repo_set = CohortsSamplesFilesMessageBuilder().get_files_and_bad_repos(cursor.fetchall())
+            datafilenamekeys, bad_repo_count, bad_repo_set, cursor_rows = CohortsSamplesFilesMessageBuilder().get_files_and_bad_repos(cursor.fetchall())
             if bad_repo_count > 0:
                 logger.warn("not returning {count} row(s) in sample_details due to repositories: {bad_repo_list}"
                             .format(count=bad_repo_count, bad_repo_list=list(bad_repo_set)))
