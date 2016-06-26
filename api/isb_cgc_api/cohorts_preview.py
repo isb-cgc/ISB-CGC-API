@@ -52,7 +52,6 @@ class CohortsPreviewAPI(remote.Service):
         """
         patient_cursor = None
         sample_cursor = None
-        db = None
 
         if are_there_bad_keys(request) or are_there_no_acceptable_keys(request):
             err_msg = construct_parameter_error_message(request, True)
@@ -63,6 +62,9 @@ class CohortsPreviewAPI(remote.Service):
         patient_query_str, sample_query_str, value_tuple = CohortsCreatePreviewQueryBuilder().build_query(
             query_dict, gte_query_dict, lte_query_dict)
 
+        print '\nsample_query_str'
+        print sample_query_str
+        print value_tuple
         patient_barcodes = []
         sample_barcodes = []
 

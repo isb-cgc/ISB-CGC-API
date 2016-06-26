@@ -77,9 +77,12 @@ def construct_parameter_error_message(request, filter_required):
 
 
 class MetadataRangesItem(messages.Message):
-    age_at_initial_pathologic_diagnosis = messages.IntegerField(1, repeated=True)
-    age_at_initial_pathologic_diagnosis_lte = messages.IntegerField(2)
-    age_at_initial_pathologic_diagnosis_gte = messages.IntegerField(3)
+    """
+    Request body for cohorts_create and cohorts_preview.
+    """
+    age_at_initial_pathologic_diagnosis = messages.IntegerField(1, repeated=True, variant=messages.Variant.INT32)
+    age_at_initial_pathologic_diagnosis_lte = messages.IntegerField(2, variant=messages.Variant.INT32)
+    age_at_initial_pathologic_diagnosis_gte = messages.IntegerField(3, variant=messages.Variant.INT32)
 
     anatomic_neoplasm_subdivision = messages.StringField(4, repeated=True)
 
@@ -115,7 +118,7 @@ class MetadataRangesItem(messages.Message):
     avg_percent_tumor_nuclei_lte = messages.FloatField(27)
     avg_percent_tumor_nuclei_gte = messages.FloatField(28)
 
-    batch_number = messages.IntegerField(29, repeated=True)
+    batch_number = messages.IntegerField(29, repeated=True, variant=messages.Variant.INT32)
     bcr = messages.StringField(30, repeated=True)
     clinical_M = messages.StringField(31, repeated=True)
     clinical_N = messages.StringField(32, repeated=True)
@@ -124,49 +127,49 @@ class MetadataRangesItem(messages.Message):
     colorectal_cancer = messages.StringField(35, repeated=True)
     country = messages.StringField(36, repeated=True)
 
-    days_to_birth = messages.IntegerField(37, repeated=True)
-    days_to_birth_lte = messages.IntegerField(38)
-    days_to_birth_gte = messages.IntegerField(39)
+    days_to_birth = messages.IntegerField(37, repeated=True, variant=messages.Variant.INT32)
+    days_to_birth_lte = messages.IntegerField(38, variant=messages.Variant.INT32)
+    days_to_birth_gte = messages.IntegerField(39, variant=messages.Variant.INT32)
 
-    days_to_collection = messages.IntegerField(40, repeated=True)
-    days_to_collection_lte = messages.IntegerField(41)
-    days_to_collection_gte = messages.IntegerField(42)
+    days_to_collection = messages.IntegerField(40, repeated=True, variant=messages.Variant.INT32)
+    days_to_collection_lte = messages.IntegerField(41, variant=messages.Variant.INT32)
+    days_to_collection_gte = messages.IntegerField(42, variant=messages.Variant.INT32)
 
-    days_to_death = messages.IntegerField(43, repeated=True)
-    days_to_death_lte = messages.IntegerField(44)
-    days_to_death_gte = messages.IntegerField(45)
+    days_to_death = messages.IntegerField(43, repeated=True, variant=messages.Variant.INT32)
+    days_to_death_lte = messages.IntegerField(44, variant=messages.Variant.INT32)
+    days_to_death_gte = messages.IntegerField(45, variant=messages.Variant.INT32)
 
-    days_to_initial_pathologic_diagnosis = messages.IntegerField(46, repeated=True)
-    days_to_initial_pathologic_diagnosis_lte = messages.IntegerField(47)
-    days_to_initial_pathologic_diagnosis_gte = messages.IntegerField(48)
+    days_to_initial_pathologic_diagnosis = messages.IntegerField(46, repeated=True, variant=messages.Variant.INT32)
+    days_to_initial_pathologic_diagnosis_lte = messages.IntegerField(47, variant=messages.Variant.INT32)
+    days_to_initial_pathologic_diagnosis_gte = messages.IntegerField(48, variant=messages.Variant.INT32)
 
-    days_to_last_followup = messages.IntegerField(49, repeated=True)
-    days_to_last_followup_lte = messages.IntegerField(50)
-    days_to_last_followup_gte = messages.IntegerField(51)
+    days_to_last_followup = messages.IntegerField(49, repeated=True, variant=messages.Variant.INT32)
+    days_to_last_followup_lte = messages.IntegerField(50, variant=messages.Variant.INT32)
+    days_to_last_followup_gte = messages.IntegerField(51, variant=messages.Variant.INT32)
 
-    days_to_submitted_specimen_dx = messages.IntegerField(52, repeated=True)
-    days_to_submitted_specimen_dx_lte = messages.IntegerField(53)
-    days_to_submitted_specimen_dx_gte = messages.IntegerField(54)
+    days_to_submitted_specimen_dx = messages.IntegerField(52, repeated=True, variant=messages.Variant.INT32)
+    days_to_submitted_specimen_dx_lte = messages.IntegerField(53, variant=messages.Variant.INT32)
+    days_to_submitted_specimen_dx_gte = messages.IntegerField(54, variant=messages.Variant.INT32)
 
     ethnicity = messages.StringField(55, repeated=True)
     frozen_specimen_anatomic_site = messages.StringField(56, repeated=True)
     gender = messages.StringField(57, repeated=True)
 
-    has_Illumina_DNASeq = messages.StringField(58, repeated=True)
-    has_BCGSC_HiSeq_RNASeq = messages.StringField(59, repeated=True)
-    has_UNC_HiSeq_RNASeq = messages.StringField(60, repeated=True)
-    has_BCGSC_GA_RNASeq = messages.StringField(61, repeated=True)
-    has_UNC_GA_RNASeq = messages.StringField(62, repeated=True)
-    has_HiSeq_miRnaSeq = messages.StringField(63, repeated=True)
-    has_GA_miRNASeq = messages.StringField(64, repeated=True)
-    has_RPPA = messages.StringField(65, repeated=True)
-    has_SNP6 = messages.StringField(66, repeated=True)
-    has_27k = messages.StringField(67, repeated=True)
-    has_450k = messages.StringField(68, repeated=True)
+    has_Illumina_DNASeq = messages.BooleanField(58, repeated=True)
+    has_BCGSC_HiSeq_RNASeq = messages.BooleanField(59, repeated=True)
+    has_UNC_HiSeq_RNASeq = messages.BooleanField(60, repeated=True)
+    has_BCGSC_GA_RNASeq = messages.BooleanField(61, repeated=True)
+    has_UNC_GA_RNASeq = messages.BooleanField(62, repeated=True)
+    has_HiSeq_miRnaSeq = messages.BooleanField(63, repeated=True)
+    has_GA_miRNASeq = messages.BooleanField(64, repeated=True)
+    has_RPPA = messages.BooleanField(65, repeated=True)
+    has_SNP6 = messages.BooleanField(66, repeated=True)
+    has_27k = messages.BooleanField(67, repeated=True)
+    has_450k = messages.BooleanField(68, repeated=True)
 
-    height = messages.IntegerField(69, repeated=True)
-    height_lte = messages.IntegerField(70)
-    height_gte = messages.IntegerField(71)
+    height = messages.IntegerField(69, repeated=True, variant=messages.Variant.INT32)
+    height_lte = messages.IntegerField(70, variant=messages.Variant.INT32)
+    height_gte = messages.IntegerField(71, variant=messages.Variant.INT32)
 
     histological_type = messages.StringField(72, repeated=True)
     history_of_colon_polyps = messages.StringField(73, repeated=True)
@@ -252,13 +255,13 @@ class MetadataRangesItem(messages.Message):
     neoplasm_histologic_grade = messages.StringField(135, repeated=True)
     new_tumor_event_after_initial_treatment = messages.StringField(136, repeated=True)
 
-    number_of_lymphnodes_examined = messages.IntegerField(137, repeated=True)
-    number_of_lymphnodes_examined_lte = messages.IntegerField(138)
-    number_of_lymphnodes_examined_gte = messages.IntegerField(139)
+    number_of_lymphnodes_examined = messages.IntegerField(137, repeated=True, variant=messages.Variant.INT32)
+    number_of_lymphnodes_examined_lte = messages.IntegerField(138, variant=messages.Variant.INT32)
+    number_of_lymphnodes_examined_gte = messages.IntegerField(139, variant=messages.Variant.INT32)
 
-    number_of_lymphnodes_positive_by_he = messages.IntegerField(140, repeated=True)
-    number_of_lymphnodes_positive_by_he_lte = messages.IntegerField(141)
-    number_of_lymphnodes_positive_by_he_gte = messages.IntegerField(142)
+    number_of_lymphnodes_positive_by_he = messages.IntegerField(140, repeated=True, variant=messages.Variant.INT32)
+    number_of_lymphnodes_positive_by_he_lte = messages.IntegerField(141, variant=messages.Variant.INT32)
+    number_of_lymphnodes_positive_by_he_gte = messages.IntegerField(142, variant=messages.Variant.INT32)
 
     ParticipantBarcode = messages.StringField(143, repeated=True)
     pathologic_M = messages.StringField(144, repeated=True)
@@ -287,13 +290,13 @@ class MetadataRangesItem(messages.Message):
     weiss_venous_invasion = messages.StringField(165, repeated=True)
     vital_status = messages.StringField(166, repeated=True)
 
-    weight = messages.IntegerField(167, repeated=True)
-    weight_lte = messages.IntegerField(168)
-    weight_gte = messages.IntegerField(169)
+    weight = messages.IntegerField(167, repeated=True, variant=messages.Variant.INT32)
+    weight_lte = messages.IntegerField(168, variant=messages.Variant.INT32)
+    weight_gte = messages.IntegerField(169, variant=messages.Variant.INT32)
 
-    year_of_initial_pathologic_diagnosis = messages.IntegerField(170, repeated=True)
-    year_of_initial_pathologic_diagnosis_lte = messages.IntegerField(171)
-    year_of_initial_pathologic_diagnosis_gte = messages.IntegerField(172)
+    year_of_initial_pathologic_diagnosis = messages.IntegerField(170, repeated=True, variant=messages.Variant.INT32)
+    year_of_initial_pathologic_diagnosis_lte = messages.IntegerField(171, variant=messages.Variant.INT32)
+    year_of_initial_pathologic_diagnosis_gte = messages.IntegerField(172, variant=messages.Variant.INT32)
 
 
 class MetadataItem(messages.Message):
