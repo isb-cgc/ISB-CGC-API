@@ -18,41 +18,22 @@ limitations under the License.
 
 import endpoints
 
-from api.feature_access import FeatureAccessEndpoints           # class FeatureAccessEndpoints(remote.Service) decorated with @FeatureAccessEndpointsAPI.api_class which is defined as FeatureAccessEndpointsAPI = endpoints_api(name='feature_type_api', ...)
+from api.feature_access import FeatureAccessEndpoints
+from api.single_feature_access import SingleFeatureDataAccess
+from api.data_access import FeatureDataEndpoints
 
-from api.single_feature_access import SingleFeatureDataAccess   # class SingleFeatureDataAccess(remote.Service): decorated with @FeatureDataEndpointsAPI.api_class which is defined as FeatureAccessEndpointsAPI = endpoints_api(name='feature_type_api', ...)
-from api.data_access import FeatureDataEndpoints                # class FeatureDataEndpoints(remote.Service): decorated with @FeatureDataEndpointsAPI.api_class which is defined as FeatureAccessEndpointsAPI = endpoints_api(name='feature_type_api', ...)
+from api.Cohort import Cohort_Endpoints
 
-from api.Cohort import Cohort_Endpoints_API                     # class Cohort_Endpoints_API(remote.Service): decorated with @Cohort_Endpoints.api_class which is defined as Cohort_Endpoints = endpoints.api(name='cohort_api',..)
-from api.cohort_api.preview_cohort import PreviewCohort
-from api.cohort_api.cohorts_list import CohortsList
-from api.cohort_api.cohort_patients_samples_list import CohortsPatientsSamplesList
-from api.cohort_api.patient_details import PatientDetails
-from api.cohort_api.sample_details import SampleDetails
-from api.cohort_api.datafilenamekey_list import DataFileNameKeyList
-from api.cohort_api.save_cohort import SaveCohort
-from api.cohort_api.delete_cohort import DeleteCohort
-# from api.Cohort import Cohort_Endpoints                       # endpoints.api(name='cohort_api', ...) @Cohort_Endpoints.api_class
-
-from api.metadata import Meta_Endpoints, Meta_Endpoints_v2      # endpoints.api(name='meta_api', ...) @Meta_Endpoints.api_class
-from api.pairwise_api import Pairwise_Endpoints                 # endpoints.api(name='pairwise',...) @Pairwise_Endpoints.api_class
-from api.seqpeek_view_api import SeqPeekViewDataAccessAPI       # class SeqPeekViewDataAccessAPI(remote.Service): decprated with @SeqPeekDataEndpointsAPI.api_class which is defined as SeqPeekDataEndpointsAPI = endpoints_api(name='seqpeek_data_api', ...)
+from api.metadata import Meta_Endpoints, Meta_Endpoints_v2
+from api.pairwise_api import Pairwise_Endpoints
+from api.seqpeek_view_api import SeqPeekViewDataAccessAPI
 from api.users import User_Endpoints
 
 package = 'isb-cgc-api'
 
 
 APPLICATION = endpoints.api_server([
-    PreviewCohort,
-    CohortsList,
-    CohortsPatientsSamplesList,
-    PatientDetails,
-    SampleDetails,
-    DataFileNameKeyList,
-    SaveCohort,
-    DeleteCohort,
-    Cohort_Endpoints_API,
-    # Cohort_Endpoints,
+    Cohort_Endpoints,
 
     FeatureAccessEndpoints,
     Meta_Endpoints,
