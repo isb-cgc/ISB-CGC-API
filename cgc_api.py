@@ -21,13 +21,33 @@ import endpoints
 from api.feature_access import FeatureAccessEndpoints
 from api.single_feature_access import SingleFeatureDataAccess
 from api.data_access import FeatureDataEndpoints
+from api.feature_access import FeatureAccessEndpoints
+from api.single_feature_access import SingleFeatureDataAccess
+from api.data_access import FeatureDataEndpoints
+from api.metadata import Meta_Endpoints, Meta_Endpoints_v2
+from api.pairwise_api import Pairwise_Endpoints
+from api.seqpeek_view_api import SeqPeekViewDataAccessAPI
 
 from api.Cohort import Cohort_Endpoints
+from api.Cohort import Cohort_Endpoints_API
 
 from api.metadata import Meta_Endpoints, Meta_Endpoints_v2
 from api.pairwise_api import Pairwise_Endpoints
 from api.seqpeek_view_api import SeqPeekViewDataAccessAPI
 from api.users import User_Endpoints
+from api.isb_cgc_api.cohorts_list import CohortsListAPI
+from api.isb_cgc_api.cohorts_preview import CohortsPreviewAPI
+from api.isb_cgc_api.cohorts_get import CohortsGetAPI
+from api.isb_cgc_api.cohorts_delete import CohortsDeleteAPI
+from api.isb_cgc_api.cohorts_create import CohortsCreateAPI
+from api.isb_cgc_api.cohorts_cloudstoragefilepaths import CohortsCloudStorageFilePathsAPI
+from api.isb_cgc_api.cohorts_googlegenomics import CohortsGoogleGenomicssAPI
+from api.isb_cgc_api.patients_get import PatientsGetAPI
+from api.isb_cgc_api.samples_get import SamplesGetAPI
+from api.isb_cgc_api.samples_cloudstoragefilepaths import SamplesCloudStorageFilePathsAPI
+from api.isb_cgc_api.samples_googlegenomics import SamplesGoogleGenomicsAPI
+from api.isb_cgc_api.users_get import UserGetAPI
+
 
 package = 'isb-cgc-api'
 
@@ -42,6 +62,20 @@ APPLICATION = endpoints.api_server([
     SingleFeatureDataAccess,
     Pairwise_Endpoints,
     SeqPeekViewDataAccessAPI,
-    User_Endpoints
+
+    Cohort_Endpoints_API,  # v1
+
+    CohortsListAPI,
+    CohortsPreviewAPI,
+    CohortsGetAPI,
+    CohortsDeleteAPI,
+    CohortsCreateAPI,
+    CohortsCloudStorageFilePathsAPI,
+    CohortsGoogleGenomicssAPI,
+    PatientsGetAPI,
+    SamplesGetAPI,
+    SamplesCloudStorageFilePathsAPI,
+    SamplesGoogleGenomicsAPI,
+    UserGetAPI,
 ])
 
