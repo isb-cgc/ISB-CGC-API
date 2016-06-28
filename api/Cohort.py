@@ -1384,7 +1384,7 @@ class Cohort_Endpoints_API(remote.Service):
                       path='save_cohort', http_method='POST', name='cohorts.save_cohort')
     def save_cohort(self, request):
         """
-        Creates and saves a cohort. Takes a JSONg object in the request body to use as the cohort's filters.
+        Creates and saves a cohort. Takes a JSON object in the request body to use as the cohort's filters.
         Authentication is required.
         Returns information about the saved cohort, including the number of patients and the number
         of samples in that cohort.
