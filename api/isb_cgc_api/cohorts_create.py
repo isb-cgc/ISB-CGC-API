@@ -64,8 +64,7 @@ class CohortsCreateAPI(remote.Service):
         Returns information about the saved cohort, including the number of patients and the number
         of samples in that cohort.
         """
-        patient_cursor = None
-        sample_cursor = None
+        cursor = None
         db = None
 
         user = endpoints.get_current_user()
@@ -94,19 +93,13 @@ class CohortsCreateAPI(remote.Service):
         patient_query_str, sample_query_str, value_tuple = CohortsCreatePreviewQueryBuilder().build_query(
             query_dict, gte_query_dict, lte_query_dict)
 
-        patient_barcodes = []
-        sample_barcodes = []
         try:
             db = sql_connection()
-            patient_cursor = db.cursor(MySQLdb.cursors.DictCursor)
-            patient_cursor.execute(patient_query_str, value_tuple)
-            for row in patient_cursor.fetchall():
-                patient_barcodes.append(row['ParticipantBarcode'])
-
-            sample_cursor = db.cursor(MySQLdb.cursors.DictCursor)
-            sample_cursor.execute(sample_query_str, value_tuple)
-            for row in sample_cursor.fetchall():
-                sample_barcodes.append(row['SampleBarcode'])
+            cursor = db.cursor(MySQLdb.cursors.DictCursor)
+            cursor.execute(patient_query_str, value_tuple)
+            patient_barcodes = [row['ParticipantBarcode'] for row in cursor.fetchall()]
+            cursor.execute(sample_query_str, value_tuple)
+            sample_barcodes = [row['SampleBarcode'] for row in cursor.fetchall()]
 
         except (IndexError, TypeError), e:
             logger.warn(e)
@@ -117,8 +110,7 @@ class CohortsCreateAPI(remote.Service):
             request_finished.send(self)
             raise endpoints.BadRequestException("Error saving cohort. {}".format(e))
         finally:
-            if patient_cursor: patient_cursor.close()
-            if sample_cursor: sample_cursor.close()
+            if cursor: cursor.close()
             if db and db.open: db.close()
 
         cohort_name = request.get_assigned_value('name')

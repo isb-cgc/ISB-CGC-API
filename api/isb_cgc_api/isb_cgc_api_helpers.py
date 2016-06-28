@@ -272,9 +272,9 @@ class MetadataRangesItem(messages.Message):
     number_of_lymphnodes_positive_by_he_lte = messages.IntegerField(144, variant=messages.Variant.INT32)
     number_of_lymphnodes_positive_by_he_gte = messages.IntegerField(145, variant=messages.Variant.INT32)
 
-    number_of_pack_years_smoked = messages.IntegerField(146, repeated=True, variant=messages.Variant.INT32)
-    number_of_pack_years_smoked_lte = messages.IntegerField(147, variant=messages.Variant.INT32)
-    number_of_pack_years_smoked_gte = messages.IntegerField(148, variant=messages.Variant.INT32)
+    number_pack_years_smoked = messages.IntegerField(146, repeated=True, variant=messages.Variant.INT32)
+    number_pack_years_smoked_lte = messages.IntegerField(147, variant=messages.Variant.INT32)
+    number_pack_years_smoked_gte = messages.IntegerField(148, variant=messages.Variant.INT32)
 
     ParticipantBarcode = messages.StringField(149, repeated=True)
     pathologic_M = messages.StringField(150, repeated=True)
@@ -381,7 +381,7 @@ class MetadataItem(messages.Message):
     new_tumor_event_after_initial_treatment                         = messages.StringField(66)
     number_of_lymphnodes_examined                                   = messages.IntegerField(67, variant=messages.Variant.INT32)
     number_of_lymphnodes_positive_by_he                             = messages.IntegerField(68, variant=messages.Variant.INT32)
-    number_of_pack_years_smoked                                     = messages.IntegerField(69, variant=messages.Variant.INT32)
+    number_pack_years_smoked                                     = messages.IntegerField(69, variant=messages.Variant.INT32)
     ParticipantBarcode                                              = messages.StringField(70)
     pathologic_M                                                    = messages.StringField(71)
     pathologic_N                                                    = messages.StringField(72)
