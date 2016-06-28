@@ -28,7 +28,7 @@ from django.core.signals import request_finished
 import django
 import MySQLdb
 import json
-from metadata import MetadataItem, IncomingMetadataItem
+from metadata import MetadataItem
 from cohorts.models import Cohort as Django_Cohort, Cohort_Perms, Patients, Samples, Filters
 from bq_data_access.cohort_bigquery import BigQueryCohortSupport
 from api_helpers import *
@@ -488,6 +488,7 @@ Cohort_Endpoints = endpoints.api(name='cohort_api', version='v1',
 
 @Cohort_Endpoints.api_class(resource_name='cohort_endpoints')
 class Cohort_Endpoints_API(remote.Service):
+
     GET_RESOURCE = endpoints.ResourceContainer(token=messages.StringField(1), cohort_id=messages.IntegerField(2))
 
     @endpoints.method(GET_RESOURCE, CohortsList,
@@ -921,6 +922,7 @@ class Cohort_Endpoints_API(remote.Service):
             if sample_cursor: sample_cursor.close()
             if aliquot_cursor: aliquot_cursor.close()
             if db and db.open: db.close()
+            request_finished.send(self)
 
     GET_RESOURCE = endpoints.ResourceContainer(sample_barcode=messages.StringField(1, required=True),
                                                platform=messages.StringField(2),
@@ -1381,7 +1383,7 @@ class Cohort_Endpoints_API(remote.Service):
                       path='save_cohort', http_method='POST', name='cohorts.save_cohort')
     def save_cohort(self, request):
         """
-        Creates and saves a cohort. Takes a JSON object in the request body to use as the cohort's filters.
+        Creates and saves a cohort. Takes a JSONg object in the request body to use as the cohort's filters.
         Authentication is required.
         Returns information about the saved cohort, including the number of patients and the number
         of samples in that cohort.
