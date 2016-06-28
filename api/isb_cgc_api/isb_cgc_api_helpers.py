@@ -120,6 +120,11 @@ class MetadataRangesItem(messages.Message):
 
     batch_number = messages.IntegerField(29, repeated=True, variant=messages.Variant.INT32)
     bcr = messages.StringField(30, repeated=True)
+
+    # BMI = messages.FloatField(31, repeated=True)
+    # BMI_lte = messages.FloatField(31, repeated=True)
+    # BMI_gte = messages.FloatField(31, repeated=True)
+
     clinical_M = messages.StringField(31, repeated=True)
     clinical_N = messages.StringField(32, repeated=True)
     clinical_stage = messages.StringField(33, repeated=True)
@@ -154,6 +159,10 @@ class MetadataRangesItem(messages.Message):
     ethnicity = messages.StringField(55, repeated=True)
     frozen_specimen_anatomic_site = messages.StringField(56, repeated=True)
     gender = messages.StringField(57, repeated=True)
+
+    # gleason_score_combined = messages.IntegerField(58, repeated=True, variant=messages.Variant.INT32)
+    # gleason_score_combined_lte = messages.IntegerField(58, variant=messages.Variant.INT32)
+    # gleason_score_combined_gte = messages.IntegerField(58, variant=messages.Variant.INT32)
 
     has_Illumina_DNASeq = messages.BooleanField(58, repeated=True)
     has_BCGSC_HiSeq_RNASeq = messages.BooleanField(59, repeated=True)
@@ -263,6 +272,10 @@ class MetadataRangesItem(messages.Message):
     number_of_lymphnodes_positive_by_he_lte = messages.IntegerField(141, variant=messages.Variant.INT32)
     number_of_lymphnodes_positive_by_he_gte = messages.IntegerField(142, variant=messages.Variant.INT32)
 
+    # number_of_pack_years_smoked = messages.IntegerField(140, repeated=True, variant=messages.Variant.INT32)
+    # number_of_pack_years_smoked_lte = messages.IntegerField(141, variant=messages.Variant.INT32)
+    # number_of_pack_years_smoked_gte = messages.IntegerField(142, variant=messages.Variant.INT32)
+
     ParticipantBarcode = messages.StringField(143, repeated=True)
     pathologic_M = messages.StringField(144, repeated=True)
     pathologic_N = messages.StringField(145, repeated=True)
@@ -287,8 +300,9 @@ class MetadataRangesItem(messages.Message):
     tobacco_smoking_history = messages.StringField(162, repeated=True)
     tumor_tissue_site = messages.StringField(163, repeated=True)
     tumor_type = messages.StringField(164, repeated=True)
-    weiss_venous_invasion = messages.StringField(165, repeated=True)
-    vital_status = messages.StringField(166, repeated=True)
+    vital_status = messages.StringField(165, repeated=True)
+    weiss_venous_invasion = messages.StringField(166, repeated=True)
+
 
     weight = messages.IntegerField(167, repeated=True, variant=messages.Variant.INT32)
     weight_lte = messages.IntegerField(168, variant=messages.Variant.INT32)
@@ -313,6 +327,7 @@ class MetadataItem(messages.Message):
     avg_percent_tumor_nuclei                                        = messages.FloatField(11)
     batch_number                                                    = messages.IntegerField(12, variant=messages.Variant.INT32)
     bcr                                                             = messages.StringField(13)
+    # BMI = messages.FloatField(31)
     clinical_M                                                      = messages.StringField(14)
     clinical_N                                                      = messages.StringField(15)
     clinical_stage                                                  = messages.StringField(16)
@@ -330,6 +345,7 @@ class MetadataItem(messages.Message):
     ethnicity                                                       = messages.StringField(28)
     frozen_specimen_anatomic_site                                   = messages.StringField(29)
     gender                                                          = messages.StringField(30)
+    # gleason_score_combined = messages.IntegerField(58, variant=messages.Variant.INT32)
     height                                                          = messages.IntegerField(31, variant=messages.Variant.INT32)
     histological_type                                               = messages.StringField(32)
     history_of_colon_polyps                                         = messages.StringField(33)
@@ -367,6 +383,7 @@ class MetadataItem(messages.Message):
     new_tumor_event_after_initial_treatment                         = messages.StringField(65)
     number_of_lymphnodes_examined                                   = messages.IntegerField(66, variant=messages.Variant.INT32)
     number_of_lymphnodes_positive_by_he                             = messages.IntegerField(67, variant=messages.Variant.INT32)
+    # number_of_pack_years_smoked = messages.IntegerField(140, variant=messages.Variant.INT32)
     ParticipantBarcode                                              = messages.StringField(68)
     pathologic_M                                                    = messages.StringField(69)
     pathologic_N                                                    = messages.StringField(70)
@@ -388,8 +405,8 @@ class MetadataItem(messages.Message):
     tumor_tissue_site                                               = messages.StringField(88)
     tumor_pathology                                                 = messages.StringField(89)
     tumor_type                                                      = messages.StringField(90)
-    weiss_venous_invasion                                           = messages.StringField(91)
-    vital_status                                                    = messages.StringField(92)
+    vital_status                                                    = messages.StringField(91)
+    weiss_venous_invasion                                           = messages.StringField(92)
     weight                                                          = messages.IntegerField(93, variant=messages.Variant.INT32)
     year_of_initial_pathologic_diagnosis                            = messages.StringField(94)
     SampleTypeCode                                                  = messages.StringField(95)
