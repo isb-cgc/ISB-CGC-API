@@ -1386,8 +1386,7 @@ class Cohort_Endpoints_API(remote.Service):
         """
         Creates and saves a cohort. Takes a JSON object in the request body to use as the cohort's filters.
         Authentication is required.
-        Returns information about the saved cohort, including the number of patients and the number
-        of samples in that cohort.
+        Returns information about the saved cohort, including the number of patients and samples in that cohort.
         """
         user_email = None
         patient_cursor = None
