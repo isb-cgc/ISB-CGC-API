@@ -108,7 +108,7 @@ class RPPASearcher(object):
 
         query = 'SELECT gene_name, protein_name, value_field, internal_feature_id ' \
                 'FROM {table_name} ' \
-                'WHERE gene_name LIKE %s ' \
+                'WHERE gene_name=%s ' \
                 'AND protein_name LIKE %s ' \
                 'LIMIT %s'.format(table_name=self.get_table_name()
         )
@@ -117,7 +117,7 @@ class RPPASearcher(object):
         input = defaultdict(lambda: '', parameters)
 
         # Format the keyword for MySQL string matching
-        query_args = ['%' + input['gene_name'] + '%',
+        query_args = [input['gene_name'],
                       '%' + input['protein_name'] + '%',
                       FOUND_FEATURE_LIMIT]
 
