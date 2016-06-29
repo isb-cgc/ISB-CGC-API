@@ -1093,6 +1093,7 @@ def count_metadata(user, cohort_id=None, sample_ids=None, filters=None):
                     query += query_clause + (' GROUP BY %s ' % col_name)
                     sample_query += query_clause
 
+                    logger.debug("In api count_metadata, executing query "+query)
                     cursor.execute(query, where_clause['value_tuple'])
                     for row in cursor.fetchall():
                         if not row[0] in table_values:
@@ -2141,7 +2142,7 @@ class Meta_Endpoints_API_v2(remote.Service):
         counts_and_totals = count_metadata(user, cohort_id, sample_ids, filters)
         stop = time.time()
         logger.debug(
-            "[BENCHMARKING] Time to query metadata_counts "
+            "[BENCHMARKING] Time to query metadata_counts"
                 + (" for cohort "+cohort_id if cohort_id is not None else "")
                 + (" and" if cohort_id is not None and filters.__len__() > 0 else "")
                 + (" filters "+filters.__str__() if filters.__len__() > 0 else "")
