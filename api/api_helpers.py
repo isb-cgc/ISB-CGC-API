@@ -241,10 +241,10 @@ def build_filter_clause(filters, alt_key_map=False):
             i = 0
             for val in value:
                 if i == 0:
-                    query_str += val.__str__()
+                    query_str += "'"+val.__str__()+"'"
                     i += 1
                 else:
-                    query_str += ","+val.__str__()
+                    query_str += ",'"+val.__str__()+"'"
             query_str += ')'
             if has_null:
                 query_str += ')'
