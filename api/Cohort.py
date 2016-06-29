@@ -17,6 +17,7 @@ limitations under the License.
 """
 
 import logging
+import collections
 from datetime import datetime
 import endpoints
 from protorpc import messages, message_types
@@ -28,7 +29,7 @@ from django.core.signals import request_finished
 import django
 import MySQLdb
 import json
-from metadata import MetadataItem, IncomingMetadataItem
+from metadata import MetadataItem
 from cohorts.models import Cohort as Django_Cohort, Cohort_Perms, Patients, Samples, Filters
 from bq_data_access.cohort_bigquery import BigQueryCohortSupport
 from api_helpers import *
@@ -488,6 +489,7 @@ Cohort_Endpoints = endpoints.api(name='cohort_api', version='v1',
 
 @Cohort_Endpoints.api_class(resource_name='cohort_endpoints')
 class Cohort_Endpoints_API(remote.Service):
+
     GET_RESOURCE = endpoints.ResourceContainer(token=messages.StringField(1), cohort_id=messages.IntegerField(2))
 
     @endpoints.method(GET_RESOURCE, CohortsList,
@@ -544,8 +546,11 @@ class Cohort_Endpoints_API(remote.Service):
                         'on auth_user.id=cohorts_cohort_perms.user_id ' \
                         'left join cohorts_cohort_comments ' \
                         'on cohorts_cohort_comments.user_id=cohorts_cohort_perms.user_id ' \
+                        'and cohorts_cohort_comments.cohort_id=cohorts_cohort.id ' \
                         'left join cohorts_source ' \
                         'on cohorts_source.cohort_id=cohorts_cohort_perms.cohort_id '
+
+
 
             query_tuple = ()
             if query_dict:
@@ -561,6 +566,9 @@ class Cohort_Endpoints_API(remote.Service):
                          'comments,  ' \
                          'source_type,  ' \
                          'source_notes '
+
+            print query_str
+            print query_tuple
 
             filter_query_str = ''
             parent_id_query_str = ''
@@ -921,6 +929,7 @@ class Cohort_Endpoints_API(remote.Service):
             if sample_cursor: sample_cursor.close()
             if aliquot_cursor: aliquot_cursor.close()
             if db and db.open: db.close()
+            request_finished.send(self)
 
     GET_RESOURCE = endpoints.ResourceContainer(sample_barcode=messages.StringField(1, required=True),
                                                platform=messages.StringField(2),
@@ -1383,8 +1392,7 @@ class Cohort_Endpoints_API(remote.Service):
         """
         Creates and saves a cohort. Takes a JSON object in the request body to use as the cohort's filters.
         Authentication is required.
-        Returns information about the saved cohort, including the number of patients and the number
-        of samples in that cohort.
+        Returns information about the saved cohort, including the number of patients and samples in that cohort.
         """
         user_email = None
         patient_cursor = None
@@ -1420,6 +1428,8 @@ class Cohort_Endpoints_API(remote.Service):
                 k.name: request.get_assigned_value(k.name)
                 for k in request.all_fields()
                 if request.get_assigned_value(k.name) and k.name is not 'name' and k.name is not 'token'
+                and not k.name.endswith('_gte')
+                and not k.name.endswith('_lte')
                 }
 
             gte_query_dict = {
@@ -1447,7 +1457,7 @@ class Cohort_Endpoints_API(remote.Service):
             for key, value_list in query_dict.iteritems():
                 patient_query_str += ' AND ' if not patient_query_str.endswith('WHERE ') else ''
                 sample_query_str += ' AND ' if not sample_query_str.endswith('WHERE ') else ''
-                if "None" in value_list:
+                if isinstance(value_list, collections.Iterable) and "None" in value_list:
                     value_list.remove("None")
                     patient_query_str += ' ( {key} is null '.format(key=key)
                     sample_query_str += ' ( {key} is null '.format(key=key)
@@ -1528,13 +1538,15 @@ class Cohort_Endpoints_API(remote.Service):
             perm.save()
 
             # 5. Create filters applied
-            for key, val in query_dict.items():
-                if len('", "'.join(val)) > MAX_FILTER_VALUE_LENGTH:
-                    new_val_list = get_list_of_split_values_for_filter_model(val)
-                    for new_val in new_val_list:
-                        Filters.objects.create(resulting_cohort=created_cohort, name=key, value=new_val).save()
-                else:
+            filter_data = []
+            for key, value_list in query_dict.items():
+                for val in value_list:
+                    filter_data.append(FilterDetails(name=key, value=str(val)))
                     Filters.objects.create(resulting_cohort=created_cohort, name=key, value=val).save()
+
+            for key, val in [(k + '_lte', v) for k, v in lte_query_dict.items()] + [(k + '_gte', v) for k, v in gte_query_dict.items()]:
+                filter_data.append(FilterDetails(name=key, value=str(val)))
+                Filters.objects.create(resulting_cohort=created_cohort, name=key, value=val).save()
 
             # 6. Store cohort to BigQuery
             project_id = settings.BQ_PROJECT_ID
