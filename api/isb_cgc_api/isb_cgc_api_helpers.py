@@ -435,6 +435,7 @@ class CohortsGetListQueryBuilder(object):
                     'ON auth_user.id=cohorts_cohort_perms.user_id ' \
                     'LEFT JOIN cohorts_cohort_comments ' \
                     'ON cohorts_cohort_comments.user_id=cohorts_cohort_perms.user_id ' \
+                    'AND cohorts_cohort_comments.cohort_id=cohorts_cohort.id ' \
                     'LEFT JOIN cohorts_source ' \
                     'ON cohorts_source.cohort_id=cohorts_cohort_perms.cohort_id '
 
