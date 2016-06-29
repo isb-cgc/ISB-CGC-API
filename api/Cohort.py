@@ -545,8 +545,8 @@ class Cohort_Endpoints_API(remote.Service):
                         'join auth_user ' \
                         'on auth_user.id=cohorts_cohort_perms.user_id ' \
                         'left join cohorts_cohort_comments ' \
-                        'and cohorts_cohort_comments.cohort_id=cohorts_cohort.id ' \
                         'on cohorts_cohort_comments.user_id=cohorts_cohort_perms.user_id ' \
+                        'and cohorts_cohort_comments.cohort_id=cohorts_cohort.id ' \
                         'left join cohorts_source ' \
                         'on cohorts_source.cohort_id=cohorts_cohort_perms.cohort_id '
 
