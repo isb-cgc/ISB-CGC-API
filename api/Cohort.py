@@ -545,9 +545,12 @@ class Cohort_Endpoints_API(remote.Service):
                         'join auth_user ' \
                         'on auth_user.id=cohorts_cohort_perms.user_id ' \
                         'left join cohorts_cohort_comments ' \
+                        'and cohorts_cohort_comments.cohort_id=cohorts_cohort.id ' \
                         'on cohorts_cohort_comments.user_id=cohorts_cohort_perms.user_id ' \
                         'left join cohorts_source ' \
                         'on cohorts_source.cohort_id=cohorts_cohort_perms.cohort_id '
+
+
 
             query_tuple = ()
             if query_dict:
@@ -563,6 +566,9 @@ class Cohort_Endpoints_API(remote.Service):
                          'comments,  ' \
                          'source_type,  ' \
                          'source_notes '
+
+            print query_str
+            print query_tuple
 
             filter_query_str = ''
             parent_id_query_str = ''
