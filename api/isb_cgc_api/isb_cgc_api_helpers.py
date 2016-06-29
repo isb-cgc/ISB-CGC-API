@@ -24,7 +24,7 @@ ISB_CGC_Endpoints = endpoints.api(name='isb_cgc_api', version='v2',
                                   description="Get information about cohorts, patients, and samples. Create and delete cohorts.",
                                   allowed_client_ids=[INSTALLED_APP_CLIENT_ID, endpoints.API_EXPLORER_CLIENT_ID,
                                                       settings.WEB_CLIENT_ID],
-                                  documentation='http://isb-cancer-genomics-cloud.readthedocs.io/en/latest/sections/progapi/Programmatic-API.html',
+                                  documentation='http://isb-cancer-genomics-cloud.readthedocs.io/en/latest/sections/progapi/Programmatic-API.html#isb-cgc-api-v2',
                                   title="ISB-CGC API")
 
 
