@@ -194,6 +194,73 @@ def applyFilter(field, dict):
 
     return where_clause
 
+
+def build_filter_clause(filters, alt_key_map=False):
+    if debug: print >> sys.stderr, 'Called '+sys._getframe().f_code.co_name
+    first = True
+    query_str = '' if filters.items().__len__() > 0 else None
+
+    for key, value in filters.items():
+        if isinstance(value, dict) and 'values' in value:
+            value = value['values']
+
+        if isinstance(value, list) and len(value) == 1:
+            value = value[0]
+        # Check if we need to map to a different column name for a given key
+        if alt_key_map and key in alt_key_map:
+            key = alt_key_map[key]
+
+        # Multitable where's will come in with : in the name. Only grab the column piece for now
+        elif ':' in key:
+            key = key.split(':')[-1]
+
+        # Multitable filter lists don't come in as string as they can contain arbitrary text in values
+        elif isinstance(value, basestring):
+            # If it's a list of values, split it into an array
+            if ',' in value:
+                value = value.split(',')
+
+        # If it's first in the list, don't append an "and"
+        if first:
+            first = False
+        else:
+            query_str += ' and'
+
+        # If it's age ranges, give it special treament due to normalizations
+        if key == 'age_at_initial_pathologic_diagnosis':
+            query_str += ' (' + sql_age_by_ranges(value) + ') '
+
+        # If it's a list of items for this key, create an or subclause
+        elif isinstance(value, list):
+            has_null = False
+            if 'None' in value:
+                has_null = True
+                query_str += ' (%s is null or' % key
+                value.remove('None')
+            query_str += ' %s in (' % key
+            i = 0
+            for val in value:
+                if i == 0:
+                    query_str += "'"+val.__str__()+"'"
+                    i += 1
+                else:
+                    query_str += ",'"+val.__str__()+"'"
+            query_str += ')'
+            if has_null:
+                query_str += ')'
+
+        # If it's looking for None values
+        elif value == 'None':
+            query_str += ' %s is null' % key
+
+        # For the general case
+        else:
+            if not key == 'fl_archive_name' and not key == 'fl_data_level' and not type(value) == bool:
+                query_str += " %s='%s'" % (key, value.__str__())
+
+    return query_str
+
+
 def build_where_clause(filters, alt_key_map=False):
 # this one gets called a lot
 #    if debug: print >> sys.stderr,'Called '+sys._getframe().f_code.co_name
