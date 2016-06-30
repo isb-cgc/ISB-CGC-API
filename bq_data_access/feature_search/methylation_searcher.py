@@ -128,7 +128,7 @@ class METHSearcher(object):
         query = 'SELECT gene_name, probe_name, platform, relation_to_gene, relation_to_island, ' \
                        'value_field, internal_feature_id ' \
                 'FROM {table_name} ' \
-                'WHERE gene_name LIKE %s ' \
+                'WHERE gene_name=%s ' \
                 'AND probe_name LIKE %s ' \
                 'AND platform LIKE %s ' \
                 'AND relation_to_gene LIKE %s ' \
@@ -140,7 +140,7 @@ class METHSearcher(object):
         input = defaultdict(lambda: '', parameters)
 
         # Format the keyword for MySQL string matching
-        query_args = ['%' + input['gene_name'] + '%',
+        query_args = [input['gene_name'],
                       '%' + input['probe_name'] + '%',
                       '%' + input['platform'] + '%',
                       '%' + input['relation_to_gene'] + '%',

@@ -117,7 +117,7 @@ class GEXPSearcher(object):
 
         query = 'SELECT gene_name, platform, center, value_label, internal_feature_id' \
                 ' FROM {table_name}' \
-                ' WHERE gene_name LIKE %s'\
+                ' WHERE gene_name=%s'\
                 ' AND platform LIKE %s' \
                 ' AND center LIKE %s'\
                 ' LIMIT %s'.format(table_name=self.get_table_name()
@@ -129,7 +129,7 @@ class GEXPSearcher(object):
 
         # Format the keyword for MySQL string matching
         # sql_keyword = '%' + keyword + '%'
-        query_args = ['%' + input['gene_name'] + '%',
+        query_args = [input['gene_name'],
                       '%' + input['platform'] + '%',
                       '%' + input['center'] + '%',
                       FOUND_FEATURE_LIMIT]
