@@ -131,7 +131,6 @@ def sql_age_by_ranges(value):
                 result += ' (age_at_initial_pathologic_diagnosis >= 70 and age_at_initial_pathologic_diagnosis < 80)'
             elif str(val).lower() == 'over 80':
                 result += ' (age_at_initial_pathologic_diagnosis >= 80)'
-
     else:
         #value is a single range
         if str(value) == '10 to 39':
@@ -294,11 +293,9 @@ def build_where_clause(filters, alt_key_map=False):
         # If it's age ranges, give it special treament due to normalizations
         if key == 'age_at_initial_pathologic_diagnosis':
             query_str += ' (' + sql_age_by_ranges(value) + ') '
-
         # If it's age ranges, give it special treament due to normalizations
-        if key == 'BMI':
+        elif key == 'BMI':
             query_str += ' (' + sql_bmi_by_ranges(value) + ') '
-
         # If it's a list of items for this key, create an or subclause
         elif isinstance(value, list):
             has_null = False
