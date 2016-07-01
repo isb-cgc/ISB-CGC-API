@@ -21,6 +21,48 @@ def get_sql_connection(args):
         raise
     return db
 
+FIELD_TYPES ={
+    'varchar': 'StringField',
+    'float': 'FloatField',
+    'tinyint': 'BooleanField',
+    'int': 'IntegerField'
+}
+
+def write_file(rows):
+
+    ranges_text = 'class MetadataRangesItem(messages.Message):\n    '
+    i = 1
+    for row in rows:
+        field_type = FIELD_TYPES.get(row['DATA_TYPE'])
+        if field_type == 'IntegerField' or field_type == 'FloatField' and i > 1:
+            ranges_text += '\n    '
+
+        ranges_text += '%-65s = messages.%s(%d, repeated=True' % (row['COLUMN_NAME'], field_type, i)
+        ranges_text += ')\n    ' if field_type is not 'IntegerField' else ', variant=messages.Variant.INT32)\n    '
+        i += 1
+
+        if field_type == 'IntegerField' or field_type == 'FloatField':
+            ranges_text += '%-65s = messages.%s(%d, repeated=True' % (row['COLUMN_NAME']+'_lte', field_type, i)
+            ranges_text += ')\n    ' if field_type is not 'IntegerField' else ', variant=messages.Variant.INT32)\n    '
+            i += 1
+            ranges_text += '%-65s = messages.%s(%d, repeated=True' % (row['COLUMN_NAME']+'_gte', field_type, i)
+            ranges_text += ')\n    ' if field_type is not 'IntegerField' else ', variant=messages.Variant.INT32)\n    '
+            i += 1
+            ranges_text += '\n    '
+
+    item_text = '\nclass MetadataItem(messages.Message):\n    '
+    i = 1
+    for row in rows:
+        field_type = FIELD_TYPES.get(row['DATA_TYPE'])
+        item_text += '%-65s = messages.%s(%d' % (row['COLUMN_NAME'], field_type, i)
+        item_text += ')\n    ' if field_type is not 'IntegerField' else ', variant=messages.Variant.INT32)\n    '
+        i += 1
+
+    with open('message_classes.py', 'w') as f:
+        f.write('from protorpc import messages\n\n\n')
+        f.write(ranges_text)
+        f.write(item_text)
+
 
 def main(args):
     db = get_sql_connection(args)
@@ -34,9 +76,10 @@ def main(args):
     '''
     cursor.execute(query_str)
     rows = cursor.fetchall()
-    print rows
     cursor.close()
     db.close()
+
+    write_file(rows)
 
 if __name__ == '__main__':
     parser = ArgumentParser()
