@@ -4,60 +4,52 @@ from protorpc import messages
 class MetadataRangesItem(messages.Message):
     
     age_at_initial_pathologic_diagnosis                               = messages.IntegerField(1, repeated=True, variant=messages.Variant.INT32)
-    age_at_initial_pathologic_diagnosis_lte                           = messages.IntegerField(2, repeated=True, variant=messages.Variant.INT32)
-    age_at_initial_pathologic_diagnosis_gte                           = messages.IntegerField(3, repeated=True, variant=messages.Variant.INT32)
+    age_at_initial_pathologic_diagnosis_lte                           = messages.IntegerField(2, variant=messages.Variant.INT32)
+    age_at_initial_pathologic_diagnosis_gte                           = messages.IntegerField(3, variant=messages.Variant.INT32)
     
     anatomic_neoplasm_subdivision                                     = messages.StringField(4, repeated=True)
     
     avg_percent_lymphocyte_infiltration                               = messages.FloatField(5, repeated=True)
-    avg_percent_lymphocyte_infiltration_lte                           = messages.FloatField(6, repeated=True)
-    avg_percent_lymphocyte_infiltration_gte                           = messages.FloatField(7, repeated=True)
-    
+    avg_percent_lymphocyte_infiltration_lte                           = messages.FloatField(6)
+    avg_percent_lymphocyte_infiltration_gte                           = messages.FloatField(7)
     
     avg_percent_monocyte_infiltration                                 = messages.FloatField(8, repeated=True)
-    avg_percent_monocyte_infiltration_lte                             = messages.FloatField(9, repeated=True)
-    avg_percent_monocyte_infiltration_gte                             = messages.FloatField(10, repeated=True)
-    
+    avg_percent_monocyte_infiltration_lte                             = messages.FloatField(9)
+    avg_percent_monocyte_infiltration_gte                             = messages.FloatField(10)
     
     avg_percent_necrosis                                              = messages.FloatField(11, repeated=True)
-    avg_percent_necrosis_lte                                          = messages.FloatField(12, repeated=True)
-    avg_percent_necrosis_gte                                          = messages.FloatField(13, repeated=True)
-    
+    avg_percent_necrosis_lte                                          = messages.FloatField(12)
+    avg_percent_necrosis_gte                                          = messages.FloatField(13)
     
     avg_percent_neutrophil_infiltration                               = messages.FloatField(14, repeated=True)
-    avg_percent_neutrophil_infiltration_lte                           = messages.FloatField(15, repeated=True)
-    avg_percent_neutrophil_infiltration_gte                           = messages.FloatField(16, repeated=True)
-    
+    avg_percent_neutrophil_infiltration_lte                           = messages.FloatField(15)
+    avg_percent_neutrophil_infiltration_gte                           = messages.FloatField(16)
     
     avg_percent_normal_cells                                          = messages.FloatField(17, repeated=True)
-    avg_percent_normal_cells_lte                                      = messages.FloatField(18, repeated=True)
-    avg_percent_normal_cells_gte                                      = messages.FloatField(19, repeated=True)
-    
+    avg_percent_normal_cells_lte                                      = messages.FloatField(18)
+    avg_percent_normal_cells_gte                                      = messages.FloatField(19)
     
     avg_percent_stromal_cells                                         = messages.FloatField(20, repeated=True)
-    avg_percent_stromal_cells_lte                                     = messages.FloatField(21, repeated=True)
-    avg_percent_stromal_cells_gte                                     = messages.FloatField(22, repeated=True)
-    
-    
+    avg_percent_stromal_cells_lte                                     = messages.FloatField(21)
+    avg_percent_stromal_cells_gte                                     = messages.FloatField(22)
+
     avg_percent_tumor_cells                                           = messages.FloatField(23, repeated=True)
-    avg_percent_tumor_cells_lte                                       = messages.FloatField(24, repeated=True)
-    avg_percent_tumor_cells_gte                                       = messages.FloatField(25, repeated=True)
-    
-    
+    avg_percent_tumor_cells_lte                                       = messages.FloatField(24)
+    avg_percent_tumor_cells_gte                                       = messages.FloatField(25)
+
     avg_percent_tumor_nuclei                                          = messages.FloatField(26, repeated=True)
-    avg_percent_tumor_nuclei_lte                                      = messages.FloatField(27, repeated=True)
-    avg_percent_tumor_nuclei_gte                                      = messages.FloatField(28, repeated=True)
-    
-    
+    avg_percent_tumor_nuclei_lte                                      = messages.FloatField(27)
+    avg_percent_tumor_nuclei_gte                                      = messages.FloatField(28)
+
     batch_number                                                      = messages.IntegerField(29, repeated=True, variant=messages.Variant.INT32)
-    batch_number_lte                                                  = messages.IntegerField(30, repeated=True, variant=messages.Variant.INT32)
-    batch_number_gte                                                  = messages.IntegerField(31, repeated=True, variant=messages.Variant.INT32)
+    batch_number_lte                                                  = messages.IntegerField(30, variant=messages.Variant.INT32)
+    batch_number_gte                                                  = messages.IntegerField(31, variant=messages.Variant.INT32)
     
     bcr                                                               = messages.StringField(32, repeated=True)
     
     BMI                                                               = messages.FloatField(33, repeated=True)
-    BMI_lte                                                           = messages.FloatField(34, repeated=True)
-    BMI_gte                                                           = messages.FloatField(35, repeated=True)
+    BMI_lte                                                           = messages.FloatField(34)
+    BMI_gte                                                           = messages.FloatField(35)
     
     clinical_M                                                        = messages.StringField(36, repeated=True)
     clinical_N                                                        = messages.StringField(37, repeated=True)
@@ -67,46 +59,40 @@ class MetadataRangesItem(messages.Message):
     country                                                           = messages.StringField(41, repeated=True)
     
     days_to_birth                                                     = messages.IntegerField(42, repeated=True, variant=messages.Variant.INT32)
-    days_to_birth_lte                                                 = messages.IntegerField(43, repeated=True, variant=messages.Variant.INT32)
-    days_to_birth_gte                                                 = messages.IntegerField(44, repeated=True, variant=messages.Variant.INT32)
-    
-    
+    days_to_birth_lte                                                 = messages.IntegerField(43, variant=messages.Variant.INT32)
+    days_to_birth_gte                                                 = messages.IntegerField(44, variant=messages.Variant.INT32)
+
     days_to_collection                                                = messages.IntegerField(45, repeated=True, variant=messages.Variant.INT32)
-    days_to_collection_lte                                            = messages.IntegerField(46, repeated=True, variant=messages.Variant.INT32)
-    days_to_collection_gte                                            = messages.IntegerField(47, repeated=True, variant=messages.Variant.INT32)
-    
+    days_to_collection_lte                                            = messages.IntegerField(46, variant=messages.Variant.INT32)
+    days_to_collection_gte                                            = messages.IntegerField(47, variant=messages.Variant.INT32)
     
     days_to_death                                                     = messages.IntegerField(48, repeated=True, variant=messages.Variant.INT32)
-    days_to_death_lte                                                 = messages.IntegerField(49, repeated=True, variant=messages.Variant.INT32)
-    days_to_death_gte                                                 = messages.IntegerField(50, repeated=True, variant=messages.Variant.INT32)
-    
+    days_to_death_lte                                                 = messages.IntegerField(49, variant=messages.Variant.INT32)
+    days_to_death_gte                                                 = messages.IntegerField(50, variant=messages.Variant.INT32)
     
     days_to_initial_pathologic_diagnosis                              = messages.IntegerField(51, repeated=True, variant=messages.Variant.INT32)
-    days_to_initial_pathologic_diagnosis_lte                          = messages.IntegerField(52, repeated=True, variant=messages.Variant.INT32)
-    days_to_initial_pathologic_diagnosis_gte                          = messages.IntegerField(53, repeated=True, variant=messages.Variant.INT32)
-    
-    
+    days_to_initial_pathologic_diagnosis_lte                          = messages.IntegerField(52, variant=messages.Variant.INT32)
+    days_to_initial_pathologic_diagnosis_gte                          = messages.IntegerField(53, variant=messages.Variant.INT32)
+
     days_to_last_followup                                             = messages.IntegerField(54, repeated=True, variant=messages.Variant.INT32)
-    days_to_last_followup_lte                                         = messages.IntegerField(55, repeated=True, variant=messages.Variant.INT32)
-    days_to_last_followup_gte                                         = messages.IntegerField(56, repeated=True, variant=messages.Variant.INT32)
-    
-    
+    days_to_last_followup_lte                                         = messages.IntegerField(55, variant=messages.Variant.INT32)
+    days_to_last_followup_gte                                         = messages.IntegerField(56, variant=messages.Variant.INT32)
+
     days_to_last_known_alive                                          = messages.IntegerField(57, repeated=True, variant=messages.Variant.INT32)
-    days_to_last_known_alive_lte                                      = messages.IntegerField(58, repeated=True, variant=messages.Variant.INT32)
-    days_to_last_known_alive_gte                                      = messages.IntegerField(59, repeated=True, variant=messages.Variant.INT32)
-    
+    days_to_last_known_alive_lte                                      = messages.IntegerField(58, variant=messages.Variant.INT32)
+    days_to_last_known_alive_gte                                      = messages.IntegerField(59, variant=messages.Variant.INT32)
     
     days_to_submitted_specimen_dx                                     = messages.IntegerField(60, repeated=True, variant=messages.Variant.INT32)
-    days_to_submitted_specimen_dx_lte                                 = messages.IntegerField(61, repeated=True, variant=messages.Variant.INT32)
-    days_to_submitted_specimen_dx_gte                                 = messages.IntegerField(62, repeated=True, variant=messages.Variant.INT32)
+    days_to_submitted_specimen_dx_lte                                 = messages.IntegerField(61, variant=messages.Variant.INT32)
+    days_to_submitted_specimen_dx_gte                                 = messages.IntegerField(62, variant=messages.Variant.INT32)
     
     ethnicity                                                         = messages.StringField(63, repeated=True)
     frozen_specimen_anatomic_site                                     = messages.StringField(64, repeated=True)
     gender                                                            = messages.StringField(65, repeated=True)
     
     gleason_score_combined                                            = messages.IntegerField(66, repeated=True, variant=messages.Variant.INT32)
-    gleason_score_combined_lte                                        = messages.IntegerField(67, repeated=True, variant=messages.Variant.INT32)
-    gleason_score_combined_gte                                        = messages.IntegerField(68, repeated=True, variant=messages.Variant.INT32)
+    gleason_score_combined_lte                                        = messages.IntegerField(67, variant=messages.Variant.INT32)
+    gleason_score_combined_gte                                        = messages.IntegerField(68, variant=messages.Variant.INT32)
     
     has_27k                                                           = messages.BooleanField(69, repeated=True)
     has_450k                                                          = messages.BooleanField(70, repeated=True)
@@ -121,8 +107,8 @@ class MetadataRangesItem(messages.Message):
     has_UNC_HiSeq_RNASeq                                              = messages.BooleanField(79, repeated=True)
     
     height                                                            = messages.IntegerField(80, repeated=True, variant=messages.Variant.INT32)
-    height_lte                                                        = messages.IntegerField(81, repeated=True, variant=messages.Variant.INT32)
-    height_gte                                                        = messages.IntegerField(82, repeated=True, variant=messages.Variant.INT32)
+    height_lte                                                        = messages.IntegerField(81, variant=messages.Variant.INT32)
+    height_gte                                                        = messages.IntegerField(82, variant=messages.Variant.INT32)
     
     histological_type                                                 = messages.StringField(83, repeated=True)
     history_of_colon_polyps                                           = messages.StringField(84, repeated=True)
@@ -138,84 +124,70 @@ class MetadataRangesItem(messages.Message):
     lymphovascular_invasion_present                                   = messages.StringField(94, repeated=True)
     
     max_percent_lymphocyte_infiltration                               = messages.FloatField(95, repeated=True)
-    max_percent_lymphocyte_infiltration_lte                           = messages.FloatField(96, repeated=True)
-    max_percent_lymphocyte_infiltration_gte                           = messages.FloatField(97, repeated=True)
-    
+    max_percent_lymphocyte_infiltration_lte                           = messages.FloatField(96)
+    max_percent_lymphocyte_infiltration_gte                           = messages.FloatField(97)
     
     max_percent_monocyte_infiltration                                 = messages.FloatField(98, repeated=True)
-    max_percent_monocyte_infiltration_lte                             = messages.FloatField(99, repeated=True)
-    max_percent_monocyte_infiltration_gte                             = messages.FloatField(100, repeated=True)
-    
+    max_percent_monocyte_infiltration_lte                             = messages.FloatField(99)
+    max_percent_monocyte_infiltration_gte                             = messages.FloatField(100)
     
     max_percent_necrosis                                              = messages.FloatField(101, repeated=True)
-    max_percent_necrosis_lte                                          = messages.FloatField(102, repeated=True)
-    max_percent_necrosis_gte                                          = messages.FloatField(103, repeated=True)
-    
+    max_percent_necrosis_lte                                          = messages.FloatField(102)
+    max_percent_necrosis_gte                                          = messages.FloatField(103)
     
     max_percent_neutrophil_infiltration                               = messages.FloatField(104, repeated=True)
-    max_percent_neutrophil_infiltration_lte                           = messages.FloatField(105, repeated=True)
-    max_percent_neutrophil_infiltration_gte                           = messages.FloatField(106, repeated=True)
-    
+    max_percent_neutrophil_infiltration_lte                           = messages.FloatField(105)
+    max_percent_neutrophil_infiltration_gte                           = messages.FloatField(106)
     
     max_percent_normal_cells                                          = messages.FloatField(107, repeated=True)
-    max_percent_normal_cells_lte                                      = messages.FloatField(108, repeated=True)
-    max_percent_normal_cells_gte                                      = messages.FloatField(109, repeated=True)
-    
+    max_percent_normal_cells_lte                                      = messages.FloatField(108)
+    max_percent_normal_cells_gte                                      = messages.FloatField(109)
     
     max_percent_stromal_cells                                         = messages.FloatField(110, repeated=True)
-    max_percent_stromal_cells_lte                                     = messages.FloatField(111, repeated=True)
-    max_percent_stromal_cells_gte                                     = messages.FloatField(112, repeated=True)
-    
-    
+    max_percent_stromal_cells_lte                                     = messages.FloatField(111)
+    max_percent_stromal_cells_gte                                     = messages.FloatField(112)
+
     max_percent_tumor_cells                                           = messages.FloatField(113, repeated=True)
-    max_percent_tumor_cells_lte                                       = messages.FloatField(114, repeated=True)
-    max_percent_tumor_cells_gte                                       = messages.FloatField(115, repeated=True)
-    
+    max_percent_tumor_cells_lte                                       = messages.FloatField(114)
+    max_percent_tumor_cells_gte                                       = messages.FloatField(115)
     
     max_percent_tumor_nuclei                                          = messages.FloatField(116, repeated=True)
-    max_percent_tumor_nuclei_lte                                      = messages.FloatField(117, repeated=True)
-    max_percent_tumor_nuclei_gte                                      = messages.FloatField(118, repeated=True)
+    max_percent_tumor_nuclei_lte                                      = messages.FloatField(117)
+    max_percent_tumor_nuclei_gte                                      = messages.FloatField(118)
     
     menopause_status                                                  = messages.StringField(119, repeated=True)
     
     min_percent_lymphocyte_infiltration                               = messages.FloatField(120, repeated=True)
-    min_percent_lymphocyte_infiltration_lte                           = messages.FloatField(121, repeated=True)
-    min_percent_lymphocyte_infiltration_gte                           = messages.FloatField(122, repeated=True)
-    
+    min_percent_lymphocyte_infiltration_lte                           = messages.FloatField(121)
+    min_percent_lymphocyte_infiltration_gte                           = messages.FloatField(122)
     
     min_percent_monocyte_infiltration                                 = messages.FloatField(123, repeated=True)
-    min_percent_monocyte_infiltration_lte                             = messages.FloatField(124, repeated=True)
-    min_percent_monocyte_infiltration_gte                             = messages.FloatField(125, repeated=True)
-    
-    
+    min_percent_monocyte_infiltration_lte                             = messages.FloatField(124)
+    min_percent_monocyte_infiltration_gte                             = messages.FloatField(125)
+
     min_percent_necrosis                                              = messages.FloatField(126, repeated=True)
-    min_percent_necrosis_lte                                          = messages.FloatField(127, repeated=True)
-    min_percent_necrosis_gte                                          = messages.FloatField(128, repeated=True)
-    
+    min_percent_necrosis_lte                                          = messages.FloatField(127)
+    min_percent_necrosis_gte                                          = messages.FloatField(128)
     
     min_percent_neutrophil_infiltration                               = messages.FloatField(129, repeated=True)
-    min_percent_neutrophil_infiltration_lte                           = messages.FloatField(130, repeated=True)
-    min_percent_neutrophil_infiltration_gte                           = messages.FloatField(131, repeated=True)
-    
+    min_percent_neutrophil_infiltration_lte                           = messages.FloatField(130)
+    min_percent_neutrophil_infiltration_gte                           = messages.FloatField(131)
     
     min_percent_normal_cells                                          = messages.FloatField(132, repeated=True)
-    min_percent_normal_cells_lte                                      = messages.FloatField(133, repeated=True)
-    min_percent_normal_cells_gte                                      = messages.FloatField(134, repeated=True)
-    
+    min_percent_normal_cells_lte                                      = messages.FloatField(133)
+    min_percent_normal_cells_gte                                      = messages.FloatField(134)
     
     min_percent_stromal_cells                                         = messages.FloatField(135, repeated=True)
-    min_percent_stromal_cells_lte                                     = messages.FloatField(136, repeated=True)
-    min_percent_stromal_cells_gte                                     = messages.FloatField(137, repeated=True)
-    
+    min_percent_stromal_cells_lte                                     = messages.FloatField(136)
+    min_percent_stromal_cells_gte                                     = messages.FloatField(137)
     
     min_percent_tumor_cells                                           = messages.FloatField(138, repeated=True)
-    min_percent_tumor_cells_lte                                       = messages.FloatField(139, repeated=True)
-    min_percent_tumor_cells_gte                                       = messages.FloatField(140, repeated=True)
-    
-    
+    min_percent_tumor_cells_lte                                       = messages.FloatField(139)
+    min_percent_tumor_cells_gte                                       = messages.FloatField(140)
+
     min_percent_tumor_nuclei                                          = messages.FloatField(141, repeated=True)
-    min_percent_tumor_nuclei_lte                                      = messages.FloatField(142, repeated=True)
-    min_percent_tumor_nuclei_gte                                      = messages.FloatField(143, repeated=True)
+    min_percent_tumor_nuclei_lte                                      = messages.FloatField(142)
+    min_percent_tumor_nuclei_gte                                      = messages.FloatField(143)
     
     mononucleotide_and_dinucleotide_marker_panel_analysis_status      = messages.StringField(144, repeated=True)
     mononucleotide_marker_panel_analysis_status                       = messages.StringField(145, repeated=True)
@@ -223,18 +195,16 @@ class MetadataRangesItem(messages.Message):
     new_tumor_event_after_initial_treatment                           = messages.StringField(147, repeated=True)
     
     number_of_lymphnodes_examined                                     = messages.IntegerField(148, repeated=True, variant=messages.Variant.INT32)
-    number_of_lymphnodes_examined_lte                                 = messages.IntegerField(149, repeated=True, variant=messages.Variant.INT32)
-    number_of_lymphnodes_examined_gte                                 = messages.IntegerField(150, repeated=True, variant=messages.Variant.INT32)
-    
-    
+    number_of_lymphnodes_examined_lte                                 = messages.IntegerField(149, variant=messages.Variant.INT32)
+    number_of_lymphnodes_examined_gte                                 = messages.IntegerField(150, variant=messages.Variant.INT32)
+
     number_of_lymphnodes_positive_by_he                               = messages.IntegerField(151, repeated=True, variant=messages.Variant.INT32)
-    number_of_lymphnodes_positive_by_he_lte                           = messages.IntegerField(152, repeated=True, variant=messages.Variant.INT32)
-    number_of_lymphnodes_positive_by_he_gte                           = messages.IntegerField(153, repeated=True, variant=messages.Variant.INT32)
-    
-    
+    number_of_lymphnodes_positive_by_he_lte                           = messages.IntegerField(152, variant=messages.Variant.INT32)
+    number_of_lymphnodes_positive_by_he_gte                           = messages.IntegerField(153, variant=messages.Variant.INT32)
+
     number_pack_years_smoked                                          = messages.IntegerField(154, repeated=True, variant=messages.Variant.INT32)
-    number_pack_years_smoked_lte                                      = messages.IntegerField(155, repeated=True, variant=messages.Variant.INT32)
-    number_pack_years_smoked_gte                                      = messages.IntegerField(156, repeated=True, variant=messages.Variant.INT32)
+    number_pack_years_smoked_lte                                      = messages.IntegerField(155, variant=messages.Variant.INT32)
+    number_pack_years_smoked_gte                                      = messages.IntegerField(156, variant=messages.Variant.INT32)
     
     ParticipantBarcode                                                = messages.StringField(157, repeated=True)
     pathologic_M                                                      = messages.StringField(158, repeated=True)
@@ -249,8 +219,8 @@ class MetadataRangesItem(messages.Message):
     Project                                                           = messages.StringField(167, repeated=True)
     
     psa_value                                                         = messages.FloatField(168, repeated=True)
-    psa_value_lte                                                     = messages.FloatField(169, repeated=True)
-    psa_value_gte                                                     = messages.FloatField(170, repeated=True)
+    psa_value_lte                                                     = messages.FloatField(169)
+    psa_value_gte                                                     = messages.FloatField(170)
     
     race                                                              = messages.StringField(171, repeated=True)
     residual_tumor                                                    = messages.StringField(172, repeated=True)
@@ -264,15 +234,15 @@ class MetadataRangesItem(messages.Message):
     vital_status                                                      = messages.StringField(180, repeated=True)
     
     weight                                                            = messages.IntegerField(181, repeated=True, variant=messages.Variant.INT32)
-    weight_lte                                                        = messages.IntegerField(182, repeated=True, variant=messages.Variant.INT32)
-    weight_gte                                                        = messages.IntegerField(183, repeated=True, variant=messages.Variant.INT32)
+    weight_lte                                                        = messages.IntegerField(182, variant=messages.Variant.INT32)
+    weight_gte                                                        = messages.IntegerField(183, variant=messages.Variant.INT32)
     
     weiss_venous_invasion                                             = messages.StringField(184, repeated=True)
     
     year_of_initial_pathologic_diagnosis                              = messages.IntegerField(185, repeated=True, variant=messages.Variant.INT32)
-    year_of_initial_pathologic_diagnosis_lte                          = messages.IntegerField(186, repeated=True, variant=messages.Variant.INT32)
-    year_of_initial_pathologic_diagnosis_gte                          = messages.IntegerField(187, repeated=True, variant=messages.Variant.INT32)
-
+    year_of_initial_pathologic_diagnosis_lte                          = messages.IntegerField(186, variant=messages.Variant.INT32)
+    year_of_initial_pathologic_diagnosis_gte                          = messages.IntegerField(187, variant=messages.Variant.INT32)
+    
     
 class MetadataItem(messages.Message):
     age_at_initial_pathologic_diagnosis                               = messages.IntegerField(1, variant=messages.Variant.INT32)

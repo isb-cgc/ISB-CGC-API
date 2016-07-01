@@ -42,10 +42,10 @@ def write_file(rows):
         i += 1
 
         if field_type == 'IntegerField' or field_type == 'FloatField':
-            ranges_text += '%-65s = messages.%s(%d, repeated=True' % (row['COLUMN_NAME']+'_lte', field_type, i)
+            ranges_text += '%-65s = messages.%s(%d' % (row['COLUMN_NAME']+'_lte', field_type, i)
             ranges_text += ')\n    ' if field_type is not 'IntegerField' else ', variant=messages.Variant.INT32)\n    '
             i += 1
-            ranges_text += '%-65s = messages.%s(%d, repeated=True' % (row['COLUMN_NAME']+'_gte', field_type, i)
+            ranges_text += '%-65s = messages.%s(%d' % (row['COLUMN_NAME']+'_gte', field_type, i)
             ranges_text += ')\n    ' if field_type is not 'IntegerField' else ', variant=messages.Variant.INT32)\n    '
             i += 1
             ranges_text += '\n    '
