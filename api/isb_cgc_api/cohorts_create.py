@@ -25,9 +25,11 @@ from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 from django.contrib.auth.models import User as Django_User
 from django.core.signals import request_finished
-from isb_cgc_api_helpers import ISB_CGC_Endpoints, MetadataRangesItem, \
-    are_there_bad_keys, are_there_no_acceptable_keys, construct_parameter_error_message, \
-    CohortsCreatePreviewQueryBuilder
+from isb_cgc_api_helpers import ISB_CGC_Endpoints, CohortsCreatePreviewQueryBuilder, \
+    are_there_bad_keys, are_there_no_acceptable_keys, construct_parameter_error_message
+
+from message_classes import MetadataRangesItem
+
 from api.api_helpers import sql_connection
 from cohorts.models import Cohort as Django_Cohort, Cohort_Perms, Patients, Samples, Filters
 from bq_data_access.cohort_bigquery import BigQueryCohortSupport
