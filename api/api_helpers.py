@@ -22,11 +22,8 @@ import os
 import MySQLdb
 import httplib2
 from oauth2client.client import GoogleCredentials, AccessTokenCredentials
-from google_helpers.directory_service import get_directory_resource
-from googleapiclient.errors import HttpError
 from django.conf import settings
 from googleapiclient.discovery import build
-import logging
 
 CONTROLLED_ACL_GOOGLE_GROUP = settings.ACL_GOOGLE_GROUP
 debug = settings.DEBUG
@@ -41,22 +38,27 @@ def sql_connection():
             db = MySQLdb.connect(
                 unix_socket = database['HOST'],
                 # port = 3306,
-                db = database['NAME'],
-                user = database['USER'],
-                passwd = database['PASSWORD'],
-                ssl = database['OPTIONS']['ssl'])
+                db=database['NAME'],
+                user=database['USER'],
+                passwd=database['PASSWORD'],
+                ssl=database['OPTIONS']['ssl'])
         except:
             print >> sys.stderr, "Unexpected ERROR in sql_connection(): ", sys.exc_info()[0]
             #return HttpResponse( traceback.format_exc() )
             raise # if you want to soldier bravely on despite the exception, but comment to stderr
     else:
-        # Connecting to localhost
         try:
-            db = MySQLdb.connect(
-                host='127.0.0.1',
-                db=database['NAME'],
-                user=database['USER'],
-                passwd=database['PASSWORD'])
+            connect_options = {
+                'host': database['HOST'],
+                'db': database['NAME'],
+                'user': database['USER'],
+                'passwd': database['PASSWORD']
+            }
+
+            if 'OPTIONS' in database and 'ssl' in database['OPTIONS']:
+                connect_options['ssl'] = database['OPTIONS']['ssl']
+
+            db = MySQLdb.connect(**connect_options)
         except:
             print >> sys.stderr, "Unexpected ERROR in sql_connection(): ", sys.exc_info()[0]
             #return HttpResponse( traceback.format_exc() )
@@ -192,6 +194,73 @@ def applyFilter(field, dict):
 
     return where_clause
 
+
+def build_filter_clause(filters, alt_key_map=False):
+    if debug: print >> sys.stderr, 'Called '+sys._getframe().f_code.co_name
+    first = True
+    query_str = '' if filters.items().__len__() > 0 else None
+
+    for key, value in filters.items():
+        if isinstance(value, dict) and 'values' in value:
+            value = value['values']
+
+        if isinstance(value, list) and len(value) == 1:
+            value = value[0]
+        # Check if we need to map to a different column name for a given key
+        if alt_key_map and key in alt_key_map:
+            key = alt_key_map[key]
+
+        # Multitable where's will come in with : in the name. Only grab the column piece for now
+        elif ':' in key:
+            key = key.split(':')[-1]
+
+        # Multitable filter lists don't come in as string as they can contain arbitrary text in values
+        elif isinstance(value, basestring):
+            # If it's a list of values, split it into an array
+            if ',' in value:
+                value = value.split(',')
+
+        # If it's first in the list, don't append an "and"
+        if first:
+            first = False
+        else:
+            query_str += ' and'
+
+        # If it's age ranges, give it special treament due to normalizations
+        if key == 'age_at_initial_pathologic_diagnosis':
+            query_str += ' (' + sql_age_by_ranges(value) + ') '
+
+        # If it's a list of items for this key, create an or subclause
+        elif isinstance(value, list):
+            has_null = False
+            if 'None' in value:
+                has_null = True
+                query_str += ' (%s is null or' % key
+                value.remove('None')
+            query_str += ' %s in (' % key
+            i = 0
+            for val in value:
+                if i == 0:
+                    query_str += "'"+val.__str__()+"'"
+                    i += 1
+                else:
+                    query_str += ",'"+val.__str__()+"'"
+            query_str += ')'
+            if has_null:
+                query_str += ')'
+
+        # If it's looking for None values
+        elif value == 'None':
+            query_str += ' %s is null' % key
+
+        # For the general case
+        else:
+            if not key == 'fl_archive_name' and not key == 'fl_data_level' and not type(value) == bool:
+                query_str += " %s='%s'" % (key, value.__str__())
+
+    return query_str
+
+
 def build_where_clause(filters, alt_key_map=False):
 # this one gets called a lot
 #    if debug: print >> sys.stderr,'Called '+sys._getframe().f_code.co_name
@@ -209,13 +278,11 @@ def build_where_clause(filters, alt_key_map=False):
         # Check if we need to map to a different column name for a given key
         if alt_key_map and key in alt_key_map:
             key = alt_key_map[key]
-            if 'values' in value:
-                value = value['values']
+
         # Multitable where's will come in with : in the name. Only grab the column piece for now
         elif ':' in key:
             key = key.split(':')[-1]
-            if 'values' in value:
-                value = value['values']
+
         # Multitable filter lists don't come in as string as they can contain arbitrary text in values
         elif isinstance(value, basestring):
             # If it's a list of values, split it into an array
@@ -330,7 +397,7 @@ def authorize_credentials_with_google_from_file(credentials_path):
 
 
 def get_user_email_from_token(access_token):
-    print >> sys.stderr,'Called '+sys._getframe().f_code.co_name
+    if debug: print >> sys.stderr,'Called '+sys._getframe().f_code.co_name
     user_email = None
     credentials = AccessTokenCredentials(access_token, 'test-user')
     http = credentials.authorize(httplib2.Http())
@@ -339,13 +406,3 @@ def get_user_email_from_token(access_token):
     if 'email' in user_info:
         user_email = user_info['email']
     return user_email
-
-
-def is_dbgap_authorized(user_email):
-    directory_service, http_auth = get_directory_resource()
-    try:
-        directory_service.members().get(groupKey=CONTROLLED_ACL_GOOGLE_GROUP,
-                                        memberKey=user_email).execute(http=http_auth)
-        return True
-    except HttpError, e:
-        return False
