@@ -110,7 +110,7 @@ class CNVRSearcher(object):
 
         query = 'SELECT gene_name, value_field, internal_feature_id' \
                 ' FROM {table_name}' \
-                ' WHERE gene_name LIKE %s'\
+                ' WHERE gene_name=%s'\
                 ' AND value_field LIKE %s' \
                 ' LIMIT %s'.format(table_name=self.get_table_name()
         )
@@ -120,7 +120,7 @@ class CNVRSearcher(object):
 
         # Format the keyword for MySQL string matching
         # sql_keyword = '%' + keyword + '%'
-        query_args = ['%' + input['gene_name'] + '%',
+        query_args = [input['gene_name'],
                       '%' + input['value_field'] + '%',
                       FOUND_FEATURE_LIMIT]
 

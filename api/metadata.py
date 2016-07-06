@@ -1093,6 +1093,7 @@ def count_metadata(user, cohort_id=None, sample_ids=None, filters=None):
                     query += query_clause + (' GROUP BY %s ' % col_name)
                     sample_query += query_clause
 
+                    logger.debug("In api count_metadata, executing query "+query)
                     cursor.execute(query, where_clause['value_tuple'])
                     for row in cursor.fetchall():
                         if not row[0] in table_values:
@@ -1165,7 +1166,7 @@ def query_samples_and_studies(parameter, bucket_by=None):
         start = time.time()
         cursor.execute(query_str, (parameter,))
         stop = time.time()
-        logger.debug("[BENCHMARKING] Time to query sample IDs for cohort '" + parameter + "': " + (stop-start).__str__())
+        logger.debug("[BENCHMARKING] In api/metadata, time to query sample IDs for cohort '" + parameter + "': " + (stop-start).__str__())
 
         samples = ()
 
@@ -2141,7 +2142,7 @@ class Meta_Endpoints_API_v2(remote.Service):
         counts_and_totals = count_metadata(user, cohort_id, sample_ids, filters)
         stop = time.time()
         logger.debug(
-            "[BENCHMARKING] Time to query metadata_counts "
+            "[BENCHMARKING] In api/metadata, time to query metadata_counts"
                 + (" for cohort "+cohort_id if cohort_id is not None else "")
                 + (" and" if cohort_id is not None and filters.__len__() > 0 else "")
                 + (" filters "+filters.__str__() if filters.__len__() > 0 else "")
@@ -2362,7 +2363,7 @@ class Meta_Endpoints_API_v2(remote.Service):
                 start = time.time()
                 cursor.execute(sample_query_str, (cohort_id,))
                 stop = time.time()
-                logger.debug("[BENCHMARKING] Time to query sample IDs in metadata_platform_list for cohort '" + cohort_id + "': " + (stop - start).__str__())
+                logger.debug("[BENCHMARKING] In api/metadata, time to query sample IDs in metadata_platform_list for cohort '" + cohort_id + "': " + (stop - start).__str__())
                 sample_ids = ()
 
                 for row in cursor.fetchall():
@@ -2438,7 +2439,7 @@ class Meta_Endpoints_API_v2(remote.Service):
             start = time.time()
             cursor.execute(query_str, value_tuple)
             stop = time.time()
-            logger.debug("[BENCHMARKING] Time to query platforms in metadata_platform_list for cohort '" + str(request.cohort_id) + "': " + (stop - start).__str__())
+            logger.debug("[BENCHMARKING] In api/metadata, time to query platforms in metadata_platform_list for cohort '" + str(request.cohort_id) + "': " + (stop - start).__str__())
             data = []
             for row in cursor.fetchall():
 
@@ -2510,7 +2511,7 @@ class Meta_Endpoints_API_v2(remote.Service):
         counts_and_total = count_metadata(user, cohort_id, samples_by_study, filters)
         stop = time.time()
         logger.debug(
-            "[BENCHMARKING] Time to query metadata_counts "
+            "[BENCHMARKING] In api/metadata, time to query metadata_counts "
                 + (" for cohort "+cohort_id if cohort_id is not None else "")
                 + (" and" if cohort_id is not None and filters.__len__() > 0 else "")
                 + (" filters "+filters.__str__() if filters.__len__() > 0 else "")
@@ -2585,7 +2586,7 @@ class Meta_Endpoints_API_v2(remote.Service):
             start = time.time()
             cursor.execute(query_str, value_tuple)
             stop = time.time()
-            logger.debug("[BENCHMARKING] Time to query platforms in metadata_counts_platform_list for cohort '" + str(
+            logger.debug("[BENCHMARKING] In api/metadata, time to query platforms in metadata_counts_platform_list for cohort '" + str(
                 request.cohort_id) + "': " + (stop - start).__str__())
             for row in cursor.fetchall():
                 item = MetadataPlatformItem(
