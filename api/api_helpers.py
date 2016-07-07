@@ -190,7 +190,7 @@ def gql_age_by_ranges(q, key, value):
     return result
 
 
-def normalize_BMI(bmis):
+def normalize_bmi(bmis):
     if debug: print >> sys.stderr, 'Called ' + sys._getframe().f_code.co_name
     bmi_list = {'underweight': 0, 'normal weight': 0, 'overweight': 0, 'obese': 0, 'None': 0}
     for bmi, count in bmis.items():
@@ -294,7 +294,7 @@ def build_where_clause(filters, alt_key_map=False):
         if key == 'age_at_initial_pathologic_diagnosis':
             query_str += ' (' + sql_age_by_ranges(value) + ') '
         # If it's age ranges, give it special treament due to normalizations
-        elif key == 'BMI':
+        elif key == 'bmi':
             query_str += ' (' + sql_bmi_by_ranges(value) + ') '
         # If it's a list of items for this key, create an or subclause
         elif isinstance(value, list):
