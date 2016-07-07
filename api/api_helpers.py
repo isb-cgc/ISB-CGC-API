@@ -66,6 +66,43 @@ def sql_connection():
 
     return db
 
+def sql_bmi_by_ranges(value):
+    if debug: print >> sys.stderr, 'Called ' + sys._getframe().f_code.co_name
+    result = ''
+    if not isinstance(value, basestring):
+        # value is a list of ranges
+        first = True
+        if 'None' in value:
+            result += 'BMI is null or '
+            value.remove('None')
+        for val in value:
+            if first:
+                result += ''
+                first = False
+            else:
+                result += ' or'
+            if str(val) == 'underweight':
+                result += ' (BMI < 18.5)'
+            elif str(val) == 'normal weight':
+                result += ' (BMI >= 18.5 and BMI <= 24.9)'
+            elif str(val) == 'overweight':
+                result += ' (BMI > 24.9 and BMI <= 29.9)'
+            elif str(val) == 'obese':
+                result += ' (BMI > 29.9)'
+
+    else:
+        # value is a single range
+        if str(value) == 'underweight':
+            result += ' (BMI < 18.5)'
+        elif str(value) == 'normal weight':
+            result += ' (BMI >= 18.5 and BMI <= 24.9)'
+        elif str(value) == 'overweight':
+            result += ' (BMI > 24.9 and BMI <= 29.9)'
+        elif str(value) == 'obese':
+            result += ' (BMI > 29.9)'
+
+    return result
+
 
 def sql_age_by_ranges(value):
     if debug: print >> sys.stderr,'Called '+sys._getframe().f_code.co_name
@@ -94,7 +131,6 @@ def sql_age_by_ranges(value):
                 result += ' (age_at_initial_pathologic_diagnosis >= 70 and age_at_initial_pathologic_diagnosis < 80)'
             elif str(val).lower() == 'over 80':
                 result += ' (age_at_initial_pathologic_diagnosis >= 80)'
-
     else:
         #value is a single range
         if str(value) == '10 to 39':
@@ -153,6 +189,28 @@ def gql_age_by_ranges(q, key, value):
             result += ' (%s >= 80)' % key
     return result
 
+
+def normalize_BMI(bmis):
+    if debug: print >> sys.stderr, 'Called ' + sys._getframe().f_code.co_name
+    bmi_list = {'underweight': 0, 'normal weight': 0, 'overweight': 0, 'obese': 0, 'None': 0}
+    for bmi, count in bmis.items():
+        if type(bmi) != dict:
+            if bmi and bmi != 'None':
+                fl_bmi = float(bmi)
+                if fl_bmi < 18.5:
+                    bmi_list['underweight'] += int(count)
+                elif 18.5 <= fl_bmi <= 24.9:
+                    bmi_list['normal weight'] += int(count)
+                elif 25 <= fl_bmi <= 29.9:
+                    bmi_list['overweight'] += int(count)
+                elif fl_bmi >= 30:
+                    bmi_list['obese'] += int(count)
+            else:
+                bmi_list['None'] += int(count)
+
+    return bmi_list
+
+
 def normalize_ages(ages):
     if debug: print >> sys.stderr,'Called '+sys._getframe().f_code.co_name
     new_age_list = {'10 to 39': 0, '40 to 49': 0, '50 to 59': 0, '60 to 69': 0, '70 to 79': 0, 'Over 80': 0, 'None': 0}
@@ -194,6 +252,7 @@ def applyFilter(field, dict):
 
     return where_clause
 
+
 def build_where_clause(filters, alt_key_map=False):
 # this one gets called a lot
 #    if debug: print >> sys.stderr,'Called '+sys._getframe().f_code.co_name
@@ -234,7 +293,9 @@ def build_where_clause(filters, alt_key_map=False):
         # If it's age ranges, give it special treament due to normalizations
         if key == 'age_at_initial_pathologic_diagnosis':
             query_str += ' (' + sql_age_by_ranges(value) + ') '
-
+        # If it's age ranges, give it special treament due to normalizations
+        elif key == 'BMI':
+            query_str += ' (' + sql_bmi_by_ranges(value) + ') '
         # If it's a list of items for this key, create an or subclause
         elif isinstance(value, list):
             has_null = False

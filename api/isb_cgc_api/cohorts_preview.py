@@ -22,9 +22,10 @@ import MySQLdb
 from django.core.signals import request_finished
 from protorpc import remote, messages
 
-from isb_cgc_api_helpers import ISB_CGC_Endpoints, MetadataRangesItem, \
-    are_there_bad_keys, are_there_no_acceptable_keys, construct_parameter_error_message, \
-    CohortsCreatePreviewQueryBuilder
+from isb_cgc_api_helpers import ISB_CGC_Endpoints, CohortsCreatePreviewQueryBuilder, \
+    are_there_bad_keys, are_there_no_acceptable_keys, construct_parameter_error_message
+
+from message_classes import MetadataRangesItem
 from api.api_helpers import sql_connection
 
 logger = logging.getLogger(__name__)
