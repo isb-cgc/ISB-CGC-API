@@ -390,8 +390,6 @@ def build_where_clause(filters, alt_key_map=False):
             query_str += ' )'
             big_query_str += ' )'
 
-    print >> sys.stdout, query_str
-
     return {'query_str': query_str, 'value_tuple': value_tuple, 'key_order': key_order, 'big_query_str': big_query_str}
 
 
