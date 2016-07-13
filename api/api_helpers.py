@@ -17,7 +17,6 @@ limitations under the License.
 """
 
 import sys
-
 import os
 import MySQLdb
 import httplib2
@@ -190,7 +189,7 @@ def gql_age_by_ranges(q, key, value):
     return result
 
 
-def normalize_BMI(bmis):
+def normalize_bmi(bmis):
     if debug: print >> sys.stderr, 'Called ' + sys._getframe().f_code.co_name
     bmi_list = {'underweight': 0, 'normal weight': 0, 'overweight': 0, 'obese': 0, 'None': 0}
     for bmi, count in bmis.items():
@@ -261,6 +260,9 @@ def build_where_clause(filters, alt_key_map=False):
     big_query_str = ''  # todo: make this work for non-string values -- use {}.format
     value_tuple = ()
     key_order = []
+
+    grouped_filters = None
+
     for key, value in filters.items():
         if isinstance(value, dict) and 'values' in value:
             value = value['values']
@@ -283,65 +285,111 @@ def build_where_clause(filters, alt_key_map=False):
 
         key_order.append(key)
 
-        # If it's first in the list, don't append an "and"
-        if first:
-            first = False
-        else:
-            query_str += ' and'
-            big_query_str += ' and'
+        # Bucket the grouped filter types (currently just certain has_ values, could be more)
+        if 'has_' in key and not key == 'has_Illumina_DNASeq' and not key == 'has_SNP6' and not key == 'has_RPPA':
+            if grouped_filters is None:
+                grouped_filters = {}
 
-        # If it's age ranges, give it special treament due to normalizations
-        if key == 'age_at_initial_pathologic_diagnosis':
-            query_str += ' (' + sql_age_by_ranges(value) + ') '
-        # If it's age ranges, give it special treament due to normalizations
-        elif key == 'BMI':
-            query_str += ' (' + sql_bmi_by_ranges(value) + ') '
-        # If it's a list of items for this key, create an or subclause
-        elif isinstance(value, list):
-            has_null = False
-            if 'None' in value:
-                has_null = True
-                query_str += ' (%s is null or' % key
-                big_query_str += ' (%s is null or' % key
-                value.remove('None')
-            query_str += ' %s in (' % key
-            big_query_str += ' %s in (' % key
-            i = 0
-            for val in value:
-                value_tuple += (val.strip(),) if type(val) is unicode else (val,)
-                if i == 0:
-                    query_str += '%s'
-                    big_query_str += '"' + str(val) + '"'
-                    i += 1
-                else:
-                    query_str += ',%s'
-                    big_query_str += ',' + '"' + str(val) + '"'
-            query_str += ')'
-            big_query_str += ')'
-            if has_null:
+            if key == 'has_27k' or key == 'has_450k':
+                if 'DNA_methylation' not in grouped_filters:
+                    grouped_filters['DNA_methylation'] = []
+                grouped_filters['DNA_methylation'].append({'filter': str(key), 'value': str(value)})
+            elif key == 'has_HiSeq_miRnaSeq' or key == 'has_GA_miRNASeq':
+                if 'miRNA_sequencing' not in grouped_filters:
+                    grouped_filters['miRNA_sequencing'] = []
+                grouped_filters['miRNA_sequencing'].append({'filter': str(key), 'value': str(value)})
+            elif key == 'has_UNC_HiSeq_RNASeq' or key == 'has_UNC_GA_RNASeq' or key == 'has_BCGSC_HiSeq_RNASeq' or key == 'has_BCGSC_GA_RNASeq':
+                if 'RNA_sequencing' not in grouped_filters:
+                    grouped_filters['RNA_sequencing'] = []
+                grouped_filters['RNA_sequencing'].append({'filter': str(key), 'value': str(value)})
+        else:
+            # If it's first in the list, don't append an "and"
+            if first:
+                first = False
+            else:
+                query_str += ' and'
+                big_query_str += ' and'
+
+            # If it's age ranges, give it special treament due to normalizations
+            if key == 'age_at_initial_pathologic_diagnosis':
+                query_str += ' (' + sql_age_by_ranges(value) + ') '
+            # If it's age ranges, give it special treament due to normalizations
+            elif key == 'bmi':
+                query_str += ' (' + sql_bmi_by_ranges(value) + ') '
+            # If it's a list of items for this key, create an or subclause
+            elif isinstance(value, list):
+                has_null = False
+                if 'None' in value:
+                    has_null = True
+                    query_str += ' (%s is null or' % key
+                    big_query_str += ' (%s is null or' % key
+                    value.remove('None')
+                query_str += ' %s in (' % key
+                big_query_str += ' %s in (' % key
+                i = 0
+                for val in value:
+                    value_tuple += (val.strip(),) if type(val) is unicode else (val,)
+                    if i == 0:
+                        query_str += '%s'
+                        big_query_str += '"' + str(val) + '"'
+                        i += 1
+                    else:
+                        query_str += ',%s'
+                        big_query_str += ',' + '"' + str(val) + '"'
                 query_str += ')'
                 big_query_str += ')'
+                if has_null:
+                    query_str += ')'
+                    big_query_str += ')'
 
-        # If it's looking for None values
-        elif value == 'None':
-            query_str += ' %s is null' % key
-            big_query_str += ' %s is null' % key
+            # If it's looking for None values
+            elif value == 'None':
+                query_str += ' %s is null' % key
+                big_query_str += ' %s is null' % key
 
-        # For the general case
-        else:
-            if key == 'fl_archive_name':
-                big_query_str += ' %s like' % key
-                big_query_str += ' "%' + value + '%"'
-            elif key == 'fl_data_level':
-                big_query_str += ' %s=%s' % (key, value)
-            elif type(value) == bool:
-                big_query_str += ' %s=%r' % (key, value)
+            # For the general case
             else:
-                query_str += ' %s=' % key
-                big_query_str += ' %s=' % key
+                if key == 'fl_archive_name':
+                    big_query_str += ' %s like' % key
+                    big_query_str += ' "%' + value + '%"'
+                elif key == 'fl_data_level':
+                    big_query_str += ' %s=%s' % (key, value)
+                elif type(value) == bool:
+                    big_query_str += ' %s=%r' % (key, value)
+                else:
+                    query_str += ' %s=' % key
+                    big_query_str += ' %s=' % key
+                    query_str += '%s'
+                    big_query_str += '"%s"' % value
+                    value_tuple += (value.strip(),) if type(value) is unicode else (value,)
+
+    # Handle our data buckets
+    if grouped_filters:
+        for bucket in grouped_filters:
+            if not query_str == '':
+                query_str += ' and '
+                big_query_str += ' and '
+
+            query_str += '( '
+            big_query_str += '( '
+
+            first = True
+            for filter in grouped_filters[bucket]:
+                if first:
+                    first = False
+                else:
+                    query_str += ' or '
+                    big_query_str += ' or '
+
+                query_str += ' %s=' % filter['filter']
+                big_query_str += ' %s=' % filter['filter']
                 query_str += '%s'
-                big_query_str += '"%s"' % value
-                value_tuple += (value.strip(),) if type(value) is unicode else (value,)
+                big_query_str += '"%s"' % filter['value']
+                value_tuple += (filter['value'].strip(),) if type(filter['value']) is unicode else (filter['value'],)
+
+            query_str += ' )'
+            big_query_str += ' )'
+
     return {'query_str': query_str, 'value_tuple': value_tuple, 'key_order': key_order, 'big_query_str': big_query_str}
 
 
