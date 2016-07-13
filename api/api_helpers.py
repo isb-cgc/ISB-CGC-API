@@ -364,30 +364,31 @@ def build_where_clause(filters, alt_key_map=False):
                     value_tuple += (value.strip(),) if type(value) is unicode else (value,)
 
     # Handle our data buckets
-    for bucket in grouped_filters:
-        if not query_str == '':
-            query_str += ' and '
-            big_query_str += ' and '
+    if grouped_filters:
+        for bucket in grouped_filters:
+            if not query_str == '':
+                query_str += ' and '
+                big_query_str += ' and '
 
-        query_str += '( '
-        big_query_str += '( '
+            query_str += '( '
+            big_query_str += '( '
 
-        first = True
-        for filter in grouped_filters[bucket]:
-            if first:
-                first = False
-            else:
-                query_str += ' or '
-                big_query_str += ' or '
+            first = True
+            for filter in grouped_filters[bucket]:
+                if first:
+                    first = False
+                else:
+                    query_str += ' or '
+                    big_query_str += ' or '
 
-            query_str += ' %s=' % filter['filter']
-            big_query_str += ' %s=' % filter['filter']
-            query_str += '%s'
-            big_query_str += '"%s"' % filter['value']
-            value_tuple += (filter['value'].strip(),) if type(filter['value']) is unicode else (filter['value'],)
+                query_str += ' %s=' % filter['filter']
+                big_query_str += ' %s=' % filter['filter']
+                query_str += '%s'
+                big_query_str += '"%s"' % filter['value']
+                value_tuple += (filter['value'].strip(),) if type(filter['value']) is unicode else (filter['value'],)
 
-        query_str += ' )'
-        big_query_str += ' )'
+            query_str += ' )'
+            big_query_str += ' )'
 
     print >> sys.stdout, query_str
 
