@@ -17,7 +17,6 @@ limitations under the License.
 """
 
 import sys
-
 import os
 import MySQLdb
 import httplib2
@@ -66,6 +65,43 @@ def sql_connection():
 
     return db
 
+def sql_bmi_by_ranges(value):
+    if debug: print >> sys.stderr, 'Called ' + sys._getframe().f_code.co_name
+    result = ''
+    if not isinstance(value, basestring):
+        # value is a list of ranges
+        first = True
+        if 'None' in value:
+            result += 'BMI is null or '
+            value.remove('None')
+        for val in value:
+            if first:
+                result += ''
+                first = False
+            else:
+                result += ' or'
+            if str(val) == 'underweight':
+                result += ' (BMI < 18.5)'
+            elif str(val) == 'normal weight':
+                result += ' (BMI >= 18.5 and BMI <= 24.9)'
+            elif str(val) == 'overweight':
+                result += ' (BMI > 24.9 and BMI <= 29.9)'
+            elif str(val) == 'obese':
+                result += ' (BMI > 29.9)'
+
+    else:
+        # value is a single range
+        if str(value) == 'underweight':
+            result += ' (BMI < 18.5)'
+        elif str(value) == 'normal weight':
+            result += ' (BMI >= 18.5 and BMI <= 24.9)'
+        elif str(value) == 'overweight':
+            result += ' (BMI > 24.9 and BMI <= 29.9)'
+        elif str(value) == 'obese':
+            result += ' (BMI > 29.9)'
+
+    return result
+
 
 def sql_age_by_ranges(value):
     if debug: print >> sys.stderr,'Called '+sys._getframe().f_code.co_name
@@ -94,7 +130,6 @@ def sql_age_by_ranges(value):
                 result += ' (age_at_initial_pathologic_diagnosis >= 70 and age_at_initial_pathologic_diagnosis < 80)'
             elif str(val).lower() == 'over 80':
                 result += ' (age_at_initial_pathologic_diagnosis >= 80)'
-
     else:
         #value is a single range
         if str(value) == '10 to 39':
@@ -153,6 +188,28 @@ def gql_age_by_ranges(q, key, value):
             result += ' (%s >= 80)' % key
     return result
 
+
+def normalize_bmi(bmis):
+    if debug: print >> sys.stderr, 'Called ' + sys._getframe().f_code.co_name
+    bmi_list = {'underweight': 0, 'normal weight': 0, 'overweight': 0, 'obese': 0, 'None': 0}
+    for bmi, count in bmis.items():
+        if type(bmi) != dict:
+            if bmi and bmi != 'None':
+                fl_bmi = float(bmi)
+                if fl_bmi < 18.5:
+                    bmi_list['underweight'] += int(count)
+                elif 18.5 <= fl_bmi <= 24.9:
+                    bmi_list['normal weight'] += int(count)
+                elif 25 <= fl_bmi <= 29.9:
+                    bmi_list['overweight'] += int(count)
+                elif fl_bmi >= 30:
+                    bmi_list['obese'] += int(count)
+            else:
+                bmi_list['None'] += int(count)
+
+    return bmi_list
+
+
 def normalize_ages(ages):
     if debug: print >> sys.stderr,'Called '+sys._getframe().f_code.co_name
     new_age_list = {'10 to 39': 0, '40 to 49': 0, '50 to 59': 0, '60 to 69': 0, '70 to 79': 0, 'Over 80': 0, 'None': 0}
@@ -195,72 +252,6 @@ def applyFilter(field, dict):
     return where_clause
 
 
-def build_filter_clause(filters, alt_key_map=False):
-    if debug: print >> sys.stderr, 'Called '+sys._getframe().f_code.co_name
-    first = True
-    query_str = '' if filters.items().__len__() > 0 else None
-
-    for key, value in filters.items():
-        if isinstance(value, dict) and 'values' in value:
-            value = value['values']
-
-        if isinstance(value, list) and len(value) == 1:
-            value = value[0]
-        # Check if we need to map to a different column name for a given key
-        if alt_key_map and key in alt_key_map:
-            key = alt_key_map[key]
-
-        # Multitable where's will come in with : in the name. Only grab the column piece for now
-        elif ':' in key:
-            key = key.split(':')[-1]
-
-        # Multitable filter lists don't come in as string as they can contain arbitrary text in values
-        elif isinstance(value, basestring):
-            # If it's a list of values, split it into an array
-            if ',' in value:
-                value = value.split(',')
-
-        # If it's first in the list, don't append an "and"
-        if first:
-            first = False
-        else:
-            query_str += ' and'
-
-        # If it's age ranges, give it special treament due to normalizations
-        if key == 'age_at_initial_pathologic_diagnosis':
-            query_str += ' (' + sql_age_by_ranges(value) + ') '
-
-        # If it's a list of items for this key, create an or subclause
-        elif isinstance(value, list):
-            has_null = False
-            if 'None' in value:
-                has_null = True
-                query_str += ' (%s is null or' % key
-                value.remove('None')
-            query_str += ' %s in (' % key
-            i = 0
-            for val in value:
-                if i == 0:
-                    query_str += "'"+val.__str__()+"'"
-                    i += 1
-                else:
-                    query_str += ",'"+val.__str__()+"'"
-            query_str += ')'
-            if has_null:
-                query_str += ')'
-
-        # If it's looking for None values
-        elif value == 'None':
-            query_str += ' %s is null' % key
-
-        # For the general case
-        else:
-            if not key == 'fl_archive_name' and not key == 'fl_data_level' and not type(value) == bool:
-                query_str += " %s='%s'" % (key, value.__str__())
-
-    return query_str
-
-
 def build_where_clause(filters, alt_key_map=False):
 # this one gets called a lot
 #    if debug: print >> sys.stderr,'Called '+sys._getframe().f_code.co_name
@@ -269,6 +260,9 @@ def build_where_clause(filters, alt_key_map=False):
     big_query_str = ''  # todo: make this work for non-string values -- use {}.format
     value_tuple = ()
     key_order = []
+
+    grouped_filters = None
+
     for key, value in filters.items():
         if isinstance(value, dict) and 'values' in value:
             value = value['values']
@@ -291,63 +285,111 @@ def build_where_clause(filters, alt_key_map=False):
 
         key_order.append(key)
 
-        # If it's first in the list, don't append an "and"
-        if first:
-            first = False
+        # Bucket the grouped filter types (currently just certain has_ values, could be more)
+        if 'has_' in key and not key == 'has_Illumina_DNASeq' and not key == 'has_SNP6' and not key == 'has_RPPA':
+            if grouped_filters is None:
+                grouped_filters = {}
+
+            if key == 'has_27k' or key == 'has_450k':
+                if 'DNA_methylation' not in grouped_filters:
+                    grouped_filters['DNA_methylation'] = []
+                grouped_filters['DNA_methylation'].append({'filter': str(key), 'value': str(value)})
+            elif key == 'has_HiSeq_miRnaSeq' or key == 'has_GA_miRNASeq':
+                if 'miRNA_sequencing' not in grouped_filters:
+                    grouped_filters['miRNA_sequencing'] = []
+                grouped_filters['miRNA_sequencing'].append({'filter': str(key), 'value': str(value)})
+            elif key == 'has_UNC_HiSeq_RNASeq' or key == 'has_UNC_GA_RNASeq' or key == 'has_BCGSC_HiSeq_RNASeq' or key == 'has_BCGSC_GA_RNASeq':
+                if 'RNA_sequencing' not in grouped_filters:
+                    grouped_filters['RNA_sequencing'] = []
+                grouped_filters['RNA_sequencing'].append({'filter': str(key), 'value': str(value)})
         else:
-            query_str += ' and'
-            big_query_str += ' and'
+            # If it's first in the list, don't append an "and"
+            if first:
+                first = False
+            else:
+                query_str += ' and'
+                big_query_str += ' and'
 
-        # If it's age ranges, give it special treament due to normalizations
-        if key == 'age_at_initial_pathologic_diagnosis':
-            query_str += ' (' + sql_age_by_ranges(value) + ') '
-
-        # If it's a list of items for this key, create an or subclause
-        elif isinstance(value, list):
-            has_null = False
-            if 'None' in value:
-                has_null = True
-                query_str += ' (%s is null or' % key
-                big_query_str += ' (%s is null or' % key
-                value.remove('None')
-            query_str += ' %s in (' % key
-            big_query_str += ' %s in (' % key
-            i = 0
-            for val in value:
-                value_tuple += (val.strip(),) if type(val) is unicode else (val,)
-                if i == 0:
-                    query_str += '%s'
-                    big_query_str += '"' + str(val) + '"'
-                    i += 1
-                else:
-                    query_str += ',%s'
-                    big_query_str += ',' + '"' + str(val) + '"'
-            query_str += ')'
-            big_query_str += ')'
-            if has_null:
+            # If it's age ranges, give it special treament due to normalizations
+            if key == 'age_at_initial_pathologic_diagnosis':
+                query_str += ' (' + sql_age_by_ranges(value) + ') '
+            # If it's age ranges, give it special treament due to normalizations
+            elif key == 'bmi':
+                query_str += ' (' + sql_bmi_by_ranges(value) + ') '
+            # If it's a list of items for this key, create an or subclause
+            elif isinstance(value, list):
+                has_null = False
+                if 'None' in value:
+                    has_null = True
+                    query_str += ' (%s is null or' % key
+                    big_query_str += ' (%s is null or' % key
+                    value.remove('None')
+                query_str += ' %s in (' % key
+                big_query_str += ' %s in (' % key
+                i = 0
+                for val in value:
+                    value_tuple += (val.strip(),) if type(val) is unicode else (val,)
+                    if i == 0:
+                        query_str += '%s'
+                        big_query_str += '"' + str(val) + '"'
+                        i += 1
+                    else:
+                        query_str += ',%s'
+                        big_query_str += ',' + '"' + str(val) + '"'
                 query_str += ')'
                 big_query_str += ')'
+                if has_null:
+                    query_str += ')'
+                    big_query_str += ')'
 
-        # If it's looking for None values
-        elif value == 'None':
-            query_str += ' %s is null' % key
-            big_query_str += ' %s is null' % key
+            # If it's looking for None values
+            elif value == 'None':
+                query_str += ' %s is null' % key
+                big_query_str += ' %s is null' % key
 
-        # For the general case
-        else:
-            if key == 'fl_archive_name':
-                big_query_str += ' %s like' % key
-                big_query_str += ' "%' + value + '%"'
-            elif key == 'fl_data_level':
-                big_query_str += ' %s=%s' % (key, value)
-            elif type(value) == bool:
-                big_query_str += ' %s=%r' % (key, value)
+            # For the general case
             else:
-                query_str += ' %s=' % key
-                big_query_str += ' %s=' % key
+                if key == 'fl_archive_name':
+                    big_query_str += ' %s like' % key
+                    big_query_str += ' "%' + value + '%"'
+                elif key == 'fl_data_level':
+                    big_query_str += ' %s=%s' % (key, value)
+                elif type(value) == bool:
+                    big_query_str += ' %s=%r' % (key, value)
+                else:
+                    query_str += ' %s=' % key
+                    big_query_str += ' %s=' % key
+                    query_str += '%s'
+                    big_query_str += '"%s"' % value
+                    value_tuple += (value.strip(),) if type(value) is unicode else (value,)
+
+    # Handle our data buckets
+    if grouped_filters:
+        for bucket in grouped_filters:
+            if not query_str == '':
+                query_str += ' and '
+                big_query_str += ' and '
+
+            query_str += '( '
+            big_query_str += '( '
+
+            first = True
+            for filter in grouped_filters[bucket]:
+                if first:
+                    first = False
+                else:
+                    query_str += ' or '
+                    big_query_str += ' or '
+
+                query_str += ' %s=' % filter['filter']
+                big_query_str += ' %s=' % filter['filter']
                 query_str += '%s'
-                big_query_str += '"%s"' % value
-                value_tuple += (value.strip(),) if type(value) is unicode else (value,)
+                big_query_str += '"%s"' % filter['value']
+                value_tuple += (filter['value'].strip(),) if type(filter['value']) is unicode else (filter['value'],)
+
+            query_str += ' )'
+            big_query_str += ' )'
+
     return {'query_str': query_str, 'value_tuple': value_tuple, 'key_order': key_order, 'big_query_str': big_query_str}
 
 
