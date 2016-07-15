@@ -158,6 +158,17 @@ METADATA_SHORTLIST = [
     # 'year_of_initial_pathologic_diagnosis',
 ]
 
+MUTATION_SHORTLIST = [
+    'Missense_Mutation',
+    'Frame_Shift_Ins',
+    'Frame_Shift_Del',
+    'Nonsense_Mutation',
+    'Splice_Site',
+    'Silent',
+    'RNA',
+    'Intron',
+]
+
 metadata_dict = {
     'age_at_initial_pathologic_diagnosis': 'INTEGER',
     'anatomic_neoplasm_subdivision': 'VARCHAR(63)',

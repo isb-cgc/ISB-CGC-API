@@ -312,10 +312,16 @@ def build_where_clause(filters, alt_key_map=False):
 
             # If it's age ranges, give it special treament due to normalizations
             if key == 'age_at_initial_pathologic_diagnosis':
-                query_str += ' (' + sql_age_by_ranges(value) + ') '
+                if value == 'None':
+                    query_str += ' %s IS NULL' % key
+                else:
+                    query_str += ' (' + sql_age_by_ranges(value) + ') '
             # If it's age ranges, give it special treament due to normalizations
             elif key == 'bmi':
-                query_str += ' (' + sql_bmi_by_ranges(value) + ') '
+                if value == 'None':
+                    query_str += ' %s IS NULL' % key
+                else:
+                    query_str += ' (' + sql_bmi_by_ranges(value) + ') '
             # If it's a list of items for this key, create an or subclause
             elif isinstance(value, list):
                 has_null = False
