@@ -158,7 +158,7 @@ METADATA_SHORTLIST = [
     # 'year_of_initial_pathologic_diagnosis',
 ]
 
-MUTATION_SHORTLIST = [
+MOLECULAR_SHORTLIST = [
     'Missense_Mutation',
     'Frame_Shift_Ins',
     'Frame_Shift_Del',
