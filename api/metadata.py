@@ -61,6 +61,7 @@ METADATA_SHORTLIST = [
     # 'avg_percent_tumor_nuclei',
     # 'batch_number',
     # 'bcr',
+    'bmi',
     # 'clinical_M',
     # 'clinical_N',
     # 'clinical_stage',
@@ -96,7 +97,7 @@ METADATA_SHORTLIST = [
     # 'history_of_neoadjuvant_treatment',
     # 'history_of_prior_malignancy',
     # 'hpv_calls',
-    # 'hpv_status',
+    'hpv_status',
     'icd_10',
     'icd_o_3_histology',
     'icd_o_3_site',
@@ -157,6 +158,17 @@ METADATA_SHORTLIST = [
     # 'year_of_initial_pathologic_diagnosis',
 ]
 
+MUTATION_SHORTLIST = [
+    'Missense_Mutation',
+    'Frame_Shift_Ins',
+    'Frame_Shift_Del',
+    'Nonsense_Mutation',
+    'Splice_Site',
+    'Silent',
+    'RNA',
+    'Intron',
+]
+
 metadata_dict = {
     'age_at_initial_pathologic_diagnosis': 'INTEGER',
     'anatomic_neoplasm_subdivision': 'VARCHAR(63)',
@@ -170,6 +182,7 @@ metadata_dict = {
     'avg_percent_tumor_nuclei': 'FLOAT',
     'batch_number': 'INTEGER',
     'bcr': 'VARCHAR(63)',
+    'BMI': 'FLOAT',
     'clinical_M': 'VARCHAR(12)',
     'clinical_N': 'VARCHAR(12)',
     'clinical_T': 'VARCHAR(12)',
@@ -258,8 +271,7 @@ metadata_dict = {
     'has_RPPA': 'TINYINT',
     'has_SNP6': 'TINYINT',
     'has_27k': 'TINYINT',
-    'has_450k': 'TINYINT'
-
+    'has_450k': 'TINYINT',
 }
 
 
@@ -357,7 +369,7 @@ class MetaAttrValuesList(messages.Message):
     tumor_tissue_site                                   = messages.MessageField(MetaValueListCount, 88, repeated=True)
     tumor_pathology                                     = messages.MessageField(MetaValueListCount, 89, repeated=True)
     tumor_type                                          = messages.MessageField(MetaValueListCount, 90, repeated=True)
-    weiss_venous_invasion                                     = messages.MessageField(MetaValueListCount, 91, repeated=True)
+    weiss_venous_invasion                               = messages.MessageField(MetaValueListCount, 91, repeated=True)
     vital_status                                        = messages.MessageField(MetaValueListCount, 92, repeated=True)
     weight                                              = messages.MessageField(MetaValueListCount, 93, repeated=True)
     year_of_initial_pathologic_diagnosis                = messages.MessageField(MetaValueListCount, 94, repeated=True)
@@ -373,6 +385,7 @@ class MetaAttrValuesList(messages.Message):
     has_SNP6                                            = messages.MessageField(MetaValueListCount, 104, repeated=True)
     has_27k                                             = messages.MessageField(MetaValueListCount, 105, repeated=True)
     has_450k                                            = messages.MessageField(MetaValueListCount, 106, repeated=True)
+    BMI                                                 = messages.FloatField(107, repeated=True)
 
 
 class MetadataItem(messages.Message):
@@ -480,9 +493,10 @@ class MetadataItem(messages.Message):
     has_SNP6                                                        = messages.StringField(104)
     has_27k                                                         = messages.StringField(105)
     has_450k                                                        = messages.StringField(106)
+    BMI                                                             = messages.FloatField(107)
 
 '''
-Incoming object needs to use age that's a string (eg. 10_to_39)
+Incoming object needs to use age and BMI that's a string (eg. 10_to_39)
 '''
 class IncomingMetadataItem(messages.Message):
     age_at_initial_pathologic_diagnosis                             = messages.StringField(1, repeated=True)
@@ -583,6 +597,7 @@ class IncomingMetadataItem(messages.Message):
     has_SNP6                                                        = messages.StringField(96, repeated=True)
     has_27k                                                         = messages.StringField(97, repeated=True)
     has_450k                                                        = messages.StringField(98, repeated=True)
+    BMI                                                             = messages.StringField(99, repeated=True)
 
 class MetadataAttributeValues(messages.Message):
     name = messages.StringField(1)
@@ -633,6 +648,7 @@ class MetaDomainsList(messages.Message):
     has_SNP6                                    = messages.StringField(31, repeated=True)
     has_27k                                     = messages.StringField(32, repeated=True)
     has_450k                                    = messages.StringField(33, repeated=True)
+
 
 class SampleBarcodeItem(messages.Message):
     sample_barcode = messages.StringField(1)
@@ -1125,9 +1141,12 @@ def count_metadata(user, cohort_id=None, sample_ids=None, filters=None):
         for key, feature in valid_attrs.items():
             value_list = []
 
-            # Special case for age ranges
+            # Special case for age ranges and BMI
             if key == 'CLIN:age_at_initial_pathologic_diagnosis':
                 feature['values'] = normalize_ages(feature['values'])
+            elif key == 'CLIN:BMI':
+                feature['values'] = normalize_BMI(feature['values'])
+
 
             for value, count in feature['values'].items():
                 if feature['name'].startswith('has_'):
