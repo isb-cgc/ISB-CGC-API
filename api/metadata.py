@@ -1919,19 +1919,18 @@ class Meta_Endpoints_API(remote.Service):
                 cursor.execute(query, query_tuple)
                 if cursor.rowcount > 0:
                     for item in cursor.fetchall():
+                        # If there's a datafilenamekey
                         if 'DatafileNameKey' in item and item['DatafileNameKey'] != '':
-                            item['DatafileNameKey'] = "gs://{}{}".format(settings.OPEN_DATA_BUCKET, item['DatafileNameKey'])
-
-                        else:  # not filtering on dbGaP_authorized
+                            # Find protected bucket it should belong to
                             bucket_name = ''
                             if item['Repository'] and item['Repository'].lower() == 'dcc':
                                 bucket_name = settings.DCC_CONTROLLED_DATA_BUCKET
                             elif item['Repository'] and item['Repository'].lower() == 'cghub':
                                 bucket_name = settings.CGHUB_CONTROLLED_DATA_BUCKET
-                            if is_dbGaP_authorized and 'DatafileNameKey' in item and len(item['DatafileNameKey']) and bucket_name != '':
-                                item['DatafileNameKey'] = "gs://{}{}".format(bucket_name, item['DatafileNameKey'])
                             else:
-                                item['DatafileNameKey'] = ''
+                                bucket_name = settings.OPEN_DATA_BUCKET
+
+                            item['DatafileNameKey'] = "gs://{}{}".format(bucket_name, item['DatafileNameKey'])
 
                         file_list.append(FileDetails(sample=item['SampleBarcode'], cloudstorage_location=item['DatafileNameKey'], access=(item['SecurityProtocol'] or 'N/A'), filename=item['DatafileName'], pipeline=item['Pipeline'], platform=item['Platform'], datalevel=item['DataLevel'], datatype=(item['Datatype'] or " "), gg_readgroupset_id=item['GG_readgroupset_id']))
                 else:
