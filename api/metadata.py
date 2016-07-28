@@ -169,6 +169,17 @@ MOLECULAR_SHORTLIST = [
     'Intron',
 ]
 
+MOLECULAR_CATEGORIES = {
+    'silent': [ 'Silent', 'RNA', 'Intron', ],
+    'nonsilent': [
+        'Frame_Shift_Ins',
+        'Frame_Shift_Del',
+        'Missense_Mutation',
+        'Nonsense_Mutation',
+        'Splice_Site',
+    ]
+}
+
 metadata_dict = {
     'age_at_initial_pathologic_diagnosis': 'INTEGER',
     'anatomic_neoplasm_subdivision': 'VARCHAR(63)',
