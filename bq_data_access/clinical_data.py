@@ -82,7 +82,7 @@ class ClinicalFeatureDef(object):
 class ClinicalFeatureProvider(FeatureDataProvider):
     TABLES = [
         {
-            'name': 'Clinical',
+            'name': 'Clinical_data',
             'info': 'Clinical',
             'id': 'tcga_clinical'
         }
