@@ -24,10 +24,19 @@ from oauth2client.client import GoogleCredentials, AccessTokenCredentials
 from django.conf import settings
 from googleapiclient.discovery import build
 
-from api.metadata import MOLECULAR_CATEGORIES
-
 CONTROLLED_ACL_GOOGLE_GROUP = settings.ACL_GOOGLE_GROUP
 debug = settings.DEBUG
+
+MOLECULAR_CATEGORIES = {
+    'silent': [ 'Silent', 'RNA', 'Intron', ],
+    'nonsilent': [
+        'Frame_Shift_Ins',
+        'Frame_Shift_Del',
+        'Missense_Mutation',
+        'Nonsense_Mutation',
+        'Splice_Site',
+    ]
+}
 
 # Database connection
 def sql_connection():
@@ -66,6 +75,7 @@ def sql_connection():
             raise # if you want to soldier bravely on despite the exception, but comment to stderr
 
     return db
+
 
 def sql_bmi_by_ranges(value):
     if debug: print >> sys.stderr, 'Called ' + sys._getframe().f_code.co_name

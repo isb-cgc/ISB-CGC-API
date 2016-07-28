@@ -37,7 +37,7 @@ import json
 import traceback
 import copy
 
-from api_helpers import *
+from api.api_helpers import *
 
 logger = logging.getLogger(__name__)
 
@@ -157,28 +157,6 @@ METADATA_SHORTLIST = [
     # 'weight',
     # 'year_of_initial_pathologic_diagnosis',
 ]
-
-MOLECULAR_SHORTLIST = [
-    'Missense_Mutation',
-    'Frame_Shift_Ins',
-    'Frame_Shift_Del',
-    'Nonsense_Mutation',
-    'Splice_Site',
-    'Silent',
-    'RNA',
-    'Intron',
-]
-
-MOLECULAR_CATEGORIES = {
-    'silent': [ 'Silent', 'RNA', 'Intron', ],
-    'nonsilent': [
-        'Frame_Shift_Ins',
-        'Frame_Shift_Del',
-        'Missense_Mutation',
-        'Nonsense_Mutation',
-        'Splice_Site',
-    ]
-}
 
 metadata_dict = {
     'age_at_initial_pathologic_diagnosis': 'INTEGER',
