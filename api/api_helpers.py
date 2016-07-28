@@ -353,10 +353,10 @@ def build_where_clause(filters, alt_key_map=False):
                 j = 0
                 for vclass in values:
                     if j == 0:
-                        params['var_class'] = "'%s'" % vclass.replace("'", "\'")
+                        params['var_class'] = "'%s'" % vclass.replace("'", "\\'")
                         j = 1
                     else:
-                        params['var_class'] += ",'%s'" % vclass.replace("'", "\'")
+                        params['var_class'] += ",'%s'" % vclass.replace("'", "\\'")
 
         else:
             # If it's first in the list, don't append an "and"
