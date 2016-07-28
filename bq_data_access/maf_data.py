@@ -29,7 +29,7 @@ IDENTIFIER_COLUMN_NAME = 'sample_id'
 
 TABLES = [
     {
-        'name': 'MAF',
+        'name': 'Somatic_Mutation_calls',
         'info': 'MAF',
         'id': 'maf'
     }
