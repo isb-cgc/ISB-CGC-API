@@ -60,7 +60,7 @@ class GNABFeatureDef(object):
 class GNABFeatureProvider(FeatureDataProvider):
     TABLES = [
         {
-            'name': 'MAF',
+            'name': 'Somatic_Mutation_calls',
             'info': 'MAF',
             'id': 'maf'
         }
