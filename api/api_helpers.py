@@ -28,13 +28,17 @@ CONTROLLED_ACL_GOOGLE_GROUP = settings.ACL_GOOGLE_GROUP
 debug = settings.DEBUG
 
 MOLECULAR_CATEGORIES = {
-    'silent': [ 'Silent', 'RNA', 'Intron', ],
     'nonsilent': [
-        'Frame_Shift_Ins',
-        'Frame_Shift_Del',
         'Missense_Mutation',
         'Nonsense_Mutation',
-        'Splice_Site',
+        'Nonstop_Mutation',
+        'Frame_Shift_Del',
+        'Frame_Shift_Ins',
+        'De_novo_Start_OutOfFrame',
+        'In_Frame_Del',
+        'In_Frame_Ins',
+        'Start_Codon_SNP',
+        'Start_Codon_Del',
     ]
 }
 
@@ -349,10 +353,10 @@ def build_where_clause(filters, alt_key_map=False):
                 j = 0
                 for vclass in values:
                     if j == 0:
-                        params['var_class'] = "'%s'" % vclass
+                        params['var_class'] = "'%s'" % vclass.replace("'", "\'")
                         j = 1
                     else:
-                        params['var_class'] += ",'%s'" % vclass
+                        params['var_class'] += ",'%s'" % vclass.replace("'", "\'")
 
         else:
             # If it's first in the list, don't append an "and"
