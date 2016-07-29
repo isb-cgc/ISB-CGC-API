@@ -29,6 +29,7 @@ from accounts.models import NIH_User
 from cohorts.models import Cohort_Perms,  Cohort as Django_Cohort,Patients, Samples, Filters
 from projects.models import Study, User_Feature_Definitions, User_Feature_Counts, User_Data_Tables
 from django.core.signals import request_finished
+from time import sleep
 import django
 import sys
 import logging
@@ -36,6 +37,7 @@ import re
 import json
 import traceback
 import copy
+from uuid import uuid4
 
 from api.api_helpers import *
 
@@ -700,6 +702,54 @@ def createDataItem(data, selectors):
 class MetadataDomainItem(messages.Message):
     attribute = messages.StringField(1)
     domains = messages.StringField(2, repeated=True)
+
+
+def submit_bigquery_job(bq_service, project_id, query_body, batch=False):
+    job_data = {
+        'jobReference': {
+            'projectId': project_id,
+            'job_id': str(uuid4())
+        },
+        'configuration': {
+            'query': {
+                'query': query_body,
+                'priority': 'BATCH' if batch else 'INTERACTIVE'
+            }
+        }
+    }
+
+    return bq_service.jobs().insert(
+        projectId=project_id,
+        body=job_data).execute(num_retries=5)
+
+
+def is_bigquery_job_finished(bq_service, project_id, job_id):
+    job = bq_service.jobs().get(projectId=project_id,
+                             jobId=job_id).execute()
+
+    return job['status']['state'] == 'DONE'
+
+
+def get_bq_job_results(bq_service, job_reference):
+    result = []
+    page_token = None
+
+    while True:
+        page = bq_service.jobs().getQueryResults(
+            pageToken=page_token,
+            **job_reference).execute(num_retries=2)
+
+        if int(page['totalRows']) == 0:
+            break
+
+        rows = page['rows']
+        result.extend(rows)
+
+        page_token = page.get('pageToken')
+        if not page_token:
+            break
+
+    return result
 
 
 def generateSQLQuery(request):
@@ -2173,6 +2223,8 @@ class Meta_Endpoints_API_v2(remote.Service):
         cohort_id = None
         cursor = None
         db = None
+        mutation_filters = None
+        mutation_results = {}
 
         user = get_current_user(request)
         if user is None:
@@ -2183,9 +2235,16 @@ class Meta_Endpoints_API_v2(remote.Service):
                 tmp = json.loads(request.filters)
                 for filter in tmp:
                     key = filter['key']
-                    if key not in filters:
-                        filters[key] = {'values':[], 'tables':[] }
-                    filters[key]['values'].append(filter['value'])
+                    if 'MUT:' in key:
+                        if not mutation_filters:
+                            mutation_filters = {}
+                        if not key in mutation_filters:
+                            mutation_filters[key] = []
+                        mutation_filters[key].append(filter['value'])
+                    else:
+                        if key not in filters:
+                            filters[key] = {'values':[], 'tables':[] }
+                        filters[key]['values'].append(filter['value'])
 
             except Exception, e:
                 print traceback.format_exc()
@@ -2200,6 +2259,70 @@ class Meta_Endpoints_API_v2(remote.Service):
         if request.__getattribute__('cohort_id') is not None:
             cohort_id = str(request.cohort_id)
             sample_ids = query_samples_and_studies(cohort_id, 'study_id')
+
+        if mutation_filters:
+            mutation_where_clause = build_where_clause(mutation_filters)
+            print >> sys.stdout, mutation_where_clause
+            cohort_join_str = ''
+            cohort_where_str = ''
+            bq_cohort_table = ''
+            bq_cohort_dataset = ''
+            cohort = ''
+            query_template = None
+
+            if cohort_id is not None:
+                query_template = \
+                    ("SELECT ct.sample_barcode"
+                     " FROM [{project_name}:{cohort_dataset}.{cohort_table}] ct"
+                     " JOIN (SELECT Tumor_SampleBarcode AS barcode "
+                     " FROM [{project_name}:{dataset_name}.{table_name}]"
+                     " WHERE " + mutation_where_clause['big_query_str'] +
+                     " GROUP BY barcode) mt"
+                     " ON mt.barcode = ct.sample_barcode"
+                     " WHERE ct.cohort_id = {cohort};")
+                bq_cohort_table = settings.BIGQUERY_COHORT_TABLE_ID
+                bq_cohort_dataset = settings.COHORT_DATASET_ID
+                cohort = cohort_id
+            else:
+                query_template = \
+                    ("SELECT Tumor_SampleBarcode"
+                     " FROM [{project_name}:{dataset_name}.{table_name}]"
+                     " WHERE " + mutation_where_clause['big_query_str'] +
+                     " GROUP BY Tumor_SampleBarcode; ")
+
+            params = mutation_where_clause['value_tuple'][0]
+
+            query = query_template.format(dataset_name=settings.BIGQUERY_DATASET,
+                                          project_name=settings.BIGQUERY_PROJECT_NAME,
+                                          table_name="Somatic_Mutation_calls", hugo_symbol=str(params['gene']),
+                                          var_class=params['var_class'], cohort_dataset=bq_cohort_dataset,
+                                          cohort_table=bq_cohort_table, cohort=cohort)
+
+            bq_service = authorize_credentials_with_Google()
+            query_job = submit_bigquery_job(bq_service, settings.BQ_PROJECT_ID, query)
+            job_is_done = is_bigquery_job_finished(bq_service, settings.BQ_PROJECT_ID,
+                                                   query_job['jobReference']['jobId'])
+
+            retries = 0
+
+            while not job_is_done and retries < 10:
+                retries += 1
+                sleep(1)
+                job_is_done = is_bigquery_job_finished(bq_service, settings.BQ_PROJECT_ID,
+                                                       query_job['jobReference']['jobId'])
+
+            results = get_bq_job_results(bq_service, query_job['jobReference'])
+
+            # for-each result, add to list
+
+            if results.__len__() > 0:
+                for barcode in results:
+                    mutation_results[str(barcode['f'][0]['v'])] = 1
+
+            else:
+                print >> sys.stdout, "Mutation filter result was empty!"
+                # Put in one 'not found' entry to zero out the rest of the queries
+                barcodes = ['NONE_FOUND', ]
 
         # Add TCGA attributes to the list of available attributes
         if 'user_studies' not in filters or 'tcga' in filters['user_studies']['values']:
@@ -2277,8 +2400,11 @@ class Meta_Endpoints_API_v2(remote.Service):
                 if cohort_id and (study_id not in sample_ids or row[0] not in sample_ids[study_id]):
                     # This barcode was not in our cohort's list of barcodes, skip it
                     continue
-
-                results.append(SampleBarcodeItem(sample_barcode=row[0], study_id=table_settings['study_id']) )
+                if mutation_filters:
+                    if row[0] in mutation_results:
+                        results.append(SampleBarcodeItem(sample_barcode=row[0], study_id=table_settings['study_id']))
+                else:
+                    results.append(SampleBarcodeItem(sample_barcode=row[0], study_id=table_settings['study_id']) )
             cursor.close()
 
         db.close()
