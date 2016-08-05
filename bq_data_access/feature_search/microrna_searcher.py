@@ -57,7 +57,7 @@ class MIRNSearcher(object):
 
     @classmethod
     def get_table_name(cls):
-        return "feature_defs_mirn"
+        return "feature_defs_mirna"
 
     def validate_field_search_input(self, keyword, field):
         if field not in self.field_search_valid_fields:
