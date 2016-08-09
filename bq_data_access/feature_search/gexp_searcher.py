@@ -32,7 +32,7 @@ from bq_data_access.gexp_data import GEXP_FEATURE_TYPE
 
 
 class GEXPSearcher(object):
-    feature_search_valid_fields = set(['gene_name', 'platform', 'generating_center'])
+    feature_search_valid_fields = set(['gene_name', 'platform', 'center'])
     field_search_valid_fields = set(['gene_name'])
 
     searchable_fields = [
@@ -43,7 +43,7 @@ class GEXPSearcher(object):
          'label': 'Platform',
          'static': True,
          'values': ['Illumina GA', 'Illumina HiSeq']},
-        {'name': 'generating_center',
+        {'name': 'center',
          'label': 'Center',
          'static': True, 'values': ['BCGSC', 'UNC']}
     ]
