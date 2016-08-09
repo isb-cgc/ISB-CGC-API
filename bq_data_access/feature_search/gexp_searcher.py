@@ -32,7 +32,7 @@ from bq_data_access.gexp_data import GEXP_FEATURE_TYPE
 
 
 class GEXPSearcher(object):
-    feature_search_valid_fields = set(['gene_name', 'platform', 'center'])
+    feature_search_valid_fields = set(['gene_name', 'platform', 'generating_center'])
     field_search_valid_fields = set(['gene_name'])
 
     searchable_fields = [
