@@ -115,7 +115,7 @@ class GEXPSearcher(object):
     def search(self, parameters):
         self.validate_feature_search_input(parameters)
 
-        query = 'SELECT gene_name, platform, center, value_label, internal_feature_id' \
+        query = 'SELECT gene_name, platform, generating_center, value_label, internal_feature_id' \
                 ' FROM {table_name}' \
                 ' WHERE gene_name=%s'\
                 ' AND platform LIKE %s' \
