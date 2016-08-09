@@ -109,7 +109,7 @@ class GEXPSearcher(object):
     def build_feature_label(self, gene, info):
         # print info
         # Example: 'EGFR mRNA (Illumina HiSeq, UNC RSEM)'
-        label = gene + " mRNA (" + info['platform'] + ", " + info['center'] + " " + info['value_label'] + ")"
+        label = gene + " mRNA (" + info['platform'] + ", " + info['generating_center'] + " " + info['value_label'] + ")"
         return label
 
     def search(self, parameters):
