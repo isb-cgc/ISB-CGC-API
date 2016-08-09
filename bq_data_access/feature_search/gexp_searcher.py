@@ -43,7 +43,7 @@ class GEXPSearcher(object):
          'label': 'Platform',
          'static': True,
          'values': ['Illumina GA', 'Illumina HiSeq']},
-        {'name': 'center',
+        {'name': 'generating_center',
          'label': 'Center',
          'static': True, 'values': ['BCGSC', 'UNC']}
     ]
