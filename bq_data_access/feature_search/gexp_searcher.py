@@ -119,7 +119,7 @@ class GEXPSearcher(object):
                 ' FROM {table_name}' \
                 ' WHERE gene_name=%s'\
                 ' AND platform LIKE %s' \
-                ' AND center LIKE %s'\
+                ' AND generating_center LIKE %s'\
                 ' LIMIT %s'.format(table_name=self.get_table_name()
         )
         logging.debug("CLOUDSQL_QUERY_GEXP_SEARCH: {}".format(query))
