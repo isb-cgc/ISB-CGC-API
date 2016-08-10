@@ -109,17 +109,17 @@ class GEXPSearcher(object):
     def build_feature_label(self, gene, info):
         # print info
         # Example: 'EGFR mRNA (Illumina HiSeq, UNC RSEM)'
-        label = gene + " mRNA (" + info['platform'] + ", " + info['center'] + " " + info['value_label'] + ")"
+        label = gene + " mRNA (" + info['platform'] + ", " + info['generating_center'] + " " + info['value_label'] + ")"
         return label
 
     def search(self, parameters):
         self.validate_feature_search_input(parameters)
 
-        query = 'SELECT gene_name, platform, center, value_label, internal_feature_id' \
+        query = 'SELECT gene_name, platform, generating_center, value_label, internal_feature_id' \
                 ' FROM {table_name}' \
                 ' WHERE gene_name=%s'\
                 ' AND platform LIKE %s' \
-                ' AND center LIKE %s'\
+                ' AND generating_center LIKE %s'\
                 ' LIMIT %s'.format(table_name=self.get_table_name()
         )
         logging.debug("CLOUDSQL_QUERY_GEXP_SEARCH: {}".format(query))

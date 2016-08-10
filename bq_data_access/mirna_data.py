@@ -40,7 +40,7 @@ TABLES = [
         'value_field': 'reads_per_million_miRNA_mapped'
     },
     {
-        'name': 'miRNA_Expression_Values',
+        'name': 'miRNA_Expression',
         'platform': 'both',
         'info': 'miRNA',
         'feature_id': 'expression',

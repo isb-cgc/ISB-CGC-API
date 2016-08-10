@@ -27,6 +27,21 @@ from googleapiclient.discovery import build
 CONTROLLED_ACL_GOOGLE_GROUP = settings.ACL_GOOGLE_GROUP
 debug = settings.DEBUG
 
+MOLECULAR_CATEGORIES = {
+    'nonsilent': [
+        'Missense_Mutation',
+        'Nonsense_Mutation',
+        'Nonstop_Mutation',
+        'Frame_Shift_Del',
+        'Frame_Shift_Ins',
+        'De_novo_Start_OutOfFrame',
+        'In_Frame_Del',
+        'In_Frame_Ins',
+        'Start_Codon_SNP',
+        'Start_Codon_Del',
+    ]
+}
+
 # Database connection
 def sql_connection():
     env = os.getenv('SERVER_SOFTWARE')
@@ -64,6 +79,7 @@ def sql_connection():
             raise # if you want to soldier bravely on despite the exception, but comment to stderr
 
     return db
+
 
 def sql_bmi_by_ranges(value):
     if debug: print >> sys.stderr, 'Called ' + sys._getframe().f_code.co_name
@@ -260,6 +276,8 @@ def build_where_clause(filters, alt_key_map=False):
     big_query_str = ''  # todo: make this work for non-string values -- use {}.format
     value_tuple = ()
     key_order = []
+    keyType = None
+    gene = None
 
     grouped_filters = None
 
@@ -274,7 +292,11 @@ def build_where_clause(filters, alt_key_map=False):
             key = alt_key_map[key]
 
         # Multitable where's will come in with : in the name. Only grab the column piece for now
+        # TODO: Shouldn't throw away the entire key
         elif ':' in key:
+            keyType = key.split(':')[0]
+            if keyType == 'MUT':
+                gene = key.split(':')[1]
             key = key.split(':')[-1]
 
         # Multitable filter lists don't come in as string as they can contain arbitrary text in values
@@ -302,6 +324,43 @@ def build_where_clause(filters, alt_key_map=False):
                 if 'RNA_sequencing' not in grouped_filters:
                     grouped_filters['RNA_sequencing'] = []
                 grouped_filters['RNA_sequencing'].append({'filter': str(key), 'value': str(value)})
+        # BQ-only format
+        elif keyType == 'MUT':
+            # If it's first in the list, don't append an "and"
+            params = {}
+            value_tuple += (params,)
+
+            if first:
+                first = False
+            else:
+                big_query_str += ' AND'
+
+            big_query_str += " %s = '{hugo_symbol}' AND " % 'Hugo_Symbol'
+            params['gene'] = gene
+
+            if(key == 'category'):
+                if value == 'any':
+                    big_query_str += '%s IS NOT NULL' % 'Variant_Classification'
+                    params['var_class'] = ''
+                else:
+                    big_query_str += '%s IN ({var_class})' % 'Variant_Classification'
+                    values = MOLECULAR_CATEGORIES[value]
+            else:
+                big_query_str += '%s IN ({var_class})' % 'Variant_Classification'
+                values = value
+
+            if value != 'any':
+                if isinstance(values, list):
+                    j = 0
+                    for vclass in values:
+                        if j == 0:
+                            params['var_class'] = "'%s'" % vclass.replace("'", "\\'")
+                            j = 1
+                        else:
+                            params['var_class'] += ",'%s'" % vclass.replace("'", "\\'")
+                else:
+                    params['var_class'] = "'%s'" % values.replace("'", "\\'")
+
         else:
             # If it's first in the list, don't append an "and"
             if first:

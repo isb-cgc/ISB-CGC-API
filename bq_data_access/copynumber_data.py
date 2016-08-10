@@ -68,7 +68,7 @@ class CNVRFeatureDef(object):
 class CNVRFeatureProvider(FeatureDataProvider):
     TABLES = [
         {
-            'name': 'CNV',
+            'name': 'Copy_Number_segments',
             'info': 'CNV',
             'id': 'cnv'
         }
