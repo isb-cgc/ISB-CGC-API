@@ -24,6 +24,7 @@ from httplib2 import Http
 
 PEM_FILE = settings.PEM_FILE
 CLIENT_EMAIL = settings.CLIENT_EMAIL
+SUPERADMIN_FOR_REPORTS = settings.SUPERADMIN_FOR_REPORTS
 
 
 def get_reports_resource():
@@ -36,7 +37,7 @@ def get_reports_resource():
         client_email,
         private_key,
         scope='https://www.googleapis.com/auth/admin.reports.audit.readonly',
-        sub='kelly@isb-cgc.org'
+        sub=SUPERADMIN_FOR_REPORTS
         )
 
     http_auth = credentials.authorize(Http())

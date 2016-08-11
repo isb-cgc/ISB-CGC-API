@@ -367,7 +367,11 @@ ERA_LOGIN_URL                       = os.environ.get('ERA_LOGIN_URL')
 IPV4                                = os.environ.get('IPV4')
 SAML_FOLDER                         = os.environ.get('SAML_FOLDER')
 
-
+######################################
+#   For directory, reports services  #
+######################################
+GOOGLE_GROUP_WEBAPP_ADMIN           = os.environ.get('GOOGLE_GROUP_WEBAPP_ADMIN', '')
+GOOGLE_GROUP_API_ADMIN           = os.environ.get('GOOGLE_GROUP_API_ADMIN', '')
 
 ##############################
 #   Start django-finalware   #
