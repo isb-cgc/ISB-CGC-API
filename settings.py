@@ -365,8 +365,8 @@ SAML_FOLDER                         = os.environ.get('SAML_FOLDER')
 ######################################
 #   For directory, reports services  #
 ######################################
-GOOGLE_GROUP_WEBAPP_ADMIN           = os.environ.get('GOOGLE_GROUP_WEBAPP_ADMIN', '')
-GOOGLE_GROUP_API_ADMIN           = os.environ.get('GOOGLE_GROUP_API_ADMIN', '')
+GOOGLE_GROUP_ADMIN           = os.environ.get('GOOGLE_GROUP_ADMIN', '')
+SUPERADMIN_FOR_REPORTS       = os.environ.get('SUPERADMIN_FOR_REPORTS', '')
 
 ##############################
 #   Start django-finalware   #
