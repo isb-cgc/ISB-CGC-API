@@ -75,6 +75,7 @@ def write_annotation_file(rows, write_file=False):
     i = 1
     for row in rows:
         field_type = FIELD_TYPES.get(row['DATA_TYPE'])
+        if field_type.lower() == 'datetime': continue
         item_text += '%-30s = messages.%s(%d' % (row['COLUMN_NAME'], field_type, i)
         item_text += ')\n    ' if field_type is not 'IntegerField' else ', variant=messages.Variant.INT32)\n    '
         i += 1

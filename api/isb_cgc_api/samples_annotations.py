@@ -35,36 +35,36 @@ class MetadataAnnotationList(messages.Message):
     count = messages.IntegerField(2, variant=messages.Variant.INT32)
 
 
-class PatientsAnnotationsQueryBuilder(object):
+class SamplesAnnotationsQueryBuilder(object):
 
     def build_query(self):
         query_str = 'select * ' \
                     'from metadata_annotation ' \
-                    'where ParticipantBarcode=%s'
+                    'where SampleBarcode=%s'
 
         return query_str
 
 
-@ISB_CGC_Endpoints.api_class(resource_name='patients')
-class PatientsAnnotationAPI(remote.Service):
+@ISB_CGC_Endpoints.api_class(resource_name='samples')
+class SamplesAnnotationAPI(remote.Service):
 
-    GET_RESOURCE = endpoints.ResourceContainer(patient_barcode=messages.StringField(1, required=True))
+    GET_RESOURCE = endpoints.ResourceContainer(sample_barcode=messages.StringField(1, required=True))
 
     @endpoints.method(GET_RESOURCE, MetadataAnnotationList,
-                      path='patients/{patient_barcode}/annotations', http_method='GET')
+                      path='samples/{sample_barcode}/annotations', http_method='GET')
     def annotations(self, request):
         """
-        Returns TCGA annotations about a specific patient,
-        Takes a patient barcode (of length 12, *eg* TCGA-B9-7268) as a required parameter.
+        Returns TCGA annotations about a specific sample,
+        Takes a patient barcode (of length , *eg* TCGA-01-0628-11A) as a required parameter.
         User does not need to be authenticated.
         """
 
         cursor = None
         db = None
 
-        patient_barcode = request.get_assigned_value('patient_barcode')
-        query_tuple = (str(patient_barcode),)
-        query_str = PatientsAnnotationsQueryBuilder().build_query()
+        sample_barcode = request.get_assigned_value('sample_barcode')
+        query_tuple = (str(sample_barcode),)
+        query_str = SamplesAnnotationsQueryBuilder().build_query()
 
         try:
             db = sql_connection()
@@ -76,8 +76,8 @@ class PatientsAnnotationAPI(remote.Service):
             if len(rows) == 0:
                 cursor.close()
                 db.close()
-                logger.warn("Patient barcode {} not found in metadata_annotation table.".format(patient_barcode))
-                raise endpoints.NotFoundException("Patient barcode {} not found".format(patient_barcode))
+                logger.warn("Sample barcode {} not found in metadata_annotation table.".format(sample_barcode))
+                raise endpoints.NotFoundException("Sample barcode {} not found".format(sample_barcode))
 
             items = []
             for row in rows:
@@ -87,8 +87,8 @@ class PatientsAnnotationAPI(remote.Service):
             return MetadataAnnotationList(items=items, count=len(items))
 
         except (IndexError, TypeError), e:
-            logger.info("Patient {} not found. Error: {}".format(patient_barcode, e))
-            raise endpoints.NotFoundException("Patient {} not found.".format(patient_barcode))
+            logger.info("Patient {} not found. Error: {}".format(sample_barcode, e))
+            raise endpoints.NotFoundException("Patient {} not found.".format(sample_barcode))
         except MySQLdb.ProgrammingError as e:
             logger.warn("Error retrieving patient data: {}".format(e))
             raise endpoints.BadRequestException("Error retrieving patient data: {}".format(e))

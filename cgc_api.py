@@ -39,6 +39,7 @@ from api.isb_cgc_api.patients_annotations import PatientsAnnotationAPI
 from api.isb_cgc_api.samples_get import SamplesGetAPI
 from api.isb_cgc_api.samples_cloudstoragefilepaths import SamplesCloudStorageFilePathsAPI
 from api.isb_cgc_api.samples_googlegenomics import SamplesGoogleGenomicsAPI
+from api.isb_cgc_api.samples_annotations import SamplesAnnotationAPI
 from api.isb_cgc_api.users_get import UserGetAPI
 
 
@@ -68,6 +69,7 @@ APPLICATION = endpoints.api_server([
     SamplesGetAPI,
     SamplesCloudStorageFilePathsAPI,
     SamplesGoogleGenomicsAPI,
+    SamplesAnnotationAPI,
     UserGetAPI,
 ])
 
