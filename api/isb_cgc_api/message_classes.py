@@ -348,3 +348,19 @@ class MetadataItem(messages.Message):
     weight                                                            = messages.IntegerField(101, variant=messages.Variant.INT32)
     weiss_venous_invasion                                             = messages.StringField(102)
     year_of_initial_pathologic_diagnosis                              = messages.IntegerField(103, variant=messages.Variant.INT32)
+
+
+class MetadataAnnotationItem(messages.Message):
+    AliquotBarcode                 = messages.StringField(1)
+    annotationCategoryId           = messages.IntegerField(2, variant=messages.Variant.INT32)
+    annotationCategoryName         = messages.StringField(3)
+    annotationClassification       = messages.StringField(4)
+    annotationClassificationId     = messages.IntegerField(5, variant=messages.Variant.INT32)
+    annotationId                   = messages.IntegerField(6, variant=messages.Variant.INT32)
+    annotationNoteText             = messages.StringField(7)
+    itemBarcode                    = messages.StringField(8)
+    itemTypeId                     = messages.IntegerField(9, variant=messages.Variant.INT32)
+    itemTypeName                   = messages.StringField(10)
+    ParticipantBarcode             = messages.StringField(11)
+    SampleBarcode                  = messages.StringField(12)
+    Study                          = messages.StringField(13)
