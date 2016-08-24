@@ -49,9 +49,9 @@ class PatientsAnnotationAPI(remote.Service):
 
     GET_RESOURCE = endpoints.ResourceContainer(patient_barcode=messages.StringField(1, required=True))
 
-    @endpoints.method(GET_RESOURCE, MetadataAnnotationItem,
+    @endpoints.method(GET_RESOURCE, MetadataAnnotationList,
                       path='patients/{patient_barcode}/annotations', http_method='GET')
-    def get(self, request):
+    def annotations(self, request):
         """
         Returns TCGA annotations about a specific patient,
         Takes a patient barcode (of length 12, *eg* TCGA-B9-7268) as a required parameter.
@@ -89,8 +89,8 @@ class PatientsAnnotationAPI(remote.Service):
             logger.info("Patient {} not found. Error: {}".format(patient_barcode, e))
             raise endpoints.NotFoundException("Patient {} not found.".format(patient_barcode))
         except MySQLdb.ProgrammingError as e:
-            logger.warn("Error retrieving patient, sample, or aliquot data: {}".format(e))
-            raise endpoints.BadRequestException("Error retrieving patient, sample, or aliquot data: {}".format(e))
+            logger.warn("Error retrieving patient data: {}".format(e))
+            raise endpoints.BadRequestException("Error retrieving patient data: {}".format(e))
         finally:
             if cursor: cursor.close()
             if db and db.open: db.close()
