@@ -1860,13 +1860,15 @@ class Meta_Endpoints_API(remote.Service):
             try:
                 user_id = Django_User.objects.get(email=user_email).id
             except (ObjectDoesNotExist, MultipleObjectsReturned), e:
-                logger.warn(e)
+                logger.error(e)
+                logger.error(traceback.format_exc())
                 request_finished.send(self)
                 raise endpoints.NotFoundException("%s does not have an entry in the user database." % user_email)
             try:
                 cohort_perm = Cohort_Perms.objects.get(cohort_id=cohort_id, user_id=user_id)
             except (ObjectDoesNotExist, MultipleObjectsReturned), e:
                 logger.warn(e)
+                logger.error(traceback.format_exc())
                 request_finished.send(self)
                 raise endpoints.UnauthorizedException("%s does not have permission to view cohort %d." % (user_email, cohort_id))
 
@@ -1874,9 +1876,10 @@ class Meta_Endpoints_API(remote.Service):
                 nih_user = NIH_User.objects.get(user_id=user_id)
                 is_dbGaP_authorized = nih_user.dbGaP_authorized and nih_user.active
             except (ObjectDoesNotExist, MultipleObjectsReturned), e:
-                logger.info("%s does not have an entry in NIH_User: %s" % (user_email, str(e)))
+                logger.error("%s does not have an entry in NIH_User: %s" % (user_email, str(e)))
+                logger.error(traceback.format_exc())
         else:
-            logger.warn("Authentication required for cohort_files endpoint.")
+            logger.error("Authentication required for cohort_files endpoint.")
             raise endpoints.UnauthorizedException("No user email found.")
 
         if request.__getattribute__('page') is not None:
@@ -1905,7 +1908,9 @@ class Meta_Endpoints_API(remote.Service):
                     in_clause += ',%s'
             in_clause += ')'
         except (IndexError, TypeError):
-            raise endpoints.ServiceException('Error getting sample list')
+            logger.error("Error obtaining list of samples in cohort file list")
+            logger.error(traceback.format_exc())
+            raise endpoints.ServiceException('Error obtaining list of samples in cohort file list')
         finally:
             if cursor: cursor.close()
             if db and db.open: db.close()
@@ -1976,7 +1981,9 @@ class Meta_Endpoints_API(remote.Service):
                     file_list.append(FileDetails(sample='None', filename='', pipeline='', platform='', datalevel=''))
             return SampleFiles(total_file_count=count, page=page, platform_count_list=platform_count_list, file_list=file_list)
 
-        except (IndexError, TypeError):
+        except Exception as e:
+            logger.error("Error obtaining platform counts")
+            logger.error(traceback.format_exc())
             raise endpoints.ServiceException('Error getting counts')
         finally:
             if cursor: cursor.close()
