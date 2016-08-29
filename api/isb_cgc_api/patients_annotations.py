@@ -37,18 +37,29 @@ class MetadataAnnotationList(messages.Message):
 
 class PatientsAnnotationsQueryBuilder(object):
 
-    def build_query(self):
+    @staticmethod
+    def build_query(item_type_name=None):
         query_str = 'select * ' \
                     'from metadata_annotation ' \
-                    'where ParticipantBarcode=%s'
+                    'where ParticipantBarcode=%s '
+        if item_type_name is not None:
+            query_str += 'and itemTypeName=%s'
 
         return query_str
 
+    @staticmethod
+    def build_metadata_samples_query():
+        query_str = 'select * ' \
+                    'from metadata_samples ' \
+                    'where ParticipantBarcode=%s '
+
+        return query_str
 
 @ISB_CGC_Endpoints.api_class(resource_name='patients')
 class PatientsAnnotationAPI(remote.Service):
 
-    GET_RESOURCE = endpoints.ResourceContainer(patient_barcode=messages.StringField(1, required=True))
+    GET_RESOURCE = endpoints.ResourceContainer(patient_barcode=messages.StringField(1, required=True),
+                                               item_type_name=messages.StringField(2))
 
     @endpoints.method(GET_RESOURCE, MetadataAnnotationList,
                       path='patients/{patient_barcode}/annotations', http_method='GET')
@@ -63,8 +74,28 @@ class PatientsAnnotationAPI(remote.Service):
         db = None
 
         patient_barcode = request.get_assigned_value('patient_barcode')
-        query_tuple = (str(patient_barcode),)
-        query_str = PatientsAnnotationsQueryBuilder().build_query()
+        # check to make sure patient_barcode is in correct form
+        try:
+            parts = patient_barcode.split('-')
+            assert len(parts) == 3
+            assert len(parts[0]) == 4
+            assert len(parts[1]) == 2
+            assert len(parts[2]) == 4
+        except AssertionError:
+            raise endpoints.BadRequestException('{} is not the correct format for a patient barcode. '
+                                                'Patient barcodes must be of the form XXXX-XX-XXXX'.format(patient_barcode))
+
+        item_type_name = request.get_assigned_value('item_type_name')
+        # check to make sure item_type_name is valid
+        if item_type_name is not None:
+            item_type_name = item_type_name.strip()
+            if item_type_name.lower() not in ['patient', 'aliquot', 'analyte', 'shipped portion', 'portion', 'slide', 'sample']:
+                raise endpoints.BadRequestException("'{}' is not a valid entry for item_type_name. "
+                                                    "Valid entries include 'Patient', 'Aliquot', 'Analyte', 'Shipped Portion', "
+                                                    "'Portion', 'Slide', and 'Sample'".format(item_type_name))
+        query_tuple = (str(patient_barcode),) if item_type_name is None else (str(patient_barcode), str(item_type_name))
+        query_str = PatientsAnnotationsQueryBuilder().build_query(item_type_name=item_type_name)
+        metadata_samples_query_str = PatientsAnnotationsQueryBuilder().build_metadata_samples_query()
 
         try:
             db = sql_connection()
@@ -73,11 +104,21 @@ class PatientsAnnotationAPI(remote.Service):
             # build annotation message
             cursor.execute(query_str, query_tuple)
             rows = cursor.fetchall()
+            cursor.execute(metadata_samples_query_str, (str(patient_barcode),))
+            metadata_sample_rows = cursor.fetchall()
             if len(rows) == 0:
                 cursor.close()
                 db.close()
-                logger.warn("Patient barcode {} not found in metadata_annotation table.".format(patient_barcode))
-                raise endpoints.NotFoundException("Patient barcode {} not found".format(patient_barcode))
+                if len(metadata_sample_rows) == 0:
+                    msg = "Patient barcode {} not found in the database.".format(patient_barcode)
+                    logger.info(msg)
+                else:
+                    msg = "No annotations found for patient barcode {}".format(patient_barcode)
+                    if item_type_name is not None:
+                        msg += " and item type name {}. Item type name must be one of the following: " \
+                               "'Patient', 'Aliquot', 'Analyte', 'Shipped Portion', 'Portion', 'Slide', 'Sample'.".format(item_type_name)
+                    logger.info(msg)
+                raise endpoints.NotFoundException(msg)
 
             items = []
             for row in rows:
