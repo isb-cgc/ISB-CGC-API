@@ -17,6 +17,9 @@ limitations under the License.
 """
 
 import logging
+import json
+import math
+import traceback
 
 from endpoints import api as endpoints_api, method as endpoints_method
 from endpoints import NotFoundException, InternalServerErrorException
@@ -33,6 +36,8 @@ from bq_data_access.data_access import FeatureIdQueryDescription
 from api.pairwise import PairwiseInputVector, Pairwise
 from api.pairwise_api import PairwiseResults, PairwiseResultVector, PairwiseFilterMessage
 import sys
+
+logger = logging.getLogger(__name__)
 
 class DataRequest(Message):
     feature_id = StringField(1, required=True)
@@ -55,8 +60,9 @@ class PlotDataRequest(Message):
     x_id = StringField(1, required=True)
     y_id = StringField(2, required=False)
     c_id = StringField(3, required=False)
-    cohort_id = IntegerField(4, repeated=True)
-    pairwise = BooleanField(5, required=False)
+    log_transform = StringField(4, required=False)
+    cohort_id = IntegerField(5, repeated=True)
+    pairwise = BooleanField(6, required=False)
 
 
 class PlotDataPointCohortMemberships(Message):
@@ -165,25 +171,33 @@ class FeatureDataEndpoints(remote.Service):
     def get_pairwise_result(self, feature_array):
         # Format the feature vectors for pairwise
         input_vectors = Pairwise.prepare_feature_vector(feature_array)
-        outputs = Pairwise.run_pairwise(input_vectors)
+        outputs = None
+        results = None
 
-        results = PairwiseResults(result_vectors=[], filter_messages=[])
-        if outputs is not None:
-            for row_label, row in outputs.items():
-                if type(row) is dict:
-                    results.result_vectors.append(PairwiseResultVector(feature_1=row['feature_A'],
-                                                                       feature_2=row['feature_B'],
-                                                                       comparison_type=row['comparison_type'],
-                                                                       correlation_coefficient=row['correlation_coefficient'],
-                                                                       n=int(row['n']),
-                                                                       _logp=float(row['_logp']),
-                                                                       n_A=int(row['n_A']),
-                                                                       p_A=float(row['p_A']),
-                                                                       n_B=int(row['n_B']),
-                                                                       p_B=float(row['p_B']),
-                                                                       exclusion_rules=row['exclusion_rules']))
-                elif type(row) is unicode:
-                    results.filter_messages.append(PairwiseFilterMessage(filter_message=row[0]))
+        try:
+            outputs = Pairwise.run_pairwise(input_vectors)
+
+            if outputs is not None:
+                results = PairwiseResults(result_vectors=[], filter_messages=[])
+                for row_label, row in outputs.items():
+                    if type(row) is dict:
+                        results.result_vectors.append(PairwiseResultVector(feature_1=row['feature_A'],
+                                                                           feature_2=row['feature_B'],
+                                                                           comparison_type=row['comparison_type'],
+                                                                           correlation_coefficient=row['correlation_coefficient'],
+                                                                           n=int(row['n']),
+                                                                           _logp=float(row['_logp']),
+                                                                           n_A=int(row['n_A']),
+                                                                           p_A=float(row['p_A']),
+                                                                           n_B=int(row['n_B']),
+                                                                           p_B=float(row['p_B']),
+                                                                           exclusion_rules=row['exclusion_rules']))
+                    elif type(row) is unicode:
+                        results.filter_messages.append(PairwiseFilterMessage(filter_message=row[0]))
+        except Exception as e:
+            outputs = None
+            results = None
+            logger.error(traceback.format_exc())
 
         return results
 
@@ -193,7 +207,7 @@ class FeatureDataEndpoints(remote.Service):
 
     # TODO refactor missing value logic out of this module
     @DurationLogged('FEATURE', 'GET_VECTORS')
-    def get_merged_feature_vectors(self, x_id, y_id, c_id, cohort_id_array):
+    def get_merged_feature_vectors(self, x_id, y_id, c_id, cohort_id_array, logTransform):
         """
         Fetches and merges data for two or three feature vectors (see parameter documentation below).
         The vectors have to be an array of dictionaries, with each dictionary containing a 'value' field
@@ -247,8 +261,39 @@ class FeatureDataEndpoints(remote.Service):
             c_type, c_vec = async_result[c_id]['type'], async_result[c_id]['data']
         if y_id is not None:
             y_type, y_vec = async_result[y_id]['type'], async_result[y_id]['data']
+            if logTransform is not None and logTransform['y'] and y_vec:
+                print >> sys.stdout, "Before transform: " + y_vec.__str__()
+                for ydata in y_vec:
+                    if 'value' in ydata and ydata['value'] != 0:
+                        if logTransform['yBase'] == 10:
+                            ydata['value'] = str(math.log10((float(ydata['value']) + 1)))
+                        elif logTransform['yBase'] == 'e':
+                            ydata['value'] = str(math.log((float(ydata['value']) + 1)))
+                        elif type(logTransform['yBase']) is int:
+                            ydata['value'] = str(math.log((float(ydata['value']) + 1), logTransform['yBase']))
+                        else:
+                            logger.warn(
+                                "[WARNING] No valid log base was supplied - log transformation will not be applied!"
+                            )
+                print >> sys.stdout, "After transform: " + y_vec.__str__()
 
         x_type, x_vec = async_result[x_id]['type'], async_result[x_id]['data']
+
+        if logTransform is not None and logTransform['x'] and x_vec:
+            print >> sys.stdout, "Before transform: " + x_vec.__str__()
+            for xdata in x_vec:
+                if 'value' in xdata and xdata['value'] != 0:
+                    if logTransform['xBase'] == 10:
+                        xdata['value'] = str(math.log10((float(xdata['value']) + 1)))
+                    elif logTransform['xBase'] == 'e':
+                        xdata['value'] = str(math.log((float(xdata['value']) + 1)))
+                    elif type(logTransform['xBase']) is int:
+                        xdata['value'] = str(math.log((float(xdata['value'])+1), logTransform['xBase']))
+                    else:
+                        logger.warn(
+                            "[WARNING] No valid log base was supplied - log transformation will not be applied!"
+                        )
+            print >> sys.stdout, "After transform: " + x_vec.__str__()
 
         vms = VectorMergeSupport('NA', 'sample_id', ['x', 'y', 'c']) # changed so that it plots per sample not patient
         vms.add_dict_array(x_vec, 'x', 'value')
@@ -275,8 +320,10 @@ class FeatureDataEndpoints(remote.Service):
             # TODO FIX - this check shouldn't be needed
             if sample_id in cohort_set_dict:
                 cohort_set = cohort_set_dict[sample_id]
+
             if len(cohort_set) >= DATAPOINT_COHORT_THRESHOLD:
                 value_bundle['cohort'] = cohort_set
+
             items.append(PlotDataPoint(**value_bundle))
 
         counts = self.get_counts(merged)
@@ -296,14 +343,12 @@ class FeatureDataEndpoints(remote.Service):
             input_vectors.append(PairwiseInputVector(y_id, y_type, y_vec))
 
         pairwise_result = None
-        try:
-            if len(input_vectors) > 1:
-                pairwise_result = self.get_pairwise_result(input_vectors)
-            else:
-                pairwise_result = None
-        except Exception as e:
-            logging.warn("Pairwise results not included in returned object")
-            logging.exception(e)
+
+        if len(input_vectors) > 1:
+            pairwise_result = self.get_pairwise_result(input_vectors)
+
+        if pairwise_result is None:
+            logger.warn("[WARNING] Pairwise results not included in returned object")
 
         return PlotDataResponse(types=type_message, labels=label_message, items=items,
                                 cohort_set=cohort_info_obj_array,
@@ -334,6 +379,7 @@ class FeatureDataEndpoints(remote.Service):
             x_id = request.x_id
             y_id = request.y_id
             c_id = request.c_id
+            logTransform = json.loads(request.log_transform)
             cohort_id_array = request.cohort_id
 
             # Check that all requested feature identifiers are valid. Do not check for y_id if it is not
@@ -352,11 +398,11 @@ class FeatureDataEndpoints(remote.Service):
                     logging.error("Invalid internal feature ID '{}'".format(feature_id))
                     raise NotFoundException()
 
-            return self.get_merged_feature_vectors(x_id, y_id, c_id, cohort_id_array)
+            return self.get_merged_feature_vectors(x_id, y_id, c_id, cohort_id_array, logTransform)
         except NotFoundException as nfe:
             # Pass through NotFoundException so that it is not handled as Exception below.
             raise nfe
         except Exception as e:
-            logging.exception(e)
+            logger.exception(e)
             raise InternalServerErrorException()
 
