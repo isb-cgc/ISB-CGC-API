@@ -20,6 +20,7 @@ import json
 import base64
 import logging
 import urllib
+import traceback
 
 from google.appengine.api import urlfetch
 from django.conf import settings
@@ -28,6 +29,7 @@ from bq_data_access.data_access import get_feature_vector
 from bq_data_access.feature_value_types import ValueType
 from bq_data_access.utils import VectorMergeSupport
 
+logger = logging.getLogger(__name__)
 
 class PairwiseInputVector(object):
     def __init__(self, feature_id, value_type, data):
@@ -133,12 +135,10 @@ class Pairwise(object):
 
         try:
             pairwise_response = urlfetch.fetch(url=url, payload=data, method=urlfetch.POST)
-        except Exception as e:
-            # TODO: Log error details
-            logging.exception(e)
-        else:
-            # Return the response
             response = pairwise_response.content
             decoded_response = json.loads(base64.b64decode(response))
-            logging.debug(decoded_response)
+        except Exception as e:
+            decoded_response = None
+            logger.error(traceback.format_exc())
+
         return decoded_response
