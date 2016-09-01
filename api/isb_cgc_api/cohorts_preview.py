@@ -41,9 +41,9 @@ class CohortPatientsSamplesList(messages.Message):
 @ISB_CGC_Endpoints.api_class(resource_name='cohorts')
 class CohortsPreviewAPI(remote.Service):
 
-    POST_RESOURCE = endpoints.ResourceContainer(MetadataRangesItem)
+    GET_RESOURCE = endpoints.ResourceContainer(**{field.name: field for field in MetadataRangesItem.all_fields()})
 
-    @endpoints.method(POST_RESOURCE, CohortPatientsSamplesList, path='cohorts/preview')
+    @endpoints.method(GET_RESOURCE, CohortPatientsSamplesList, path='cohorts/preview', http_method='GET')
     def preview(self, request):
         """
         Takes a JSON object of filters in the request body and returns a "preview" of the cohort that would
@@ -63,9 +63,6 @@ class CohortsPreviewAPI(remote.Service):
         patient_query_str, sample_query_str, value_tuple = CohortsCreatePreviewQueryBuilder().build_query(
             query_dict, gte_query_dict, lte_query_dict)
 
-        print '\nsample_query_str'
-        print sample_query_str
-        print value_tuple
         patient_barcodes = []
         sample_barcodes = []
 
