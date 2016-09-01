@@ -70,8 +70,6 @@ def get_axis_units(xAttr, yAttr):
             units[checkUnits[attr]] = 'count'
         elif 'RPPA:' in attr:
             units[checkUnits[attr]] = 'protein expression'
-        elif 'GNAB:' in attr:
-            units[checkUnits[attr]] = 'log(CN/2)'
         elif 'METH:' in attr:
             units[checkUnits[attr]] = 'beta value'
         elif 'MIRN:' in attr:
