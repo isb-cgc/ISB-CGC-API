@@ -26,7 +26,7 @@ from endpoints import NotFoundException, InternalServerErrorException
 from protorpc import remote
 from protorpc.messages import BooleanField, EnumField, IntegerField, Message, MessageField, StringField
 
-from bq_data_access.feature_value_types import ValueType
+from bq_data_access.feature_value_types import ValueType, is_log_transformable
 from bq_data_access.data_access import is_valid_feature_identifier, get_feature_vectors_tcga_only, get_feature_vectors_with_user_data
 from bq_data_access.utils import VectorMergeSupport
 from bq_data_access.cohort_cloudsql import CloudSQLCohortAccess
@@ -38,6 +38,43 @@ from api.pairwise_api import PairwiseResults, PairwiseResultVector, PairwiseFilt
 import sys
 
 logger = logging.getLogger(__name__)
+
+
+VIZ_UNIT_DATADICTIONARY = {
+    'bmi': 'kg/m^2',
+}
+
+
+def get_axis_units(xAttr, yAttr):
+    units = {'x': '', 'y': ''}
+
+    checkUnits = {}
+    if xAttr is not None:
+        checkUnits[xAttr] = 'x'
+    if yAttr is not None:
+        checkUnits[yAttr] = 'y'
+
+    for attr in checkUnits:
+
+        if '_age' in attr or 'age_' in attr or 'year_' in attr:
+            units[checkUnits[attr]] = 'years'
+        elif '_days' in attr or 'days_' in attr:
+            units[checkUnits[attr]] = 'days'
+        elif 'percent' in attr:
+            units[checkUnits[attr]] = 'percent'
+        elif 'CNVR:' in attr:
+            units[checkUnits[attr]] = 'log(CN/2)'
+        elif 'RPPA:' in attr:
+            units[checkUnits[attr]] = 'protein expression'
+        elif 'METH:' in attr:
+            units[checkUnits[attr]] = 'beta value'
+        elif 'GEXP:' in attr or 'MIRN:' in attr or ('GNAB:' in attr and "num_mutations" in attr):
+            units[checkUnits[attr]] = 'count'
+        elif attr.split(':')[1] in VIZ_UNIT_DATADICTIONARY:
+            units[checkUnits[attr]] = VIZ_UNIT_DATADICTIONARY[attr.split(':')[1]]
+
+    return units
+
 
 class DataRequest(Message):
     feature_id = StringField(1, required=True)
@@ -118,6 +155,8 @@ class PlotDataResponse(Message):
     cohort_set = MessageField(PlotDataCohortInfo, 4, repeated=True)
     counts = MessageField(PlotDatapointCount, 5)
     pairwise_result = MessageField(PairwiseResults, 6, required=False)
+    xUnits = StringField(7, required=False)
+    yUnits = StringField(8, required=False)
 
 
 FeatureDataEndpointsAPI = endpoints_api(name='feature_data_api', version='v1',
@@ -250,6 +289,8 @@ class FeatureDataEndpoints(remote.Service):
         c_type, c_vec = ValueType.STRING, []
         y_type, y_vec = ValueType.STRING, []
 
+        units = get_axis_units(x_id, y_id)
+
         if c_id is not None:
             async_params.append(FeatureIdQueryDescription(c_id, cohort_id_array))
         if y_id is not None:
@@ -261,10 +302,9 @@ class FeatureDataEndpoints(remote.Service):
             c_type, c_vec = async_result[c_id]['type'], async_result[c_id]['data']
         if y_id is not None:
             y_type, y_vec = async_result[y_id]['type'], async_result[y_id]['data']
-            if logTransform is not None and logTransform['y'] and y_vec:
-                print >> sys.stdout, "Before transform: " + y_vec.__str__()
+            if logTransform is not None and logTransform['y'] and y_vec and is_log_transformable(y_type):
                 for ydata in y_vec:
-                    if 'value' in ydata and ydata['value'] != 0:
+                    if 'value' in ydata and ydata['value'] != 0 and ydata['value'] is not None and ydata['value'] != "NA" and ydata['value'] != "None":
                         if logTransform['yBase'] == 10:
                             ydata['value'] = str(math.log10((float(ydata['value']) + 1)))
                         elif logTransform['yBase'] == 'e':
@@ -275,14 +315,12 @@ class FeatureDataEndpoints(remote.Service):
                             logger.warn(
                                 "[WARNING] No valid log base was supplied - log transformation will not be applied!"
                             )
-                print >> sys.stdout, "After transform: " + y_vec.__str__()
 
         x_type, x_vec = async_result[x_id]['type'], async_result[x_id]['data']
 
-        if logTransform is not None and logTransform['x'] and x_vec:
-            print >> sys.stdout, "Before transform: " + x_vec.__str__()
+        if logTransform is not None and logTransform['x'] and x_vec and is_log_transformable(x_type):
             for xdata in x_vec:
-                if 'value' in xdata and xdata['value'] != 0:
+                if 'value' in xdata and xdata['value'] != 0 and xdata['value'] is not None and xdata['value'] != "NA" and xdata['value'] != "None":
                     if logTransform['xBase'] == 10:
                         xdata['value'] = str(math.log10((float(xdata['value']) + 1)))
                     elif logTransform['xBase'] == 'e':
@@ -293,7 +331,6 @@ class FeatureDataEndpoints(remote.Service):
                         logger.warn(
                             "[WARNING] No valid log base was supplied - log transformation will not be applied!"
                         )
-            print >> sys.stdout, "After transform: " + x_vec.__str__()
 
         vms = VectorMergeSupport('NA', 'sample_id', ['x', 'y', 'c']) # changed so that it plots per sample not patient
         vms.add_dict_array(x_vec, 'x', 'value')
@@ -342,6 +379,7 @@ class FeatureDataEndpoints(remote.Service):
         if y_id is not None:
             input_vectors.append(PairwiseInputVector(y_id, y_type, y_vec))
 
+
         pairwise_result = None
 
         if len(input_vectors) > 1:
@@ -352,7 +390,7 @@ class FeatureDataEndpoints(remote.Service):
 
         return PlotDataResponse(types=type_message, labels=label_message, items=items,
                                 cohort_set=cohort_info_obj_array,
-                                counts=count_message, pairwise_result=pairwise_result)
+                                counts=count_message, pairwise_result=pairwise_result, xUnits=units['x'], yUnits=units['y'])
 
     def get_feature_id_validity_for_array(self, feature_id_array):
         """
