@@ -26,7 +26,7 @@ from endpoints import NotFoundException, InternalServerErrorException
 from protorpc import remote
 from protorpc.messages import BooleanField, EnumField, IntegerField, Message, MessageField, StringField
 
-from bq_data_access.feature_value_types import ValueType
+from bq_data_access.feature_value_types import ValueType, is_log_transformable
 from bq_data_access.data_access import is_valid_feature_identifier, get_feature_vectors_tcga_only, get_feature_vectors_with_user_data
 from bq_data_access.utils import VectorMergeSupport
 from bq_data_access.cohort_cloudsql import CloudSQLCohortAccess
@@ -53,8 +53,6 @@ def get_axis_units(xAttr, yAttr):
         checkUnits[xAttr] = 'x'
     if yAttr is not None:
         checkUnits[yAttr] = 'y'
-
-    print >> sys.stdout, (xAttr if xAttr is not None else 'None') + ":" + (yAttr if yAttr is not None else 'None')
 
     for attr in checkUnits:
 
@@ -304,9 +302,9 @@ class FeatureDataEndpoints(remote.Service):
             c_type, c_vec = async_result[c_id]['type'], async_result[c_id]['data']
         if y_id is not None:
             y_type, y_vec = async_result[y_id]['type'], async_result[y_id]['data']
-            if logTransform is not None and logTransform['y'] and y_vec:
+            if logTransform is not None and logTransform['y'] and y_vec and is_log_transformable(y_type):
                 for ydata in y_vec:
-                    if 'value' in ydata and ydata['value'] != 0:
+                    if 'value' in ydata and ydata['value'] != 0 and ydata['value'] is not None and ydata['value'] != "NA" and ydata['value'] != "None":
                         if logTransform['yBase'] == 10:
                             ydata['value'] = str(math.log10((float(ydata['value']) + 1)))
                         elif logTransform['yBase'] == 'e':
@@ -320,9 +318,9 @@ class FeatureDataEndpoints(remote.Service):
 
         x_type, x_vec = async_result[x_id]['type'], async_result[x_id]['data']
 
-        if logTransform is not None and logTransform['x'] and x_vec:
+        if logTransform is not None and logTransform['x'] and x_vec and is_log_transformable(x_type):
             for xdata in x_vec:
-                if 'value' in xdata and xdata['value'] != 0:
+                if 'value' in xdata and xdata['value'] != 0 and xdata['value'] is not None and xdata['value'] != "NA" and xdata['value'] != "None":
                     if logTransform['xBase'] == 10:
                         xdata['value'] = str(math.log10((float(xdata['value']) + 1)))
                     elif logTransform['xBase'] == 'e':
