@@ -66,13 +66,11 @@ def get_axis_units(xAttr, yAttr):
             units[checkUnits[attr]] = 'percent'
         elif 'CNVR:' in attr:
             units[checkUnits[attr]] = 'log(CN/2)'
-        elif 'GEXP:' in attr:
-            units[checkUnits[attr]] = 'count'
         elif 'RPPA:' in attr:
             units[checkUnits[attr]] = 'protein expression'
         elif 'METH:' in attr:
             units[checkUnits[attr]] = 'beta value'
-        elif 'MIRN:' in attr:
+        elif 'GEXP:' in attr or 'MIRN:' in attr or ('GNAB:' in attr and "num_mutations" in attr):
             units[checkUnits[attr]] = 'count'
         elif attr.split(':')[1] in VIZ_UNIT_DATADICTIONARY:
             units[checkUnits[attr]] = VIZ_UNIT_DATADICTIONARY[attr.split(':')[1]]
