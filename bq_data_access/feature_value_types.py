@@ -18,6 +18,7 @@ limitations under the License.
 
 from protorpc.messages import Enum
 
+
 def enum(**enums):
     return type('Enum', (), enums)
 
@@ -28,6 +29,10 @@ class ValueType(Enum):
     FLOAT = 3
     BOOLEAN = 4
     UNKNOWN = 5 # We can get queries that return no data, which may be of an unknown type
+
+
+def is_log_transformable(attr_type):
+    return isinstance(attr_type, ValueType) and (attr_type == ValueType.FLOAT or attr_type == ValueType.INTEGER)
 
 IdentifierTypes = enum(PATIENT=1, SAMPLE=2, ALIQUOT=3)
 DataTypes = enum(CLIN=1, GEXP=2, METH=3, CNVR=4, RPPA=5, MIRN=6, GNAB=7, USER=8)

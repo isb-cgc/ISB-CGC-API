@@ -42,8 +42,8 @@ class SamplesAnnotationsQueryBuilder(object):
         query_str = 'select * ' \
                     'from metadata_annotation ' \
                     'where SampleBarcode=%s'
-        if item_type_name is not None:
-            query_str += 'and itemTypeName=%s'
+        if len(item_type_name) > 0:
+            query_str += 'and itemTypeName in (' + ', '.join(['%s']*len(item_type_name)) + ')'
 
         return query_str
 
@@ -60,7 +60,7 @@ class SamplesAnnotationsQueryBuilder(object):
 class SamplesAnnotationAPI(remote.Service):
 
     GET_RESOURCE = endpoints.ResourceContainer(sample_barcode=messages.StringField(1, required=True),
-                                               item_type_name=messages.StringField(2))
+                                               item_type_name=messages.StringField(2, repeated=True))
 
     @endpoints.method(GET_RESOURCE, MetadataAnnotationList,
                       path='samples/{sample_barcode}/annotations', http_method='GET')
@@ -75,6 +75,7 @@ class SamplesAnnotationAPI(remote.Service):
         db = None
 
         sample_barcode = request.get_assigned_value('sample_barcode')
+        query_tuple = (str(sample_barcode),)
         # check to make sure sample_barcode is in correct form
         try:
             parts = sample_barcode.split('-')
@@ -89,14 +90,16 @@ class SamplesAnnotationAPI(remote.Service):
 
         item_type_name = request.get_assigned_value('item_type_name')
         # check to make sure item_type_name is valid
-        if item_type_name is not None:
-            item_type_name = item_type_name.strip()
-            if item_type_name.lower() not in ['patient', 'aliquot', 'analyte', 'shipped portion', 'portion', 'slide', 'sample']:
-                raise endpoints.BadRequestException("'{}' is not a valid entry for item_type_name. "
-                                                    "Valid entries include 'Patient', 'Aliquot', 'Analyte', 'Shipped Portion', "
-                                                    "'Portion', 'Slide', and 'Sample'".format(item_type_name))
+        # check to make sure each item_type_name is valid
+        if len(item_type_name) > 0:
+            for itm in item_type_name:
+                itm = itm.strip()
+                if itm.lower() not in ['patient', 'aliquot', 'analyte', 'shipped portion', 'portion', 'slide', 'sample']:
+                    raise endpoints.BadRequestException("'{}' is not a valid entry for item_type_name. "
+                                                        "Valid entries include 'Patient', 'Aliquot', 'Analyte', 'Shipped Portion', "
+                                                        "'Portion', 'Slide', and 'Sample'".format(itm))
+                query_tuple += (itm,)
 
-        query_tuple = (str(sample_barcode),) if item_type_name is None else (str(sample_barcode), str(item_type_name))
         query_str = SamplesAnnotationsQueryBuilder().build_query(item_type_name=item_type_name)
         metadata_samples_query_str = SamplesAnnotationsQueryBuilder().build_metadata_samples_query()
 
