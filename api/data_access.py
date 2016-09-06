@@ -304,7 +304,7 @@ class FeatureDataEndpoints(remote.Service):
             y_type, y_vec = async_result[y_id]['type'], async_result[y_id]['data']
             if logTransform is not None and logTransform['y'] and y_vec and is_log_transformable(y_type):
                 for ydata in y_vec:
-                    if 'value' in ydata and ydata['value'] != 0 and ydata['value'] is not None and ydata['value'] != "NA" and ydata['value'] != "None":
+                    if 'value' in ydata and ydata['value'] is not None and ydata['value'] != "NA" and ydata['value'] != "None":
                         if logTransform['yBase'] == 10:
                             ydata['value'] = str(math.log10((float(ydata['value']) + 1)))
                         elif logTransform['yBase'] == 'e':
@@ -319,14 +319,15 @@ class FeatureDataEndpoints(remote.Service):
         x_type, x_vec = async_result[x_id]['type'], async_result[x_id]['data']
 
         if logTransform is not None and logTransform['x'] and x_vec and is_log_transformable(x_type):
+            x_min = min([x['value'] for x in x_vec])
             for xdata in x_vec:
-                if 'value' in xdata and xdata['value'] != 0 and xdata['value'] is not None and xdata['value'] != "NA" and xdata['value'] != "None":
+                if 'value' in xdata and xdata['value'] is not None and xdata['value'] != "NA" and xdata['value'] != "None":
                     if logTransform['xBase'] == 10:
-                        xdata['value'] = str(math.log10((float(xdata['value']) + 1)))
+                        xdata['value'] = str(math.log10((float(xdata['value']) + 1 - (x_min if x_min < 0 else 0))))
                     elif logTransform['xBase'] == 'e':
-                        xdata['value'] = str(math.log((float(xdata['value']) + 1)))
+                        xdata['value'] = str(math.log((float(xdata['value']) + 1- (x_min if x_min < 0 else 0))))
                     elif type(logTransform['xBase']) is int:
-                        xdata['value'] = str(math.log((float(xdata['value'])+1), logTransform['xBase']))
+                        xdata['value'] = str(math.log((float(xdata['value'])+1- (x_min if x_min < 0 else 0)), logTransform['xBase']))
                     else:
                         logger.warn(
                             "[WARNING] No valid log base was supplied - log transformation will not be applied!"
