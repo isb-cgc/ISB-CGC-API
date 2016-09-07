@@ -303,9 +303,20 @@ class FeatureDataEndpoints(remote.Service):
         if y_id is not None:
             y_type, y_vec = async_result[y_id]['type'], async_result[y_id]['data']
             if logTransform is not None and logTransform['y'] and y_vec and is_log_transformable(y_type):
+                # If we opt to use a transform that attempts to account for values out of range for log transformation,
+                # this is the code to get the minimum y-value
+                '''
+                yvals = []
+                for yd in y_vec:
+                    if 'value' in yd and yd['value'] is not None and yd['value'] != "NA" and yd['value'] != "None":
+                        yvals.append(float(yd['value']))
+                y_min = min(yvals)
+                '''
                 for ydata in y_vec:
-                    if 'value' in ydata and ydata['value'] != 0 and ydata['value'] is not None and ydata['value'] != "NA" and ydata['value'] != "None":
-                        if logTransform['yBase'] == 10:
+                    if 'value' in ydata and ydata['value'] is not None and ydata['value'] != "NA" and ydata['value'] != "None":
+                        if float(ydata['value']) < 0:
+                            ydata['value'] = "NA"
+                        elif logTransform['yBase'] == 10:
                             ydata['value'] = str(math.log10((float(ydata['value']) + 1)))
                         elif logTransform['yBase'] == 'e':
                             ydata['value'] = str(math.log((float(ydata['value']) + 1)))
@@ -319,14 +330,26 @@ class FeatureDataEndpoints(remote.Service):
         x_type, x_vec = async_result[x_id]['type'], async_result[x_id]['data']
 
         if logTransform is not None and logTransform['x'] and x_vec and is_log_transformable(x_type):
+            # If we opt to use a transform that attempts to account for values out of range for log transformation,
+            # this is the code to get the minimum x-value
+            '''
+            xvals = []
+            for xd in x_vec:
+                if 'value' in xd and xd['value'] is not None and xd['value'] != "NA" and xd['value'] != "None":
+                    xvals.append(float(xd['value']))
+            x_min = min(xvals)
+            '''
+
             for xdata in x_vec:
-                if 'value' in xdata and xdata['value'] != 0 and xdata['value'] is not None and xdata['value'] != "NA" and xdata['value'] != "None":
-                    if logTransform['xBase'] == 10:
+                if 'value' in xdata and xdata['value'] is not None and xdata['value'] != "NA" and xdata['value'] != "None":
+                    if float(xdata['value']) < 0:
+                        xdata['value'] = "NA"
+                    elif logTransform['xBase'] == 10:
                         xdata['value'] = str(math.log10((float(xdata['value']) + 1)))
                     elif logTransform['xBase'] == 'e':
                         xdata['value'] = str(math.log((float(xdata['value']) + 1)))
                     elif type(logTransform['xBase']) is int:
-                        xdata['value'] = str(math.log((float(xdata['value'])+1), logTransform['xBase']))
+                        xdata['value'] = str(math.log((float(xdata['value']) + 1), logTransform['xBase']))
                     else:
                         logger.warn(
                             "[WARNING] No valid log base was supplied - log transformation will not be applied!"
