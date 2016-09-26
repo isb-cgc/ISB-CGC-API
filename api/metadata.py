@@ -63,7 +63,7 @@ METADATA_SHORTLIST = [
     # 'avg_percent_tumor_nuclei',
     # 'batch_number',
     # 'bcr',
-    'bmi',
+    'BMI',
     # 'clinical_M',
     # 'clinical_N',
     # 'clinical_stage',
