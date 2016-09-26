@@ -41,7 +41,7 @@ logger = logging.getLogger(__name__)
 
 
 VIZ_UNIT_DATADICTIONARY = {
-    'bmi': 'kg/m^2',
+    'BMI': 'kg/m^2',
 }
 
 

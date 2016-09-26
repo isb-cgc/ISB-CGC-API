@@ -376,7 +376,7 @@ def build_where_clause(filters, alt_key_map=False):
                 else:
                     query_str += ' (' + sql_age_by_ranges(value) + ') '
             # If it's age ranges, give it special treament due to normalizations
-            elif key == 'bmi':
+            elif key == 'BMI':
                 if value == 'None':
                     query_str += ' %s IS NULL' % key
                 else:
