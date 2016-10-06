@@ -61,6 +61,8 @@ TABLES = [
 
 GEXP_FEATURE_TYPE = 'GEXP'
 
+GENE_LABEL_FIELD = 'HGNC_gene_symbol'
+
 
 def get_feature_type():
     return GEXP_FEATURE_TYPE
@@ -127,7 +129,7 @@ class GEXPFeatureProvider(FeatureDataProvider):
         query_template = \
             ("SELECT ParticipantBarcode AS patient_id, SampleBarcode AS sample_id, AliquotBarcode AS aliquot_id, {value_field} AS value "
              "FROM [{project_name}:{dataset_name}.{table_name}] AS gexp "
-             "WHERE original_gene_symbol='{gene_symbol}' "
+             "WHERE {gene_label_field}='{gene_symbol}' "
              "AND SampleBarcode IN ( "
              "    SELECT sample_barcode "
              "    FROM [{project_name}:{cohort_dataset}.{cohort_table}] "
@@ -135,6 +137,7 @@ class GEXPFeatureProvider(FeatureDataProvider):
              ") ")
 
         query = query_template.format(dataset_name=dataset_name, project_name=project_name, table_name=table_name,
+                                      gene_label_field=GENE_LABEL_FIELD,
                                       gene_symbol=feature_def.gene, value_field=feature_def.value_field,
                                       cohort_dataset=cohort_dataset, cohort_table=cohort_table,
                                       cohort_id_list=cohort_id_stmt)
