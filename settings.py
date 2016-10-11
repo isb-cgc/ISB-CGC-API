@@ -34,15 +34,12 @@ SSL_DIR = os.path.abspath(os.path.dirname(__file__))+os.sep
 ADMINS = ()
 MANAGERS = ADMINS
 
-REQUEST_PROJECT_EMAIL = os.environ.get('REQUEST_PROJECT_EMAIL')
-
 PROJECT_ID = os.environ.get('PROJECT_ID')
 BQ_PROJECT_ID = os.environ.get('BQ_PROJECT_ID')
-IGV_PROJECT_ID = os.environ.get('IGV_PROJECT_ID')
 
-CLOUD_BASE_URL = os.environ.get('CLOUD_BASE_URL')
-CLOUD_API_URL = os.environ.get('CLOUD_API_URL')
-LOCAL_BASE_URL = os.environ.get('LOCAL_BASE_URL')
+BASE_URL = os.environ.get('CLOUD_BASE_URL')
+BASE_API_URL = os.environ.get('CLOUD_API_URL')
+SITE_ID = 4
 
 # Compute services
 PAIRWISE_SERVICE_URL = os.environ.get('PAIRWISE_SERVICE_URL')
@@ -79,10 +76,6 @@ if os.environ.has_key('DB_SSL_CERT'):
             'key': os.environ.get('DB_SSL_KEY')
         }
     }
-BASE_URL = CLOUD_BASE_URL
-BASE_API_URL = CLOUD_API_URL
-SITE_ID = 4
-
 
 # For running local unit tests for models
 import sys
@@ -93,7 +86,6 @@ def get_project_identifier():
     return BQ_PROJECT_ID
 
 BIGQUERY_DATASET = os.environ.get('BIGQUERY_DATASET')
-BIGQUERY_DATASET2 = os.environ.get('BIGQUERY_DATASET2')
 
 def get_bigquery_dataset():
     return BIGQUERY_DATASET
@@ -353,14 +345,8 @@ INSTALLED_APP_CLIENT_ID         = os.environ.get('INSTALLED_APP_CLIENT_ID')
 #################################
 
 LOGIN_EXPIRATION_HOURS = 24
-FAKE_DBGAP_AUTHENTICATION_LIST_FILENAME  = os.environ.get('FAKE_DBGAP_AUTHENTICATION_LIST_FILENAME')
-DBGAP_AUTHENTICATION_LIST_FILENAME  = os.environ.get('DBGAP_AUTHENTICATION_LIST_FILENAME')
-DBGAP_AUTHENTICATION_LIST_BUCKET    = os.environ.get('DBGAP_AUTHENTICATION_LIST_BUCKET')
 ACL_GOOGLE_GROUP                    = os.environ.get('ACL_GOOGLE_GROUP')
 OPEN_ACL_GOOGLE_GROUP               = os.environ.get('OPEN_ACL_GOOGLE_GROUP')
-ERA_LOGIN_URL                       = os.environ.get('ERA_LOGIN_URL')
-IPV4                                = os.environ.get('IPV4')
-SAML_FOLDER                         = os.environ.get('SAML_FOLDER')
 
 ######################################
 #   For directory, reports services  #
