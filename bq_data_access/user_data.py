@@ -168,7 +168,7 @@ class UserFeatureDef(object):
                 SELECT bq_map_id, study_id, is_numeric
                 FROM projects_user_feature_definitions
                 WHERE id = %s
-            """, (feature_id,))
+            """, (user_feature_id,))
 
             results = []
             for row in cursor.fetchall():
