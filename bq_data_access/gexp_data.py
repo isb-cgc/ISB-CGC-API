@@ -26,22 +26,6 @@ from bq_data_access.utils import DurationLogged
 
 TABLES = [
     {
-        'table_id': 'mRNA_BCGSC_GA_RPKM',
-        'platform': 'Illumina GA',
-        'center': 'BCGSC',
-        'id': 'mrna_bcgsc_illumina_ga',
-        'value_label': 'RPKM',
-        'value_field': 'RPKM'
-    },
-    {
-        'table_id': 'mRNA_BCGSC_HiSeq_RPKM',
-        'platform': 'Illumina HiSeq',
-        'center': 'BCGSC',
-        'id': 'mrna_bcgsc_illumina_hiseq',
-        'value_label': 'RPKM',
-        'value_field': 'RPKM'
-    },
-    {
         'table_id': 'mRNA_UNC_GA_RSEM',
         'platform': 'Illumina GA',
         'center': 'UNC',
