@@ -45,7 +45,7 @@ class GEXPSearcher(object):
          'values': ['Illumina GA', 'Illumina HiSeq']},
         {'name': 'center',
          'label': 'Center',
-         'static': True, 'values': ['BCGSC', 'UNC']}
+         'static': True, 'values': ['UNC']}
     ]
 
     @classmethod
