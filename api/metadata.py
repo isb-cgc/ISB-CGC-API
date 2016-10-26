@@ -29,6 +29,7 @@ from accounts.models import NIH_User
 from cohorts.models import Cohort_Perms,  Cohort as Django_Cohort,Patients, Samples, Filters
 from projects.models import Study, User_Feature_Definitions, User_Feature_Counts, User_Data_Tables
 from django.core.signals import request_finished
+from time import sleep
 import django
 import sys
 import logging
@@ -36,8 +37,9 @@ import re
 import json
 import traceback
 import copy
+from uuid import uuid4
 
-from api_helpers import *
+from api.api_helpers import *
 
 logger = logging.getLogger(__name__)
 
@@ -61,13 +63,13 @@ METADATA_SHORTLIST = [
     # 'avg_percent_tumor_nuclei',
     # 'batch_number',
     # 'bcr',
-    'bmi',
+    'BMI',
     # 'clinical_M',
     # 'clinical_N',
     # 'clinical_stage',
     # 'clinical_T',
     # 'colorectal_cancer',
-    'country',
+    # 'country',
     # 'country_of_procurement',
     # 'days_to_birth',
     # 'days_to_collection',
@@ -76,7 +78,7 @@ METADATA_SHORTLIST = [
     # 'days_to_last_followup',
     # 'days_to_submitted_specimen_dx',
     'Study',
-    'ethnicity',
+    # 'ethnicity',
     # 'frozen_specimen_anatomic_site',
     'gender',
     # 'gleason_score_combined',
@@ -129,6 +131,7 @@ METADATA_SHORTLIST = [
     # 'number_of_lymphnodes_examined',
     # 'number_of_lymphnodes_positive_by_he',
     # 'number_pack_years_smoked',
+    # 'other_dx',
     # 'ParticipantBarcode',
     # 'pathologic_M',
     # 'pathologic_N',
@@ -139,10 +142,9 @@ METADATA_SHORTLIST = [
     # 'preservation_method',
     # 'primary_neoplasm_melanoma_dx',
     # 'primary_therapy_outcome_success',
-    'prior_dx',
     'Project',
     # 'psa_value',
-    'race',
+    # 'race',
     'residual_tumor',
     # 'SampleBarcode',
     'SampleTypeCode',
@@ -156,17 +158,6 @@ METADATA_SHORTLIST = [
     'vital_status'
     # 'weight',
     # 'year_of_initial_pathologic_diagnosis',
-]
-
-MUTATION_SHORTLIST = [
-    'Missense_Mutation',
-    'Frame_Shift_Ins',
-    'Frame_Shift_Del',
-    'Nonsense_Mutation',
-    'Splice_Site',
-    'Silent',
-    'RNA',
-    'Intron',
 ]
 
 metadata_dict = {
@@ -711,6 +702,54 @@ def createDataItem(data, selectors):
 class MetadataDomainItem(messages.Message):
     attribute = messages.StringField(1)
     domains = messages.StringField(2, repeated=True)
+
+
+def submit_bigquery_job(bq_service, project_id, query_body, batch=False):
+    job_data = {
+        'jobReference': {
+            'projectId': project_id,
+            'job_id': str(uuid4())
+        },
+        'configuration': {
+            'query': {
+                'query': query_body,
+                'priority': 'BATCH' if batch else 'INTERACTIVE'
+            }
+        }
+    }
+
+    return bq_service.jobs().insert(
+        projectId=project_id,
+        body=job_data).execute(num_retries=5)
+
+
+def is_bigquery_job_finished(bq_service, project_id, job_id):
+    job = bq_service.jobs().get(projectId=project_id,
+                             jobId=job_id).execute()
+
+    return job['status']['state'] == 'DONE'
+
+
+def get_bq_job_results(bq_service, job_reference):
+    result = []
+    page_token = None
+
+    while True:
+        page = bq_service.jobs().getQueryResults(
+            pageToken=page_token,
+            **job_reference).execute(num_retries=2)
+
+        if int(page['totalRows']) == 0:
+            break
+
+        rows = page['rows']
+        result.extend(rows)
+
+        page_token = page.get('pageToken')
+        if not page_token:
+            break
+
+    return result
 
 
 def generateSQLQuery(request):
@@ -1821,13 +1860,15 @@ class Meta_Endpoints_API(remote.Service):
             try:
                 user_id = Django_User.objects.get(email=user_email).id
             except (ObjectDoesNotExist, MultipleObjectsReturned), e:
-                logger.warn(e)
+                logger.error(e)
+                logger.error(traceback.format_exc())
                 request_finished.send(self)
                 raise endpoints.NotFoundException("%s does not have an entry in the user database." % user_email)
             try:
                 cohort_perm = Cohort_Perms.objects.get(cohort_id=cohort_id, user_id=user_id)
             except (ObjectDoesNotExist, MultipleObjectsReturned), e:
                 logger.warn(e)
+                logger.error(traceback.format_exc())
                 request_finished.send(self)
                 raise endpoints.UnauthorizedException("%s does not have permission to view cohort %d." % (user_email, cohort_id))
 
@@ -1835,9 +1876,10 @@ class Meta_Endpoints_API(remote.Service):
                 nih_user = NIH_User.objects.get(user_id=user_id)
                 is_dbGaP_authorized = nih_user.dbGaP_authorized and nih_user.active
             except (ObjectDoesNotExist, MultipleObjectsReturned), e:
-                logger.info("%s does not have an entry in NIH_User: %s" % (user_email, str(e)))
+                logger.error("%s does not have an entry in NIH_User: %s" % (user_email, str(e)))
+                logger.error(traceback.format_exc())
         else:
-            logger.warn("Authentication required for cohort_files endpoint.")
+            logger.error("Authentication required for cohort_files endpoint.")
             raise endpoints.UnauthorizedException("No user email found.")
 
         if request.__getattribute__('page') is not None:
@@ -1866,7 +1908,9 @@ class Meta_Endpoints_API(remote.Service):
                     in_clause += ',%s'
             in_clause += ')'
         except (IndexError, TypeError):
-            raise endpoints.ServiceException('Error getting sample list')
+            logger.error("Error obtaining list of samples in cohort file list")
+            logger.error(traceback.format_exc())
+            raise endpoints.ServiceException('Error obtaining list of samples in cohort file list')
         finally:
             if cursor: cursor.close()
             if db and db.open: db.close()
@@ -1919,26 +1963,27 @@ class Meta_Endpoints_API(remote.Service):
                 cursor.execute(query, query_tuple)
                 if cursor.rowcount > 0:
                     for item in cursor.fetchall():
+                        # If there's a datafilenamekey
                         if 'DatafileNameKey' in item and item['DatafileNameKey'] != '':
-                            item['DatafileNameKey'] = "gs://{}{}".format(settings.OPEN_DATA_BUCKET, item['DatafileNameKey'])
-
-                        else:  # not filtering on dbGaP_authorized
+                            # Find protected bucket it should belong to
                             bucket_name = ''
                             if item['Repository'] and item['Repository'].lower() == 'dcc':
                                 bucket_name = settings.DCC_CONTROLLED_DATA_BUCKET
                             elif item['Repository'] and item['Repository'].lower() == 'cghub':
                                 bucket_name = settings.CGHUB_CONTROLLED_DATA_BUCKET
-                            if is_dbGaP_authorized and 'DatafileNameKey' in item and len(item['DatafileNameKey']) and bucket_name != '':
-                                item['DatafileNameKey'] = "gs://{}{}".format(bucket_name, item['DatafileNameKey'])
                             else:
-                                item['DatafileNameKey'] = ''
+                                bucket_name = settings.OPEN_DATA_BUCKET
+
+                            item['DatafileNameKey'] = "gs://{}{}".format(bucket_name, item['DatafileNameKey'])
 
                         file_list.append(FileDetails(sample=item['SampleBarcode'], cloudstorage_location=item['DatafileNameKey'], access=(item['SecurityProtocol'] or 'N/A'), filename=item['DatafileName'], pipeline=item['Pipeline'], platform=item['Platform'], datalevel=item['DataLevel'], datatype=(item['Datatype'] or " "), gg_readgroupset_id=item['GG_readgroupset_id']))
                 else:
                     file_list.append(FileDetails(sample='None', filename='', pipeline='', platform='', datalevel=''))
             return SampleFiles(total_file_count=count, page=page, platform_count_list=platform_count_list, file_list=file_list)
 
-        except (IndexError, TypeError):
+        except Exception as e:
+            logger.error("Error obtaining platform counts")
+            logger.error(traceback.format_exc())
             raise endpoints.ServiceException('Error getting counts')
         finally:
             if cursor: cursor.close()
@@ -2185,6 +2230,8 @@ class Meta_Endpoints_API_v2(remote.Service):
         cohort_id = None
         cursor = None
         db = None
+        mutation_filters = None
+        mutation_results = {}
 
         user = get_current_user(request)
         if user is None:
@@ -2195,9 +2242,16 @@ class Meta_Endpoints_API_v2(remote.Service):
                 tmp = json.loads(request.filters)
                 for filter in tmp:
                     key = filter['key']
-                    if key not in filters:
-                        filters[key] = {'values':[], 'tables':[] }
-                    filters[key]['values'].append(filter['value'])
+                    if 'MUT:' in key:
+                        if not mutation_filters:
+                            mutation_filters = {}
+                        if not key in mutation_filters:
+                            mutation_filters[key] = []
+                        mutation_filters[key].append(filter['value'])
+                    else:
+                        if key not in filters:
+                            filters[key] = {'values':[], 'tables':[] }
+                        filters[key]['values'].append(filter['value'])
 
             except Exception, e:
                 print traceback.format_exc()
@@ -2212,6 +2266,70 @@ class Meta_Endpoints_API_v2(remote.Service):
         if request.__getattribute__('cohort_id') is not None:
             cohort_id = str(request.cohort_id)
             sample_ids = query_samples_and_studies(cohort_id, 'study_id')
+
+        if mutation_filters:
+            mutation_where_clause = build_where_clause(mutation_filters)
+            print >> sys.stdout, mutation_where_clause
+            cohort_join_str = ''
+            cohort_where_str = ''
+            bq_cohort_table = ''
+            bq_cohort_dataset = ''
+            cohort = ''
+            query_template = None
+
+            if cohort_id is not None:
+                query_template = \
+                    ("SELECT ct.sample_barcode"
+                     " FROM [{project_name}:{cohort_dataset}.{cohort_table}] ct"
+                     " JOIN (SELECT Tumor_SampleBarcode AS barcode "
+                     " FROM [{project_name}:{dataset_name}.{table_name}]"
+                     " WHERE " + mutation_where_clause['big_query_str'] +
+                     " GROUP BY barcode) mt"
+                     " ON mt.barcode = ct.sample_barcode"
+                     " WHERE ct.cohort_id = {cohort};")
+                bq_cohort_table = settings.BIGQUERY_COHORT_TABLE_ID
+                bq_cohort_dataset = settings.COHORT_DATASET_ID
+                cohort = cohort_id
+            else:
+                query_template = \
+                    ("SELECT Tumor_SampleBarcode"
+                     " FROM [{project_name}:{dataset_name}.{table_name}]"
+                     " WHERE " + mutation_where_clause['big_query_str'] +
+                     " GROUP BY Tumor_SampleBarcode; ")
+
+            params = mutation_where_clause['value_tuple'][0]
+
+            query = query_template.format(dataset_name=settings.BIGQUERY_DATASET,
+                                          project_name=settings.BIGQUERY_PROJECT_NAME,
+                                          table_name="Somatic_Mutation_calls", hugo_symbol=str(params['gene']),
+                                          var_class=params['var_class'], cohort_dataset=bq_cohort_dataset,
+                                          cohort_table=bq_cohort_table, cohort=cohort)
+
+            bq_service = authorize_credentials_with_Google()
+            query_job = submit_bigquery_job(bq_service, settings.BQ_PROJECT_ID, query)
+            job_is_done = is_bigquery_job_finished(bq_service, settings.BQ_PROJECT_ID,
+                                                   query_job['jobReference']['jobId'])
+
+            retries = 0
+
+            while not job_is_done and retries < 10:
+                retries += 1
+                sleep(1)
+                job_is_done = is_bigquery_job_finished(bq_service, settings.BQ_PROJECT_ID,
+                                                       query_job['jobReference']['jobId'])
+
+            results = get_bq_job_results(bq_service, query_job['jobReference'])
+
+            # for-each result, add to list
+
+            if results.__len__() > 0:
+                for barcode in results:
+                    mutation_results[str(barcode['f'][0]['v'])] = 1
+
+            else:
+                print >> sys.stdout, "Mutation filter result was empty!"
+                # Put in one 'not found' entry to zero out the rest of the queries
+                barcodes = ['NONE_FOUND', ]
 
         # Add TCGA attributes to the list of available attributes
         if 'user_studies' not in filters or 'tcga' in filters['user_studies']['values']:
@@ -2289,8 +2407,11 @@ class Meta_Endpoints_API_v2(remote.Service):
                 if cohort_id and (study_id not in sample_ids or row[0] not in sample_ids[study_id]):
                     # This barcode was not in our cohort's list of barcodes, skip it
                     continue
-
-                results.append(SampleBarcodeItem(sample_barcode=row[0], study_id=table_settings['study_id']) )
+                if mutation_filters:
+                    if row[0] in mutation_results:
+                        results.append(SampleBarcodeItem(sample_barcode=row[0], study_id=table_settings['study_id']))
+                else:
+                    results.append(SampleBarcodeItem(sample_barcode=row[0], study_id=table_settings['study_id']) )
             cursor.close()
 
         db.close()

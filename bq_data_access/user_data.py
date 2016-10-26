@@ -146,6 +146,20 @@ class UserFeatureDef(object):
         logging.debug("UserFeatureDef.from_feature_id: {0}".format(str([feature_id, study_id])))
         if feature_id is None:
             raise FeatureNotFoundException(feature_id)
+        # ID breakdown: Study ID:Feature ID
+        # Example ID: USER:1:6
+        regex = re_compile("^USER:"
+                           # Study ID
+                           "([0-9]+):"
+                           # Feature ID
+                           "([0-9]+)$"
+                           )
+
+        feature_fields = regex.findall(feature_id)
+        if len(feature_fields) == 0:
+            raise FeatureNotFoundException(feature_id)
+        study_id, user_feature_id = feature_fields[0]
+
 
         try:
             db = sql_connection()
@@ -153,8 +167,8 @@ class UserFeatureDef(object):
             cursor.execute("""
                 SELECT bq_map_id, study_id, is_numeric
                 FROM projects_user_feature_definitions
-                WHERE shared_map_id = %s
-            """, (feature_id,))
+                WHERE id = %s
+            """, (user_feature_id,))
 
             results = []
             for row in cursor.fetchall():

@@ -60,7 +60,7 @@ class RPPAFeatureDef(object):
 class RPPAFeatureProvider(FeatureDataProvider):
     TABLES = [
         {
-            'name': 'Protein',
+            'name': 'Protein_RPPA_data',
             'info': 'Protein',
             'id': 'protein'
         }

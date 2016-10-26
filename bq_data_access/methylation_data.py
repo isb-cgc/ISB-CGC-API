@@ -29,122 +29,122 @@ IDENTIFIER_COLUMN_NAME = 'sample_id'
 
 TABLES = [
     {
-        'name': 'Methylation_chr1',
+        'name': 'DNA_Methylation_chr1',
         'info': 'Methylation chr1',
         'id': 'methylation_chr1'
     },
     {
-        'name': 'Methylation_chr2',
+        'name': 'DNA_Methylation_chr2',
         'info': 'Methylation chr2',
         'id': 'methylation_chr2'
     },
     {
-        'name': 'Methylation_chr3',
+        'name': 'DNA_Methylation_chr3',
         'info': 'Methylation chr3',
         'id': 'methylation_chr3'
     },
     {
-        'name': 'Methylation_chr4',
+        'name': 'DNA_Methylation_chr4',
         'info': 'Methylation chr4',
         'id': 'methylation_chr4'
     },
     {
-        'name': 'Methylation_chr5',
+        'name': 'DNA_Methylation_chr5',
         'info': 'Methylation chr5',
         'id': 'methylation_chr5'
     },
     {
-        'name': 'Methylation_chr6',
+        'name': 'DNA_Methylation_chr6',
         'info': 'Methylation chr6',
         'id': 'methylation_chr6'
     },
     {
-        'name': 'Methylation_chr7',
+        'name': 'DNA_Methylation_chr7',
         'info': 'Methylation chr7',
         'id': 'methylation_chr7'
     },
     {
-        'name': 'Methylation_chr8',
+        'name': 'DNA_Methylation_chr8',
         'info': 'Methylation chr8',
         'id': 'methylation_chr8'
     },
     {
-        'name': 'Methylation_chr9',
+        'name': 'DNA_Methylation_chr9',
         'info': 'Methylation chr9',
         'id': 'methylation_chr9'
     },
     {
-        'name': 'Methylation_chr10',
+        'name': 'DNA_Methylation_chr10',
         'info': 'Methylation chr10',
         'id': 'methylation_chr10'
     },
     {
-        'name': 'Methylation_chr11',
+        'name': 'DNA_Methylation_chr11',
         'info': 'Methylation chr11',
         'id': 'methylation_chr11'
     },
     {
-        'name': 'Methylation_chr12',
+        'name': 'DNA_Methylation_chr12',
         'info': 'Methylation chr12',
         'id': 'methylation_chr12'
     },
     {
-        'name': 'Methylation_chr13',
+        'name': 'DNA_Methylation_chr13',
         'info': 'Methylation chr13',
         'id': 'methylation_chr13'
     },
     {
-        'name': 'Methylation_chr14',
+        'name': 'DNA_Methylation_chr14',
         'info': 'Methylation chr14',
         'id': 'methylation_chr14'
     },
     {
-        'name': 'Methylation_chr15',
+        'name': 'DNA_Methylation_chr15',
         'info': 'Methylation chr15',
         'id': 'methylation_chr15'
     },
     {
-        'name': 'Methylation_chr16',
+        'name': 'DNA_Methylation_chr16',
         'info': 'Methylation chr16',
         'id': 'methylation_chr16'
     },
     {
-        'name': 'Methylation_chr17',
+        'name': 'DNA_Methylation_chr17',
         'info': 'Methylation chr17',
         'id': 'methylation_chr17'
     },
     {
-        'name': 'Methylation_chr18',
+        'name': 'DNA_Methylation_chr18',
         'info': 'Methylation chr18',
         'id': 'methylation_chr18'
     },
     {
-        'name': 'Methylation_chr19',
+        'name': 'DNA_Methylation_chr19',
         'info': 'Methylation chr19',
         'id': 'methylation_chr19'
     },
     {
-        'name': 'Methylation_chr20',
+        'name': 'DNA_Methylation_chr20',
         'info': 'Methylation chr20',
         'id': 'methylation_chr20'
     },
     {
-        'name': 'Methylation_chr21',
+        'name': 'DNA_Methylation_chr21',
         'info': 'Methylation chr21',
         'id': 'methylation_chr21'
     },
     {
-        'name': 'Methylation_chr22',
+        'name': 'DNA_Methylation_chr22',
         'info': 'Methylation chr22',
         'id': 'methylation_chr22'
     },
     {
-        'name': 'Methylation_chrX',
+        'name': 'DNA_Methylation_chrX',
         'info': 'Methylation chrX',
         'id': 'methylation_chrX'
     },
     {
-        'name': 'Methylation_chrY',
+        'name': 'DNA_Methylation_chrY',
         'info': 'Methylation chrY',
         'id': 'methylation_chrY'
     }
