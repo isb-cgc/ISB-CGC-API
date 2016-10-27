@@ -66,15 +66,15 @@ class UserFeatureDef(object):
     @classmethod
     def get_table_and_field(cls, bq_id):
         split = bq_id.split(':')
-        # First pieces are the project:dataset:table
+        # First pieces are the project:dataset:table:Data_type:symbol:column_name
         bq_table = split[0] + ':' + split[1] + '.' + split[2]
         # Last piece is the column name
         column_name = bq_id.split(':')[-1]
 
         # Is only symbol at the moment
         symbol = None
-        if len(split) > 4:
-            symbol = split[3]
+        if len(split) > 5:
+            symbol = split[4]
 
         return bq_table, column_name, symbol
 
