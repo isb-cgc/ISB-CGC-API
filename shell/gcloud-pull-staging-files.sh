@@ -1,7 +1,4 @@
-#./google-cloud-sdk/bin/gsutil cp "gs://${GCLOUD_BUCKET_TEST}/staging.env" ./.env
-#./google-cloud-sdk/bin/gsutil cp "gs://${GCLOUD_BUCKET_TEST}/staging-ssl/client-cert.pem" ./client-cert.pem
-#./google-cloud-sdk/bin/gsutil cp "gs://${GCLOUD_BUCKET_TEST}/staging-ssl/client-key.pem" ./client-key.pem
-#./google-cloud-sdk/bin/gsutil cp "gs://${GCLOUD_BUCKET_TEST}/staging-ssl/server-ca.pem" ./server-ca.pem
+
 ./google-cloud-sdk/bin/gsutil cp "gs://${GCLOUD_BUCKET_TEST}/${TEST_APP_YAML}" ./app.yaml
 ./google-cloud-sdk/bin/gsutil cp "gs://${GCLOUD_BUCKET_TEST}/${TEST_CERT_FILE}" ./client-cert.pem
 ./google-cloud-sdk/bin/gsutil cp "gs://${GCLOUD_BUCKET_TEST}/${TEST_KEY_FILE}" ./client-key.pem
