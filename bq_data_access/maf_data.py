@@ -71,9 +71,12 @@ def validate_input(query_table_id):
     if query_table_id not in valid_tables:
         raise Exception("Invalid table ID for maf")
 
-def build_query(project_name, dataset_name, table_name, gene, value_field, cohort_dataset, cohort_table, cohort_id_array):
+def build_query(project_name, dataset_name, table_name, gene, value_field, cohort_dataset, cohort_table, cohort_id_array, study_id_array):
     # Generate the 'IN' statement string: (%s, %s, ..., %s)
     cohort_id_stmt = ', '.join([str(cohort_id) for cohort_id in cohort_id_array])
+    study_id_stmt = ''
+    if study_id_array is not None:
+        study_id_stmt = ', '.join([str(study_id) for study_id in study_id_array])
 
     query_template = \
         ("SELECT ParticipantBarcode, Tumor_SampleBarcode, Tumor_AliquotBarcode, "
@@ -84,7 +87,9 @@ def build_query(project_name, dataset_name, table_name, gene, value_field, cohor
          "    SELECT sample_barcode "
          "    FROM [{project_name}:{cohort_dataset}.{cohort_table}] "
          "    WHERE cohort_id IN ({cohort_id_list})"
-         ") ")
+         "         AND (study_id IS NULL")
+
+    query_template += (" OR study_id IN ({study_id_list})))" if study_id_array is not None else "))")
 
     if value_field == 'num_mutations':
         value_field = 'count(*)'
@@ -94,7 +99,7 @@ def build_query(project_name, dataset_name, table_name, gene, value_field, cohor
     query = query_template.format(dataset_name=dataset_name, project_name=project_name, table_name=table_name,
                                   gene=gene, value_field=value_field,
                                   cohort_dataset=cohort_dataset, cohort_table=cohort_table,
-                                  cohort_id_list=cohort_id_stmt)
+                                  cohort_id_list=cohort_id_stmt, study_id_list=study_id_stmt)
 
     logging.debug("BQ_QUERY_GNAB: " + query)
     return query
