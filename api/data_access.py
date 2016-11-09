@@ -38,7 +38,7 @@ from api.pairwise_api import PairwiseResults, PairwiseResultVector, PairwiseFilt
 from api.api_helpers import sql_connection
 
 from projects.models import Study
-from cohorts.views import fetch_tcga_study_set
+from cohorts.views import fetch_isbcgc_study_set
 
 import sys
 
@@ -477,7 +477,7 @@ class FeatureDataEndpoints(remote.Service):
             db = sql_connection()
             cursor = db.cursor()
 
-            tcga_studies = fetch_tcga_study_set()
+            tcga_studies = fetch_isbcgc_study_set()
 
             cursor.execute("SELECT DISTINCT study_id FROM cohorts_samples WHERE cohort_id IN ("+cohort_params+");",cohort_vals)
 
