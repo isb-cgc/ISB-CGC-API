@@ -35,6 +35,11 @@ from bq_data_access.data_access import FeatureIdQueryDescription
 
 from api.pairwise import PairwiseInputVector, Pairwise
 from api.pairwise_api import PairwiseResults, PairwiseResultVector, PairwiseFilterMessage
+from api.api_helpers import sql_connection
+
+from projects.models import Study
+from cohorts.views import fetch_isbcgc_study_set
+
 import sys
 
 logger = logging.getLogger(__name__)
@@ -246,7 +251,7 @@ class FeatureDataEndpoints(remote.Service):
 
     # TODO refactor missing value logic out of this module
     @DurationLogged('FEATURE', 'GET_VECTORS')
-    def get_merged_feature_vectors(self, x_id, y_id, c_id, cohort_id_array, logTransform):
+    def get_merged_feature_vectors(self, x_id, y_id, c_id, cohort_id_array, logTransform, study_id_array):
         """
         Fetches and merges data for two or three feature vectors (see parameter documentation below).
         The vectors have to be an array of dictionaries, with each dictionary containing a 'value' field
@@ -284,7 +289,7 @@ class FeatureDataEndpoints(remote.Service):
         :return: PlotDataResponse
         """
 
-        async_params = [FeatureIdQueryDescription(x_id, cohort_id_array)]
+        async_params = [FeatureIdQueryDescription(x_id, cohort_id_array, study_id_array)]
 
         c_type, c_vec = ValueType.STRING, []
         y_type, y_vec = ValueType.STRING, []
@@ -292,9 +297,9 @@ class FeatureDataEndpoints(remote.Service):
         units = get_axis_units(x_id, y_id)
 
         if c_id is not None:
-            async_params.append(FeatureIdQueryDescription(c_id, cohort_id_array))
+            async_params.append(FeatureIdQueryDescription(c_id, cohort_id_array, study_id_array))
         if y_id is not None:
-            async_params.append(FeatureIdQueryDescription(y_id, cohort_id_array))
+            async_params.append(FeatureIdQueryDescription(y_id, cohort_id_array, study_id_array))
 
         async_result = get_feature_vectors_tcga_only(async_params)
 
@@ -459,7 +464,42 @@ class FeatureDataEndpoints(remote.Service):
                     logging.error("Invalid internal feature ID '{}'".format(feature_id))
                     raise NotFoundException()
 
-            return self.get_merged_feature_vectors(x_id, y_id, c_id, cohort_id_array, logTransform)
+            # Get the study IDs these cohorts' samples come from
+            cohort_vals = ()
+            cohort_params = ""
+
+            for cohort in cohort_id_array:
+                cohort_params += "%s,"
+                cohort_vals += (cohort,)
+
+            cohort_params = cohort_params[:-1]
+
+            db = sql_connection()
+            cursor = db.cursor()
+
+            tcga_studies = fetch_isbcgc_study_set()
+
+            cursor.execute("SELECT DISTINCT study_id FROM cohorts_samples WHERE cohort_id IN ("+cohort_params+");",cohort_vals)
+
+            # Only samples whose source studies are TCGA studies, or extended from them, should be used
+            confirmed_study_ids = []
+            unconfirmed_study_ids = []
+
+            for row in cursor.fetchall():
+                if row[0] in tcga_studies:
+                    if row[0] not in confirmed_study_ids:
+                        confirmed_study_ids.append(row[0])
+                elif row[0] not in unconfirmed_study_ids:
+                    unconfirmed_study_ids.append(row[0])
+
+            if len(unconfirmed_study_ids) > 0:
+                studies = Study.objects.filter(id__in=unconfirmed_study_ids)
+
+                for study in studies:
+                    if study.get_my_root_and_depth()['root'] in tcga_studies:
+                        confirmed_study_ids.append(study.id)
+
+            return self.get_merged_feature_vectors(x_id, y_id, c_id, cohort_id_array, logTransform, confirmed_study_ids)
         except NotFoundException as nfe:
             # Pass through NotFoundException so that it is not handled as Exception below.
             raise nfe
