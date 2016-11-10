@@ -38,7 +38,7 @@ from api.pairwise_api import PairwiseResults, PairwiseResultVector, PairwiseFilt
 from api.api_helpers import sql_connection
 
 from projects.models import Study
-from cohorts.views import fetch_isbcgc_study_set
+from cohorts.metadata_helpers import fetch_isbcgc_study_set
 
 import sys
 
