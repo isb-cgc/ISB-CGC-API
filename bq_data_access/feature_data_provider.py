@@ -121,8 +121,6 @@ class FeatureDataProvider(object):
     def submit_query_and_get_job_ref(self, project_id, project_name, dataset_name, table_name, feature_def, cohort_dataset, cohort_table, cohort_id_array, study_id_array):
         bigquery_service = self.get_bq_service()
 
-        print >> sys.stdout, "Study IDs: "+study_id_array.__str__()
-
         query_body = self.build_query(project_name, dataset_name, table_name, feature_def, cohort_dataset, cohort_table, cohort_id_array, study_id_array)
         query_job = self.submit_bigquery_job(bigquery_service, project_id, query_body)
 
