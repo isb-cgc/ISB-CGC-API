@@ -47,13 +47,13 @@ class GoogleGenomicsList(messages.Message):
     count = messages.IntegerField(2, variant=messages.Variant.INT32)
 
 
-@ISB_CGC_Endpoints.api_class(resource_name='cohorts')
+# @ISB_CGC_Endpoints.api_class(resource_name='cohorts')
 class CohortsGoogleGenomicssAPI(remote.Service):
 
     GET_RESOURCE = endpoints.ResourceContainer(cohort_id=messages.IntegerField(1, required=True))
 
-    @endpoints.method(GET_RESOURCE, GoogleGenomicsList, http_method='GET',
-                      path='cohorts/{cohort_id}/googlegenomics')
+    # @endpoints.method(GET_RESOURCE, GoogleGenomicsList, http_method='GET',
+    #                   path='cohorts/{cohort_id}/googlegenomics')
     def googlegenomics(self, request):
         """
         Returns a list of Google Genomics dataset and readgroupset ids associated with
