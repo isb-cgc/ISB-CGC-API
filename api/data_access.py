@@ -38,16 +38,48 @@ from api.pairwise_api import PairwiseResults, PairwiseResultVector, PairwiseFilt
 from api.api_helpers import sql_connection
 
 from projects.models import Study
-from cohorts.metadata_helpers import fetch_isbcgc_study_set
 
 import sys
 
 logger = logging.getLogger(__name__)
 
-
 VIZ_UNIT_DATADICTIONARY = {
     'BMI': 'kg/m^2',
 }
+
+ISB_CGC_STUDIES = {
+    'list': []
+}
+
+# DUPLICATE METHOD
+# Due to the way sql connections are done, it's easiest to duplicate this method and the static variable
+# it creates. The original is in Cohorts/views, and all changes will happen there first.
+#
+# Generate the ISB_CGC_STUDIES['list'] value set based on the get_isbcgc_study_set sproc
+def fetch_isbcgc_study_set():
+    try:
+        cursor = None
+        db = sql_connection()
+        if not ISB_CGC_STUDIES['list'] or len(ISB_CGC_STUDIES['list']) <= 0:
+            cursor = db.cursor()
+            cursor.execute("SELECT COUNT(SPECIFIC_NAME) FROM INFORMATION_SCHEMA.ROUTINES WHERE SPECIFIC_NAME = 'get_isbcgc_study_set';")
+            # Only try to fetch the study set if the sproc exists
+            if cursor.fetchall()[0][0] > 0:
+                cursor.execute("CALL get_isbcgc_study_set();")
+                ISB_CGC_STUDIES['list'] = []
+                for row in cursor.fetchall():
+                    ISB_CGC_STUDIES['list'].append(row[0])
+            else:
+                # Otherwise just warn
+                logger.warn("[WARNING] Stored procedure get_isbcgc_study_set was not found!")
+
+        return ISB_CGC_STUDIES['list']
+    except Exception as e:
+        logger.error(e)
+        logger.error(traceback.format_exc())
+    finally:
+        if cursor: cursor.close()
+        if db and db.open: db.close()
 
 
 def get_axis_units(xAttr, yAttr):
