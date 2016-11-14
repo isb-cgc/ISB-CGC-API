@@ -1746,8 +1746,8 @@ class Cohort_Endpoints_API(remote.Service):
     GET_RESOURCE = endpoints.ResourceContainer(cohort_id=messages.IntegerField(1, required=True),
                                                token=messages.StringField(2))
 
-    @endpoints.method(GET_RESOURCE, GoogleGenomicsList,
-                      path='google_genomics_from_cohort', http_method='GET', name='cohorts.google_genomics_from_cohort')
+    # @endpoints.method(GET_RESOURCE, GoogleGenomicsList,
+    #                   path='google_genomics_from_cohort', http_method='GET', name='cohorts.google_genomics_from_cohort')
     def google_genomics_from_cohort(self, request):
         """
         Returns a list of Google Genomics dataset and readgroupset ids associated with
@@ -1834,9 +1834,9 @@ class Cohort_Endpoints_API(remote.Service):
 
     GET_RESOURCE = endpoints.ResourceContainer(sample_barcode=messages.StringField(1, required=True))
 
-    @endpoints.method(GET_RESOURCE, GoogleGenomicsList,
-                      path='google_genomics_from_sample', http_method='GET',
-                      name='cohorts.google_genomics_from_sample')
+    # @endpoints.method(GET_RESOURCE, GoogleGenomicsList,
+    #                   path='google_genomics_from_sample', http_method='GET',
+    #                   name='cohorts.google_genomics_from_sample')
     def google_genomics_from_sample(self, request):
         """
         Takes a sample barcode as a required parameter and returns the Google Genomics dataset id
