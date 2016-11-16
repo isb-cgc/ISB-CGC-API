@@ -199,17 +199,13 @@ class UserFeatureDef(object):
         if study_id_array is not None:
             study_id_stmt = ', '.join([str(study_id) for study_id in study_id_array])
 
-        query_template =  """
-            SELECT {fdef_id} AS fdef_id, t.sample_barcode, t.{column_name}
-            FROM [{table_name}] AS t
-            JOIN [{cohort_table}] AS c
-              ON c.sample_barcode = t.sample_barcode
-            WHERE
-              c.cohort_id IN ({cohort_list}) AND (c.study_id IS NULL
-        """
+        query_template =  "SELECT {fdef_id} AS fdef_id, t.sample_barcode, t.{column_name} FROM [{table_name}] AS t " \
+                          "JOIN [{cohort_table}] AS c ON c.sample_barcode = t.sample_barcode " \
+                          "WHERE c.cohort_id IN ({cohort_list}) AND (c.study_id IS NULL"
+
 
         query_template += (" OR c.study_id IN ({study_id_list}))" if study_id_array is not None else ")")
-        query_template.format(fdef_id=self.bq_row_id,
+        query = query_template.format(fdef_id=self.bq_row_id,
                               column_name=self.column_name,
                               table_name=self.bq_table,
                               cohort_table=cohort_table,
@@ -218,10 +214,10 @@ class UserFeatureDef(object):
 
         if self.filters is not None:
             for key, val in self.filters.items():
-                query_template += ' AND t.{filter_key} = "{value}" '.format(filter_key=key, value=val)
+                query += ' AND t.{filter_key} = "{value}" '.format(filter_key=key, value=val)
 
-        query_template += " GROUP BY t.sample_barcode, t.{column_name} ".format(column_name=self.column_name) # To prevent duplicates from multiple cohorts
-        return query_template
+                query += " GROUP BY t.sample_barcode, t.{column_name} ".format(column_name=self.column_name) # To prevent duplicates from multiple cohorts
+        return query
 
 
 class UserFeatureProvider(FeatureDataProvider):
