@@ -205,8 +205,7 @@ class UserFeatureDef(object):
             JOIN [{cohort_table}] AS c
               ON c.sample_barcode = t.sample_barcode
             WHERE
-
-              AND c.cohort_id IN ({cohort_list}) AND (c.study_id IS NULL
+              c.cohort_id IN ({cohort_list}) AND (c.study_id IS NULL
         """
 
         query_template += (" OR c.study_id IN ({study_id_list})))" if study_id_array is not None else ")")
