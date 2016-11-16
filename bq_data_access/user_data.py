@@ -271,7 +271,7 @@ class UserFeatureProvider(FeatureDataProvider):
     def get_value_type(self):
         return self.feature_defs[0].get_value_type()
 
-    def build_query(self, study_ids, cohort_id_array, cohort_dataset, cohort_table):
+    def build_query(self, study_ids, cohort_id_array, cohort_dataset, cohort_table, study_id_array):
         """
         Builds the BigQuery query string for USER data. The query string is constructed from one or more data sources
         (queries), such that each associated UserFeatureDef instance constructs one data source. Each data source
@@ -313,7 +313,7 @@ class UserFeatureProvider(FeatureDataProvider):
         for feature_def in self.feature_defs:
             if int(feature_def.study_id) in study_ids:
                 # Build our query
-                queries.append(feature_def.build_query(cohort_table_full, cohort_id_array))
+                queries.append(feature_def.build_query(cohort_table_full, cohort_id_array, study_id_array))
 
         # Create a combination query using the UNION ALL operator. Each data source defined above (query1, query2, ...)
         # will be combined as follows:
