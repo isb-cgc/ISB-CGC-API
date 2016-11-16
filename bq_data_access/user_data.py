@@ -194,9 +194,10 @@ class UserFeatureDef(object):
         return bq_row['f'][self.bq_row_id + 2]['v']
 
     def build_query(self, cohort_table, cohort_ids, study_id_array):
+
         cohort_str = ",".join([str(cohort_id) for cohort_id in cohort_ids])
         study_id_stmt = ''
-        if study_id_array is not None:
+        if study_id_array is not None and len(study_id_array):
             study_id_stmt = ', '.join([str(study_id) for study_id in study_id_array])
 
         query_template =  "SELECT {fdef_id} AS fdef_id, t.sample_barcode, t.{column_name} FROM [{table_name}] AS t " \
