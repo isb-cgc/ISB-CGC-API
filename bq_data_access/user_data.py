@@ -304,6 +304,7 @@ class UserFeatureProvider(FeatureDataProvider):
         """
         queries = []
         cohort_table_full = settings.BIGQUERY_PROJECT_NAME + ':' + cohort_dataset + '.' + cohort_table
+        # TODO: this is a hack to append study_ids to the tcga study id list. study_id_array is actually empty.
         study_id_array += study_ids
         for feature_def in self.feature_defs:
             if int(feature_def.study_id) in study_ids:
