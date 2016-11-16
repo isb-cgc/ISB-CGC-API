@@ -222,8 +222,8 @@ class UserFeatureDef(object):
             for key, val in self.filters.items():
                 query_template += ' AND t.{filter_key} = "{value}" '.format(filter_key=key, value=val)
 
-        query += " GROUP BY t.sample_barcode, t.{column_name} ".format(column_name=self.column_name) # To prevent duplicates from multiple cohorts
-        return query
+        query_template += " GROUP BY t.sample_barcode, t.{column_name} ".format(column_name=self.column_name) # To prevent duplicates from multiple cohorts
+        return query_template
 
 
 class UserFeatureProvider(FeatureDataProvider):
