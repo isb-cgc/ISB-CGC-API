@@ -304,7 +304,7 @@ class UserFeatureProvider(FeatureDataProvider):
         """
         queries = []
         cohort_table_full = settings.BIGQUERY_PROJECT_NAME + ':' + cohort_dataset + '.' + cohort_table
-
+        study_id_array += study_ids
         for feature_def in self.feature_defs:
             if int(feature_def.study_id) in study_ids:
                 # Build our query
