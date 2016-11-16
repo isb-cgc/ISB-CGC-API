@@ -209,12 +209,11 @@ class UserFeatureDef(object):
               AND c.cohort_id IN ({cohort_list}) AND (c.study_id IS NULL
         """
 
-        query_template += (" OR c.study_id IN ({study_id_list})))" if study_id_array is not None else ")")
+        query_template += (" OR c.study_id IN ({study_id_list}))" if study_id_array is not None else ")")
         query_template.format(fdef_id=self.bq_row_id,
                               column_name=self.column_name,
                               table_name=self.bq_table,
                               cohort_table=cohort_table,
-                              # study_id=self.study_id,
                               cohort_list=cohort_str,
                               study_id_list=study_id_stmt)
 
