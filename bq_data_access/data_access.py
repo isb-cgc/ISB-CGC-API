@@ -110,10 +110,11 @@ class FeatureIdQueryDescription(object):
 
 
 class ProviderClassQueryDescription(object):
-    def __init__(self, feature_data_provider_class, feature_id, cohort_id_array):
+    def __init__(self, feature_data_provider_class, feature_id, cohort_id_array, study_id_array):
         self.feature_data_provider_class = feature_data_provider_class
         self.feature_id = feature_id
         self.cohort_id_array = cohort_id_array
+        self.study_id_array = study_id_array
 
 
 def is_valid_feature_identifier(feature_id):
