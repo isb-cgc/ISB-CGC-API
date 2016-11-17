@@ -103,9 +103,10 @@ class FeatureProviderFactory(object):
 
 
 class FeatureIdQueryDescription(object):
-    def __init__(self, feature_id, cohort_id_array):
+    def __init__(self, feature_id, cohort_id_array, study_id_array):
         self.feature_id = feature_id
         self.cohort_id_array = cohort_id_array
+        self.study_id_array = study_id_array
 
 
 class ProviderClassQueryDescription(object):
@@ -176,7 +177,8 @@ def submit_tcga_job(param_obj, bigquery_service, cohort_settings):
     provider = FeatureProviderFactory.from_parameters(param_obj, bigquery_service=bigquery_service)
     feature_id = param_obj.feature_id
     cohort_id_array = param_obj.cohort_id_array
-    job_reference = provider.get_data_job_reference(cohort_id_array, cohort_settings.dataset_id, cohort_settings.table_id)
+    study_id_array = param_obj.study_id_array
+    job_reference = provider.get_data_job_reference(cohort_id_array, cohort_settings.dataset_id, cohort_settings.table_id, study_id_array)
 
     logging.info("Submitted TCGA {job_id}: {fid} - {cohorts}".format(job_id=job_reference['jobId'], fid=feature_id,
                                                                              cohorts=str(cohort_id_array)))

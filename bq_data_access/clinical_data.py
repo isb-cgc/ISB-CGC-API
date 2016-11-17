@@ -17,6 +17,7 @@ limitations under the License.
 """
 
 import logging
+import sys
 from re import compile as re_compile
 
 from api.schema.tcga_clinical import schema as clinical_schema
@@ -28,6 +29,7 @@ from bq_data_access.utils import DurationLogged
 
 CLINICAL_FEATURE_TYPE = 'CLIN'
 
+BSP_TABLE_NAME = 'Biospecimen_data'
 
 class InvalidClinicalFeatureIDException(Exception):
     def __init__(self, feature_id, reason):
@@ -104,9 +106,12 @@ class ClinicalFeatureProvider(FeatureDataProvider):
     def process_data_point(cls, data_point):
         return data_point['value']
 
-    def build_query(self, project_name, dataset_name, table_name, feature_def, cohort_dataset, cohort_table, cohort_id_array):
+    def build_query(self, project_name, dataset_name, table_name, feature_def, cohort_dataset, cohort_table, cohort_id_array, study_id_array):
         # Generate the 'IN' statement string: (%s, %s, ..., %s)
         cohort_id_stmt = ', '.join([str(cohort_id) for cohort_id in cohort_id_array])
+        study_id_stmt = ''
+        if study_id_array is not None:
+            study_id_stmt = ', '.join([str(study_id) for study_id in study_id_array])
 
         query_template = \
             ("SELECT clin.ParticipantBarcode, biospec.sample_id, clin.{column_name} "
@@ -116,20 +121,22 @@ class ClinicalFeatureProvider(FeatureDataProvider):
              " ) AS clin "
              " JOIN ( "
              " SELECT ParticipantBarcode, SampleBarcode as sample_id "
-             " FROM [{project_name}:tcga_data_open.Biospecimen] "
+             " FROM [{project_name}:{dataset_name}.{bsp_table_name}] "
              " ) AS biospec "
              " ON clin.ParticipantBarcode = biospec.ParticipantBarcode "
              "WHERE biospec.sample_id IN ( "
              "    SELECT sample_barcode "
              "    FROM [{project_name}:{cohort_dataset}.{cohort_table}] "
-             "    WHERE cohort_id IN ({cohort_id_list}) AND study_id IS NULL"
-             ")"
-             "GROUP BY clin.ParticipantBarcode, biospec.sample_id, clin.{column_name}")
+             "    WHERE cohort_id IN ({cohort_id_list})"
+             "          AND (study_id IS NULL")
+
+        query_template += (" OR study_id IN ({study_id_list})))" if study_id_array is not None else "))")
+        query_template += " GROUP BY clin.ParticipantBarcode, biospec.sample_id, clin.{column_name}"
 
         query = query_template.format(dataset_name=dataset_name, project_name=project_name, table_name=table_name,
-                                      column_name=feature_def.table_field,
+                                      column_name=feature_def.table_field, bsp_table_name=BSP_TABLE_NAME,
                                       cohort_dataset=cohort_dataset, cohort_table=cohort_table,
-                                      cohort_id_list=cohort_id_stmt)
+                                      cohort_id_list=cohort_id_stmt, study_id_list=study_id_stmt)
 
         logging.debug("BQ_QUERY_CLIN: " + query)
         return query

@@ -66,15 +66,15 @@ class UserFeatureDef(object):
     @classmethod
     def get_table_and_field(cls, bq_id):
         split = bq_id.split(':')
-        # First pieces are the project:dataset:table
+        # First pieces are the project:dataset:table:Data_type:symbol:column_name
         bq_table = split[0] + ':' + split[1] + '.' + split[2]
         # Last piece is the column name
         column_name = bq_id.split(':')[-1]
 
         # Is only symbol at the moment
         symbol = None
-        if len(split) > 4:
-            symbol = split[3]
+        if len(split) > 5:
+            symbol = split[4]
 
         return bq_table, column_name, symbol
 
@@ -193,24 +193,31 @@ class UserFeatureDef(object):
     def unpack_value_from_bigquery_row(self, bq_row):
         return bq_row['f'][self.bq_row_id + 2]['v']
 
-    def build_query(self, cohort_table, cohort_ids):
+    def build_query(self, cohort_table, cohort_ids, study_id_array):
+
         cohort_str = ",".join([str(cohort_id) for cohort_id in cohort_ids])
-        query =  """
-            SELECT {fdef_id} AS fdef_id, t.sample_barcode, t.{column_name}
-            FROM [{table_name}] AS t
-            JOIN [{cohort_table}] AS c
-              ON c.sample_barcode = t.sample_barcode
-            WHERE
-              c.study_id = {study_id}
-              AND c.cohort_id IN ({cohort_list})
-        """.format(fdef_id=self.bq_row_id, column_name=self.column_name, table_name=self.bq_table,
-                   cohort_table=cohort_table, study_id=self.study_id, cohort_list=cohort_str)
+        study_id_stmt = ''
+        if study_id_array is not None and len(study_id_array):
+            study_id_stmt = ', '.join([str(study_id) for study_id in study_id_array])
+
+        query_template =  "SELECT {fdef_id} AS fdef_id, t.sample_barcode, t.{column_name} FROM [{table_name}] AS t " \
+                          "JOIN [{cohort_table}] AS c ON c.sample_barcode = t.sample_barcode " \
+                          "WHERE c.cohort_id IN ({cohort_list}) AND (c.study_id IS NULL"
+
+
+        query_template += (" OR c.study_id IN ({study_id_list}))" if study_id_array is not None and len(study_id_array) else ")")
+        query = query_template.format(fdef_id=self.bq_row_id,
+                              column_name=self.column_name,
+                              table_name=self.bq_table,
+                              cohort_table=cohort_table,
+                              cohort_list=cohort_str,
+                              study_id_list=study_id_stmt)
 
         if self.filters is not None:
             for key, val in self.filters.items():
                 query += ' AND t.{filter_key} = "{value}" '.format(filter_key=key, value=val)
 
-        query += " GROUP BY t.sample_barcode, t.{column_name} ".format(column_name=self.column_name) # To prevent duplicates from multiple cohorts
+                query += " GROUP BY t.sample_barcode, t.{column_name} ".format(column_name=self.column_name) # To prevent duplicates from multiple cohorts
         return query
 
 
@@ -259,7 +266,7 @@ class UserFeatureProvider(FeatureDataProvider):
     def get_value_type(self):
         return self.feature_defs[0].get_value_type()
 
-    def build_query(self, study_ids, cohort_id_array, cohort_dataset, cohort_table):
+    def build_query(self, study_ids, cohort_id_array, cohort_dataset, cohort_table, study_id_array):
         """
         Builds the BigQuery query string for USER data. The query string is constructed from one or more data sources
         (queries), such that each associated UserFeatureDef instance constructs one data source. Each data source
@@ -297,11 +304,12 @@ class UserFeatureProvider(FeatureDataProvider):
         """
         queries = []
         cohort_table_full = settings.BIGQUERY_PROJECT_NAME + ':' + cohort_dataset + '.' + cohort_table
-
+        # TODO: this is a hack to append study_ids to the tcga study id list. study_id_array is actually empty.
+        study_id_array += study_ids
         for feature_def in self.feature_defs:
             if int(feature_def.study_id) in study_ids:
                 # Build our query
-                queries.append(feature_def.build_query(cohort_table_full, cohort_id_array))
+                queries.append(feature_def.build_query(cohort_table_full, cohort_id_array, study_id_array))
 
         # Create a combination query using the UNION ALL operator. Each data source defined above (query1, query2, ...)
         # will be combined as follows:
@@ -398,12 +406,12 @@ class UserFeatureProvider(FeatureDataProvider):
         for index, feature_def in enumerate(self.feature_defs):
             feature_def.bq_row_id = index
 
-    def _submit_query_and_get_job_ref(self, project_id, project_name, dataset_name, cohort_dataset, cohort_table, cohort_id_array):
+    def _submit_query_and_get_job_ref(self, project_id, project_name, dataset_name, cohort_dataset, cohort_table, cohort_id_array, study_id_array):
         study_ids = self.get_study_ids(cohort_id_array)
 
         bigquery_service = self.get_bq_service()
 
-        query_body = self.build_query(study_ids, cohort_id_array, cohort_dataset, cohort_table)
+        query_body = self.build_query(study_ids, cohort_id_array, cohort_dataset, cohort_table, study_id_array)
         query_job = self.submit_bigquery_job(bigquery_service, project_id, query_body)
 
         self.job_reference = query_job['jobReference']
@@ -425,13 +433,13 @@ class UserFeatureProvider(FeatureDataProvider):
 
         return queryable
 
-    def get_data_job_reference(self, cohort_id_array, cohort_dataset, cohort_table):
+    def get_data_job_reference(self, cohort_id_array, cohort_dataset, cohort_table, study_id_array):
         project_id = settings.BQ_PROJECT_ID
         project_name = settings.BIGQUERY_PROJECT_NAME
         dataset_name = settings.BIGQUERY_DATASET
 
         result = self._submit_query_and_get_job_ref(project_id, project_name, dataset_name,
-                                                    cohort_dataset, cohort_table, cohort_id_array)
+                                                    cohort_dataset, cohort_table, cohort_id_array, study_id_array)
         return result
 
     @classmethod

@@ -103,6 +103,16 @@ class BigQueryCohortSupport(object):
             'study_id': study_id
         }
 
+    # Create a cohort based on a dictionary of sample, patient/case/participant, and study IDs
+    def add_cohort_to_bq(self, cohort_id, samples):
+        rows = []
+        for sample in samples:
+            rows.append(self._build_cohort_row(cohort_id, patient_barcode=sample['participant_barcode'], sample_barcode=sample['sample_barcode'], study_id=sample['study_id']))
+
+        response = self._streaming_insert(rows)
+        return response
+
+    # Create a cohort based only on sample and optionally study IDs (patient/participant/case ID is NOT added)
     def add_cohort_with_sample_barcodes(self, cohort_id, samples):
         rows = []
         for sample in samples:

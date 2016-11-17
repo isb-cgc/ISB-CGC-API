@@ -42,13 +42,13 @@ class GoogleGenomicsList(messages.Message):
     count = messages.IntegerField(2, variant=messages.Variant.INT32)
 
 
-@ISB_CGC_Endpoints.api_class(resource_name='samples')
+# @ISB_CGC_Endpoints.api_class(resource_name='samples')
 class SamplesGoogleGenomicsAPI(remote.Service):
 
     GET_RESOURCE = endpoints.ResourceContainer(sample_barcode=messages.StringField(1, required=True))
 
-    @endpoints.method(GET_RESOURCE, GoogleGenomicsList, http_method='GET',
-                      path='samples/{sample_barcode}/googlegenomics')
+    # @endpoints.method(GET_RESOURCE, GoogleGenomicsList, http_method='GET',
+    #                   path='samples/{sample_barcode}/googlegenomics')
     def googlegenomics(self, request):
         """
         Takes a sample barcode as a required parameter and returns the Google Genomics dataset id
