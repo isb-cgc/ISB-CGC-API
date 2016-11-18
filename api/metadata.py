@@ -27,7 +27,7 @@ from django.contrib.auth.models import User as Django_User
 from allauth.socialaccount.models import SocialToken, SocialAccount
 from accounts.models import NIH_User
 from cohorts.models import Cohort_Perms,  Cohort as Django_Cohort,Patients, Samples, Filters
-from projects.models import Study, User_Feature_Definitions, User_Feature_Counts, User_Data_Tables
+from projects.models import Project, User_Feature_Definitions, User_Feature_Counts, User_Data_Tables
 from django.core.signals import request_finished
 from time import sleep
 import django
@@ -762,7 +762,7 @@ def generateSQLQuery(request):
     # Check for passed in saved search id
     if request.__getattribute__('cohort_id') is not None:
         cohort_id = str(request.cohort_id)
-        sample_query_str = 'SELECT sample_id FROM cohorts_samples WHERE cohort_id=%s AND study_id IS NULL;'
+        sample_query_str = 'SELECT sample_id FROM cohorts_samples WHERE cohort_id=%s AND project_id IS NULL;'
 
         try:
             cursor = db.cursor(MySQLdb.cursors.DictCursor)
@@ -1014,7 +1014,7 @@ def count_metadata(user, cohort_id=None, sample_ids=None, filters=None):
     counts_and_total = {}
     sample_tables = {}
     valid_attrs = {}
-    study_ids = ()
+    project_ids = ()
     table_key_map = {}
 
     if filters is None:
@@ -1024,10 +1024,10 @@ def count_metadata(user, cohort_id=None, sample_ids=None, filters=None):
         sample_ids = {}
 
     for key in sample_ids:
-        samples_by_study = sample_ids[key]
+        samples_by_project = sample_ids[key]
         sample_ids[key] = {
-            'SampleBarcode': build_where_clause({'SampleBarcode': samples_by_study}),
-            'sample_barcode': build_where_clause({'sample_barcode': samples_by_study}),
+            'SampleBarcode': build_where_clause({'SampleBarcode': samples_by_project}),
+            'sample_barcode': build_where_clause({'sample_barcode': samples_by_project}),
         }
 
     db = sql_connection()
@@ -1053,23 +1053,23 @@ def count_metadata(user, cohort_id=None, sample_ids=None, filters=None):
 
         # If we have a user, get a list of valid studies
         if user:
-            for study in Study.get_user_studies(user):
-                if 'user_studies' not in filters or study.id in filters['user_studies']['values']:
-                    study_ids += (study.id,)
+            for project in Project.get_user_studies(user):
+                if 'user_studies' not in filters or project.id in filters['user_studies']['values']:
+                    project_ids += (project.id,)
 
-                    for tables in User_Data_Tables.objects.filter(study=study):
+                    for tables in User_Data_Tables.objects.filter(project=project):
                         sample_tables[tables.metadata_samples_table] = {'sample_ids': None}
-                        if sample_ids and study.id in sample_ids:
-                            sample_tables[tables.metadata_samples_table]['sample_ids'] = sample_ids[study.id]
+                        if sample_ids and project.id in sample_ids:
+                            sample_tables[tables.metadata_samples_table]['sample_ids'] = sample_ids[project.id]
 
-            features = User_Feature_Definitions.objects.filter(study__in=study_ids)
+            features = User_Feature_Definitions.objects.filter(project__in=project_ids)
             for feature in features:
                 if ' ' in feature.feature_name:
                     # It is not a column name and comes from molecular data, ignore it
                     continue
 
                 name = feature.feature_name
-                key = 'study:' + str(feature.study_id) + ':' + name
+                key = 'study:' + str(feature.project_id) + ':' + name
 
                 if feature.shared_map_id:
                     key = feature.shared_map_id
@@ -1078,7 +1078,7 @@ def count_metadata(user, cohort_id=None, sample_ids=None, filters=None):
                 if key not in valid_attrs:
                     valid_attrs[key] = {'name': name, 'tables': (), 'sample_ids': None}
 
-                for tables in User_Data_Tables.objects.filter(study_id=feature.study_id):
+                for tables in User_Data_Tables.objects.filter(project_id=feature.project_id):
                     valid_attrs[key]['tables'] += (tables.metadata_samples_table,)
 
                     if tables.metadata_samples_table not in table_key_map:
@@ -1088,8 +1088,8 @@ def count_metadata(user, cohort_id=None, sample_ids=None, filters=None):
                     if key in filters:
                         filters[key]['tables'] += (tables.metadata_samples_table,)
 
-                    if sample_ids and feature.study_id in sample_ids:
-                        valid_attrs[key]['sample_ids'] = sample_ids[feature.study_id]
+                    if sample_ids and feature.project_id in sample_ids:
+                        valid_attrs[key]['sample_ids'] = sample_ids[feature.project_id]
         else:
             print "User not authenticated with Metadata Endpoint API"
 
@@ -1211,7 +1211,7 @@ def count_metadata(user, cohort_id=None, sample_ids=None, filters=None):
 
 def query_samples_and_studies(parameter, bucket_by=None):
 
-    query_str = 'SELECT sample_id, study_id FROM cohorts_samples WHERE cohort_id=%s;'
+    query_str = 'SELECT sample_id, project_id FROM cohorts_samples WHERE cohort_id=%s;'
 
     if bucket_by is not None and bucket_by not in query_str:
         logging.error("Cannot group barcodes: column '" + bucket_by +
@@ -1237,7 +1237,7 @@ def query_samples_and_studies(parameter, bucket_by=None):
                     samples[row[bucket_by]] = []
                 samples[row[bucket_by]].append(row['sample_id'])
             else:
-                samples += ({"sample_id": row['sample_id'], "study_id": row['study_id']},)
+                samples += ({"sample_id": row['sample_id'], "project_id": row['project_id']},)
         cursor.close()
         db.close()
 
@@ -2141,12 +2141,12 @@ class Meta_Endpoints_API_v2(remote.Service):
                                    ))
 
             if user:
-                studies = Study.get_user_studies(user)
-                feature_defs = User_Feature_Definitions.objects.filter(study__in=studies)
+                studies = Project.get_user_studies(user)
+                feature_defs = User_Feature_Definitions.objects.filter(project__in=studies)
                 for feature in feature_defs:
-                    data_table = User_Data_Tables.objects.get(study=feature.study).metadata_samples_table
+                    data_table = User_Data_Tables.objects.get(project=feature.project).metadata_samples_table
                     name = feature.feature_name
-                    key = 'study:' + str(feature.study_id) + ':' + name
+                    key = 'study:' + str(feature.project_id) + ':' + name
 
                     if feature.shared_map_id:
                         key = feature.shared_map_id
@@ -2200,7 +2200,7 @@ class Meta_Endpoints_API_v2(remote.Service):
         # Check for passed in saved search id
         if request.__getattribute__('cohort_id') is not None:
             cohort_id = str(request.cohort_id)
-            sample_ids = query_samples_and_studies(cohort_id, 'study_id')
+            sample_ids = query_samples_and_studies(cohort_id, 'project_id')
 
         start = time.time()
         counts_and_totals = count_metadata(user, cohort_id, sample_ids, filters)
@@ -2226,7 +2226,7 @@ class Meta_Endpoints_API_v2(remote.Service):
         sample_tables = {}
         table_key_map = {}
         sample_ids = None
-        study_ids = ()
+        project_ids = ()
         cohort_id = None
         cursor = None
         db = None
@@ -2265,7 +2265,7 @@ class Meta_Endpoints_API_v2(remote.Service):
         # Check for passed in saved search id
         if request.__getattribute__('cohort_id') is not None:
             cohort_id = str(request.cohort_id)
-            sample_ids = query_samples_and_studies(cohort_id, 'study_id')
+            sample_ids = query_samples_and_studies(cohort_id, 'project_id')
 
         if mutation_filters:
             mutation_where_clause = build_where_clause(mutation_filters)
@@ -2333,7 +2333,7 @@ class Meta_Endpoints_API_v2(remote.Service):
 
         # Add TCGA attributes to the list of available attributes
         if 'user_studies' not in filters or 'tcga' in filters['user_studies']['values']:
-            sample_tables['metadata_samples'] = {'features': {}, 'barcode': 'SampleBarcode', 'study_id': None}
+            sample_tables['metadata_samples'] = {'features': {}, 'barcode': 'SampleBarcode', 'project_id': None}
             cursor = db.cursor(MySQLdb.cursors.DictCursor)
             cursor.execute('SELECT attribute, spec FROM metadata_attr')
             for row in cursor.fetchall():
@@ -2346,22 +2346,22 @@ class Meta_Endpoints_API_v2(remote.Service):
 
         # If we have a user, get a list of valid studies
         if user:
-            for study in Study.get_user_studies(user):
-                if 'user_studies' not in filters or study.id in filters['user_studies']['values']:
-                    study_ids += (study.id,)
+            for project in Project.get_user_studies(user):
+                if 'user_studies' not in filters or project.id in filters['user_studies']['values']:
+                    project_ids += (project.id,)
 
-                    # Add all tables from each study
-                    for tables in User_Data_Tables.objects.filter(study=study):
+                    # Add all tables from each project
+                    for tables in User_Data_Tables.objects.filter(project=project):
                         sample_tables[tables.metadata_samples_table] = {
                             'features':{},
                             'barcode':'SampleBarcode' if tables.metadata_samples_table == 'metadata_samples' else 'sample_barcode',
-                            'study_id': study.id
+                            'project_id': project.id
                         }
 
                     # Record features that should be in each sample table so we can know how and when we need to query
-                    for feature in User_Feature_Definitions.objects.filter(study=study):
+                    for feature in User_Feature_Definitions.objects.filter(project=project):
                         name = feature.feature_name
-                        key = 'study:' + str(study.id) + ':' + name
+                        key = 'study:' + str(project.id) + ':' + name
 
                         if feature.shared_map_id:
                             key = feature.shared_map_id
@@ -2370,7 +2370,7 @@ class Meta_Endpoints_API_v2(remote.Service):
                         if key not in valid_attrs:
                             valid_attrs[key] = {'name': name}
 
-                        for tables in User_Data_Tables.objects.filter(study=feature.study_id):
+                        for tables in User_Data_Tables.objects.filter(project=feature.project_id):
                             sample_tables[tables.metadata_samples_table]['features'][key] = feature.feature_name
 
                             if key in filters:
@@ -2403,15 +2403,15 @@ class Meta_Endpoints_API_v2(remote.Service):
             cursor = db.cursor()
             cursor.execute(query, where_clause['value_tuple'])
             for row in cursor.fetchall():
-                study_id = table_settings['study_id']
-                if cohort_id and (study_id not in sample_ids or row[0] not in sample_ids[study_id]):
+                project_id = table_settings['project_id']
+                if cohort_id and (project_id not in sample_ids or row[0] not in sample_ids[project_id]):
                     # This barcode was not in our cohort's list of barcodes, skip it
                     continue
                 if mutation_filters:
                     if row[0] in mutation_results:
-                        results.append(SampleBarcodeItem(sample_barcode=row[0], study_id=table_settings['study_id']))
+                        results.append(SampleBarcodeItem(sample_barcode=row[0], study_id=table_settings['project_id']))
                 else:
-                    results.append(SampleBarcodeItem(sample_barcode=row[0], study_id=table_settings['study_id']) )
+                    results.append(SampleBarcodeItem(sample_barcode=row[0], study_id=table_settings['project_id']) )
             cursor.close()
 
         db.close()
@@ -2429,7 +2429,7 @@ class Meta_Endpoints_API_v2(remote.Service):
         db = None
 
         cohort_id = str(request.cohort_id)
-        sample_query_str = 'SELECT sample_id, study_id FROM cohorts_samples WHERE cohort_id=%s;'
+        sample_query_str = 'SELECT sample_id, project_id FROM cohorts_samples WHERE cohort_id=%s;'
 
         try:
             db = sql_connection()
@@ -2612,7 +2612,7 @@ class Meta_Endpoints_API_v2(remote.Service):
         """ Used by the web application."""
         filters = {}
         sample_ids = None
-        samples_by_study = None
+        samples_by_project = None
         cohort_id = None
         participants = 0
         user = get_current_user(request)
@@ -2637,18 +2637,18 @@ class Meta_Endpoints_API_v2(remote.Service):
             samples = query_samples_and_studies(cohort_id, )
 
             sample_ids = ()
-            samples_by_study = {}
+            samples_by_project = {}
 
             for sample in samples:
                 sample_ids += (sample['sample_id'],)
-                if sample['study_id'] not in samples_by_study:
-                    samples_by_study[sample['study_id']] = []
-                samples_by_study[sample['study_id']].append(sample['sample_id'])
+                if sample['project_id'] not in samples_by_project:
+                    samples_by_project[sample['project_id']] = []
+                samples_by_project[sample['project_id']].append(sample['sample_id'])
 
             participants = get_participant_count(sample_ids)
 
         start = time.time()
-        counts_and_total = count_metadata(user, cohort_id, samples_by_study, filters)
+        counts_and_total = count_metadata(user, cohort_id, samples_by_project, filters)
         stop = time.time()
         logger.debug(
             "[BENCHMARKING] In api/metadata, time to query metadata_counts "

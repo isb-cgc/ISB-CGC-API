@@ -94,42 +94,42 @@ class BigQueryCohortSupport(object):
         return response
 
     def _build_cohort_row(self, cohort_id,
-                          patient_barcode=None, sample_barcode=None, aliquot_barcode=None, study_id=None):
+                          patient_barcode=None, sample_barcode=None, aliquot_barcode=None, project_id=None):
         return {
             'cohort_id': cohort_id,
             'patient_barcode': patient_barcode,
             'sample_barcode': sample_barcode,
             'aliquot_barcode': aliquot_barcode,
-            'study_id': study_id
+            'project_id': project_id
         }
 
-    # Create a cohort based on a dictionary of sample, patient/case/participant, and study IDs
+    # Create a cohort based on a dictionary of sample, patient/case/participant, and project IDs
     def add_cohort_to_bq(self, cohort_id, samples):
         rows = []
         for sample in samples:
-            rows.append(self._build_cohort_row(cohort_id, patient_barcode=sample['participant_barcode'], sample_barcode=sample['sample_barcode'], study_id=sample['study_id']))
+            rows.append(self._build_cohort_row(cohort_id, patient_barcode=sample['participant_barcode'], sample_barcode=sample['sample_barcode'], project_id=sample['project_id']))
 
         response = self._streaming_insert(rows)
         return response
 
-    # Create a cohort based only on sample and optionally study IDs (patient/participant/case ID is NOT added)
+    # Create a cohort based only on sample and optionally project IDs (patient/participant/case ID is NOT added)
     def add_cohort_with_sample_barcodes(self, cohort_id, samples):
         rows = []
         for sample in samples:
             # TODO This is REALLY specific to TCGA. This needs to be changed
             # patient_barcode = sample_barcode[:12]
             barcode = sample
-            study_id = None
+            project_id = None
             if isinstance(sample, tuple):
                 barcode = sample[0]
                 if len(sample) > 1:
-                    study_id = sample[1]
+                    project_id = sample[1]
             elif isinstance(sample, dict):
                 barcode = sample['sample_id']
-                if 'study_id' in sample:
-                    study_id = sample['study_id']
+                if 'project_id' in sample:
+                    project_id = sample['project_id']
 
-            rows.append(self._build_cohort_row(cohort_id, sample_barcode=barcode, study_id=study_id))
+            rows.append(self._build_cohort_row(cohort_id, sample_barcode=barcode, project_id=project_id))
 
         response = self._streaming_insert(rows)
         return response

@@ -37,7 +37,7 @@ from api.pairwise import PairwiseInputVector, Pairwise
 from api.pairwise_api import PairwiseResults, PairwiseResultVector, PairwiseFilterMessage
 from api.api_helpers import sql_connection
 
-from projects.models import Study
+from projects.models import Project
 
 import sys
 
@@ -496,7 +496,7 @@ class FeatureDataEndpoints(remote.Service):
                     logging.error("Invalid internal feature ID '{}'".format(feature_id))
                     raise NotFoundException()
 
-            # Get the study IDs these cohorts' samples come from
+            # Get the project IDs these cohorts' samples come from
             cohort_vals = ()
             cohort_params = ""
 
@@ -525,11 +525,11 @@ class FeatureDataEndpoints(remote.Service):
                     unconfirmed_study_ids.append(row[0])
 
             if len(unconfirmed_study_ids) > 0:
-                studies = Study.objects.filter(id__in=unconfirmed_study_ids)
+                projects = Project.objects.filter(id__in=unconfirmed_study_ids)
 
-                for study in studies:
-                    if study.get_my_root_and_depth()['root'] in tcga_studies:
-                        confirmed_study_ids.append(study.id)
+                for project in projects:
+                    if project.get_my_root_and_depth()['root'] in tcga_studies:
+                        confirmed_study_ids.append(project.id)
 
             return self.get_merged_feature_vectors(x_id, y_id, c_id, cohort_id_array, logTransform, confirmed_study_ids)
         except NotFoundException as nfe:
