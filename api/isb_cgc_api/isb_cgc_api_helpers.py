@@ -150,12 +150,12 @@ class CohortsGetListQueryBuilder(object):
 
     def build_patients_query(self, patient_query_dict):
         """
-        Builds the query that selects the patient count for a particular cohort
+        Builds the query that selects the case count for a particular cohort
         :param patient_query_dict: should be {'cohort_id': str(row['id])}
         :return: patient_query_str, patient_query_tuple
         """
-        patients_query_str = 'SELECT patient_id ' \
-                             'FROM cohorts_patients '
+        patients_query_str = 'SELECT case_barcode ' \
+                             'FROM cohorts_samples '
 
         patients_query_str += ' WHERE ' + '=%s AND '.join(key for key in patient_query_dict.keys()) + '=%s '
         patient_query_tuple = tuple(value for value in patient_query_dict.values())
@@ -168,7 +168,7 @@ class CohortsGetListQueryBuilder(object):
         :param sample_query_dict: should be {'cohort_id': str(row['id])}
         :return: sample_query_str, sample_query_tuple
         """
-        samples_query_str = 'SELECT sample_id ' \
+        samples_query_str = 'SELECT sample_barcode ' \
                             'FROM cohorts_samples '
 
         samples_query_str += ' WHERE ' + '=%s AND '.join(key for key in sample_query_dict.keys()) + '=%s '
@@ -218,7 +218,7 @@ class CohortsCreatePreviewQueryBuilder(object):
                             'FROM metadata_samples ' \
                             'WHERE '
 
-        sample_query_str = 'SELECT SampleBarcode ' \
+        sample_query_str = 'SELECT SampleBarcode, IF(ParticipantBarcode="", LEFT(SampleBarcode,12), ParticipantBarcode) AS ParticipantBarcode ' \
                            'FROM metadata_samples ' \
                            'WHERE '
         value_tuple = ()
@@ -309,7 +309,7 @@ class CohortsSamplesFilesQueryBuilder(object):
         if cohort_id is None:
             query_str += 'WHERE SampleBarcode=%s '
         else:
-            query_str += 'JOIN cohorts_samples ON metadata_data.SampleBarcode=cohorts_samples.sample_id ' \
+            query_str += 'JOIN cohorts_samples ON metadata_data.SampleBarcode=cohorts_samples.sample_barcode ' \
                          'WHERE cohorts_samples.cohort_id=%s '
 
         query_str += 'AND DataFileNameKey != "" AND DataFileNameKey is not null '

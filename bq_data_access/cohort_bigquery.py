@@ -1,6 +1,6 @@
 """
 
-Copyright 2015, Institute for Systems Biology
+Copyright 2016, Institute for Systems Biology
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@ limitations under the License.
 """
 
 from copy import deepcopy
+import sys
 
 from api.api_helpers import authorize_credentials_with_Google
 
@@ -51,7 +52,7 @@ class BigQueryCohortSupport(object):
             "type": "STRING"
         },
         {
-            "name": "study_id",
+            "name": "project_id",
             "type": "INTEGER"
         }
     ]
@@ -86,6 +87,8 @@ class BigQueryCohortSupport(object):
 
         body = self._build_request_body_from_rows(rows)
 
+        print >> sys.stdout, self.project_id+":"+self.dataset_id+":"+self.table_id
+
         response = table_data.insertAll(projectId=self.project_id,
                                         datasetId=self.dataset_id,
                                         tableId=self.table_id,
@@ -110,6 +113,9 @@ class BigQueryCohortSupport(object):
             rows.append(self._build_cohort_row(cohort_id, patient_barcode=sample['participant_barcode'], sample_barcode=sample['sample_barcode'], project_id=sample['project_id']))
 
         response = self._streaming_insert(rows)
+
+        print >> sys.stdout, response.__str__()
+
         return response
 
     # Create a cohort based only on sample and optionally project IDs (patient/participant/case ID is NOT added)

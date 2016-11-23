@@ -26,7 +26,7 @@ from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 from django.contrib.auth.models import User as Django_User
 from allauth.socialaccount.models import SocialToken, SocialAccount
 from accounts.models import NIH_User
-from cohorts.models import Cohort_Perms,  Cohort as Django_Cohort,Patients, Samples, Filters
+from cohorts.models import Cohort_Perms,  Cohort as Django_Cohort, Samples, Filters
 from projects.models import Project, User_Feature_Definitions, User_Feature_Counts, User_Data_Tables
 from django.core.signals import request_finished
 from time import sleep
@@ -762,7 +762,7 @@ def generateSQLQuery(request):
     # Check for passed in saved search id
     if request.__getattribute__('cohort_id') is not None:
         cohort_id = str(request.cohort_id)
-        sample_query_str = 'SELECT sample_id FROM cohorts_samples WHERE cohort_id=%s AND project_id IS NULL;'
+        sample_query_str = 'SELECT sample_barcode FROM cohorts_samples WHERE cohort_id=%s AND project_id IS NULL;'
 
         try:
             cursor = db.cursor(MySQLdb.cursors.DictCursor)
@@ -770,7 +770,7 @@ def generateSQLQuery(request):
             sample_ids = ()
 
             for row in cursor.fetchall():
-                sample_ids += (row['sample_id'],)
+                sample_ids += (row['sample_barcode'],)
             cursor.close()
 
         except (TypeError, IndexError) as e:
@@ -1211,7 +1211,7 @@ def count_metadata(user, cohort_id=None, sample_ids=None, filters=None):
 
 def query_samples_and_studies(parameter, bucket_by=None):
 
-    query_str = 'SELECT sample_id, project_id FROM cohorts_samples WHERE cohort_id=%s;'
+    query_str = 'SELECT sample_barcode, project_id FROM cohorts_samples WHERE cohort_id=%s;'
 
     if bucket_by is not None and bucket_by not in query_str:
         logging.error("Cannot group barcodes: column '" + bucket_by +
@@ -1235,9 +1235,9 @@ def query_samples_and_studies(parameter, bucket_by=None):
             if bucket_by is not None:
                 if row[bucket_by] not in samples:
                     samples[row[bucket_by]] = []
-                samples[row[bucket_by]].append(row['sample_id'])
+                samples[row[bucket_by]].append(row['sample_barcode'])
             else:
-                samples += ({"sample_id": row['sample_id'], "project_id": row['project_id']},)
+                samples += ({"sample_id": row['sample_barcode'], "project_id": row['project_id']},)
         cursor.close()
         db.close()
 
@@ -1272,7 +1272,7 @@ class Meta_Endpoints_API(remote.Service):
         # Check for passed in saved search id
         if request.__getattribute__('cohort_id') is not None:
             cohort_id = str(request.cohort_id)
-            sample_query_str = 'SELECT sample_id FROM cohorts_samples WHERE cohort_id=%s;'
+            sample_query_str = 'SELECT sample_barcode FROM cohorts_samples WHERE cohort_id=%s;'
 
             try:
                 cursor = db.cursor(MySQLdb.cursors.DictCursor)
@@ -1280,7 +1280,7 @@ class Meta_Endpoints_API(remote.Service):
                 sample_ids = ()
 
                 for row in cursor.fetchall():
-                    sample_ids += (row['sample_id'],)
+                    sample_ids += (row['sample_barcode'],)
 
             except (TypeError, IndexError) as e:
                 print e
@@ -1575,7 +1575,7 @@ class Meta_Endpoints_API(remote.Service):
         # Check for passed in saved search id
         if request.__getattribute__('cohort_id') is not None:
             cohort_id = str(request.cohort_id)
-            sample_query_str = 'SELECT sample_id FROM cohorts_samples WHERE cohort_id=%s;'
+            sample_query_str = 'SELECT sample_barcode FROM cohorts_samples WHERE cohort_id=%s;'
 
             try:
                 db = sql_connection()
@@ -1584,7 +1584,7 @@ class Meta_Endpoints_API(remote.Service):
                 sample_ids = ()
 
                 for row in cursor.fetchall():
-                    sample_ids += (row['sample_id'],)
+                    sample_ids += (row['sample_barcode'],)
                 cursor.close()
                 db.close()
 
@@ -1891,7 +1891,7 @@ class Meta_Endpoints_API(remote.Service):
         if request.__getattribute__('limit') is not None:
             limit = request.limit
 
-        sample_query = 'select sample_id from cohorts_samples where cohort_id=%s;'
+        sample_query = 'select sample_barcode from cohorts_samples where cohort_id=%s;'
         sample_list = ()
         try:
             db = sql_connection()
@@ -1900,7 +1900,7 @@ class Meta_Endpoints_API(remote.Service):
             in_clause = '('
             first = True
             for row in cursor.fetchall():
-                sample_list += (row['sample_id'],)
+                sample_list += (row['sample_barcode'],)
                 if first:
                     in_clause += '%s'
                     first = False
@@ -2429,7 +2429,7 @@ class Meta_Endpoints_API_v2(remote.Service):
         db = None
 
         cohort_id = str(request.cohort_id)
-        sample_query_str = 'SELECT sample_id, project_id FROM cohorts_samples WHERE cohort_id=%s;'
+        sample_query_str = 'SELECT sample_barcode, project_id FROM cohorts_samples WHERE cohort_id=%s;'
 
         try:
             db = sql_connection()
@@ -2438,7 +2438,7 @@ class Meta_Endpoints_API_v2(remote.Service):
             sample_ids = []
 
             for row in cursor.fetchall():
-                sample_ids.append(row['sample_id'])
+                sample_ids.append(row['sample_barcode'])
 
             participant_query = 'SELECT DISTINCT ParticipantBarcode from metadata_samples where SampleBarcode in ('
             first = True
@@ -2496,7 +2496,7 @@ class Meta_Endpoints_API_v2(remote.Service):
         # Check for passed in saved search id
         if request.__getattribute__('cohort_id') is not None:
             cohort_id = str(request.cohort_id)
-            sample_query_str = 'SELECT sample_id FROM cohorts_samples WHERE cohort_id=%s;'
+            sample_query_str = 'SELECT sample_barcode FROM cohorts_samples WHERE cohort_id=%s;'
 
             try:
                 cursor = db.cursor(MySQLdb.cursors.DictCursor)
@@ -2507,7 +2507,7 @@ class Meta_Endpoints_API_v2(remote.Service):
                 sample_ids = ()
 
                 for row in cursor.fetchall():
-                    sample_ids += (row['sample_id'],)
+                    sample_ids += (row['sample_barcode'],)
 
             except (TypeError, IndexError) as e:
                 print e
