@@ -128,7 +128,7 @@ class ClinicalFeatureProvider(FeatureDataProvider):
              "    SELECT sample_barcode "
              "    FROM [{project_name}:{cohort_dataset}.{cohort_table}] "
              "    WHERE cohort_id IN ({cohort_id_list})"
-             "          AND (project_id_id IS NULL")
+             "          AND (project_id IS NULL")
 
         query_template += (" OR project_id IN ({project_id_list})))" if project_id_array is not None else "))")
         query_template += " GROUP BY clin.ParticipantBarcode, biospec.sample_id, clin.{column_name}"

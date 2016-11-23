@@ -30,7 +30,7 @@ import django
 import MySQLdb
 import json
 from metadata import MetadataItem
-from cohorts.models import Cohort as Django_Cohort, Cohort_Perms, Patients, Samples, Filters
+from cohorts.models import Cohort as Django_Cohort, Cohort_Perms, Samples, Filters
 from bq_data_access.cohort_bigquery import BigQueryCohortSupport
 from api_helpers import *
 
@@ -721,20 +721,20 @@ class Cohort_Endpoints_API(remote.Service):
                 if db and db.open: db.close()
                 request_finished.send(self)
 
-            patient_query_str = 'select cohorts_patients.patient_id ' \
-                                'from cohorts_patients ' \
-                                'inner join cohorts_cohort_perms ' \
-                                'on cohorts_cohort_perms.cohort_id=cohorts_patients.cohort_id ' \
-                                'inner join cohorts_cohort ' \
-                                'on cohorts_patients.cohort_id=cohorts_cohort.id ' \
-                                'where cohorts_patients.cohort_id=%s ' \
-                                'and cohorts_cohort_perms.user_id=%s ' \
-                                'and cohorts_cohort.active=%s ' \
-                                'group by cohorts_patients.patient_id '
+            patient_query_str = 'select cohorts_samples.case_barcode ' \
+                                'from cohorts_samples cs ' \
+                                'inner join cohorts_cohort_perms ccp' \
+                                'on ccp.cohort_id=cs.cohort_id ' \
+                                'inner join cohorts_cohort cc' \
+                                'on cs.cohort_id=cc.id ' \
+                                'where cs.cohort_id=%s ' \
+                                'and ccp.user_id=%s ' \
+                                'and cc.active=%s ' \
+                                'group by cs.case_barcode '
 
             patient_query_tuple = (cohort_id, user_id, unicode('1'))
 
-            sample_query_str = 'select cohorts_samples.sample_id ' \
+            sample_query_str = 'select cohorts_samples.sample_barcode ' \
                                'from cohorts_samples ' \
                                'inner join cohorts_cohort_perms ' \
                                'on cohorts_cohort_perms.cohort_id=cohorts_samples.cohort_id ' \
@@ -743,7 +743,7 @@ class Cohort_Endpoints_API(remote.Service):
                                'where cohorts_samples.cohort_id=%s ' \
                                'and cohorts_cohort_perms.user_id=%s ' \
                                'and cohorts_cohort.active=%s ' \
-                               'group by cohorts_samples.sample_id '
+                               'group by cohorts_samples.sample_barcode '
 
             sample_query_tuple = (cohort_id, user_id, unicode('1'))
 
@@ -754,12 +754,12 @@ class Cohort_Endpoints_API(remote.Service):
                 cursor.execute(patient_query_str, patient_query_tuple)
                 patient_data = []
                 for row in cursor.fetchall():
-                    patient_data.append(row['patient_id'])
+                    patient_data.append(row['case_barcode'])
 
                 cursor.execute(sample_query_str, sample_query_tuple)
                 sample_data = []
                 for row in cursor.fetchall():
-                    sample_data.append(row['sample_id'])
+                    sample_data.append(row['sample_barcode'])
 
                 return CohortPatientsSamplesList(patients=patient_data,
                                                  patient_count=len(patient_data),
@@ -1237,7 +1237,7 @@ class Cohort_Endpoints_API(remote.Service):
                 request_finished.send(self)
                 raise endpoints.UnauthorizedException(err_msg)
 
-            query_str += 'JOIN cohorts_samples ON metadata_data.SampleBarcode=cohorts_samples.sample_id ' \
+            query_str += 'JOIN cohorts_samples ON metadata_data.SampleBarcode=cohorts_samples.sample_barcode ' \
                          'WHERE cohorts_samples.cohort_id=%s ' \
                          'AND DataFileNameKey != "" AND DataFileNameKey is not null '
             query_tuple = (cohort_id,)
@@ -1444,43 +1444,29 @@ class Cohort_Endpoints_API(remote.Service):
                 if request.get_assigned_value(k.name) and k.name.endswith('_lte')
                 }
 
-            patient_query_str = 'SELECT DISTINCT(IF(ParticipantBarcode="", LEFT(SampleBarcode,12), ParticipantBarcode)) ' \
-                                'AS ParticipantBarcode ' \
-                                'FROM metadata_samples ' \
-                                'WHERE '
-
-            sample_query_str = 'SELECT SampleBarcode ' \
+            sample_query_str = 'SELECT SampleBarcode,  IF(ParticipantBarcode="", LEFT(SampleBarcode,12), ParticipantBarcode) AS ParticipantBarcode' \
                                'FROM metadata_samples ' \
                                'WHERE '
             value_tuple = ()
 
             for key, value_list in query_dict.iteritems():
-                patient_query_str += ' AND ' if not patient_query_str.endswith('WHERE ') else ''
                 sample_query_str += ' AND ' if not sample_query_str.endswith('WHERE ') else ''
                 if isinstance(value_list, collections.Iterable) and "None" in value_list:
                     value_list.remove("None")
-                    patient_query_str += ' ( {key} is null '.format(key=key)
                     sample_query_str += ' ( {key} is null '.format(key=key)
                     if len(value_list) > 0:
-                        patient_query_str += ' OR {key} IN ({vals}) '.format(key=key, vals=', '.join(['%s'] * len(value_list)))
                         sample_query_str += ' OR {key} IN ({vals}) '.format(key=key, vals=', '.join(['%s'] * len(value_list)))
-                    patient_query_str += ') '
                     sample_query_str += ') '
                 else:
-                    patient_query_str += ' {key} IN ({vals}) '.format(key=key, vals=', '.join(['%s'] * len(value_list)))
                     sample_query_str += ' {key} IN ({vals}) '.format(key=key, vals=', '.join(['%s'] * len(value_list)))
                 value_tuple += tuple(value_list)
 
             for key, value in gte_query_dict.iteritems():
-                patient_query_str += ' AND ' if not patient_query_str.endswith('WHERE ') else ''
-                patient_query_str += ' {} >=%s '.format(key)
                 sample_query_str += ' AND ' if not sample_query_str.endswith('WHERE ') else ''
                 sample_query_str += ' {} >=%s '.format(key)
                 value_tuple += (value,)
 
             for key, value in lte_query_dict.iteritems():
-                patient_query_str += ' AND ' if not patient_query_str.endswith('WHERE ') else ''
-                patient_query_str += ' {} <=%s '.format(key)
                 sample_query_str += ' AND ' if not sample_query_str.endswith('WHERE ') else ''
                 sample_query_str += ' {} <=%s '.format(key)
                 value_tuple += (value,)
@@ -1491,22 +1477,18 @@ class Cohort_Endpoints_API(remote.Service):
             sample_barcodes = []
             try:
                 db = sql_connection()
-                patient_cursor = db.cursor(MySQLdb.cursors.DictCursor)
-                patient_cursor.execute(patient_query_str, value_tuple)
-                for row in patient_cursor.fetchall():
-                    patient_barcodes.append(row['ParticipantBarcode'])
 
                 sample_cursor = db.cursor(MySQLdb.cursors.DictCursor)
                 sample_cursor.execute(sample_query_str, value_tuple)
                 for row in sample_cursor.fetchall():
-                    sample_barcodes.append(row['SampleBarcode'])
+                    sample_barcodes.append((row['SampleBarcode'],row['ParticipantBarcode'],))
 
             except (IndexError, TypeError), e:
                 logger.warn(e)
                 raise endpoints.NotFoundException("Error retrieving samples or patients")
             except MySQLdb.ProgrammingError as e:
-                msg = '{}:\n\tpatient query: {} {}\n\tsample query: {} {}' \
-                    .format(e, patient_query_str, value_tuple, sample_query_str, value_tuple)
+                msg = '{}:\n\tsample query: {} {}' \
+                    .format(e, sample_query_str, value_tuple)
                 logger.warn(msg)
                 raise endpoints.BadRequestException("Error saving cohort. {}".format(msg))
             finally:
@@ -1522,22 +1504,16 @@ class Cohort_Endpoints_API(remote.Service):
                                                           last_date_saved=datetime.utcnow())
             created_cohort.save()
 
-            # 2. insert patients into cohort_patients
-            patient_barcodes = list(set(patient_barcodes))
-            patient_list = [Patients(cohort=created_cohort, patient_id=patient_code) for patient_code in
-                            patient_barcodes]
-            Patients.objects.bulk_create(patient_list)
-
-            # 3. insert samples into cohort_samples
+            # 2. insert samples into cohort_samples
             sample_barcodes = list(set(sample_barcodes))
-            sample_list = [Samples(cohort=created_cohort, sample_id=sample_code) for sample_code in sample_barcodes]
+            sample_list = [Samples(cohort=created_cohort, sample_barcode=sample[0], case_barcode=sample[1]) for sample in sample_barcodes]
             Samples.objects.bulk_create(sample_list)
 
-            # 4. Set permission for user to be owner
+            # 3. Set permission for user to be owner
             perm = Cohort_Perms(cohort=created_cohort, user=django_user, perm=Cohort_Perms.OWNER)
             perm.save()
 
-            # 5. Create filters applied
+            # 4. Create filters applied
             filter_data = []
             for key, value_list in query_dict.items():
                 for val in value_list:
@@ -1548,7 +1524,7 @@ class Cohort_Endpoints_API(remote.Service):
                 filter_data.append(FilterDetails(name=key, value=str(val)))
                 Filters.objects.create(resulting_cohort=created_cohort, name=key, value=val).save()
 
-            # 6. Store cohort to BigQuery
+            # 5. Store cohort to BigQuery
             project_id = settings.BQ_PROJECT_ID
             cohort_settings = settings.GET_BQ_COHORT_SETTINGS()
             bcs = BigQueryCohortSupport(project_id, cohort_settings.dataset_id, cohort_settings.table_id)
@@ -1665,12 +1641,7 @@ class Cohort_Endpoints_API(remote.Service):
             if request.get_assigned_value(k.name) and k.name.endswith('_lte')
             }
 
-        patient_query_str = 'SELECT DISTINCT(IF(ParticipantBarcode="", LEFT(SampleBarcode,12), ParticipantBarcode)) ' \
-                            'AS ParticipantBarcode ' \
-                            'FROM metadata_samples ' \
-                            'WHERE '
-
-        sample_query_str = 'SELECT SampleBarcode ' \
+        sample_query_str = 'SELECT SampleBarcode,IF(ParticipantBarcode="", LEFT(SampleBarcode,12), ParticipantBarcode) AS ParticipantBarcode ' \
                            'FROM metadata_samples ' \
                            'WHERE '
 
@@ -1678,32 +1649,23 @@ class Cohort_Endpoints_API(remote.Service):
 
         for key, value_list in query_dict.iteritems():
 
-            patient_query_str += ' AND ' if not patient_query_str.endswith('WHERE ') else ''
             sample_query_str += ' AND ' if not sample_query_str.endswith('WHERE ') else ''
             if "None" in value_list:
                 value_list.remove("None")
-                patient_query_str += ' ( {key} is null '.format(key=key)
                 sample_query_str += ' ( {key} is null '.format(key=key)
                 if len(value_list) > 0:
-                    patient_query_str += ' OR {key} IN ({vals}) '.format(key=key, vals=', '.join(['%s'] * len(value_list)))
                     sample_query_str += ' OR {key} IN ({vals}) '.format(key=key, vals=', '.join(['%s'] * len(value_list)))
-                patient_query_str += ') '
                 sample_query_str += ') '
             else:
-                patient_query_str += ' {key} IN ({vals}) '.format(key=key, vals=', '.join(['%s'] * len(value_list)))
                 sample_query_str += ' {key} IN ({vals}) '.format(key=key, vals=', '.join(['%s'] * len(value_list)))
             value_tuple += tuple(value_list)
 
         for key, value in gte_query_dict.iteritems():
-            patient_query_str += ' AND ' if not patient_query_str.endswith('WHERE ') else ''
-            patient_query_str += ' {} >=%s '.format(key)
             sample_query_str += ' AND ' if not sample_query_str.endswith('WHERE ') else ''
             sample_query_str += ' {} >=%s '.format(key)
             value_tuple += (value,)
 
         for key, value in lte_query_dict.iteritems():
-            patient_query_str += ' AND ' if not patient_query_str.endswith('WHERE ') else ''
-            patient_query_str += ' {} <=%s '.format(key)
             sample_query_str += ' AND ' if not sample_query_str.endswith('WHERE ') else ''
             sample_query_str += ' {} <=%s '.format(key)
             value_tuple += (value,)
@@ -1715,26 +1677,22 @@ class Cohort_Endpoints_API(remote.Service):
 
         try:
             db = sql_connection()
-            patient_cursor = db.cursor(MySQLdb.cursors.DictCursor)
-            patient_cursor.execute(patient_query_str, value_tuple)
-            for row in patient_cursor.fetchall():
-                patient_barcodes.append(row['ParticipantBarcode'])
 
             sample_cursor = db.cursor(MySQLdb.cursors.DictCursor)
             sample_cursor.execute(sample_query_str, value_tuple)
             for row in sample_cursor.fetchall():
                 sample_barcodes.append(row['SampleBarcode'])
+                patient_barcodes.append(row['ParticipantBarcode'])
 
         except (IndexError, TypeError), e:
             logger.warn(e)
             raise endpoints.NotFoundException("Error retrieving samples or patients: {}".format(e))
         except MySQLdb.ProgrammingError as e:
-            msg = '{}:\n\tpatient query: {} {}\n\tsample query: {} {}' \
-                .format(e, patient_query_str, value_tuple, sample_query_str, value_tuple)
+            msg = '{}:\n\tsample query: {} {}' \
+                .format(e, sample_query_str, value_tuple)
             logger.warn(msg)
             raise endpoints.BadRequestException("Error previewing cohort. {}".format(msg))
         finally:
-            if patient_cursor: patient_cursor.close()
             if sample_cursor: sample_cursor.close()
             if db and db.open: db.close()
 
@@ -1790,7 +1748,7 @@ class Cohort_Endpoints_API(remote.Service):
 
             query_str = 'SELECT SampleBarcode, GG_dataset_id, GG_readgroupset_id ' \
                         'FROM metadata_data ' \
-                        'JOIN cohorts_samples ON metadata_data.SampleBarcode=cohorts_samples.sample_id ' \
+                        'JOIN cohorts_samples ON metadata_data.SampleBarcode=cohorts_samples.sample_barcode ' \
                         'WHERE cohorts_samples.cohort_id=%s ' \
                         'AND GG_dataset_id !="" AND GG_readgroupset_id !="" ' \
                         'GROUP BY SampleBarcode, GG_dataset_id, GG_readgroupset_id;'

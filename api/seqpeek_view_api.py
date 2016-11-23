@@ -29,7 +29,7 @@ from api.seqpeek_api import SeqPeekDataEndpointsAPI, MAFRecord, maf_array_to_rec
 from bq_data_access.seqpeek.seqpeek_maf_formatter import SeqPeekMAFDataFormatter
 from bq_data_access.seqpeek_maf_data import SeqPeekDataProvider
 from bq_data_access.data_access import ProviderClassQueryDescription
-from api.data_access import fetch_isbcgc_study_set
+from api.data_access import fetch_isbcgc_project_set
 from api.api_helpers import sql_connection
 
 
@@ -188,7 +188,7 @@ class SeqPeekViewDataAccessAPI(remote.Service):
             db = sql_connection()
             cursor = db.cursor()
 
-            tcga_studies = fetch_isbcgc_study_set()
+            tcga_studies = fetch_isbcgc_project_set()
 
             cursor.execute("SELECT DISTINCT study_id FROM cohorts_samples WHERE cohort_id IN (" + cohort_params + ");",
                            cohort_vals)
