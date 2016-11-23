@@ -47,7 +47,7 @@ VIZ_UNIT_DATADICTIONARY = {
     'BMI': 'kg/m^2',
 }
 
-ISB_CGC_STUDIES = {
+ISB_CGC_PROJECTS = {
     'list': []
 }
 
@@ -55,25 +55,25 @@ ISB_CGC_STUDIES = {
 # Due to the way sql connections are done, it's easiest to duplicate this method and the static variable
 # it creates. The original is in Cohorts/views, and all changes will happen there first.
 #
-# Generate the ISB_CGC_STUDIES['list'] value set based on the get_isbcgc_study_set sproc
-def fetch_isbcgc_study_set():
+# Generate the ISB_CGC_PROJECTS['list'] value set based on the get_isbcgc_project_set sproc
+def fetch_isbcgc_project_set():
     try:
         cursor = None
         db = sql_connection()
-        if not ISB_CGC_STUDIES['list'] or len(ISB_CGC_STUDIES['list']) <= 0:
+        if not ISB_CGC_PROJECTS['list'] or len(ISB_CGC_PROJECTS['list']) <= 0:
             cursor = db.cursor()
-            cursor.execute("SELECT COUNT(SPECIFIC_NAME) FROM INFORMATION_SCHEMA.ROUTINES WHERE SPECIFIC_NAME = 'get_isbcgc_study_set';")
+            cursor.execute("SELECT COUNT(SPECIFIC_NAME) FROM INFORMATION_SCHEMA.ROUTINES WHERE SPECIFIC_NAME = 'get_isbcgc_project_set';")
             # Only try to fetch the study set if the sproc exists
             if cursor.fetchall()[0][0] > 0:
-                cursor.execute("CALL get_isbcgc_study_set();")
-                ISB_CGC_STUDIES['list'] = []
+                cursor.execute("CALL get_isbcgc_project_set();")
+                ISB_CGC_PROJECTS['list'] = []
                 for row in cursor.fetchall():
-                    ISB_CGC_STUDIES['list'].append(row[0])
+                    ISB_CGC_PROJECTS['list'].append(row[0])
             else:
                 # Otherwise just warn
-                logger.warn("[WARNING] Stored procedure get_isbcgc_study_set was not found!")
+                logger.warn("[WARNING] Stored procedure get_isbcgc_project_set was not found!")
 
-        return ISB_CGC_STUDIES['list']
+        return ISB_CGC_PROJECTS['list']
     except Exception as e:
         logger.error(e)
         logger.error(traceback.format_exc())
@@ -509,9 +509,9 @@ class FeatureDataEndpoints(remote.Service):
             db = sql_connection()
             cursor = db.cursor()
 
-            tcga_studies = fetch_isbcgc_study_set()
+            tcga_studies = fetch_isbcgc_project_set()
 
-            cursor.execute("SELECT DISTINCT study_id FROM cohorts_samples WHERE cohort_id IN ("+cohort_params+");",cohort_vals)
+            cursor.execute("SELECT DISTINCT project_id FROM cohorts_samples WHERE cohort_id IN ("+cohort_params+");",cohort_vals)
 
             # Only samples whose source studies are TCGA studies, or extended from them, should be used
             confirmed_study_ids = []

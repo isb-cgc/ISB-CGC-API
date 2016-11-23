@@ -114,21 +114,15 @@ class CohortsGetAPI(remote.Service):
             parent_id_data = CohortsGetListMessageBuilder().make_parent_id_list_from_cursor(
                 cursor.fetchall(), row)
 
-            # get list of patients in this cohort
-            patient_query_str, patient_query_tuple = CohortsGetListQueryBuilder().build_patients_query(
-                {'cohort_id': str(row['id'])})
-            cursor.execute(patient_query_str, patient_query_tuple)
-            patient_list = [str(patient_row.get('patient_id'))
-                            for patient_row in cursor.fetchall()
-                            if patient_row.get('patient_id')]
-
-            # get list of samples in this cohort
+            # get list of samples and cases in this cohort
             sample_query_str, sample_query_tuple = CohortsGetListQueryBuilder().build_samples_query(
                 {'cohort_id': str(row['id'])})
             cursor.execute(sample_query_str, sample_query_tuple)
-            sample_list = [str(sample_row.get('sample_id'))
-                           for sample_row in cursor.fetchall()
-                           if sample_row.get('sample_id')]
+            sample_list = []
+            patient_list = []
+            for row in cursor.fetchall():
+                sample_list.append(row['sample_barcode'])
+                patient_list.append(row['case_barcode'])
 
             return CohortDetails(
                 id=str(row['id']),
