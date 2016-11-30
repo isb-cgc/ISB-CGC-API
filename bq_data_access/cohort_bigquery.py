@@ -40,7 +40,7 @@ class BigQueryCohortSupport(object):
             "mode": "REQUIRED"
         },
         {
-            "name": "patient_barcode",
+            "name": "case_barcode",
             "type": "STRING"
         },
         {
@@ -97,10 +97,10 @@ class BigQueryCohortSupport(object):
         return response
 
     def _build_cohort_row(self, cohort_id,
-                          patient_barcode=None, sample_barcode=None, aliquot_barcode=None, project_id=None):
+                          case_barcode=None, sample_barcode=None, aliquot_barcode=None, project_id=None):
         return {
             'cohort_id': cohort_id,
-            'patient_barcode': patient_barcode,
+            'case_barcode': case_barcode,
             'sample_barcode': sample_barcode,
             'aliquot_barcode': aliquot_barcode,
             'project_id': project_id
@@ -110,7 +110,7 @@ class BigQueryCohortSupport(object):
     def add_cohort_to_bq(self, cohort_id, samples):
         rows = []
         for sample in samples:
-            rows.append(self._build_cohort_row(cohort_id, patient_barcode=sample['participant_barcode'], sample_barcode=sample['sample_barcode'], project_id=sample['project_id']))
+            rows.append(self._build_cohort_row(cohort_id, case_barcode=sample['participant_barcode'], sample_barcode=sample['sample_barcode'], project_id=sample['project_id']))
 
         response = self._streaming_insert(rows)
 

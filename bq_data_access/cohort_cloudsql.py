@@ -76,7 +76,7 @@ class CloudSQLCohortAccess(object):
         # Generate the 'IN' statement string: (%s, %s, ..., %s)
         cohort_id_stmt = ', '.join(['%s' for x in xrange(len(cohort_id_array))])
 
-        query = 'SELECT sample_id, cohort_id FROM {cohort_samples_table} WHERE cohort_id IN ({cohort_id_stmt})'.format(
+        query = 'SELECT sample_barcode, cohort_id FROM {cohort_samples_table} WHERE cohort_id IN ({cohort_id_stmt})'.format(
             cohort_samples_table=DJANGO_COHORT_SAMPLES_TABLE,
             cohort_id_stmt=cohort_id_stmt)
 
@@ -90,10 +90,10 @@ class CloudSQLCohortAccess(object):
             cohort_per_samples = {}
 
             for row in result:
-                cohort_id, sample_id = row['cohort_id'], row['sample_id']
-                if sample_id not in cohort_per_samples:
-                    cohort_per_samples[sample_id] = []
-                cohort_per_samples[sample_id].append(cohort_id)
+                cohort_id, sample_barcode = row['cohort_id'], row['sample_barcode']
+                if sample_barcode not in cohort_per_samples:
+                    cohort_per_samples[sample_barcode] = []
+                cohort_per_samples[sample_barcode].append(cohort_id)
 
             cursor.close()
             db.close()
@@ -111,7 +111,7 @@ class CloudSQLCohortAccess(object):
         # Generate the 'IN' statement string: (%s, %s, ..., %s)
         cohort_id_stmt = ', '.join(['%s' for x in xrange(len(cohort_id_array))])
 
-        query_template = ("SELECT ti.id AS cohort_id, ti.name, COUNT(ts.sample_id) AS size "
+        query_template = ("SELECT ti.id AS cohort_id, ti.name, COUNT(ts.sample_barcode) AS size "
                           "FROM {cohort_info_table} ti "
                           "   LEFT JOIN {cohort_samples_table} ts ON ts.cohort_id = ti.id "
                           "WHERE ti.id IN ({cohort_id_stmt}) "
@@ -121,7 +121,7 @@ class CloudSQLCohortAccess(object):
             cohort_info_table=DJANGO_COHORT_INFO_TABLE,
             cohort_samples_table=DJANGO_COHORT_SAMPLES_TABLE,
             cohort_id_stmt=cohort_id_stmt)
-
+        print query
         try:
             db = sql_connection()
             cursor = db.cursor(DictCursor)
