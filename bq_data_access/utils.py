@@ -45,9 +45,10 @@ def find_all_id_keys(*vectors, **kwargs):
 
 
 class VectorMergeSupport(object):
-    def __init__(self, missing_value, sample_id_key, row_ids=[]):
+    def __init__(self, missing_value, sample_id_key, case_id_key, row_ids=[]):
         self.missing_value = missing_value
         self.sample_id_key = sample_id_key
+        self.case_id_key = case_id_key
 
         # Sparse data goes here
         self.data = OrderedDict()

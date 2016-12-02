@@ -17,6 +17,8 @@ limitations under the License.
 """
 
 import logging
+import sys
+import traceback
 
 from api.api_helpers import sql_connection
 
@@ -46,7 +48,7 @@ class CloudSQLCohortAccess(object):
     def get_cohort_barcodes(cls, cohort_id_array):
         # Generate the 'IN' statement string: (%s, %s, ..., %s)
         cohort_id_stmt = ', '.join(['%s' for x in xrange(len(cohort_id_array))])
-        query = 'SELECT sample_id AS barcode FROM {cohort_table} WHERE cohort_id IN ({cohort_id_stmt})'.format(
+        query = 'SELECT sample_barcode AS barcode FROM {cohort_table} WHERE cohort_id IN ({cohort_id_stmt})'.format(
             cohort_table=DJANGO_COHORT_TABLE,
             cohort_id_stmt=cohort_id_stmt)
         values = cohort_id_array
@@ -76,7 +78,7 @@ class CloudSQLCohortAccess(object):
         # Generate the 'IN' statement string: (%s, %s, ..., %s)
         cohort_id_stmt = ', '.join(['%s' for x in xrange(len(cohort_id_array))])
 
-        query = 'SELECT sample_id, cohort_id FROM {cohort_samples_table} WHERE cohort_id IN ({cohort_id_stmt})'.format(
+        query = 'SELECT sample_barcode, cohort_id FROM {cohort_samples_table} WHERE cohort_id IN ({cohort_id_stmt})'.format(
             cohort_samples_table=DJANGO_COHORT_SAMPLES_TABLE,
             cohort_id_stmt=cohort_id_stmt)
 
@@ -90,7 +92,7 @@ class CloudSQLCohortAccess(object):
             cohort_per_samples = {}
 
             for row in result:
-                cohort_id, sample_id = row['cohort_id'], row['sample_id']
+                cohort_id, sample_id = row['cohort_id'], row['sample_barcode']
                 if sample_id not in cohort_per_samples:
                     cohort_per_samples[sample_id] = []
                 cohort_per_samples[sample_id].append(cohort_id)
@@ -111,7 +113,7 @@ class CloudSQLCohortAccess(object):
         # Generate the 'IN' statement string: (%s, %s, ..., %s)
         cohort_id_stmt = ', '.join(['%s' for x in xrange(len(cohort_id_array))])
 
-        query_template = ("SELECT ti.id AS cohort_id, ti.name, COUNT(ts.sample_id) AS size "
+        query_template = ("SELECT ti.id AS cohort_id, ti.name, COUNT(ts.sample_barcode) AS size "
                           "FROM {cohort_info_table} ti "
                           "   LEFT JOIN {cohort_samples_table} ts ON ts.cohort_id = ti.id "
                           "WHERE ti.id IN ({cohort_id_stmt}) "
@@ -142,6 +144,9 @@ class CloudSQLCohortAccess(object):
             return result
 
         except Exception as e:
+            print >> sys.stdout, "[ERROR] In get_cohort_info: "
+            print >> sys.stdout, e
+            print >> sys.stdout, traceback.format_exc()
             raise CohortException('get_cohort_info CloudSQL error, cohort IDs {cohort_ids}: {message}'.format(
                 cohort_ids=cohort_id_array,
                 message=str(e.message)))
