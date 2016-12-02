@@ -213,12 +213,12 @@ class CohortsCreatePreviewQueryBuilder(object):
         Returns patient query string,  sample query string, value tuple.
         """
 
-        patient_query_str = 'SELECT DISTINCT(IF(ParticipantBarcode="", LEFT(SampleBarcode,12), ParticipantBarcode)) ' \
-                            'AS ParticipantBarcode ' \
+        patient_query_str = 'SELECT DISTINCT(IF(case_barcode="", LEFT(sample_barcode,12), case_barcode)) ' \
+                            'AS case_barcode ' \
                             'FROM metadata_samples ' \
                             'WHERE '
 
-        sample_query_str = 'SELECT SampleBarcode, IF(ParticipantBarcode="", LEFT(SampleBarcode,12), ParticipantBarcode) AS ParticipantBarcode ' \
+        sample_query_str = 'SELECT sample_barcode ' \
                            'FROM metadata_samples ' \
                            'WHERE '
         value_tuple = ()
@@ -309,7 +309,7 @@ class CohortsSamplesFilesQueryBuilder(object):
         if cohort_id is None:
             query_str += 'WHERE SampleBarcode=%s '
         else:
-            query_str += 'JOIN cohorts_samples ON metadata_data.SampleBarcode=cohorts_samples.sample_barcode ' \
+            query_str += 'JOIN cohorts_samples ON metadata_data.SampleBarcode=cohorts_samples.sample_id ' \
                          'WHERE cohorts_samples.cohort_id=%s '
 
         query_str += 'AND DataFileNameKey != "" AND DataFileNameKey is not null '

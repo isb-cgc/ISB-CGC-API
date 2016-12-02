@@ -92,10 +92,10 @@ class CloudSQLCohortAccess(object):
             cohort_per_samples = {}
 
             for row in result:
-                cohort_id, sample_id = row['cohort_id'], row['sample_barcode']
-                if sample_id not in cohort_per_samples:
-                    cohort_per_samples[sample_id] = []
-                cohort_per_samples[sample_id].append(cohort_id)
+                cohort_id, sample_barcode = row['cohort_id'], row['sample_barcode']
+                if sample_barcode not in cohort_per_samples:
+                    cohort_per_samples[sample_barcode] = []
+                cohort_per_samples[sample_barcode].append(cohort_id)
 
             cursor.close()
             db.close()
