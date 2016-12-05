@@ -152,10 +152,11 @@ DATAPOINT_COHORT_THRESHOLD = 1
 
 class PlotDataPoint(Message):
     sample_id = StringField(1)
-    x = StringField(2)
-    y = StringField(3)
-    c = StringField(4)
-    cohort = IntegerField(5, repeated=True)
+    case_id = StringField(2)
+    x = StringField(3)
+    y = StringField(4)
+    c = StringField(5)
+    cohort = IntegerField(6, repeated=True)
 
 
 class PlotDataTypes(Message):
@@ -392,7 +393,7 @@ class FeatureDataEndpoints(remote.Service):
                             "[WARNING] No valid log base was supplied - log transformation will not be applied!"
                         )
 
-        vms = VectorMergeSupport('NA', 'sample_id', ['x', 'y', 'c']) # changed so that it plots per sample not patient
+        vms = VectorMergeSupport('NA', 'sample_id', 'case_id', ['x', 'y', 'c']) # changed so that it plots per sample not patient
         vms.add_dict_array(x_vec, 'x', 'value')
         vms.add_dict_array(y_vec, 'y', 'value')
         vms.add_dict_array(c_vec, 'c', 'value')

@@ -115,7 +115,7 @@ class GEXPFeatureProvider(FeatureDataProvider):
         if project_id_array is not None:
             project_id_stmt = ', '.join([str(project_id) for project_id in project_id_array])
 
-        query_template = "SELECT ParticipantBarcode AS patient_id, SampleBarcode AS sample_id, AliquotBarcode AS aliquot_id, {value_field} AS value " \
+        query_template = "SELECT ParticipantBarcode AS case_id, SampleBarcode AS sample_id, AliquotBarcode AS aliquot_id, {value_field} AS value " \
              "FROM [{project_name}:{dataset_name}.{table_name}] AS gexp " \
              "WHERE {gene_label_field}='{gene_symbol}' " \
              "AND SampleBarcode IN ( " \
@@ -155,7 +155,7 @@ class GEXPFeatureProvider(FeatureDataProvider):
 
         for row in query_result_array:
             result.append({
-                'patient_id': row['f'][0]['v'],
+                'case_id': row['f'][0]['v'],
                 'sample_id': row['f'][1]['v'],
                 'aliquot_id': row['f'][2]['v'],
                 'value': float(row['f'][3]['v'])

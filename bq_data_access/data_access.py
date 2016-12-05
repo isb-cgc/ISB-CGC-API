@@ -163,7 +163,7 @@ def get_feature_vector(feature_id, cohort_id_array):
 
     items = []
     for data_point in result:
-        data_item = {key: data_point[key] for key in ['patient_id', 'sample_id', 'aliquot_id']}
+        data_item = {key: data_point[key] for key in ['case_id', 'sample_id', 'aliquot_id']}
         value = provider.process_data_point(data_point)
         # TODO refactor missing value logic
         if value is None:
@@ -290,7 +290,7 @@ def format_query_result_for_plot(provider_instance, query_result):
     data = []
 
     for data_point in query_result:
-        data_item = {key: data_point[key] for key in ['patient_id', 'sample_id', 'aliquot_id']}
+        data_item = {key: data_point[key] for key in ['case_id', 'sample_id', 'aliquot_id']}
         value = str(provider_instance.process_data_point(data_point))
 
         if value is None:
@@ -403,9 +403,9 @@ def get_feature_vector(feature_id, cohort_id_array):
         result = provider.get_data(cohort_id_array, cohort_settings.dataset_id, cohort_settings.table_id)
 
         # ex: result[0]
-        # {'aliquot_id': None, 'patient_id': u'TCGA-BH-A0B1', 'sample_id': u'TCGA-BH-A0B1-10A', 'value': u'BRCA'}
+        # {'aliquot_id': None, 'case_id': u'TCGA-BH-A0B1', 'sample_id': u'TCGA-BH-A0B1-10A', 'value': u'BRCA'}
         for data_point in result:
-            data_item = {key: data_point[key] for key in ['patient_id', 'sample_id', 'aliquot_id']}
+            data_item = {key: data_point[key] for key in ['case_id', 'sample_id', 'aliquot_id']}
             value = provider.process_data_point(data_point)
             # TODO refactor missing value logic
             if value is None:
@@ -422,7 +422,7 @@ def get_feature_vector(feature_id, cohort_id_array):
         result.extend(user_result)
 
         for data_point in user_result:
-            data_item = {key: data_point[key] for key in ['patient_id', 'sample_id', 'aliquot_id']}
+            data_item = {key: data_point[key] for key in ['case_id', 'sample_id', 'aliquot_id']}
             value = provider.process_data_point(data_point)
             # TODO refactor missing value logic
             if value is None:

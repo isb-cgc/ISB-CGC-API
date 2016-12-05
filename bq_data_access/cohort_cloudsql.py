@@ -17,6 +17,8 @@ limitations under the License.
 """
 
 import logging
+import sys
+import traceback
 
 from api.api_helpers import sql_connection
 
@@ -46,7 +48,7 @@ class CloudSQLCohortAccess(object):
     def get_cohort_barcodes(cls, cohort_id_array):
         # Generate the 'IN' statement string: (%s, %s, ..., %s)
         cohort_id_stmt = ', '.join(['%s' for x in xrange(len(cohort_id_array))])
-        query = 'SELECT sample_id AS barcode FROM {cohort_table} WHERE cohort_id IN ({cohort_id_stmt})'.format(
+        query = 'SELECT sample_barcode AS barcode FROM {cohort_table} WHERE cohort_id IN ({cohort_id_stmt})'.format(
             cohort_table=DJANGO_COHORT_TABLE,
             cohort_id_stmt=cohort_id_stmt)
         values = cohort_id_array
@@ -121,7 +123,7 @@ class CloudSQLCohortAccess(object):
             cohort_info_table=DJANGO_COHORT_INFO_TABLE,
             cohort_samples_table=DJANGO_COHORT_SAMPLES_TABLE,
             cohort_id_stmt=cohort_id_stmt)
-        print query
+
         try:
             db = sql_connection()
             cursor = db.cursor(DictCursor)
@@ -142,6 +144,9 @@ class CloudSQLCohortAccess(object):
             return result
 
         except Exception as e:
+            print >> sys.stdout, "[ERROR] In get_cohort_info: "
+            print >> sys.stdout, e
+            print >> sys.stdout, traceback.format_exc()
             raise CohortException('get_cohort_info CloudSQL error, cohort IDs {cohort_ids}: {message}'.format(
                 cohort_ids=cohort_id_array,
                 message=str(e.message)))
