@@ -99,7 +99,7 @@ class Pairwise(object):
         # Create merged feature vectors
         feature_ids = [v.feature_id for v in input_vectors]
 
-        vms = VectorMergeSupport('NA', 'sample_id', row_ids=feature_ids)
+        vms = VectorMergeSupport('NA', 'sample_id', 'case_id', row_ids=feature_ids)
 
         for feature in feature_vector_mapping.keys():
             vms.add_dict_array(feature_vector_mapping[feature][1], feature, 'value')
