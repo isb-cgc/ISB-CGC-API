@@ -161,7 +161,7 @@ class ClinicalFeatureProvider(FeatureDataProvider):
 
         for row in query_result_array:
             result.append({
-                'patient_id': row['f'][0]['v'],
+                'case_id': row['f'][0]['v'],
                 'sample_id': row['f'][1]['v'],
                 'aliquot_id': None,
                 'value': row['f'][2]['v']

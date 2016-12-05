@@ -53,6 +53,7 @@ class VectorMergeSupport(object):
         # Sparse data goes here
         self.data = OrderedDict()
         self.sample_ids = OrderedDict()
+        self.case_ids = {}
         self.current_sample_index = 0
 
         for row_id in row_ids:
@@ -74,6 +75,8 @@ class VectorMergeSupport(object):
     def add_dict_array(self, vector, vector_id, value_key):
         for item in vector:
             sample_id = item[self.sample_id_key]
+            if item[self.sample_id_key] not in self.case_ids:
+                self.case_ids[sample_id] = item[self.case_id_key]
             value = item[value_key]
             self._add_data_point(vector_id, sample_id, value)
 
@@ -94,6 +97,8 @@ class VectorMergeSupport(object):
                 d = result[index]
                 d[self.sample_id_key] = sample_id_keys[index]
                 d[row_id] = value
+                d[self.case_id_key] = self.case_ids[sample_id_keys[index]]
+
         return result
 
 
