@@ -35,15 +35,15 @@ class PatientsGetQueryBuilder(object):
     def build_queries(self):
         clinical_query_str = 'select * ' \
                              'from metadata_clinical ' \
-                             'where ParticipantBarcode=%s'
+                             'where case_barcode=%s'
 
         sample_query_str = 'select SampleBarcode ' \
                            'from metadata_biospecimen ' \
-                           'where ParticipantBarcode=%s'
+                           'where case_barcode=%s'
 
         aliquot_query_str = 'select AliquotBarcode ' \
                             'from metadata_data ' \
-                            'where ParticipantBarcode=%s ' \
+                            'where case_barcode=%s ' \
                             'group by AliquotBarcode'
 
         return clinical_query_str, sample_query_str, aliquot_query_str

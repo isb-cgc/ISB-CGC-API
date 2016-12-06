@@ -100,7 +100,7 @@ class CohortsCreateAPI(remote.Service):
             cursor = db.cursor(MySQLdb.cursors.DictCursor)
             cursor.execute(sample_query_str, value_tuple)
             # TODO: We need to adjust this to pull the correct project ID as well
-            sample_barcodes = [{'sample_barcode': row['SampleBarcode'], 'participant_barcode': row['ParticipantBarcode'], 'project_id': None,} for row in cursor.fetchall()]
+            sample_barcodes = [{'sample_barcode': row['sample_barcode'], 'case_barcode': row['case_barcode'], 'project_id': None,} for row in cursor.fetchall()]
 
         except (IndexError, TypeError), e:
             logger.warn(e)
@@ -127,7 +127,7 @@ class CohortsCreateAPI(remote.Service):
         created_cohort.save()
 
         # 2. insert samples into cohort_samples
-        sample_list = [Samples(cohort=created_cohort, sample_barcode=sample['sample_barcode'], case_barcode=sample['participant_barcode'], project_id=sample['project_id']) for sample in sample_barcodes]
+        sample_list = [Samples(cohort=created_cohort, sample_barcode=sample['sample_barcode'], case_barcode=sample['case_barcode'], project_id=sample['project_id']) for sample in sample_barcodes]
         Samples.objects.bulk_create(sample_list)
 
         # 3. Set permission for user to be owner

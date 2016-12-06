@@ -81,10 +81,10 @@ class SamplesGetQueryBuilder(object):
 
     def build_patient_query(self):
 
-        patient_query_str = 'select ParticipantBarcode ' \
+        patient_query_str = 'select case_barcode ' \
                             'from metadata_biospecimen ' \
-                            'where SampleBarcode=%s ' \
-                            'group by ParticipantBarcode'
+                            'where sample_barcode=%s ' \
+                            'group by case_barcode'
 
         return patient_query_str
 
@@ -173,7 +173,7 @@ class SamplesGetAPI(remote.Service):
             # get patient barcode (superfluous?)
             cursor.execute(patient_query_str, query_tuple)
             row = cursor.fetchone()
-            patient_barcode = str(row["ParticipantBarcode"])
+            patient_barcode = str(row["case_barcode"])
 
             # prepare to build list of data details messages
             cursor.execute(data_query_str, extra_query_tuple)

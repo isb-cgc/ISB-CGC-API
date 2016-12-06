@@ -132,7 +132,7 @@ METADATA_SHORTLIST = [
     # 'number_of_lymphnodes_positive_by_he',
     # 'number_pack_years_smoked',
     # 'other_dx',
-    # 'ParticipantBarcode',
+    # 'case_barcode',
     # 'pathologic_M',
     # 'pathologic_N',
     'pathologic_stage',
@@ -146,7 +146,7 @@ METADATA_SHORTLIST = [
     # 'psa_value',
     # 'race',
     'residual_tumor',
-    # 'SampleBarcode',
+    # 'sample_barcode',
     'SampleTypeCode',
     # 'Study',
     'tobacco_smoking_history',
@@ -228,7 +228,7 @@ metadata_dict = {
     'number_of_lymphnodes_examined': 'INTEGER',
     'number_of_lymphnodes_positive_by_he': 'INTEGER',
     'number_pack_years_smoked': 'INTEGER',
-    'ParticipantBarcode': 'VARCHAR(12)',
+    'case_barcode': 'VARCHAR(12)',
     'pathologic_M': 'VARCHAR(5)',
     'pathologic_N': 'VARCHAR(5)',
     'pathologic_T': 'VARCHAR(5)',
@@ -242,7 +242,7 @@ metadata_dict = {
     'psa_value': 'FLOAT',
     'race': 'VARCHAR(30)',
     'residual_tumor': 'VARCHAR(5)',
-    'SampleBarcode': 'VARCHAR(16)',
+    'sample_barcode': 'VARCHAR(16)',
     'Study': 'VARCHAR(4)',
     'tobacco_smoking_history': 'VARCHAR(30)',
     'tumor_tissue_site': 'VARCHAR(20)',
@@ -339,7 +339,7 @@ class MetaAttrValuesList(messages.Message):
     new_tumor_event_after_initial_treatment             = messages.MessageField(MetaValueListCount, 65, repeated=True)
     number_of_lymphnodes_examined                       = messages.MessageField(MetaValueListCount, 66, repeated=True)
     number_of_lymphnodes_positive_by_he                 = messages.MessageField(MetaValueListCount, 67, repeated=True)
-    ParticipantBarcode                                  = messages.MessageField(MetaValueListCount, 68, repeated=True)
+    case_barcode                                        = messages.MessageField(MetaValueListCount, 68, repeated=True)
     pathologic_M                                        = messages.MessageField(MetaValueListCount, 69, repeated=True)
     pathologic_N                                        = messages.MessageField(MetaValueListCount, 70, repeated=True)
     pathologic_stage                                    = messages.MessageField(MetaValueListCount, 71, repeated=True)
@@ -354,7 +354,7 @@ class MetaAttrValuesList(messages.Message):
     psa_value                                           = messages.FloatField(80, repeated=True)
     race                                                = messages.MessageField(MetaValueListCount, 81, repeated=True)
     residual_tumor                                      = messages.MessageField(MetaValueListCount, 82, repeated=True)
-    SampleBarcode                                       = messages.MessageField(MetaValueListCount, 83, repeated=True)
+    sample_barcode                                      = messages.MessageField(MetaValueListCount, 83, repeated=True)
     tobacco_smoking_history                             = messages.MessageField(MetaValueListCount, 86, repeated=True)
     total_number_of_pregnancies                         = messages.MessageField(MetaValueListCount, 87, repeated=True)
     tumor_tissue_site                                   = messages.MessageField(MetaValueListCount, 88, repeated=True)
@@ -447,7 +447,7 @@ class MetadataItem(messages.Message):
     new_tumor_event_after_initial_treatment                         = messages.StringField(65)
     number_of_lymphnodes_examined                                   = messages.IntegerField(66)
     number_of_lymphnodes_positive_by_he                             = messages.IntegerField(67)
-    ParticipantBarcode                                              = messages.StringField(68)
+    case_barcode                                                    = messages.StringField(68)
     pathologic_M                                                    = messages.StringField(69)
     pathologic_N                                                    = messages.StringField(70)
     pathologic_stage                                                = messages.StringField(71)
@@ -462,7 +462,7 @@ class MetadataItem(messages.Message):
     psa_value                                                       = messages.FloatField(80)
     race                                                            = messages.StringField(81)
     residual_tumor                                                  = messages.StringField(82)
-    SampleBarcode                                                   = messages.StringField(83)
+    sample_barcode                                                  = messages.StringField(83)
     tobacco_smoking_history                                         = messages.StringField(86)
     total_number_of_pregnancies                                     = messages.IntegerField(87)
     tumor_tissue_site                                               = messages.StringField(88)
@@ -554,7 +554,7 @@ class IncomingMetadataItem(messages.Message):
     new_tumor_event_after_initial_treatment                         = messages.StringField(62, repeated=True)
     number_of_lymphnodes_examined                                   = messages.IntegerField(63, repeated=True)
     number_of_lymphnodes_positive_by_he                             = messages.IntegerField(64, repeated=True)
-    ParticipantBarcode                                              = messages.StringField(65, repeated=True)
+    case_barcode                                                    = messages.StringField(65, repeated=True)
     pathologic_M                                                    = messages.StringField(66, repeated=True)
     pathologic_N                                                    = messages.StringField(67, repeated=True)
     pathologic_stage                                                = messages.StringField(68, repeated=True)
@@ -568,7 +568,7 @@ class IncomingMetadataItem(messages.Message):
     psa_value                                                       = messages.FloatField(76, repeated=True)
     race                                                            = messages.StringField(77, repeated=True)
     residual_tumor                                                  = messages.StringField(78, repeated=True)
-    SampleBarcode                                                   = messages.StringField(79, repeated=True)
+    sample_barcode                                                   = messages.StringField(79, repeated=True)
     tobacco_smoking_history                                         = messages.StringField(80, repeated=True)
     tumor_tissue_site                                               = messages.StringField(81, repeated=True)
     tumor_type                                                      = messages.StringField(82, repeated=True)
@@ -799,9 +799,9 @@ def generateSQLQuery(request):
 
     if sample_ids:
         if query_str.rfind('WHERE') >= 0:
-            query_str += ' and SampleBarcode in %s' % (sample_ids,)
+            query_str += ' and sample_barcode in %s' % (sample_ids,)
         else:
-            query_str += ' WHERE SampleBarcode in %s' % (sample_ids,)
+            query_str += ' WHERE sample_barcode in %s' % (sample_ids,)
 
     if request.__getattribute__('limit') is not None:
         query_str += ' LIMIT %s' % request.__getattribute__('limit')
@@ -951,7 +951,7 @@ def get_participant_list(sample_ids):
     try:
         cursor = db.cursor(MySQLdb.cursors.DictCursor)
 
-        participant_query = 'SELECT DISTINCT ParticipantBarcode from metadata_samples where SampleBarcode in ('
+        participant_query = 'SELECT DISTINCT case_barcode from metadata_samples where sample_barcode in ('
         first = True
         value_tuple = ()
         for barcode in sample_ids:
@@ -966,7 +966,7 @@ def get_participant_list(sample_ids):
         results = []
         cursor.execute(participant_query, value_tuple)
         for row in cursor.fetchall():
-            results.append(SampleBarcodeItem(sample_barcode=row['ParticipantBarcode'], study_id=0))
+            results.append(SampleBarcodeItem(sample_barcode=row['case_barcode'], study_id=0))
 
         return results
 
@@ -984,7 +984,7 @@ def get_participant_count(sample_ids):
     try:
         cursor = db.cursor(MySQLdb.cursors.DictCursor)
 
-        participant_query = 'SELECT COUNT(DISTINCT ParticipantBarcode) AS ParticipantCount FROM metadata_samples WHERE SampleBarcode IN ('
+        participant_query = 'SELECT COUNT(DISTINCT case_barcode) AS ParticipantCount FROM metadata_samples WHERE sample_barcode IN ('
         first = True
         samples = ()
         for barcode in sample_ids:
@@ -1026,7 +1026,6 @@ def count_metadata(user, cohort_id=None, sample_ids=None, filters=None):
     for key in sample_ids:
         samples_by_project = sample_ids[key]
         sample_ids[key] = {
-            'SampleBarcode': build_where_clause({'SampleBarcode': samples_by_project}),
             'sample_barcode': build_where_clause({'sample_barcode': samples_by_project}),
         }
 
@@ -1133,12 +1132,12 @@ def count_metadata(user, cohort_id=None, sample_ids=None, filters=None):
                 if should_be_queried:
                     # Query the table for counts and values
                     query = ('SELECT DISTINCT %s, COUNT(1) as count FROM %s') % (col_name, table)
-                    sample_query = ('SELECT DISTINCT %s AS sample_id FROM %s') % ('SampleBarcode' if table == 'metadata_samples' else 'sample_barcode', table)
+                    sample_query = ('SELECT DISTINCT %s AS sample_id FROM %s') % ('sample_barcode', table)
                     query_clause = ''
                     if where_clause['query_str']:
                         query_clause = ' WHERE ' + where_clause['query_str']
                     if sample_tables[table]['sample_ids']:
-                        barcode_key = 'SampleBarcode' if table == 'metadata_samples' else 'sample_barcode'
+                        barcode_key = 'sample_barcode'
                         addt_cond = sample_tables[table]['sample_ids'][barcode_key]['query_str']
                         if addt_cond and where_clause['query_str']:
                             query_clause += ' AND ' + addt_cond
@@ -1354,9 +1353,9 @@ class Meta_Endpoints_API(remote.Service):
 
         if sample_ids:
             if query_str.rfind('WHERE') >= 0:
-                query_str += ' and SampleBarcode in %s' % (sample_ids,)
+                query_str += ' and sample_barcode in %s' % (sample_ids,)
             else:
-                query_str += ' WHERE SampleBarcode in %s' % (sample_ids,)
+                query_str += ' WHERE sample_barcode in %s' % (sample_ids,)
 
         if request.__getattribute__('limit') is not None:
             query_str += ' LIMIT %s' % request.__getattribute__('limit')
@@ -1484,7 +1483,7 @@ class Meta_Endpoints_API(remote.Service):
                         new_tumor_event_after_initial_treatment=str(row["new_tumor_event_after_initial_treatment"]),
                         number_of_lymphnodes_examined=None if "number_of_lymphnodes_examined" not in row or row['number_of_lymphnodes_examined'] is None else int(row["number_of_lymphnodes_examined"]),
                         number_of_lymphnodes_positive_by_he=None if "number_of_lymphnodes_positive_by_he" not in row or row['number_of_lymphnodes_positive_by_he'] is None else int(row["number_of_lymphnodes_positive_by_he"]),
-                        ParticipantBarcode=str(row["ParticipantBarcode"]),
+                        case_barcode=str(row["case_barcode"]),
                         pathologic_M=str(row["pathologic_M"]),
                         pathologic_N=str(row["pathologic_N"]),
                         pathologic_stage=str(row["pathologic_stage"]),
@@ -1498,7 +1497,7 @@ class Meta_Endpoints_API(remote.Service):
                         psa_value=None if "psa_value" not in row or row["psa_value"] is None else float(row["psa_value"]),
                         race=str(row["race"]),
                         residual_tumor=str(row["residual_tumor"]),
-                        SampleBarcode=str(row["SampleBarcode"]),
+                        sample_barcode=str(row["sample_barcode"]),
                         tobacco_smoking_history=str(row["tobacco_smoking_history"]),
                         tumor_tissue_site=str(row["tumor_tissue_site"]),
                         tumor_type=str(row["tumor_type"]),
@@ -1618,9 +1617,9 @@ class Meta_Endpoints_API(remote.Service):
 
             if sample_ids:
                 if value_count_query_str.rfind('WHERE') >= 0:
-                    value_count_query_str += ' and SampleBarcode in %s' % (sample_ids,)
+                    value_count_query_str += ' and sample_barcode in %s' % (sample_ids,)
                 else:
-                    value_count_query_str += ' where SampleBarcode in %s' % (sample_ids,)
+                    value_count_query_str += ' where sample_barcode in %s' % (sample_ids,)
 
             value_count_query_str += ' GROUP BY %s;' % key
 
@@ -1916,8 +1915,8 @@ class Meta_Endpoints_API(remote.Service):
             if db and db.open: db.close()
             request_finished.send(self)
 
-        platform_count_query = 'select Platform, count(Platform) as platform_count from metadata_data where SampleBarcode in {0} and DatafileUploaded="true"  group by Platform order by SampleBarcode;'.format(in_clause)
-        query = 'select SampleBarcode, DatafileName, DatafileNameKey, SecurityProtocol, Pipeline, Platform, DataLevel, Datatype, GG_readgroupset_id, Repository, SecurityProtocol from metadata_data where SampleBarcode in {0} and DatafileUploaded="true" '.format(in_clause)
+        platform_count_query = 'select Platform, count(Platform) as platform_count from metadata_data where sample_barcode in {0} and DatafileUploaded="true"  group by Platform order by sample_barcode;'.format(in_clause)
+        query = 'select sample_barcode, DatafileName, DatafileNameKey, SecurityProtocol, Pipeline, Platform, DataLevel, Datatype, GG_readgroupset_id, Repository, SecurityProtocol from metadata_data where sample_barcode in {0} and DatafileUploaded="true" '.format(in_clause)
 
         # Check for incoming platform selectors
         platform_selector_list = []
@@ -1976,7 +1975,7 @@ class Meta_Endpoints_API(remote.Service):
 
                             item['DatafileNameKey'] = "gs://{}{}".format(bucket_name, item['DatafileNameKey'])
 
-                        file_list.append(FileDetails(sample=item['SampleBarcode'], cloudstorage_location=item['DatafileNameKey'], access=(item['SecurityProtocol'] or 'N/A'), filename=item['DatafileName'], pipeline=item['Pipeline'], platform=item['Platform'], datalevel=item['DataLevel'], datatype=(item['Datatype'] or " "), gg_readgroupset_id=item['GG_readgroupset_id']))
+                        file_list.append(FileDetails(sample=item['sample_barcode'], cloudstorage_location=item['DatafileNameKey'], access=(item['SecurityProtocol'] or 'N/A'), filename=item['DatafileName'], pipeline=item['Pipeline'], platform=item['Platform'], datalevel=item['DataLevel'], datatype=(item['Datatype'] or " "), gg_readgroupset_id=item['GG_readgroupset_id']))
                 else:
                     file_list.append(FileDetails(sample='None', filename='', pipeline='', platform='', datalevel=''))
             return SampleFiles(total_file_count=count, page=page, platform_count_list=platform_count_list, file_list=file_list)
@@ -1996,10 +1995,10 @@ class Meta_Endpoints_API(remote.Service):
                       name='meta.sample_files')
     def sample_files(self, request):
         '''
-        Takes a SampleBarcode and returns a list of filenames and their associated cloudstorage locations, pipelines, and platforms.
+        Takes a sample_barcode and returns a list of filenames and their associated cloudstorage locations, pipelines, and platforms.
         Also returns counts for the number of files derived from each platform.
         Checks user for dbGaP authorization and returns "Restricted" if a filename is controlled access and the user is not dbGaP authorized
-        :param sample_id: SampleBarcode
+        :param sample_id: sample_barcode
         :return SampleFiles: a list of filenames and their associated cloudstorage locations, pipelines, and platforms
         as well as counts for the number of files for each platform.
         '''
@@ -2008,14 +2007,14 @@ class Meta_Endpoints_API(remote.Service):
         sample_id = request.sample_id
         dbGaP_authorized = False
 
-        query = "select SampleBarcode, " \
+        query = "select sample_barcode, " \
                 "DatafileName, " \
                 "Pipeline, " \
                 "Platform, " \
                 "IF(SecurityProtocol LIKE '%%open%%', DatafileNameKey, 'Restricted') as DatafileNameKey, " \
                 "SecurityProtocol " \
                 "from metadata_data " \
-                "where SampleBarcode=%s;"
+                "where sample_barcode=%s;"
 
         if endpoints.get_current_user():
             user_email = endpoints.get_current_user().email()
@@ -2024,7 +2023,7 @@ class Meta_Endpoints_API(remote.Service):
                 nih_user = NIH_User.objects.get(user_id=user_id)
                 dbGaP_authorized = nih_user.dbGaP_authorized and nih_user.active
                 if dbGaP_authorized:
-                    query = "select SampleBarcode, " \
+                    query = "select sample_barcode, " \
                             "DatafileName, " \
                             "Pipeline, " \
                             "Platform, " \
@@ -2032,7 +2031,7 @@ class Meta_Endpoints_API(remote.Service):
                             "SecurityProtocol, " \
                             "Repository " \
                             "from metadata_data " \
-                            "where SampleBarcode=%s;"
+                            "where sample_barcode=%s;"
             except (ObjectDoesNotExist, MultipleObjectsReturned) as e:
                 if type(e) is MultipleObjectsReturned:
                     logger.error("Meta.sample_files endpoint with user {} gave error: {}".format(user_email, str(e)))
@@ -2040,7 +2039,7 @@ class Meta_Endpoints_API(remote.Service):
         platform_query = "select Platform, " \
                          "count(Platform) as platform_count " \
                          "from metadata_data " \
-                         "where SampleBarcode=%s " \
+                         "where sample_barcode=%s " \
                          "group by Platform;"
 
         db = sql_connection()
@@ -2333,7 +2332,7 @@ class Meta_Endpoints_API_v2(remote.Service):
 
         # Add TCGA attributes to the list of available attributes
         if 'user_studies' not in filters or 'tcga' in filters['user_studies']['values']:
-            sample_tables['metadata_samples'] = {'features': {}, 'barcode': 'SampleBarcode', 'project_id': None}
+            sample_tables['metadata_samples'] = {'features': {}, 'barcode': 'sample_barcode', 'project_id': None}
             cursor = db.cursor(MySQLdb.cursors.DictCursor)
             cursor.execute('SELECT attribute, spec FROM metadata_attr')
             for row in cursor.fetchall():
@@ -2354,7 +2353,7 @@ class Meta_Endpoints_API_v2(remote.Service):
                     for tables in User_Data_Tables.objects.filter(project=project):
                         sample_tables[tables.metadata_samples_table] = {
                             'features':{},
-                            'barcode':'SampleBarcode' if tables.metadata_samples_table == 'metadata_samples' else 'sample_barcode',
+                            'barcode':'sample_barcode',
                             'project_id': project.id
                         }
 
@@ -2440,7 +2439,7 @@ class Meta_Endpoints_API_v2(remote.Service):
             for row in cursor.fetchall():
                 sample_ids.append(row['sample_barcode'])
 
-            participant_query = 'SELECT DISTINCT ParticipantBarcode from metadata_samples where SampleBarcode in ('
+            participant_query = 'SELECT DISTINCT case_barcode from metadata_samples where sample_barcode in ('
             first = True
             value_tuple = ()
             for barcode in sample_ids:
@@ -2455,7 +2454,7 @@ class Meta_Endpoints_API_v2(remote.Service):
             results = []
             cursor.execute(participant_query, value_tuple)
             for row in cursor.fetchall():
-                results.append(SampleBarcodeItem(sample_barcode=row['ParticipantBarcode'], study_id=0))
+                results.append(SampleBarcodeItem(sample_barcode=row['case_barcode'], study_id=0))
 
             cursor.close()
             db.close()
@@ -2568,9 +2567,9 @@ class Meta_Endpoints_API_v2(remote.Service):
 
         if sample_ids:
             if query_str.rfind('WHERE') >= 0:
-                query_str += ' and SampleBarcode in %s' % (sample_ids,)
+                query_str += ' and sample_barcode in %s' % (sample_ids,)
             else:
-                query_str += ' WHERE SampleBarcode in %s' % (sample_ids,)
+                query_str += ' WHERE sample_barcode in %s' % (sample_ids,)
 
         query_str += ';'
 
@@ -2713,9 +2712,9 @@ class Meta_Endpoints_API_v2(remote.Service):
 
         if sample_ids:
             if query_str.rfind('WHERE') >= 0:
-                query_str += ' and SampleBarcode in %s' % (sample_ids,)
+                query_str += ' and sample_barcode in %s' % (sample_ids,)
             else:
-                query_str += ' WHERE SampleBarcode in %s' % (sample_ids,)
+                query_str += ' WHERE sample_barcode in %s' % (sample_ids,)
 
         query_str += ';'
 

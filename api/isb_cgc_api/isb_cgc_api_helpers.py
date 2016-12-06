@@ -256,7 +256,7 @@ class CohortsCreatePreviewQueryBuilder(object):
             sample_query_str += ' {} <=%s '.format(key)
             value_tuple += (value,)
 
-        sample_query_str += ' GROUP BY SampleBarcode'
+        sample_query_str += ' GROUP BY sample_barcode'
 
         return patient_query_str, sample_query_str, value_tuple
 
