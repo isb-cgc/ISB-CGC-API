@@ -37,7 +37,7 @@ class PatientsGetQueryBuilder(object):
                              'from metadata_clinical ' \
                              'where case_barcode=%s'
 
-        sample_query_str = 'select SampleBarcode ' \
+        sample_query_str = 'select SampleBarcode as sample_barcode' \
                            'from metadata_biospecimen ' \
                            'where case_barcode=%s'
 
@@ -94,7 +94,7 @@ class PatientsGetAPI(remote.Service):
 
             # get list of samples
             cursor.execute(sample_query_str, query_tuple)
-            sample_list = [row['SampleBarcode'] for row in cursor.fetchall()]
+            sample_list = [row['sample_barcode'] for row in cursor.fetchall()]
 
             # get list of aliquots
             cursor.execute(aliquot_query_str, query_tuple)

@@ -224,7 +224,7 @@ class MetadataRangesItem(messages.Message):
     
     race                                                              = messages.StringField(171, repeated=True)
     residual_tumor                                                    = messages.StringField(172, repeated=True)
-    SampleBarcode                                                     = messages.StringField(173, repeated=True)
+    sample_barcode                                                    = messages.StringField(173, repeated=True)
     SampleTypeCode                                                    = messages.StringField(174, repeated=True)
     Study                                                             = messages.StringField(175, repeated=True)
     tobacco_smoking_history                                           = messages.StringField(176, repeated=True)
@@ -337,7 +337,7 @@ class MetadataItem(messages.Message):
     psa_value                                                         = messages.FloatField(90)
     race                                                              = messages.StringField(91)
     residual_tumor                                                    = messages.StringField(92)
-    SampleBarcode                                                     = messages.StringField(93)
+    sample_barcode                                                    = messages.StringField(93)
     SampleTypeCode                                                    = messages.StringField(94)
     Study                                                             = messages.StringField(95)
     tobacco_smoking_history                                           = messages.StringField(96)

@@ -35,7 +35,7 @@ class SamplesGetQueryBuilder(object):
 
         aliquot_query_str = 'select AliquotBarcode ' \
                             'from metadata_data ' \
-                            'where SampleBarcode=%s '
+                            'where sample_barcode=%s '
 
         aliquot_query_str += ' and platform=%s ' if platform is not None else ''
         aliquot_query_str += ' and pipeline=%s ' if pipeline is not None else ''
@@ -54,7 +54,7 @@ class SamplesGetQueryBuilder(object):
     def build_data_query(self, platform=None, pipeline=None):
 
         data_query_str = 'select ' \
-                         'SampleBarcode, ' \
+                         'sample_barcode, ' \
                          'DataCenterName, ' \
                          'DataCenterType, ' \
                          'DataFileName, ' \
@@ -71,7 +71,7 @@ class SamplesGetQueryBuilder(object):
                          'SDRFFileName,' \
                          'SecurityProtocol ' \
                          'from metadata_data ' \
-                         'where SampleBarcode=%s ' \
+                         'where sample_barcode=%s ' \
                          'and DataFileNameKey is not null and DataFileNameKey !=""'
 
         data_query_str += ' and platform=%s ' if platform is not None else ''
@@ -90,7 +90,7 @@ class SamplesGetQueryBuilder(object):
 
 
 class DataDetails(messages.Message):
-    SampleBarcode = messages.StringField(1)
+    sample_Barcode = messages.StringField(1)
     DataCenterName = messages.StringField(2)
     DataCenterType = messages.StringField(3)
     DataFileName = messages.StringField(4)

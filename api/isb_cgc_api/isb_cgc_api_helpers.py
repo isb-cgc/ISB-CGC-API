@@ -307,9 +307,9 @@ class CohortsSamplesFilesQueryBuilder(object):
                     'FROM metadata_data '
 
         if cohort_id is None:
-            query_str += 'WHERE SampleBarcode=%s '
+            query_str += 'WHERE sample_barcode=%s '
         else:
-            query_str += 'JOIN cohorts_samples ON metadata_data.SampleBarcode=cohorts_samples.sample_id ' \
+            query_str += 'JOIN cohorts_samples ON metadata_data.sample_barcode=cohorts_samples.sample_id ' \
                          'WHERE cohorts_samples.cohort_id=%s '
 
         query_str += 'AND DataFileNameKey != "" AND DataFileNameKey is not null '
