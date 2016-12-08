@@ -37,7 +37,7 @@ class PatientsGetQueryBuilder(object):
                              'from metadata_clinical ' \
                              'where case_barcode=%s'
 
-        sample_query_str = 'select SampleBarcode as sample_barcode' \
+        sample_query_str = 'select sample_barcode' \
                            'from metadata_biospecimen ' \
                            'where case_barcode=%s'
 

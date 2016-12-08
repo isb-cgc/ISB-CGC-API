@@ -47,7 +47,7 @@ class SamplesGetQueryBuilder(object):
 
         biospecimen_query_str = 'select * ' \
                                 'from metadata_biospecimen ' \
-                                'where SampleBarcode=%s'
+                                'where sample_barcode=%s'
 
         return biospecimen_query_str
 
@@ -66,7 +66,7 @@ class SamplesGetQueryBuilder(object):
                          'Pipeline,' \
                          'Platform,' \
                          'platform_full_name,' \
-                         'Project,' \
+                         'program_name,' \
                          'Repository,' \
                          'SDRFFileName,' \
                          'SecurityProtocol ' \
