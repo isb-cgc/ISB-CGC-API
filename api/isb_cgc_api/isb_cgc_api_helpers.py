@@ -218,7 +218,7 @@ class CohortsCreatePreviewQueryBuilder(object):
                             'FROM metadata_samples ' \
                             'WHERE '
 
-        sample_query_str = 'SELECT sample_barcode ' \
+        sample_query_str = 'SELECT sample_barcode, case_barcode ' \
                            'FROM metadata_samples ' \
                            'WHERE '
         value_tuple = ()

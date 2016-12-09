@@ -120,9 +120,9 @@ class CohortsGetAPI(remote.Service):
             cursor.execute(sample_query_str, sample_query_tuple)
             sample_list = []
             patient_list = []
-            for row in cursor.fetchall():
-                sample_list.append(row['sample_barcode'])
-                patient_list.append(row['case_barcode'])
+            for s_row in cursor.fetchall():
+                sample_list.append(s_row['sample_barcode'])
+                patient_list.append(s_row['case_barcode'])
 
             return CohortDetails(
                 id=str(row['id']),
