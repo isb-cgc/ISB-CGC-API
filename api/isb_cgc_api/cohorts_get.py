@@ -128,7 +128,7 @@ class CohortsGetAPI(remote.Service):
                 sample_list = ["None"]
             if len(patient_list) == 0:
                 patient_list = ["None"]
-            print 'Patient List Count: ', len(patient_list)
+            print 'Patient List Count: ', patient_list
 
             return CohortDetails(
                 id=str(row['id']),
