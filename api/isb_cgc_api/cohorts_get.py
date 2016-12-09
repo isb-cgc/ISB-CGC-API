@@ -122,13 +122,13 @@ class CohortsGetAPI(remote.Service):
             patient_list = []
             for s_row in cursor.fetchall():
                 sample_list.append(s_row['sample_barcode'])
-                patient_list.append(s_row['case_barcode'])
+                if s_row['case_barcode']:
+                    patient_list.append(s_row['case_barcode'])
 
             if len(sample_list) == 0:
                 sample_list = ["None"]
             if len(patient_list) == 0:
                 patient_list = ["None"]
-            print 'Patient List Count: ', patient_list
 
             return CohortDetails(
                 id=str(row['id']),
