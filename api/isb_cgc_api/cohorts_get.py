@@ -137,8 +137,8 @@ class CohortsGetAPI(remote.Service):
                 filters=filter_data,
                 patient_count=len(patient_list),
                 sample_count=len(sample_list),
-                patients=patient_list if len(patient_list) > 0 else [],
-                samples=sample_list if len(sample_list) > 0 else []
+                patients=patient_list if len(patient_list) > 0 else ["None"],
+                samples=sample_list if len(sample_list) > 0 else ["None"]
             )
 
         except (IndexError, TypeError) as e:
