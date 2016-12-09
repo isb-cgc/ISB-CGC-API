@@ -157,6 +157,6 @@ class CohortsCreateAPI(remote.Service):
                              name=cohort_name,
                              last_date_saved=str(datetime.utcnow()),
                              filters=filter_data,
-                             patient_count=len(created_cohort.case_size()),
+                             patient_count=created_cohort.case_size(),
                              sample_count=len(sample_barcodes)
                              )
