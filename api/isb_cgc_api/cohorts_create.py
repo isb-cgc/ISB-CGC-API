@@ -1,6 +1,6 @@
 """
 
-Copyright 2015, Institute for Systems Biology
+Copyright 2016, Institute for Systems Biology
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@ limitations under the License.
 """
 
 import django
+import re
 import endpoints
 import logging
 import MySQLdb
@@ -30,14 +31,13 @@ from isb_cgc_api_helpers import ISB_CGC_Endpoints, CohortsCreatePreviewQueryBuil
 
 from message_classes import MetadataRangesItem
 
-from api.api_helpers import sql_connection
+from api.api_helpers import sql_connection, WHITELIST_RE
 from cohorts.models import Cohort as Django_Cohort, Cohort_Perms, Patients, Samples, Filters
 from bq_data_access.cohort_bigquery import BigQueryCohortSupport
 
 logger = logging.getLogger(__name__)
 
 BASE_URL = settings.BASE_URL
-
 
 class FilterDetails(messages.Message):
     name = messages.StringField(1)
@@ -116,6 +116,17 @@ class CohortsCreateAPI(remote.Service):
             if db and db.open: db.close()
 
         cohort_name = request.get_assigned_value('name')
+
+        # Validate the cohort name against a whitelist
+        whitelist = re.compile(WHITELIST_RE, re.UNICODE)
+        match = whitelist.search(unicode(cohort_name))
+        if match:
+            # XSS risk, log and fail this cohort save
+            match = whitelist.findall(unicode(cohort_name))
+            logger.error(
+                '[ERROR] While saving a cohort, saw a malformed name: ' + cohort_name + ', characters: ' + match.__str__())
+            raise endpoints.BadRequestException(
+                "Your cohort's name contains invalid characters (" + match.__str__() + "); please choose another name.")
 
         if len(patient_barcodes) == 0 or len(sample_barcodes) == 0:
             raise endpoints.BadRequestException(
