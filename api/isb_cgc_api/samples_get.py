@@ -63,8 +63,6 @@ class SamplesGetQueryBuilder(object):
                          'DataLevel,' \
                          'Datatype,' \
                          'GenomeReference,' \
-                         'GG_dataset_id, ' \
-                         'GG_readgroupset_id, ' \
                          'Pipeline,' \
                          'Platform,' \
                          'platform_full_name,' \
@@ -101,16 +99,14 @@ class DataDetails(messages.Message):
     DataLevel = messages.StringField(7)
     Datatype = messages.StringField(8)
     GenomeReference = messages.StringField(9)
-    GG_dataset_id = messages.StringField(10)
-    GG_readgroupset_id = messages.StringField(11)
-    Pipeline = messages.StringField(12)
-    Platform = messages.StringField(13)
-    platform_full_name = messages.StringField(14)
-    Project = messages.StringField(15)
-    Repository = messages.StringField(16)
-    SDRFFileName = messages.StringField(17)
-    SecurityProtocol = messages.StringField(18)
-    cloud_storage_path = messages.StringField(19)
+    Pipeline = messages.StringField(10)
+    Platform = messages.StringField(11)
+    platform_full_name = messages.StringField(12)
+    Project = messages.StringField(13)
+    Repository = messages.StringField(14)
+    SDRFFileName = messages.StringField(15)
+    SecurityProtocol = messages.StringField(16)
+    cloud_storage_path = messages.StringField(17)
 
 
 class SampleDetails(messages.Message):
