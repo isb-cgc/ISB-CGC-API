@@ -110,7 +110,7 @@ class BigQueryCohortSupport(object):
     def add_cohort_to_bq(self, cohort_id, samples):
         rows = []
         for sample in samples:
-            rows.append(self._build_cohort_row(cohort_id, case_barcode=sample['participant_barcode'], sample_barcode=sample['sample_barcode'], project_id=sample['project_id']))
+            rows.append(self._build_cohort_row(cohort_id, case_barcode=sample['case_barcode'], sample_barcode=sample['sample_barcode'], project_id=sample['project_id']))
 
         response = self._streaming_insert(rows)
 

@@ -120,9 +120,15 @@ class CohortsGetAPI(remote.Service):
             cursor.execute(sample_query_str, sample_query_tuple)
             sample_list = []
             patient_list = []
-            for row in cursor.fetchall():
-                sample_list.append(row['sample_barcode'])
-                patient_list.append(row['case_barcode'])
+            for s_row in cursor.fetchall():
+                sample_list.append(s_row['sample_barcode'])
+                if s_row['case_barcode']:
+                    patient_list.append(s_row['case_barcode'])
+
+            if len(sample_list) == 0:
+                sample_list = ["None"]
+            if len(patient_list) == 0:
+                patient_list = ["None"]
 
             return CohortDetails(
                 id=str(row['id']),
@@ -137,8 +143,8 @@ class CohortsGetAPI(remote.Service):
                 filters=filter_data,
                 patient_count=len(patient_list),
                 sample_count=len(sample_list),
-                patients=patient_list if len(patient_list) > 0 else ["None"],
-                samples=sample_list if len(sample_list) > 0 else ["None"]
+                patients=patient_list,
+                samples=sample_list
             )
 
         except (IndexError, TypeError) as e:

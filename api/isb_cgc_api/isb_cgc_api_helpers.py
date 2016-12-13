@@ -168,7 +168,7 @@ class CohortsGetListQueryBuilder(object):
         :param sample_query_dict: should be {'cohort_id': str(row['id])}
         :return: sample_query_str, sample_query_tuple
         """
-        samples_query_str = 'SELECT sample_barcode ' \
+        samples_query_str = 'SELECT sample_barcode, case_barcode ' \
                             'FROM cohorts_samples '
 
         samples_query_str += ' WHERE ' + '=%s AND '.join(key for key in sample_query_dict.keys()) + '=%s '
@@ -218,7 +218,7 @@ class CohortsCreatePreviewQueryBuilder(object):
                             'FROM metadata_samples ' \
                             'WHERE '
 
-        sample_query_str = 'SELECT sample_barcode ' \
+        sample_query_str = 'SELECT sample_barcode, case_barcode ' \
                            'FROM metadata_samples ' \
                            'WHERE '
         value_tuple = ()
@@ -256,7 +256,7 @@ class CohortsCreatePreviewQueryBuilder(object):
             sample_query_str += ' {} <=%s '.format(key)
             value_tuple += (value,)
 
-        sample_query_str += ' GROUP BY SampleBarcode'
+        sample_query_str += ' GROUP BY sample_barcode'
 
         return patient_query_str, sample_query_str, value_tuple
 
@@ -307,9 +307,9 @@ class CohortsSamplesFilesQueryBuilder(object):
                     'FROM metadata_data '
 
         if cohort_id is None:
-            query_str += 'WHERE SampleBarcode=%s '
+            query_str += 'WHERE sample_barcode=%s '
         else:
-            query_str += 'JOIN cohorts_samples ON metadata_data.SampleBarcode=cohorts_samples.sample_id ' \
+            query_str += 'JOIN cohorts_samples ON metadata_data.sample_barcode=cohorts_samples.sample_barcode ' \
                          'WHERE cohorts_samples.cohort_id=%s '
 
         query_str += 'AND DataFileNameKey != "" AND DataFileNameKey is not null '

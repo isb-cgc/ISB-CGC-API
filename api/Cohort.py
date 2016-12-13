@@ -137,7 +137,7 @@ class PatientDetails(messages.Message):
 
 
 class DataDetails(messages.Message):
-    SampleBarcode = messages.StringField(1)
+    sample_barcode = messages.StringField(1)
     DataCenterName = messages.StringField(2)
     DataCenterType = messages.StringField(3)
     DataFileName = messages.StringField(4)
@@ -173,7 +173,7 @@ class DataFileNameKeyList(messages.Message):
 
 
 class GoogleGenomicsItem(messages.Message):
-    SampleBarcode = messages.StringField(1)
+    sample_barcode = messages.StringField(1)
     GG_dataset_id = messages.StringField(2)
     GG_readgroupset_id = messages.StringField(3)
 
@@ -367,7 +367,7 @@ class MetadataRangesItem(messages.Message):
     number_of_lymphnodes_positive_by_he_lte = messages.IntegerField(141)
     number_of_lymphnodes_positive_by_he_gte = messages.IntegerField(142)
 
-    ParticipantBarcode = messages.StringField(143, repeated=True)
+    case_barcode = messages.StringField(143, repeated=True)
     pathologic_M = messages.StringField(144, repeated=True)
     pathologic_N = messages.StringField(145, repeated=True)
     pathologic_stage = messages.StringField(146, repeated=True)
@@ -385,7 +385,7 @@ class MetadataRangesItem(messages.Message):
 
     race = messages.StringField(157, repeated=True)
     residual_tumor = messages.StringField(158, repeated=True)
-    SampleBarcode = messages.StringField(159, repeated=True)
+    sample_barcode = messages.StringField(159, repeated=True)
     SampleTypeCode = messages.StringField(160, repeated=True)
     Study = messages.StringField(161, repeated=True)
     tobacco_smoking_history = messages.StringField(162, repeated=True)
@@ -806,17 +806,17 @@ class Cohort_Endpoints_API(remote.Service):
 
         clinical_query_str = 'select * ' \
                              'from metadata_clinical ' \
-                             'where ParticipantBarcode=%s'
+                             'where case_barcode=%s'
 
         query_tuple = (str(patient_barcode),)
 
-        sample_query_str = 'select SampleBarcode ' \
+        sample_query_str = 'select sample_barcode ' \
                            'from metadata_biospecimen ' \
-                           'where ParticipantBarcode=%s'
+                           'where case_barcode=%s'
 
         aliquot_query_str = 'select AliquotBarcode ' \
                             'from metadata_data ' \
-                            'where ParticipantBarcode=%s ' \
+                            'where case_barcode=%s ' \
                             'group by AliquotBarcode'
         try:
             db = sql_connection()
@@ -880,7 +880,7 @@ class Cohort_Endpoints_API(remote.Service):
                 number_of_lymphnodes_positive_by_he=None if "number_of_lymphnodes_positive_by_he" not in row or row[
                                                                                                                     'number_of_lymphnodes_positive_by_he'] is None else int(
                     row["number_of_lymphnodes_positive_by_he"]),
-                ParticipantBarcode=str(row["ParticipantBarcode"]),
+                case_barcode=str(row["case_barcode"]),
                 pathologic_M=str(row["pathologic_M"]),
                 pathologic_N=str(row["pathologic_N"]),
                 pathologic_stage=str(row["pathologic_stage"]),
@@ -907,7 +907,7 @@ class Cohort_Endpoints_API(remote.Service):
             sample_cursor.execute(sample_query_str, query_tuple)
             sample_data = []
             for row in sample_cursor.fetchall():
-                sample_data.append(row['SampleBarcode'])
+                sample_data.append(row['sample_barcode'])
 
             aliquot_cursor = db.cursor(MySQLdb.cursors.DictCursor)
             aliquot_cursor.execute(aliquot_query_str, query_tuple)
@@ -955,21 +955,21 @@ class Cohort_Endpoints_API(remote.Service):
         sample_barcode = request.get_assigned_value('sample_barcode')
         biospecimen_query_str = 'select * ' \
                                 'from metadata_biospecimen ' \
-                                'where SampleBarcode=%s'
+                                'where sample_barcode=%s'
 
         query_tuple = (str(sample_barcode),)
         extra_query_tuple = query_tuple
 
         aliquot_query_str = 'select AliquotBarcode ' \
                             'from metadata_data ' \
-                            'where SampleBarcode=%s '
+                            'where sample_barcode=%s '
 
-        patient_query_str = 'select ParticipantBarcode ' \
+        patient_query_str = 'select case_barcode ' \
                             'from metadata_biospecimen ' \
-                            'where SampleBarcode=%s '
+                            'where sample_barcode=%s '
 
         data_query_str = 'select ' \
-                         'SampleBarcode, ' \
+                         'sample_barcode, ' \
                          'DataCenterName, ' \
                          'DataCenterType, ' \
                          'DataFileName, ' \
@@ -988,7 +988,7 @@ class Cohort_Endpoints_API(remote.Service):
                          'SDRFFileName,' \
                          'SecurityProtocol ' \
                          'from metadata_data ' \
-                         'where SampleBarcode=%s '
+                         'where sample_barcode=%s '
 
         if request.get_assigned_value('platform') is not None:
             platform = request.get_assigned_value('platform')
@@ -1003,7 +1003,7 @@ class Cohort_Endpoints_API(remote.Service):
             extra_query_tuple += (str(pipeline),)
 
         aliquot_query_str += ' group by AliquotBarcode'
-        patient_query_str += ' group by ParticipantBarcode'
+        patient_query_str += ' group by case_barcode'
 
         try:
             db = sql_connection()
@@ -1090,9 +1090,9 @@ class Cohort_Endpoints_API(remote.Service):
                 min_percent_tumor_nuclei=None if "min_percent_tumor_nuclei" not in row or row[
                                                                                               "min_percent_tumor_nuclei"] is None else int(
                     row["min_percent_tumor_nuclei"]),  # 62)
-                ParticipantBarcode=str(row["ParticipantBarcode"]),
+                case_barcode=str(row["case_barcode"]),
                 Project=str(row["Project"]),
-                SampleBarcode=str(row["SampleBarcode"]),
+                sample_barcode=str(row["sample_barcode"]),
                 Study=str(row["Study"])
             )
             aliquot_cursor = db.cursor(MySQLdb.cursors.DictCursor)
@@ -1112,7 +1112,7 @@ class Cohort_Endpoints_API(remote.Service):
                 error_message = "Sample barcode {} not found in metadata_biospecimen table.".format(sample_barcode)
                 return SampleDetails(biospecimen_data=None, aliquots=[], patient=None, data_details=[],
                                      data_details_count=None, error=error_message)
-            patient_barcode = str(row["ParticipantBarcode"])
+            patient_barcode = str(row["case_barcode"])
 
             data_cursor = db.cursor(MySQLdb.cursors.DictCursor)
             data_cursor.execute(data_query_str, extra_query_tuple)
@@ -1136,7 +1136,7 @@ class Cohort_Endpoints_API(remote.Service):
                     cloud_storage_path = "gs://{}{}".format(bucket_name, row.get('DataFileNameKey'))
 
                 data_item = DataDetails(
-                    SampleBarcode=str(row['SampleBarcode']),
+                    sample_barcode=str(row['sample_barcode']),
                     DataCenterName=str(row['DataCenterName']),
                     DataCenterType=str(row['DataCenterType']),
                     DataFileName=str(row['DataFileName']),
@@ -1238,7 +1238,7 @@ class Cohort_Endpoints_API(remote.Service):
                 request_finished.send(self)
                 raise endpoints.UnauthorizedException(err_msg)
 
-            query_str += 'JOIN cohorts_samples ON metadata_data.SampleBarcode=cohorts_samples.sample_barcode ' \
+            query_str += 'JOIN cohorts_samples ON metadata_data.sample_barcode=cohorts_samples.sample_barcode ' \
                          'WHERE cohorts_samples.cohort_id=%s ' \
                          'AND DataFileNameKey != "" AND DataFileNameKey is not null '
             query_tuple = (cohort_id,)
@@ -1329,7 +1329,7 @@ class Cohort_Endpoints_API(remote.Service):
             raise endpoints.BadRequestException(err_msg)
 
         query_str = 'SELECT DataFileNameKey, SecurityProtocol, Repository ' \
-                    'FROM metadata_data WHERE SampleBarcode=%s '
+                    'FROM metadata_data WHERE sample_barcode=%s '
 
         query_tuple = (sample_barcode,)
 
@@ -1445,7 +1445,7 @@ class Cohort_Endpoints_API(remote.Service):
                 if request.get_assigned_value(k.name) and k.name.endswith('_lte')
                 }
 
-            sample_query_str = 'SELECT SampleBarcode,  IF(ParticipantBarcode="", LEFT(SampleBarcode,12), ParticipantBarcode) AS ParticipantBarcode' \
+            sample_query_str = 'SELECT sample_barcode,  IF(case_barcode="", LEFT(sample_barcode,12), case_barcode) AS case_barcode' \
                                'FROM metadata_samples ' \
                                'WHERE '
             value_tuple = ()
@@ -1472,7 +1472,7 @@ class Cohort_Endpoints_API(remote.Service):
                 sample_query_str += ' {} <=%s '.format(key)
                 value_tuple += (value,)
 
-            sample_query_str += ' GROUP BY SampleBarcode'
+            sample_query_str += ' GROUP BY sample_barcode'
 
             patient_barcodes = []
             sample_barcodes = []
@@ -1482,7 +1482,7 @@ class Cohort_Endpoints_API(remote.Service):
                 sample_cursor = db.cursor(MySQLdb.cursors.DictCursor)
                 sample_cursor.execute(sample_query_str, value_tuple)
                 for row in sample_cursor.fetchall():
-                    sample_barcodes.append((row['SampleBarcode'],row['ParticipantBarcode'],))
+                    sample_barcodes.append((row['sample_barcode'],row['case_barcode'],))
 
             except (IndexError, TypeError), e:
                 logger.warn(e)
@@ -1651,7 +1651,7 @@ class Cohort_Endpoints_API(remote.Service):
             if request.get_assigned_value(k.name) and k.name.endswith('_lte')
             }
 
-        sample_query_str = 'SELECT SampleBarcode,IF(ParticipantBarcode="", LEFT(SampleBarcode,12), ParticipantBarcode) AS ParticipantBarcode ' \
+        sample_query_str = 'SELECT sample_barcode,IF(case_barcode="", LEFT(sample_barcode,12), case_barcode) AS case_barcode ' \
                            'FROM metadata_samples ' \
                            'WHERE '
 
@@ -1680,7 +1680,7 @@ class Cohort_Endpoints_API(remote.Service):
             sample_query_str += ' {} <=%s '.format(key)
             value_tuple += (value,)
 
-        sample_query_str += ' GROUP BY SampleBarcode'
+        sample_query_str += ' GROUP BY sample_barcode'
 
         patient_barcodes = []
         sample_barcodes = []
@@ -1691,8 +1691,8 @@ class Cohort_Endpoints_API(remote.Service):
             sample_cursor = db.cursor(MySQLdb.cursors.DictCursor)
             sample_cursor.execute(sample_query_str, value_tuple)
             for row in sample_cursor.fetchall():
-                sample_barcodes.append(row['SampleBarcode'])
-                patient_barcodes.append(row['ParticipantBarcode'])
+                sample_barcodes.append(row['sample_barcode'])
+                patient_barcodes.append(row['case_barcode'])
 
         except (IndexError, TypeError), e:
             logger.warn(e)
@@ -1756,12 +1756,12 @@ class Cohort_Endpoints_API(remote.Service):
                 request_finished.send(self)
                 raise endpoints.UnauthorizedException(err_msg)
 
-            query_str = 'SELECT SampleBarcode, GG_dataset_id, GG_readgroupset_id ' \
+            query_str = 'SELECT sample_barcode, GG_dataset_id, GG_readgroupset_id ' \
                         'FROM metadata_data ' \
-                        'JOIN cohorts_samples ON metadata_data.SampleBarcode=cohorts_samples.sample_barcode ' \
+                        'JOIN cohorts_samples ON metadata_data.sample_barcode=cohorts_samples.sample_barcode ' \
                         'WHERE cohorts_samples.cohort_id=%s ' \
                         'AND GG_dataset_id !="" AND GG_readgroupset_id !="" ' \
-                        'GROUP BY SampleBarcode, GG_dataset_id, GG_readgroupset_id;'
+                        'GROUP BY sample_barcode, GG_dataset_id, GG_readgroupset_id;'
 
             query_tuple = (cohort_id,)
             try:
@@ -1773,7 +1773,7 @@ class Cohort_Endpoints_API(remote.Service):
                 for row in cursor.fetchall():
                     google_genomics_items.append(
                         GoogleGenomicsItem(
-                            SampleBarcode=row['SampleBarcode'],
+                            sample_barcode=row['sample_barcode'],
                             GG_dataset_id=row['GG_dataset_id'],
                             GG_readgroupset_id=row['GG_readgroupset_id']
                         )
@@ -1819,11 +1819,11 @@ class Cohort_Endpoints_API(remote.Service):
             err_msg = construct_parameter_error_message(request, False)
             raise endpoints.BadRequestException(err_msg)
 
-        query_str = 'SELECT SampleBarcode, GG_dataset_id, GG_readgroupset_id ' \
+        query_str = 'SELECT sample_barcode, GG_dataset_id, GG_readgroupset_id ' \
                     'FROM metadata_data ' \
-                    'WHERE SampleBarcode=%s ' \
+                    'WHERE sample_barcode=%s ' \
                     'AND GG_dataset_id !="" AND GG_readgroupset_id !="" ' \
-                    'GROUP BY SampleBarcode, GG_dataset_id, GG_readgroupset_id;'
+                    'GROUP BY sample_barcode, GG_dataset_id, GG_readgroupset_id;'
 
         query_tuple = (sample_barcode,)
         try:
@@ -1835,7 +1835,7 @@ class Cohort_Endpoints_API(remote.Service):
             for row in cursor.fetchall():
                 google_genomics_items.append(
                     GoogleGenomicsItem(
-                        SampleBarcode=row['SampleBarcode'],
+                        sample_barcode=row['sample_barcode'],
                         GG_dataset_id=row['GG_dataset_id'],
                         GG_readgroupset_id=row['GG_readgroupset_id']
                     )
