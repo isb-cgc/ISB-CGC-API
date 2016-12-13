@@ -1,6 +1,6 @@
 """
 
-Copyright 2015, Institute for Systems Biology
+Copyright 2016, Institute for Systems Biology
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@ limitations under the License.
 """
 
 import logging
+import re
 import collections
 from datetime import datetime
 import endpoints
@@ -1498,6 +1499,15 @@ class Cohort_Endpoints_API(remote.Service):
                 request_finished.send(self)
 
             cohort_name = request.get_assigned_value('name')
+
+            # Validate the cohort name against a whitelist
+            whitelist = re.compile(WHITELIST_RE, re.UNICODE)
+            match = whitelist.search(unicode(cohort_name))
+            if match:
+                # XSS risk, log and fail this cohort save
+                match = whitelist.findall(unicode(cohort_name))
+                logger.error('[ERROR] While saving a cohort, saw a malformed name: ' + cohort_name + ', characters: ' + match.__str__())
+                raise endpoints.BadRequestException("Your cohort's name contains invalid characters ("+match.__str__()+"); please choose another name.")
 
             # 1. create new cohorts_cohort with name, active=True, last_date_saved=now
             created_cohort = Django_Cohort.objects.create(name=cohort_name, active=True,
