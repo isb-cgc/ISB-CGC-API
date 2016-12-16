@@ -176,9 +176,7 @@ class SeqPeekViewDataAccessAPI(remote.Service):
             gnab_feature_id = self.build_gnab_feature_id(hugo_symbol)
             logging.debug("GNAB feature ID for SeqPeke: {0}".format(gnab_feature_id))
 
-            # Lifted from api/data_access.py line 509+
             # Get the study IDs these cohorts' samples come from
-            
             cohort_vals = tuple(int(i) for i in cohort_id_array)
             cohort_params = ('%s,' * len(cohort_id_array))[:-1]
 
