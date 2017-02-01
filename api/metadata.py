@@ -1917,8 +1917,16 @@ class Meta_Endpoints_API(remote.Service):
             if db and db.open: db.close()
             request_finished.send(self)
 
-        platform_count_query = 'select Platform, count(Platform) as platform_count from metadata_data where SampleBarcode in {0} and DatafileUploaded="true"  group by Platform order by SampleBarcode;'.format(in_clause)
-        query = 'select SampleBarcode, DatafileName, DatafileNameKey, SecurityProtocol, Pipeline, Platform, DataLevel, Datatype, GG_readgroupset_id, Repository, SecurityProtocol from metadata_data where SampleBarcode in {0} and DatafileUploaded="true" '.format(in_clause)
+        platform_count_query = """
+          select Platform, count(Platform) as platform_count from metadata_data
+          where SampleBarcode in {0} and DatafileUploaded='true'
+          group by Platform;""".format(in_clause)
+
+        query = """
+          select SampleBarcode, DatafileName, DatafileNameKey, SecurityProtocol, Pipeline, Platform, DataLevel,
+            Datatype, GG_readgroupset_id, Repository, SecurityProtocol
+          from metadata_data
+          where SampleBarcode in {0} and DatafileUploaded='true' """.format(in_clause)
 
         # Check for incoming platform selectors
         platform_selector_list = []
