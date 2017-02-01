@@ -50,6 +50,8 @@ def sql_connection():
     env = os.getenv('SERVER_SOFTWARE')
     database = settings.DATABASES['default']
     connect_options = {}
+
+    db = None
     try:
         if not settings.IS_DEV:
             # Connecting from App Engine
@@ -68,7 +70,7 @@ def sql_connection():
         db = MySQLdb.connect(**connect_options)
 
     except Exception as e:
-        print >> sys.stderr, "[ERROR] Exception in sql_connection(): " + e
+        print >> sys.stderr, "[ERROR] Exception in sql_connection(): " + e.message
         print >> sys.stderr, traceback.format_exc()
 
     return db
