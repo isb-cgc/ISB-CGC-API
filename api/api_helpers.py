@@ -55,7 +55,7 @@ def sql_connection():
     try:
         if not settings.IS_DEV:
             # Connecting from App Engine
-            connect_options['host'] = 'localhost',
+            connect_options['host'] = 'localhost'
             connect_options['unix_socket'] = database['HOST']
             connect_options['db'] = database['NAME']
             connect_options['user'] = database['USER']
