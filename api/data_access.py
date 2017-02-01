@@ -532,7 +532,7 @@ class FeatureDataEndpoints(remote.Service):
                     if study.get_my_root_and_depth()['root'] in tcga_studies:
                         confirmed_study_ids.append(study.id)
 
-            print >> sys.stdout, "[STATUS] Confirmed study IDs: "+confirmed_study_ids
+            print >> sys.stdout, "[STATUS] Confirmed study IDs: "+confirmed_study_ids.__str__()
 
             return self.get_merged_feature_vectors(x_id, y_id, c_id, cohort_id_array, logTransform, confirmed_study_ids)
         except NotFoundException as nfe:
