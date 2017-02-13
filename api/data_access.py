@@ -72,7 +72,6 @@ def fetch_isbcgc_study_set():
             else:
                 # Otherwise just warn
                 logger.warn("[WARNING] Stored procedure get_isbcgc_study_set was not found!")
-        print >> sys.stdout, "[STATUS] ISB CGC study set: "+ISB_CGC_STUDIES['list'].__str__()
 
         return ISB_CGC_STUDIES['list']
     except Exception as e:
@@ -531,8 +530,6 @@ class FeatureDataEndpoints(remote.Service):
                 for study in studies:
                     if study.get_my_root_and_depth()['root'] in tcga_studies:
                         confirmed_study_ids.append(study.id)
-
-            print >> sys.stdout, "[STATUS] Confirmed study IDs: "+confirmed_study_ids.__str__()
 
             return self.get_merged_feature_vectors(x_id, y_id, c_id, cohort_id_array, logTransform, confirmed_study_ids)
         except NotFoundException as nfe:
