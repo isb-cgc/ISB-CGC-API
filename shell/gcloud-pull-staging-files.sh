@@ -1,4 +1,3 @@
-
 ./google-cloud-sdk/bin/gsutil cp "gs://${GCLOUD_BUCKET_TEST}/${TEST_APP_YAML}" ./app.yaml
 ./google-cloud-sdk/bin/gsutil cp "gs://${GCLOUD_BUCKET_TEST}/${TEST_CERT_FILE}" ./client-cert.pem
 ./google-cloud-sdk/bin/gsutil cp "gs://${GCLOUD_BUCKET_TEST}/${TEST_KEY_FILE}" ./client-key.pem
