@@ -7,5 +7,6 @@ echo "{\
   \"type\": \"service_account\"\
 }" | tee privatekey.json > /dev/null 2> /dev/null
 /home/ubuntu/${CIRCLE_PROJECT_REPONAME}/google-cloud-sdk/bin/gcloud auth activate-service-account --key-file privatekey.json
+/home/ubuntu/${CIRCLE_PROJECT_REPONAME}/google-cloud-sdk/bin/gcloud auth list
 /home/ubuntu/${CIRCLE_PROJECT_REPONAME}/google-cloud-sdk/bin/gcloud config set account $GAE_CLIENT_EMAIL_TEST
 /home/ubuntu/${CIRCLE_PROJECT_REPONAME}/google-cloud-sdk/bin/gcloud config set project "$GAE_PROJECT_ID_TEST"
