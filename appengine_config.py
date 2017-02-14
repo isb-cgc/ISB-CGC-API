@@ -5,7 +5,7 @@ from google.appengine.ext import vendor
 # Add any libraries installed in the "lib" folder.
 vendor.add('lib')
 
-BASE_DIR                = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir)) + os.sep
+BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir)) + os.sep
 
 SHARED_SOURCE_DIRECTORIES = [
    os.path.abspath('./ISB-CGC-Common')
