@@ -4,7 +4,6 @@
 ./google-cloud-sdk/bin/gsutil cp "gs://${GCLOUD_BUCKET}/${PROD_CA_FILE}" ./server-ca.pem
 ./google-cloud-sdk/bin/gsutil cp "gs://${GCLOUD_BUCKET}/${PROD_SECRETS_FILE}" ./client_secrets.json
 ./google-cloud-sdk/bin/gsutil cp "gs://${GCLOUD_BUCKET}/${PROD_PEM_FILE}" ./privatekey.pem
-./google-cloud-sdk/bin/gsutil cp "gs://${GCLOUD_BUCKET}/${DEV_OAUTH_TOKEN}" ~/.appcfg_oauth2_tokens
 if [ -n "${PROD_NIH_AUTH_ON}" ]; then
   ./google-cloud-sdk/bin/gsutil cp "gs://${GCLOUD_BUCKET}/prod-files/saml/advanced_settings.json" ./saml/advanced_settings.json
   ./google-cloud-sdk/bin/gsutil cp "gs://${GCLOUD_BUCKET}/prod-files/saml/settings.json" ./saml/settings.json
