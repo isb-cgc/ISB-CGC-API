@@ -57,6 +57,8 @@ DEVELOPER_COHORT_TABLE_ID = os.environ.get('DEVELOPER_COHORT_TABLE_ID')
 
 NIH_AUTH_ON = os.environ.get('NIH_AUTH_ON', False)
 
+IS_DEV = os.environ.get('IS_DEV', False)
+
 DATABASES = {
     'default': {
         'ENGINE': os.environ.get('DATABASE_ENGINE', 'django.db.backends.mysql'),

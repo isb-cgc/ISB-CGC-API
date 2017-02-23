@@ -90,9 +90,12 @@ class CNVRFeatureProvider(FeatureDataProvider):
     def process_data_point(cls, data_point):
         return data_point['value']
 
-    def build_query(self, project_name, dataset_name, table_name, feature_def, cohort_dataset, cohort_table, cohort_id_array):
+    def build_query(self, project_name, dataset_name, table_name, feature_def, cohort_dataset, cohort_table, cohort_id_array, study_id_array):
         # Generate the 'IN' statement string: (%s, %s, ..., %s)
         cohort_id_stmt = ', '.join([str(cohort_id) for cohort_id in cohort_id_array])
+        study_id_stmt = ''
+        if study_id_array is not None:
+            study_id_stmt = ', '.join([str(study_id) for study_id in study_id_array])
 
         value_field_bqsql = {
             'avg_segment_mean': 'AVG(Segment_Mean)',
@@ -102,25 +105,26 @@ class CNVRFeatureProvider(FeatureDataProvider):
             'num_segments': 'COUNT(*)'
         }
 
-        query_template = \
-            ("SELECT ParticipantBarcode, SampleBarcode, AliquotBarcode, {value_field} AS value "
-             "FROM [{project_name}:{dataset_name}.{table_name}] "
-             "WHERE ( Chromosome='{chr}' AND ( "
-             "        ( Start<{start} AND End>{start} ) OR "
-             "        ( Start>{start}-1 AND Start<{end}+1 ) ) ) "
-             "AND SampleBarcode IN ( "
-             "    SELECT sample_barcode "
-             "    FROM [{project_name}:{cohort_dataset}.{cohort_table}] "
-             "    WHERE cohort_id IN ({cohort_id_list})"
-             ") "
-             "GROUP BY ParticipantBarcode, SampleBarcode, AliquotBarcode")
+        query_template = "SELECT ParticipantBarcode, SampleBarcode, AliquotBarcode, {value_field} AS value " \
+             "FROM [{project_name}:{dataset_name}.{table_name}] " \
+             "WHERE ( Chromosome='{chr}' AND ( " \
+             "        ( Start<{start} AND End>{start} ) OR " \
+             "        ( Start>{start}-1 AND Start<{end}+1 ) ) ) " \
+             "AND SampleBarcode IN ( " \
+             "    SELECT sample_barcode " \
+             "    FROM [{project_name}:{cohort_dataset}.{cohort_table}] " \
+             "    WHERE cohort_id IN ({cohort_id_list})" \
+             "         AND (study_id IS NULL"
+
+        query_template += (" OR study_id IN ({study_id_list})))" if study_id_array is not None else "))")
+        query_template += " GROUP BY ParticipantBarcode, SampleBarcode, AliquotBarcode"
 
         query = query_template.format(dataset_name=dataset_name, project_name=project_name, table_name=table_name,
                                       value_field=value_field_bqsql[feature_def.value_field],
                                       chr=feature_def.chromosome,
                                       start=feature_def.start, end=feature_def.end,
                                       cohort_dataset=cohort_dataset, cohort_table=cohort_table,
-                                      cohort_id_list=cohort_id_stmt)
+                                      cohort_id_list=cohort_id_stmt, study_id_list=study_id_stmt)
 
         logging.debug("BQ_QUERY_CNVR: " + query)
         return query
