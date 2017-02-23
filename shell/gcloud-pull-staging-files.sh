@@ -1,7 +1,7 @@
 ./google-cloud-sdk/bin/gsutil cp "gs://${GCLOUD_BUCKET}/${PROD_APP_YAML}" ./app.yaml
-./google-cloud-sdk/bin/gsutil cp "gs://${GCLOUD_BUCKET}/ssl/${PROD_CERT_FILE}" ./client-cert.pem
-./google-cloud-sdk/bin/gsutil cp "gs://${GCLOUD_BUCKET}/ssl/${PROD_KEY_FILE}" ./client-key.pem
-./google-cloud-sdk/bin/gsutil cp "gs://${GCLOUD_BUCKET}/ssl/${PROD_CA_FILE}" ./server-ca.pem
+./google-cloud-sdk/bin/gsutil cp "gs://${GCLOUD_BUCKET}/${PROD_CERT_FILE}" ./client-cert.pem
+./google-cloud-sdk/bin/gsutil cp "gs://${GCLOUD_BUCKET}/${PROD_KEY_FILE}" ./client-key.pem
+./google-cloud-sdk/bin/gsutil cp "gs://${GCLOUD_BUCKET}/${PROD_CA_FILE}" ./server-ca.pem
 ./google-cloud-sdk/bin/gsutil cp "gs://${GCLOUD_BUCKET}/${PROD_SECRETS_FILE}" ./client_secrets.json
 ./google-cloud-sdk/bin/gsutil cp "gs://${GCLOUD_BUCKET}/${PROD_PEM_FILE}" ./privatekey.pem
 if [ -n "${PROD_NIH_AUTH_ON}" ]; then
