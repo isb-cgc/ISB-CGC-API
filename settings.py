@@ -57,6 +57,8 @@ DEVELOPER_COHORT_TABLE_ID = os.environ.get('DEVELOPER_COHORT_TABLE_ID')
 
 NIH_AUTH_ON = os.environ.get('NIH_AUTH_ON', False)
 
+IS_DEV = os.environ.get('IS_DEV', False)
+
 DATABASES = {
     'default': {
         'ENGINE': os.environ.get('DATABASE_ENGINE', 'django.db.backends.mysql'),
@@ -109,12 +111,6 @@ def GET_BQ_COHORT_SETTINGS():
     return BigQueryCohortStorageSettings(COHORT_DATASET_ID, DEVELOPER_COHORT_TABLE_ID)
 
 USE_CLOUD_STORAGE = os.environ.get('USE_CLOUD_STORAGE')
-
-PROCESSING_ENABLED = os.environ.get('PROCESSING_ENABLED')
-PROCESSING_JENKINS_URL = os.environ.get('PROCESSING_JENKINS_URL')
-PROCESSING_JENKINS_PROJECT = os.environ.get('PROCESSING_JENKINS_PROJECT')
-PROCESSING_JENKINS_USER = os.environ.get('PROCESSING_JENKINS_USER')
-PROCESSING_JENKINS_PASSWORD = os.environ.get('PROCESSING_JENKINS_PASSWORD')
 
 # Local time zone for this installation. Choices can be found here:
 # http://en.wikipedia.org/wiki/List_of_tz_zones_by_name
@@ -335,7 +331,6 @@ SOCIALACCOUNT_PROVIDERS = \
 
 GOOGLE_APPLICATION_CREDENTIALS  = os.environ.get('GOOGLE_APPLICATION_CREDENTIALS')
 CLIENT_SECRETS                  = os.environ.get('CLIENT_SECRETS')
-PEM_FILE                        = os.environ.get('PEM_FILE')
 CLIENT_EMAIL                    = os.environ.get('CLIENT_EMAIL')
 WEB_CLIENT_ID                   = os.environ.get('WEB_CLIENT_ID')
 INSTALLED_APP_CLIENT_ID         = os.environ.get('INSTALLED_APP_CLIENT_ID')

@@ -29,6 +29,8 @@ from api.seqpeek_api import SeqPeekDataEndpointsAPI, MAFRecord, maf_array_to_rec
 from bq_data_access.seqpeek.seqpeek_maf_formatter import SeqPeekMAFDataFormatter
 from bq_data_access.seqpeek_maf_data import SeqPeekDataProvider
 from bq_data_access.data_access import ProviderClassQueryDescription
+from api.data_access import fetch_isbcgc_study_set
+from api.api_helpers import sql_connection
 
 
 class SeqPeekViewDataRequest(Message):
@@ -172,7 +174,44 @@ class SeqPeekViewDataAccessAPI(remote.Service):
             gnab_feature_id = self.build_gnab_feature_id(hugo_symbol)
             logging.debug("GNAB feature ID for SeqPeke: {0}".format(gnab_feature_id))
 
-            async_params = [ProviderClassQueryDescription(SeqPeekDataProvider, gnab_feature_id, cohort_id_array)]
+            # Lifted from api/data_access.py line 509+
+            # Get the study IDs these cohorts' samples come from
+            cohort_vals = ()
+            cohort_params = ""
+
+            for cohort in cohort_id_array:
+                cohort_params += "%s,"
+                cohort_vals += (cohort,)
+
+            cohort_params = cohort_params[:-1]
+
+            db = sql_connection()
+            cursor = db.cursor()
+
+            tcga_studies = fetch_isbcgc_study_set()
+
+            cursor.execute("SELECT DISTINCT study_id FROM cohorts_samples WHERE cohort_id IN (" + cohort_params + ");",
+                           cohort_vals)
+
+            # Only samples whose source studies are TCGA studies, or extended from them, should be used
+            confirmed_study_ids = []
+            unconfirmed_study_ids = []
+
+            for row in cursor.fetchall():
+                if row[0] in tcga_studies:
+                    if row[0] not in confirmed_study_ids:
+                        confirmed_study_ids.append(row[0])
+                elif row[0] not in unconfirmed_study_ids:
+                    unconfirmed_study_ids.append(row[0])
+
+            if len(unconfirmed_study_ids) > 0:
+                studies = Study.objects.filter(id__in=unconfirmed_study_ids)
+
+                for study in studies:
+                    if study.get_my_root_and_depth()['root'] in tcga_studies:
+                        confirmed_study_ids.append(study.id)
+
+            async_params = [ProviderClassQueryDescription(SeqPeekDataProvider, gnab_feature_id, cohort_id_array, confirmed_study_ids)]
             maf_data_result = get_feature_vectors_tcga_only(async_params, skip_formatting_for_plot=True)
 
             maf_data_vector = maf_data_result[gnab_feature_id]['data']
