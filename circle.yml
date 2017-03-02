@@ -8,10 +8,6 @@ machine:
 dependencies:
   override:
     - sudo -E /bin/sh ./shell/install-deps.sh
-#database:
-#  post:
-#    - mysql -u ubuntu -e "USE mysql; SET PASSWORD FOR 'ubuntu'@'localhost' = PASSWORD('isb')"
-#    - sudo -E /bin/sh ./shell/database-setup.sh
 test:
   override:
     - echo 'No Tests'
@@ -21,4 +17,4 @@ deployment:
     commands:
       - sudo -E /bin/sh ./shell/gcloud_authenticate.sh
       - sudo -E /bin/sh ./shell/gcloud-pull-staging-files.sh
-      - sudo -E ./google_appengine/appcfg.py update .
+      - sudo -E ./google-cloud-sdk/bin/gcloud app deploy --quiet
