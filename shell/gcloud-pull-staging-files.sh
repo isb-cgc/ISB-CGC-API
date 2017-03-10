@@ -1,8 +1,11 @@
-./google-cloud-sdk/bin/gsutil cp "gs://${GCLOUD_BUCKET_UAT}/uat_app.yaml" ./app.yaml
-./google-cloud-sdk/bin/gsutil cp "gs://${GCLOUD_BUCKET_UAT}/ssl/ISB-CGC-uat-client-cert.pem" ./client-cert.pem
-./google-cloud-sdk/bin/gsutil cp "gs://${GCLOUD_BUCKET_UAT}/ssl/ISB-CGC-uat-client-key.pem" ./client-key.pem
-./google-cloud-sdk/bin/gsutil cp "gs://${GCLOUD_BUCKET_UAT}/ssl/ISB-CGC-uat-server-ca.pem" ./server-ca.pem
-./google-cloud-sdk/bin/gsutil cp "gs://${GCLOUD_BUCKET_UAT}/ISB-CGC-uat-client-secrets.json" ./client_secrets.json
-./google-cloud-sdk/bin/gsutil cp "gs://${GCLOUD_BUCKET_UAT}/ISB-CGC-uat-privatekey2.json" ./privatekey.json
-./google-cloud-sdk/bin/gsutil cp "gs://${GCLOUD_BUCKET_UAT}/ISB-CGC-uat-privatekey2.pem" ./privatekey.pem
-./google-cloud-sdk/bin/gsutil cp "gs://${GCLOUD_BUCKET_UAT}/.appcfg_oauth2_tokens" ~/.appcfg_oauth2_tokens
+./google-cloud-sdk/bin/gsutil cp "gs://${GCLOUD_BUCKET_UAT}/${UAT_APP_YAML}" ./app.yaml
+./google-cloud-sdk/bin/gsutil cp "gs://${GCLOUD_BUCKET_UAT}/${UAT_SECRETS_FILE}" ./client_secrets.json
+./google-cloud-sdk/bin/gsutil cp "gs://${GCLOUD_BUCKET_UAT}/${UAT_JSON_FILE}" ./privatekey.json
+
+if [ -n "${UAT_NIH_AUTH_ON}" ]; then
+  ./google-cloud-sdk/bin/gsutil cp "gs://${GCLOUD_BUCKET_UAT}/saml/advanced_settings.json" ./saml/advanced_settings.json
+  ./google-cloud-sdk/bin/gsutil cp "gs://${GCLOUD_BUCKET_UAT}/saml/settings.json" ./saml/settings.json
+  ./google-cloud-sdk/bin/gsutil cp "gs://${GCLOUD_BUCKET_UAT}/saml/certs/cert.pem" ./saml/certs/cert.pem
+  ./google-cloud-sdk/bin/gsutil cp "gs://${GCLOUD_BUCKET_UAT}/saml/certs/key.pem" ./saml/certs/key.pem
+  ./google-cloud-sdk/bin/gsutil cp "gs://${GCLOUD_BUCKET_UAT}/NIH_FTP.txt" ./NIH_FTP.txt
+fi
