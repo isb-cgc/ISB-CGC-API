@@ -72,7 +72,7 @@ class MAFRequest(Message):
     gene = StringField(1, required=True)
     tumor = StringField(2, repeated=True)
 
-MAFEndpointsAPI = endpoints.api(name='maf_api', version='v1')
+MAFEndpointsAPI = endpoints.api(name='maf_api', version='v3')
 
 
 @MAFEndpointsAPI .api_class(resource_name='maf_endpoints')

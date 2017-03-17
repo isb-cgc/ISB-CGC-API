@@ -24,7 +24,7 @@ from api_3.data_access import FeatureDataEndpoints
 
 from api_3.Cohort import Cohort_Endpoints
 
-from api_3.metadata import Meta_Endpoints, Meta_Endpoints_v2
+from api_3.metadata import Meta_Endpoints_v3
 from api_3.pairwise_api import Pairwise_Endpoints
 from api_3.seqpeek_view_api import SeqPeekViewDataAccessAPI
 from api_3.isb_cgc_api.cohorts_list import CohortsListAPI
@@ -49,8 +49,7 @@ APPLICATION = endpoints.api_server([
     Cohort_Endpoints,
 
     FeatureAccessEndpoints,
-    Meta_Endpoints,
-    Meta_Endpoints_v2,
+    Meta_Endpoints_v3,
     FeatureDataEndpoints,
     SingleFeatureDataAccess,
     Pairwise_Endpoints,

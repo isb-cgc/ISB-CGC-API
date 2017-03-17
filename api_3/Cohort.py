@@ -483,7 +483,7 @@ def get_list_of_split_values_for_filter_model(large_value_list):
     return return_list
 
 
-Cohort_Endpoints = endpoints.api(name='cohort_api', version='v1',
+Cohort_Endpoints = endpoints.api(name='cohort_api', version='v3',
                                  description="Get information about cohorts, patients, and samples. Create and delete cohorts.",
                                  allowed_client_ids=[INSTALLED_APP_CLIENT_ID, endpoints.API_EXPLORER_CLIENT_ID])
 

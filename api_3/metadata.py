@@ -1952,7 +1952,7 @@ Meta_Endpoints_v3 = endpoints.api(name='meta_api', version='v3',
                                allowed_client_ids=[INSTALLED_APP_CLIENT_ID, endpoints.API_EXPLORER_CLIENT_ID])
 
 @Meta_Endpoints_v2.api_class(resource_name='meta_endpoints')
-class Meta_Endpoints_API_v2(remote.Service):
+class Meta_Endpoints_API_v3(remote.Service):
 
     GET_RESOURCE = endpoints.ResourceContainer(
             MetadataAttr,

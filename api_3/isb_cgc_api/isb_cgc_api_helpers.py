@@ -20,7 +20,7 @@ BUILTIN_ENDPOINTS_PARAMETERS = [
     'userIp'
 ]
 
-ISB_CGC_Endpoints = endpoints.api(name='isb_cgc_api', version='v2',
+ISB_CGC_Endpoints = endpoints.api(name='isb_cgc_api', version='v3',
                                   description="Get information about cohorts, patients, and samples. Create and delete cohorts.",
                                   allowed_client_ids=[INSTALLED_APP_CLIENT_ID, endpoints.API_EXPLORER_CLIENT_ID,
                                                       settings.WEB_CLIENT_ID],
