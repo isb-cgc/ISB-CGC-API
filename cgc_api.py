@@ -18,28 +18,28 @@ limitations under the License.
 
 import endpoints
 
-from api.feature_access import FeatureAccessEndpoints
-from api.single_feature_access import SingleFeatureDataAccess
-from api.data_access import FeatureDataEndpoints
+from api_3.feature_access import FeatureAccessEndpoints
+from api_3.single_feature_access import SingleFeatureDataAccess
+from api_3.data_access import FeatureDataEndpoints
 
-from api.Cohort import Cohort_Endpoints
+from api_3.Cohort import Cohort_Endpoints
 
-from api.metadata import Meta_Endpoints, Meta_Endpoints_v2
-from api.pairwise_api import Pairwise_Endpoints
-from api.seqpeek_view_api import SeqPeekViewDataAccessAPI
-from api.isb_cgc_api.cohorts_list import CohortsListAPI
-from api.isb_cgc_api.cohorts_preview import CohortsPreviewAPI
-from api.isb_cgc_api.cohorts_get import CohortsGetAPI
-from api.isb_cgc_api.cohorts_delete import CohortsDeleteAPI
-from api.isb_cgc_api.cohorts_create import CohortsCreateAPI
-from api.isb_cgc_api.cohorts_cloudstoragefilepaths import CohortsCloudStorageFilePathsAPI
-from api.isb_cgc_api.patients_get import PatientsGetAPI
-from api.isb_cgc_api.patients_annotations import PatientsAnnotationAPI
-from api.isb_cgc_api.samples_get import SamplesGetAPI
-from api.isb_cgc_api.samples_cloudstoragefilepaths import SamplesCloudStorageFilePathsAPI
-from api.isb_cgc_api.samples_annotations import SamplesAnnotationAPI
-from api.isb_cgc_api.aliquots_annotations import AliquotsAnnotationAPI
-from api.isb_cgc_api.users_get import UserGetAPI
+from api_3.metadata import Meta_Endpoints, Meta_Endpoints_v2
+from api_3.pairwise_api import Pairwise_Endpoints
+from api_3.seqpeek_view_api import SeqPeekViewDataAccessAPI
+from api_3.isb_cgc_api.cohorts_list import CohortsListAPI
+from api_3.isb_cgc_api.cohorts_preview import CohortsPreviewAPI
+from api_3.isb_cgc_api.cohorts_get import CohortsGetAPI
+from api_3.isb_cgc_api.cohorts_delete import CohortsDeleteAPI
+from api_3.isb_cgc_api.cohorts_create import CohortsCreateAPI
+from api_3.isb_cgc_api.cohorts_cloudstoragefilepaths import CohortsCloudStorageFilePathsAPI
+from api_3.isb_cgc_api.patients_get import PatientsGetAPI
+from api_3.isb_cgc_api.patients_annotations import PatientsAnnotationAPI
+from api_3.isb_cgc_api.samples_get import SamplesGetAPI
+from api_3.isb_cgc_api.samples_cloudstoragefilepaths import SamplesCloudStorageFilePathsAPI
+from api_3.isb_cgc_api.samples_annotations import SamplesAnnotationAPI
+from api_3.isb_cgc_api.aliquots_annotations import AliquotsAnnotationAPI
+from api_3.isb_cgc_api.users_get import UserGetAPI
 
 
 package = 'isb-cgc-api'
