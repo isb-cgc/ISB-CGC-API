@@ -351,16 +351,22 @@ class MetadataItem(messages.Message):
 
 
 class MetadataAnnotationItem(messages.Message):
-    AliquotBarcode                 = messages.StringField(1)
-    annotationCategoryId           = messages.IntegerField(2, variant=messages.Variant.INT32)
-    annotationCategoryName         = messages.StringField(3)
-    annotationClassification       = messages.StringField(4)
-    annotationClassificationId     = messages.IntegerField(5, variant=messages.Variant.INT32)
-    annotationId                   = messages.IntegerField(6, variant=messages.Variant.INT32)
-    annotationNoteText             = messages.StringField(7)
-    itemBarcode                    = messages.StringField(8)
-    itemTypeId                     = messages.IntegerField(9, variant=messages.Variant.INT32)
-    itemTypeName                   = messages.StringField(10)
-    case_barcode                   = messages.StringField(11)
-    sample_barcode                 = messages.StringField(12)
-    disease_code                   = messages.StringField(13)
+    program_name                              = messages.StringField(1)
+    annotation_gdc_id                         = messages.StringField(2)
+    aliquot_barcode                           = messages.StringField(3)
+    category                                  = messages.StringField(4)
+    classification                            = messages.StringField(5)
+    annotation_submitter_id                   = messages.StringField(6)
+    notes                                     = messages.StringField(7)
+    entity_barcode                            = messages.StringField(8)
+    entity_gdc_id                             = messages.StringField(9)
+    entity_type                               = messages.StringField(10)
+    case_barcode                              = messages.StringField(11)
+    case_gdc_id                               = messages.StringField(12)
+    sample_barcode                            = messages.StringField(13)
+    project_short_name                        = messages.StringField(14)
+    status                                    = messages.StringField(15)
+    endpoint_type                             = messages.StringField(16)
+
+          
+

@@ -38,12 +38,12 @@ class MetadataAnnotationList(messages.Message):
 class AliquotsAnnotationsQueryBuilder(object):
 
     @staticmethod
-    def build_query(item_type_name=None):
+    def build_query(entity_type=None):
         query_str = 'select * ' \
                     'from metadata_annotation ' \
-                    'where AliquotBarcode=%s '
-        if len(item_type_name) > 0:
-            query_str += 'and itemTypeName in (' + ', '.join(['%s']*len(item_type_name)) + ')'
+                    'where aliquot_barcode=%s '
+        if len(entity_type) > 0:
+            query_str += 'and entity_type in (' + ', '.join(['%s']*len(entity_type)) + ')'
 
 
         return query_str
@@ -52,7 +52,7 @@ class AliquotsAnnotationsQueryBuilder(object):
     def build_metadata_samples_query():
         query_str = 'select * ' \
                     'from metadata_data ' \
-                    'where AliquotBarcode=%s '
+                    'where aliquot barcode=%s '
 
         return query_str
 
@@ -60,7 +60,7 @@ class AliquotsAnnotationsQueryBuilder(object):
 class AliquotsAnnotationAPI(remote.Service):
 
     GET_RESOURCE = endpoints.ResourceContainer(aliquot_barcode=messages.StringField(1, required=True),
-                                               item_type_name=messages.StringField(2, repeated=True))
+                                               entity_type=messages.StringField(2, repeated=True))
 
     @endpoints.method(GET_RESOURCE, MetadataAnnotationList,
                       path='aliquots/{aliquot_barcode}/annotations', http_method='GET')
