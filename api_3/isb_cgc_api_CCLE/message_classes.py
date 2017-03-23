@@ -349,24 +349,3 @@ class MetadataItem(messages.Message):
     weiss_venous_invasion                                             = messages.StringField(102)
     year_of_initial_pathologic_diagnosis                              = messages.IntegerField(103, variant=messages.Variant.INT32)
 
-
-class MetadataAnnotationItem(messages.Message):
-    program_name                              = messages.StringField(1)
-    annotation_gdc_id                         = messages.StringField(2)
-    aliquot_barcode                           = messages.StringField(3)
-    category                                  = messages.StringField(4)
-    classification                            = messages.StringField(5)
-    annotation_submitter_id                   = messages.StringField(6)
-    notes                                     = messages.StringField(7)
-    entity_barcode                            = messages.StringField(8)
-    entity_gdc_id                             = messages.StringField(9)
-    entity_type                               = messages.StringField(10)
-    case_barcode                              = messages.StringField(11)
-    case_gdc_id                               = messages.StringField(12)
-    sample_barcode                            = messages.StringField(13)
-    project_short_name                        = messages.StringField(14)
-    status                                    = messages.StringField(15)
-    endpoint_type                             = messages.StringField(16)
-
-          
-
