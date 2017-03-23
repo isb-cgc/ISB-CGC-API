@@ -25,11 +25,12 @@ FIELD_TYPES ={
     'varchar': 'StringField',
     'float': 'FloatField',
     'tinyint': 'BooleanField',
-    'int': 'IntegerField'
+    'int': 'IntegerField',
+    'datetime': 'datetime'
 }
 
 
-def write_metadata_file(rows, write_file=False):
+def write_metadata_file(rows, path, write_file=False):
 
     ranges_text = 'class MetadataRangesItem(messages.Message):\n    '
     i = 1
@@ -60,17 +61,18 @@ def write_metadata_file(rows, write_file=False):
         i += 1
 
     if write_file is True:
-        with open('message_classes.py', 'w') as f:
+        with open(path, 'w') as f:
             f.write('from protorpc import messages\n\n\n')
             f.write(ranges_text)
             f.write(item_text)
     else:
+        print path + '\n'
         print ranges_text
         print '\n\n'
         print item_text
 
 
-def write_annotation_file(rows, write_file=False):
+def write_annotation_file(rows, path, write_file=False):
     item_text = '\nclass MetadataAnnotationItem(messages.Message):\n    '
     i = 1
     for row in rows:
@@ -81,46 +83,61 @@ def write_annotation_file(rows, write_file=False):
         i += 1
 
     if write_file is True:
-        with open('message_classes.py', 'a') as f:
+        with open(path, 'a') as f:
             f.write('\n\n\n')
             f.write(item_text)
     else:
         print item_text
 
 
-def main(args):
-    db = get_sql_connection(args)
-    cursor = db.cursor(MySQLdb.cursors.DictCursor)
-    query_str = 'SELECT COLUMN_NAME, DATA_TYPE, COLUMN_TYPE ' \
-                'FROM INFORMATION_SCHEMA.COLUMNS '
-    if args.table == 'metadata_samples':
-        query_str += 'WHERE table_name = "metadata_samples" ' \
-                'AND COLUMN_NAME != "metadata_samples_id" '
-
-    elif args.table == 'metadata_annotation':
-        query_str += 'WHERE table_name = "metadata_annotation" ' \
-                'AND COLUMN_NAME != "metadata_annotation_id" '
-
-    query_str += 'group by COLUMN_NAME, DATA_TYPE, COLUMN_TYPE ' \
-                 'ORDER BY column_name'
-
+def get_table_column_info(cursor, query_str):
     cursor.execute(query_str)
     rows = cursor.fetchall()
-    cursor.close()
-    db.close()
+    return rows
 
-    write_file = not bool(args.dry_run)
-
-    if args.table == 'metadata_samples':
-        write_metadata_file(rows, write_file=write_file)
-    if args.table == 'metadata_annotation':
-        write_annotation_file(rows, write_file=write_file)
+def main(args):
+    db = get_sql_connection(args)
+    cursor = None
+    try:
+        path_template = 'api_3/isb_cgc_api_%s/message_classes.py'
+        programs = [
+            ('TCGA', True),
+            ('TARGET', False),
+            ('CCLE', False),
+        ]
+        for program in programs:
+            cursor = db.cursor(MySQLdb.cursors.DictCursor)
+            query_str = 'SELECT COLUMN_NAME, DATA_TYPE, COLUMN_TYPE ' \
+                        'FROM INFORMATION_SCHEMA.COLUMNS '
+            clinical_query_str = query_str + 'WHERE table_name = "%s_metadata_clinical" ' \
+                        'AND COLUMN_NAME != "metadata_clinical_id" ' + 'group by COLUMN_NAME, DATA_TYPE, COLUMN_TYPE ' \
+                         'ORDER BY column_name'
+        
+            biospecimen_query_str = query_str + 'WHERE table_name = "%s_metadata_biospecimen" ' \
+                        'AND COLUMN_NAME != "metadata_biospecimen_id" ' + 'group by COLUMN_NAME, DATA_TYPE, COLUMN_TYPE ' \
+                         'ORDER BY column_name'
+        
+            write_file = not bool(args.dry_run)
+        
+            combined_rows = []
+            for cur_query_str in [clinical_query_str, biospecimen_query_str]:
+                combined_rows += list(get_table_column_info(cursor, cur_query_str % (program[0])))
+            write_metadata_file(combined_rows, path_template % (program[0]), write_file=write_file)
+        
+            if program[1]:
+                annotation_query_str = query_str + 'WHERE table_name = "%s_metadata_annotation" ' \
+                            'AND COLUMN_NAME != "metadata_annotation_id" ' + 'group by COLUMN_NAME, DATA_TYPE, COLUMN_TYPE ' \
+                             'ORDER BY column_name'
+                write_annotation_file(get_table_column_info(cursor, annotation_query_str % (program[0])), path_template % (program[0]), write_file=write_file)
+    finally:
+        if cursor:
+            cursor.close()
+        db.close()
 
 if __name__ == '__main__':
     parser = ArgumentParser()
     parser.add_argument('--host', help='database host')
     parser.add_argument('--database', '-d', help='database name')
-    parser.add_argument('--table', '-t', help='database table name')
     parser.add_argument('--user', '-u', help='database username')
     parser.add_argument('--password', '-p', help='database password')
     parser.add_argument('--ssl_key')
@@ -132,3 +149,5 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     main(args)
+
+
