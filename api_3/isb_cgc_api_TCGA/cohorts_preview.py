@@ -22,10 +22,10 @@ import MySQLdb
 from django.core.signals import request_finished
 from protorpc import remote, messages
 
-from isb_cgc_api_helpers import ISB_CGC_Endpoints, CohortsCreatePreviewQueryBuilder, \
+from api_3.isb_cgc_api_TARGET.isb_cgc_api_helpers import ISB_CGC_TCGA_Endpoints, CohortsCreatePreviewQueryBuilder, \
     are_there_bad_keys, are_there_no_acceptable_keys, construct_parameter_error_message
 
-from message_classes import MetadataRangesItem
+from api_3.isb_cgc_api_TARGET.message_classes import MetadataRangesItem
 from api_3.api_helpers import sql_connection
 
 logger = logging.getLogger(__name__)
@@ -38,7 +38,7 @@ class CohortPatientsSamplesList(messages.Message):
     sample_count = messages.IntegerField(4, variant=messages.Variant.INT32)
 
 
-@ISB_CGC_Endpoints.api_class(resource_name='cohorts')
+@ISB_CGC_TCGA_Endpoints.api_class(resource_name='cohorts')
 class CohortsPreviewAPI(remote.Service):
 
     GET_RESOURCE = endpoints.ResourceContainer(**{field.name: field for field in MetadataRangesItem.all_fields()})

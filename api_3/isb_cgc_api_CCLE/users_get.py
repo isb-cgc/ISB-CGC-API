@@ -29,7 +29,7 @@ from django.contrib.auth.models import User as Django_User
 from django.core.signals import request_finished
 from django.conf import settings
 
-from isb_cgc_api_helpers import ISB_CGC_Endpoints
+from isb_cgc_api_helpers import ISB_CGC_CCLE_Endpoints
 from google_helpers.directory_service import get_directory_resource
 from accounts.models import NIH_User
 
@@ -54,7 +54,7 @@ class ReturnJSON(messages.Message):
     dbGaP_authorized = messages.BooleanField(2)
 
 
-@ISB_CGC_Endpoints.api_class(resource_name='users')
+@ISB_CGC_CCLE_Endpoints.api_class(resource_name='users')
 class UserGetAPI(remote.Service):
 
     @endpoints.method(message_types.VoidMessage, ReturnJSON, http_method='GET', path='users')

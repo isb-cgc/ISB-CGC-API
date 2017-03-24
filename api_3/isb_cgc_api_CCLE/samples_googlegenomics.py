@@ -23,7 +23,7 @@ import MySQLdb
 from django.conf import settings
 from protorpc import remote, messages
 
-from isb_cgc_api_helpers import ISB_CGC_Endpoints
+from isb_cgc_api_helpers import ISB_CGC_CCLE_Endpoints
 from api_3.api_helpers import sql_connection
 
 logger = logging.getLogger(__name__)
@@ -42,7 +42,7 @@ class GoogleGenomicsList(messages.Message):
     count = messages.IntegerField(2, variant=messages.Variant.INT32)
 
 
-# @ISB_CGC_Endpoints.api_class(resource_name='samples')
+# @ISB_CGC_CCLE_Endpoints.api_class(resource_name='samples')
 class SamplesGoogleGenomicsAPI(remote.Service):
 
     GET_RESOURCE = endpoints.ResourceContainer(sample_barcode=messages.StringField(1, required=True))

@@ -25,7 +25,7 @@ from django.contrib.auth.models import User as Django_User
 from django.core.signals import request_finished
 from protorpc import remote, messages
 
-from isb_cgc_api_helpers import ISB_CGC_Endpoints
+from isb_cgc_api_helpers import ISB_CGC_TARGET_Endpoints
 from cohorts.models import Cohort as Django_Cohort, Cohort_Perms
 
 
@@ -38,7 +38,7 @@ class ReturnJSON(messages.Message):
     message = messages.StringField(1)
 
 
-@ISB_CGC_Endpoints.api_class(resource_name='cohorts')
+@ISB_CGC_TARGET_Endpoints.api_class(resource_name='cohorts')
 class CohortsDeleteAPI(remote.Service):
     DELETE_RESOURCE = endpoints.ResourceContainer(cohort_id=messages.IntegerField(1, required=True))
 

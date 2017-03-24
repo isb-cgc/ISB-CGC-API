@@ -34,7 +34,7 @@ class MetadataAnnotationList(messages.Message):
 class AnnotationAPI(remote.Service):
     def process_annotations(self, request, barcode_type, annotationQueryBuilder, logger):
         """
-        Bsae class method to return TCGA annotations about a specific case, sample, or aliquot,
+        Base class method to return TCGA annotations about a specific case, sample, or aliquot,
         Takes a barcode as a required parameter.  User does not need to be authenticated.
         """
         try:

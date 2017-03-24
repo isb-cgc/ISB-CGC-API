@@ -26,7 +26,7 @@ from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 from django.contrib.auth.models import User as Django_User
 from django.core.signals import request_finished
-from isb_cgc_api_helpers import ISB_CGC_Endpoints, CohortsCreatePreviewQueryBuilder, \
+from isb_cgc_api_helpers import ISB_CGC_CCLE_Endpoints, CohortsCreatePreviewQueryBuilder, \
     are_there_bad_keys, are_there_no_acceptable_keys, construct_parameter_error_message
 
 from message_classes import MetadataRangesItem
@@ -55,7 +55,7 @@ class CreatedCohort(messages.Message):
     sample_count = messages.IntegerField(6, variant=messages.Variant.INT32)
 
 
-@ISB_CGC_Endpoints.api_class(resource_name='cohorts')
+@ISB_CGC_CCLE_Endpoints.api_class(resource_name='cohorts')
 class CohortsCreateAPI(remote.Service):
     POST_RESOURCE = endpoints.ResourceContainer(MetadataRangesItem,
                                                 name=messages.StringField(2, required=True))

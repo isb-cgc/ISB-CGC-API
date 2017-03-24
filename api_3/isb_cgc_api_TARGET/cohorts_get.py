@@ -24,7 +24,7 @@ from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 from django.contrib.auth.models import User as Django_User
 from django.core.signals import request_finished
 from protorpc import remote, messages
-from isb_cgc_api_helpers import ISB_CGC_Endpoints, CohortsGetListQueryBuilder, \
+from isb_cgc_api_helpers import ISB_CGC_TARGET_Endpoints, CohortsGetListQueryBuilder, \
     CohortsGetListMessageBuilder, FilterDetails
 from api_3.api_helpers import sql_connection
 
@@ -50,7 +50,7 @@ class CohortDetails(messages.Message):
     samples = messages.StringField(14, repeated=True)
 
 
-@ISB_CGC_Endpoints.api_class(resource_name='cohorts')
+@ISB_CGC_TARGET_Endpoints.api_class(resource_name='cohorts')
 class CohortsGetAPI(remote.Service):
     GET_RESOURCE = endpoints.ResourceContainer(cohort_id=messages.IntegerField(1, required=True))
 

@@ -23,7 +23,7 @@ import MySQLdb
 from django.core.signals import request_finished
 from protorpc import remote, messages
 
-from isb_cgc_api_helpers import ISB_CGC_Endpoints, build_constructor_dict_for_message
+from isb_cgc_api_helpers import ISB_CGC_TARGET_Endpoints, build_constructor_dict_for_message
 from message_classes import MetadataItem
 from api_3.api_helpers import sql_connection
 
@@ -55,7 +55,7 @@ class PatientDetails(messages.Message):
     aliquots = messages.StringField(3, repeated=True)
 
 
-@ISB_CGC_Endpoints.api_class(resource_name='patients')
+@ISB_CGC_TARGET_Endpoints.api_class(resource_name='patients')
 class PatientsGetAPI(remote.Service):
 
     GET_RESOURCE = endpoints.ResourceContainer(patient_barcode=messages.StringField(1, required=True))

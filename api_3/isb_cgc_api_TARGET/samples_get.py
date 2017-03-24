@@ -21,7 +21,7 @@ import logging
 import MySQLdb
 from protorpc import remote, messages
 
-from isb_cgc_api_helpers import ISB_CGC_Endpoints, build_constructor_dict_for_message, \
+from isb_cgc_api_helpers import ISB_CGC_TARGET_Endpoints, build_constructor_dict_for_message, \
     CohortsSamplesFilesMessageBuilder
 from message_classes import MetadataItem
 from api_3.api_helpers import sql_connection
@@ -117,7 +117,7 @@ class SampleDetails(messages.Message):
     data_details_count = messages.IntegerField(5, variant=messages.Variant.INT32)
 
 
-@ISB_CGC_Endpoints.api_class(resource_name='samples')
+@ISB_CGC_TARGET_Endpoints.api_class(resource_name='samples')
 class SamplesGetAPI(remote.Service):
 
     GET_RESOURCE = endpoints.ResourceContainer(sample_barcode=messages.StringField(1, required=True),

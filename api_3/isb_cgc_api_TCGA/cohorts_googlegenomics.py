@@ -27,7 +27,7 @@ from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 from django.contrib.auth.models import User as Django_User
 from protorpc import remote, messages
 
-from isb_cgc_api_helpers import ISB_CGC_Endpoints
+from isb_cgc_api_helpers import ISB_CGC_TCGA_Endpoints
 from api_3.api_helpers import sql_connection
 from cohorts.models import Cohort as Django_Cohort, Cohort_Perms
 
@@ -47,7 +47,7 @@ class GoogleGenomicsList(messages.Message):
     count = messages.IntegerField(2, variant=messages.Variant.INT32)
 
 
-# @ISB_CGC_Endpoints.api_class(resource_name='cohorts')
+# @ISB_CGC_TCGA_Endpoints.api_class(resource_name='cohorts')
 class CohortsGoogleGenomicssAPI(remote.Service):
 
     GET_RESOURCE = endpoints.ResourceContainer(cohort_id=messages.IntegerField(1, required=True))
@@ -84,8 +84,9 @@ class CohortsGoogleGenomicssAPI(remote.Service):
             if 'Cohort_Perms' in e.message:
                 err_msg = "User {} does not have permissions on cohort {}. Error: {}" \
                     .format(user_email, cohort_id, e)
-            request_finished.send(self)
             raise endpoints.UnauthorizedException(err_msg)
+        finally:
+            request_finished.send(self)
 
         query_str = 'SELECT SampleBarcode, GG_dataset_id, GG_readgroupset_id ' \
                     'FROM metadata_data ' \

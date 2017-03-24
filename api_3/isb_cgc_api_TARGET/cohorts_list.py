@@ -26,7 +26,7 @@ from django.contrib.auth.models import User as Django_User
 from django.core.signals import request_finished
 from protorpc import remote, messages, message_types
 
-from isb_cgc_api_helpers import ISB_CGC_Endpoints, CohortsGetListQueryBuilder, \
+from isb_cgc_api_helpers import ISB_CGC_TARGET_Endpoints, CohortsGetListQueryBuilder, \
     CohortsGetListMessageBuilder, FilterDetails
 from api_3.api_helpers import sql_connection
 
@@ -55,7 +55,7 @@ class CohortDetailsList(messages.Message):
     count = messages.IntegerField(2, variant=messages.Variant.INT32)
 
 
-@ISB_CGC_Endpoints.api_class(resource_name='cohorts')
+@ISB_CGC_TARGET_Endpoints.api_class(resource_name='cohorts')
 class CohortsListAPI(remote.Service):
     @endpoints.method(message_types.VoidMessage, CohortDetailsList, http_method='GET', path='cohorts')
     def list(self, unused_request):

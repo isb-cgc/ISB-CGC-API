@@ -27,7 +27,7 @@ from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 from django.contrib.auth.models import User as Django_User
 from protorpc import remote, messages
 
-from isb_cgc_api_helpers import ISB_CGC_Endpoints, CohortsSamplesFilesQueryBuilder, CohortsSamplesFilesMessageBuilder
+from isb_cgc_api_helpers import ISB_CGC_CCLE_Endpoints, CohortsSamplesFilesQueryBuilder, CohortsSamplesFilesMessageBuilder
 from api_3.api_helpers import sql_connection
 from cohorts.models import Cohort as Django_Cohort, Cohort_Perms
 
@@ -41,7 +41,7 @@ class GCSFilePathList(messages.Message):
     count = messages.IntegerField(2, variant=messages.Variant.INT32)
 
 
-@ISB_CGC_Endpoints.api_class(resource_name='cohorts')
+@ISB_CGC_CCLE_Endpoints.api_class(resource_name='cohorts')
 class CohortsCloudStorageFilePathsAPI(remote.Service):
 
     GET_RESOURCE = endpoints.ResourceContainer(cohort_id=messages.IntegerField(1, required=True),

@@ -24,7 +24,7 @@ from django.conf import settings
 from django.core.signals import request_finished
 from protorpc import remote, messages
 
-from isb_cgc_api_helpers import ISB_CGC_Endpoints, are_there_bad_keys, construct_parameter_error_message, \
+from isb_cgc_api_helpers import ISB_CGC_TARGET_Endpoints, are_there_bad_keys, construct_parameter_error_message, \
     CohortsSamplesFilesQueryBuilder, CohortsSamplesFilesMessageBuilder
 from api_3.api_helpers import sql_connection
 
@@ -36,7 +36,7 @@ class GCSFilePathList(messages.Message):
     count = messages.IntegerField(2, variant=messages.Variant.INT32)
 
 
-@ISB_CGC_Endpoints.api_class(resource_name='samples')
+@ISB_CGC_TARGET_Endpoints.api_class(resource_name='samples')
 class SamplesCloudStorageFilePathsAPI(remote.Service):
 
     GET_RESOURCE = endpoints.ResourceContainer(sample_barcode=messages.StringField(1, required=True),
