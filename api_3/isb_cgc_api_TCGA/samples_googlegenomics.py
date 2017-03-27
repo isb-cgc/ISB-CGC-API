@@ -23,7 +23,7 @@ import MySQLdb
 from django.conf import settings
 from protorpc import remote, messages
 
-from isb_cgc_api_helpers import ISB_CGC_TCGA_Endpoints
+from api_3.isb_cgc_api_TCGA.isb_cgc_api_helpers import ISB_CGC_TCGA_Endpoints
 from api_3.api_helpers import sql_connection
 
 logger = logging.getLogger(__name__)

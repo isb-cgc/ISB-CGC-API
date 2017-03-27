@@ -26,7 +26,8 @@ from django.contrib.auth.models import User as Django_User
 from django.core.signals import request_finished
 from protorpc import remote, messages, message_types
 
-from isb_cgc_api_helpers import ISB_CGC_TCGA_Endpoints, CohortsGetListQueryBuilder, \
+from api_3.isb_cgc_api_TCGA.isb_cgc_api_helpers import ISB_CGC_TCGA_Endpoints
+from api_3.cohort_endpoint_helpers import CohortsGetListQueryBuilder, \
     CohortsGetListMessageBuilder, FilterDetails
 from api_3.api_helpers import sql_connection
 

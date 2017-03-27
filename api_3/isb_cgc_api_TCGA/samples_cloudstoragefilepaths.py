@@ -20,11 +20,11 @@ import endpoints
 import logging
 import MySQLdb
 
-from django.conf import settings
 from django.core.signals import request_finished
 from protorpc import remote, messages
 
-from isb_cgc_api_helpers import ISB_CGC_TCGA_Endpoints, are_there_bad_keys, construct_parameter_error_message, \
+from api_3.isb_cgc_api_TCGA.isb_cgc_api_helpers import ISB_CGC_TCGA_Endpoints
+from api_3.cohort_endpoint_helpers import are_there_bad_keys, construct_parameter_error_message, \
     CohortsSamplesFilesQueryBuilder, CohortsSamplesFilesMessageBuilder
 from api_3.api_helpers import sql_connection
 

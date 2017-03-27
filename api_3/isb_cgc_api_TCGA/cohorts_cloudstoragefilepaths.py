@@ -27,7 +27,8 @@ from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 from django.contrib.auth.models import User as Django_User
 from protorpc import remote, messages
 
-from isb_cgc_api_helpers import ISB_CGC_TCGA_Endpoints, CohortsSamplesFilesQueryBuilder, CohortsSamplesFilesMessageBuilder
+from api_3.isb_cgc_api_TCGA.isb_cgc_api_helpers import ISB_CGC_TCGA_Endpoints
+from api_3.cohort_endpoint_helpers import CohortsSamplesFilesQueryBuilder, CohortsSamplesFilesMessageBuilder
 from api_3.api_helpers import sql_connection
 from cohorts.models import Cohort as Django_Cohort, Cohort_Perms
 

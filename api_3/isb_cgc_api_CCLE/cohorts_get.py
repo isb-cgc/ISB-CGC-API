@@ -24,7 +24,8 @@ from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 from django.contrib.auth.models import User as Django_User
 from django.core.signals import request_finished
 from protorpc import remote, messages
-from isb_cgc_api_helpers import ISB_CGC_CCLE_Endpoints, CohortsGetListQueryBuilder, \
+from api_3.isb_cgc_api_CCLE.isb_cgc_api_helpers import ISB_CGC_CCLE_Endpoints
+from api_3.cohort_endpoint_helpers import CohortsGetListQueryBuilder, \
     CohortsGetListMessageBuilder, FilterDetails
 from api_3.api_helpers import sql_connection
 

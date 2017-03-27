@@ -1,6 +1,6 @@
 """
 
-Copyright 2016, Institute for Systems Biology
+Copyright 2017, Institute for Systems Biology
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -26,10 +26,11 @@ from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 from django.contrib.auth.models import User as Django_User
 from django.core.signals import request_finished
-from isb_cgc_api_helpers import ISB_CGC_TCGA_Endpoints, CohortsCreatePreviewQueryBuilder, \
+from api_3.isb_cgc_api_TCGA.isb_cgc_api_helpers import ISB_CGC_TCGA_Endpoints
+from api_3.cohort_endpoint_helpers import CohortsCreatePreviewQueryBuilder, \
     are_there_bad_keys, are_there_no_acceptable_keys, construct_parameter_error_message
 
-from message_classes import MetadataRangesItem
+from api_3.isb_cgc_api_TCGA.message_classes import MetadataRangesItem
 
 from api_3.api_helpers import sql_connection, WHITELIST_RE
 from cohorts.models import Cohort as Django_Cohort, Cohort_Perms, Samples, Filters
@@ -93,7 +94,7 @@ class CohortsCreateAPI(remote.Service):
 
         query_dict, gte_query_dict, lte_query_dict = CohortsCreatePreviewQueryBuilder().build_query_dictionaries(request)
 
-        patient_query_str, sample_query_str, value_tuple = CohortsCreatePreviewQueryBuilder().build_query(
+        _, sample_query_str, value_tuple = CohortsCreatePreviewQueryBuilder().build_query(
             query_dict, gte_query_dict, lte_query_dict)
 
         try:

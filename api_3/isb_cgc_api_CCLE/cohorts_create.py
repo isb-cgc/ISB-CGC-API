@@ -26,7 +26,8 @@ from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 from django.contrib.auth.models import User as Django_User
 from django.core.signals import request_finished
-from isb_cgc_api_helpers import ISB_CGC_CCLE_Endpoints, CohortsCreatePreviewQueryBuilder, \
+from api_3.isb_cgc_api_CCLE.isb_cgc_api_helpers import ISB_CGC_CCLE_Endpoints
+from api_3.cohort_endpoint_helpers import CohortsCreatePreviewQueryBuilder, \
     are_there_bad_keys, are_there_no_acceptable_keys, construct_parameter_error_message
 
 from message_classes import MetadataRangesItem
@@ -34,7 +35,6 @@ from message_classes import MetadataRangesItem
 from api_3.api_helpers import sql_connection, WHITELIST_RE
 from cohorts.models import Cohort as Django_Cohort, Cohort_Perms, Samples, Filters
 from bq_data_access.cohort_bigquery import BigQueryCohortSupport
-import bq_data_access
 
 logger = logging.getLogger(__name__)
 

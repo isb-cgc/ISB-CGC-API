@@ -22,7 +22,8 @@ import MySQLdb
 from django.core.signals import request_finished
 from protorpc import remote, messages
 
-from isb_cgc_api_helpers import ISB_CGC_TARGET_Endpoints, CohortsCreatePreviewQueryBuilder, \
+from api_3.isb_cgc_api_TARGET.isb_cgc_api_helpers import ISB_CGC_TARGET_Endpoints
+from api_3.cohort_endpoint_helpers import CohortsCreatePreviewQueryBuilder, \
     are_there_bad_keys, are_there_no_acceptable_keys, construct_parameter_error_message
 
 from message_classes import MetadataRangesItem

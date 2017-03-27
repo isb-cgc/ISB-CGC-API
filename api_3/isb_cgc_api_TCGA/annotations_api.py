@@ -23,7 +23,7 @@ import endpoints
 from django.core.signals import request_finished
 from protorpc import remote, messages
 
-from api_3.isb_cgc_api_TCGA.isb_cgc_api_helpers import build_constructor_dict_for_message
+from api_3.cohort_endpoint_helpers import build_constructor_dict_for_message
 from api_3.isb_cgc_api_TCGA.message_classes import MetadataAnnotationItem
 from api_3.api_helpers import sql_connection
 

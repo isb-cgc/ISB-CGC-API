@@ -25,7 +25,7 @@ from django.contrib.auth.models import User as Django_User
 from django.core.signals import request_finished
 from protorpc import remote, messages
 
-from isb_cgc_api_helpers import ISB_CGC_TARGET_Endpoints
+from api_3.isb_cgc_api_TARGET.isb_cgc_api_helpers import ISB_CGC_TARGET_Endpoints
 from cohorts.models import Cohort as Django_Cohort, Cohort_Perms
 
 

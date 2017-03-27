@@ -21,7 +21,8 @@ import logging
 import MySQLdb
 from protorpc import remote, messages
 
-from isb_cgc_api_helpers import ISB_CGC_CCLE_Endpoints, build_constructor_dict_for_message, \
+from api_3.isb_cgc_api_CCLE.isb_cgc_api_helpers import ISB_CGC_CCLE_Endpoints
+from api_3.cohort_endpoint_helpers import build_constructor_dict_for_message, \
     CohortsSamplesFilesMessageBuilder
 from message_classes import MetadataItem
 from api_3.api_helpers import sql_connection
