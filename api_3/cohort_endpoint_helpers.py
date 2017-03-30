@@ -91,8 +91,6 @@ class CohortsGetListQueryBuilder(object):
         perms, comments, source type, and source notes
         :param query_dict: should contain {'cohorts_cohort_perms.user_id': user_id, 'cohorts_cohort.active': unicode('1')}
         :return: query_str, query_tuple
-        
-        TODO: see what data migration changes might have occurred to tables in query
         """
         query_str = 'SELECT cohorts_cohort.id, ' \
                     'cohorts_cohort.name, ' \
@@ -135,8 +133,6 @@ class CohortsGetListQueryBuilder(object):
         Builds the query that selects the filter name and value for a particular cohort
         :param filter_query_dict: should be {'cohorts_filters.resulting_cohort_id:': id}
         :return: filter_query_str, filter_query_tuple
-        
-        TODO: see what data migration changes might have occurred to cohorts_filters
         """
         filter_query_str = 'SELECT name, value ' \
                            'FROM cohorts_filters '
@@ -151,8 +147,6 @@ class CohortsGetListQueryBuilder(object):
         Builds the query that selects parent_ids for a particular cohort
         :param parent_query_dict: should be {'cohort_id': str(row['id'])}
         :return: parent_query_str, parent_query_tuple
-        
-        TODO: see what data migration changes might have occurred to cohorts_source
         """
         parent_query_str = 'SELECT parent_id ' \
                            'FROM cohorts_source '
@@ -166,8 +160,6 @@ class CohortsGetListQueryBuilder(object):
         Builds the query that selects the case count for a particular cohort
         :param patient_query_dict: should be {'cohort_id': str(row['id])}
         :return: patient_query_str, patient_query_tuple
-        
-        TODO: see what data migration changes might have occurred to cohorts_samples
         """
         patients_query_str = 'SELECT case_barcode ' \
                              'FROM cohorts_samples '
@@ -182,8 +174,6 @@ class CohortsGetListQueryBuilder(object):
         Builds the query that selects the sample count for a particular cohort
         :param sample_query_dict: should be {'cohort_id': str(row['id])}
         :return: sample_query_str, sample_query_tuple
-        
-        TODO: see what data migration changes might have occurred to cohorts_samples
         """
         samples_query_str = 'SELECT sample_barcode, case_barcode ' \
                             'FROM cohorts_samples '
@@ -223,13 +213,11 @@ class CohortsCreatePreviewQueryBuilder(object):
 
         return query_dict, gte_query_dict, lte_query_dict
 
-    def build_query(self, query_dict, gte_query_dict, lte_query_dict):
+    def build_query(self, program, query_dict, gte_query_dict, lte_query_dict):
         """
         Builds the queries that selects the patient and sample barcodes
         that meet the criteria specified in the request body.
         Returns patient query string,  sample query string, value tuple.
-        
-        TODO: will need to add program parameter to method to add to table name
         """
 
         patient_query_str = 'SELECT DISTINCT(IF(case_barcode="", LEFT(sample_barcode,12), case_barcode)) ' \
@@ -237,9 +225,9 @@ class CohortsCreatePreviewQueryBuilder(object):
                             'FROM metadata_samples ' \
                             'WHERE '
 
-        sample_query_str = 'SELECT sample_barcode, case_barcode ' \
+        sample_query_str = 'SELECT {}_sample_barcode, case_barcode ' \
                            'FROM metadata_samples ' \
-                           'WHERE '
+                           'WHERE '.format(program)
         value_tuple = ()
 
         for key, value_list in query_dict.iteritems():
@@ -333,7 +321,7 @@ class CohortsSamplesFilesQueryBuilder(object):
             query_str += 'JOIN cohorts_samples ON metadata_data.sample_barcode=cohorts_samples.sample_barcode ' \
                          'WHERE cohorts_samples.cohort_id=%s '
 
-        query_str += 'AND DataFileNameKey != "" AND DataFileNameKey is not null '
+        query_str += 'AND file_name_key != "" AND file_name_key is not null '
         query_str += ' and metadata_data.Platform=%s ' if platform is not None else ''
         query_str += ' and metadata_data.Pipeline=%s ' if pipeline is not None else ''
         query_str += ' GROUP BY DataFileNameKey, SecurityProtocol, Repository '

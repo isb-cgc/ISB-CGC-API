@@ -62,7 +62,7 @@ class CohortsPreviewAPI(remote.Service):
         query_dict, gte_query_dict, lte_query_dict = CohortsCreatePreviewQueryBuilder().build_query_dictionaries(request)
 
         patient_query_str, sample_query_str, value_tuple = CohortsCreatePreviewQueryBuilder().build_query(
-            query_dict, gte_query_dict, lte_query_dict)
+            'CCLE', query_dict, gte_query_dict, lte_query_dict)
 
         patient_barcodes = []
         sample_barcodes = []

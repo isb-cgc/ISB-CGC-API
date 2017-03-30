@@ -95,7 +95,7 @@ class CohortsCreateAPI(remote.Service):
         query_dict, gte_query_dict, lte_query_dict = CohortsCreatePreviewQueryBuilder().build_query_dictionaries(request)
 
         _, sample_query_str, value_tuple = CohortsCreatePreviewQueryBuilder().build_query(
-            query_dict, gte_query_dict, lte_query_dict)
+            'TARGET', query_dict, gte_query_dict, lte_query_dict)
 
         try:
             db = sql_connection()
