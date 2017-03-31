@@ -33,11 +33,19 @@ FIELD_TYPES ={
 def write_metadata_file(rows, path, write_file=False):
 
     ranges_text = 'class MetadataRangesItem(messages.Message):\n    '
+    
+    seen_rows = set()
+    shared_rows = []
     i = 1
     for row in rows:
+        if row['COLUMN_NAME'] in seen_rows:
+            shared_rows += [row['COLUMN_NAME']]
+            continue
+        
+        seen_rows.add(row['COLUMN_NAME'])
         field_type = FIELD_TYPES.get(row['DATA_TYPE'])
-        if field_type == 'IntegerField' or field_type == 'FloatField' and i > 1:
-            ranges_text += '\n    '
+#         if field_type == 'IntegerField' or field_type == 'FloatField' and i > 1:
+#             ranges_text += '\n    '
 
         ranges_text += '%-65s = messages.%s(%d, repeated=True' % (row['COLUMN_NAME'], field_type, i)
         ranges_text += ')\n    ' if field_type is not 'IntegerField' else ', variant=messages.Variant.INT32)\n    '
@@ -53,23 +61,33 @@ def write_metadata_file(rows, path, write_file=False):
             ranges_text += '\n    '
 
     item_text = '\nclass MetadataItem(messages.Message):\n    '
+    seen_rows = set()
     i = 1
     for row in rows:
+        if row['COLUMN_NAME'] in seen_rows:
+            continue
+            
+        seen_rows.add(row['COLUMN_NAME'])
         field_type = FIELD_TYPES.get(row['DATA_TYPE'])
         item_text += '%-65s = messages.%s(%d' % (row['COLUMN_NAME'], field_type, i)
         item_text += ')\n    ' if field_type is not 'IntegerField' else ', variant=messages.Variant.INT32)\n    '
         i += 1
+    
+    shared_text = '\nshared_fields = [%s]' % (', '.join("'" + row + "'" for row in shared_rows))
 
     if write_file is True:
         with open(path, 'w') as f:
-            f.write('from protorpc import messages\n\n\n')
+            f.write('from protorpc import messages\n\n')
             f.write(ranges_text)
             f.write(item_text)
+            f.write(shared_text)
     else:
         print path + '\n'
         print ranges_text
         print '\n\n'
         print item_text
+        print '\n\n'
+        print shared_text
 
 
 def write_annotation_file(rows, path, write_file=False):
@@ -84,7 +102,7 @@ def write_annotation_file(rows, path, write_file=False):
 
     if write_file is True:
         with open(path, 'a') as f:
-            f.write('\n\n\n')
+            f.write('\n')
             f.write(item_text)
     else:
         print item_text
