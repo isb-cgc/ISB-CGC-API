@@ -1,6 +1,5 @@
 from protorpc import messages
 
-
 class MetadataRangesItem(messages.Message):
     case_barcode                                                      = messages.StringField(1, repeated=True)
     case_gdc_id                                                       = messages.StringField(2, repeated=True)
@@ -13,19 +12,13 @@ class MetadataRangesItem(messages.Message):
     project_short_name                                                = messages.StringField(9, repeated=True)
     site_primary                                                      = messages.StringField(10, repeated=True)
     source                                                            = messages.StringField(11, repeated=True)
-    
     summary_file_count                                                = messages.IntegerField(12, repeated=True, variant=messages.Variant.INT32)
     summary_file_count_lte                                            = messages.IntegerField(13, variant=messages.Variant.INT32)
     summary_file_count_gte                                            = messages.IntegerField(14, variant=messages.Variant.INT32)
     
-    case_barcode                                                      = messages.StringField(15, repeated=True)
-    endpoint_type                                                     = messages.StringField(16, repeated=True)
-    program_name                                                      = messages.StringField(17, repeated=True)
-    project_disease_type                                              = messages.StringField(18, repeated=True)
-    project_short_name                                                = messages.StringField(19, repeated=True)
-    sample_barcode                                                    = messages.StringField(20, repeated=True)
-    sample_gdc_id                                                     = messages.StringField(21, repeated=True)
-    sample_type                                                       = messages.StringField(22, repeated=True)
+    sample_barcode                                                    = messages.StringField(15, repeated=True)
+    sample_gdc_id                                                     = messages.StringField(16, repeated=True)
+    sample_type                                                       = messages.StringField(17, repeated=True)
     
 class MetadataItem(messages.Message):
     case_barcode                                                      = messages.StringField(1)
@@ -40,12 +33,8 @@ class MetadataItem(messages.Message):
     site_primary                                                      = messages.StringField(10)
     source                                                            = messages.StringField(11)
     summary_file_count                                                = messages.IntegerField(12, variant=messages.Variant.INT32)
-    case_barcode                                                      = messages.StringField(13)
-    endpoint_type                                                     = messages.StringField(14)
-    program_name                                                      = messages.StringField(15)
-    project_disease_type                                              = messages.StringField(16)
-    project_short_name                                                = messages.StringField(17)
-    sample_barcode                                                    = messages.StringField(18)
-    sample_gdc_id                                                     = messages.StringField(19)
-    sample_type                                                       = messages.StringField(20)
+    sample_barcode                                                    = messages.StringField(13)
+    sample_gdc_id                                                     = messages.StringField(14)
+    sample_type                                                       = messages.StringField(15)
     
+shared_fields = ['case_barcode', 'endpoint_type', 'program_name', 'project_disease_type', 'project_short_name']
