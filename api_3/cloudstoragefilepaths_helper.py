@@ -34,7 +34,7 @@ try:
 except Exception as e:
     print 'couldn\'t import google protorpc, using mock for testing: %s' % (e)
 
-from api_3.cohort_endpoint_helpers import CohortsSamplesFilesQueryBuilder, CohortsSamplesFilesMessageBuilder
+from api_3.cohort_endpoint_helpers import CohortsSamplesFilesMessageBuilder
 from api_3.api_helpers import sql_connection
 from cohorts.models import Cohort as Django_Cohort, Cohort_Perms
 
@@ -55,31 +55,34 @@ class CloudStorageFilePathsAPI(remote.Service):
             param_map[param_name] = request.get_assigned_value(param_name)
         return param_map
 
-    def validate_user(self, cohort_id):
-        user_email = None
-        if endpoints.get_current_user() is not None:
-            user_email = endpoints.get_current_user().email()
+    def build_query(self, param_map):
+        '''
+        TODO: will need to add program and genomic build to method to add to metadata_data (union?), check changes to cohorts_samples
+        '''
+        query_str = 'SELECT DataFileNameKey, SecurityProtocol, Repository ' \
+                    'FROM metadata_data '
+        query_tuple = []
 
-        if user_email is None:
-            raise endpoints.UnauthorizedException(
-                "Authentication failed. Try signing in to {} to register "
-                "with the web application.".format(BASE_URL))
+        if 'sample_barcode' in param_map:
+            query_str += 'WHERE sample_barcode=%s '
+            query_tuple += [param_map['sample_barcode']]
+        else:
+            query_str += 'JOIN cohorts_samples ON metadata_data.sample_barcode=cohorts_samples.sample_barcode ' \
+                         'WHERE cohorts_samples.cohort_id=%s '
+            query_tuple += [param_map['cohort_id']]
+        query_str += 'AND file_name_key != "" AND file_name_key is not null '
+        for field, value in param_map:
+            if  field not in ['limit', 'cohort_id', 'sample_barcode']:
+                query_str += ' and metadata_data.{}=%s '.format(field)
+                query_tuple += [value]
+        query_str += ' GROUP BY DataFileNameKey, SecurityProtocol, Repository '
+        if 'limit' in param_map:
+            query_str += ' LIMIT %s'  
+            query_tuple += [param_map['limit']]
+        else:
+            query_str += ' LIMIT 10000'
+        return query_str, query_tuple
 
-        django.setup()
-        try:
-            user_id = Django_User.objects.get(email=user_email).id
-            Django_Cohort.objects.get(id=cohort_id)
-            Cohort_Perms.objects.get(cohort_id=cohort_id, user_id=user_id)
-        except (ObjectDoesNotExist, MultipleObjectsReturned), e:
-            logger.warn(e)
-            err_msg = "Error retrieving cohort {} for user {}: {}".format(cohort_id, user_email, e)
-            if 'Cohort_Perms' in e.message:
-                err_msg = "User {} does not have permissions on cohort {}. " \
-                          "Error: {}".format(user_email, cohort_id, e)
-            raise endpoints.UnauthorizedException(err_msg)
-        finally:
-            request_finished.send(self)
-    
     def cloud_storage_file_paths(self, param_map):
         """
         Uses the param_map to pass to the query builder then executes the query to obtain the cloud
@@ -89,7 +92,7 @@ class CloudStorageFilePathsAPI(remote.Service):
         cursor = None
         db = None
 
-        query_str, query_tuple = CohortsSamplesFilesQueryBuilder().build_query(param_map)
+        query_str, query_tuple = self.build_query(param_map)
 
         try:
             db = sql_connection()
@@ -117,22 +120,82 @@ class CloudStorageFilePathsAPI(remote.Service):
 
 class SamplesCloudStorageFilePathsHelper(CloudStorageFilePathsAPI):
 
-    GET_RESOURCE = endpoints.ResourceContainer(sample_barcode=messages.StringField(1, required=True),
-                                               platform=messages.StringField(2),
-                                               pipeline=messages.StringField(3))
+    GET_RESOURCE = endpoints.ResourceContainer(
+        sample_barcode=messages.StringField(1, required=True),
+        data_type=messages.StringField(2),
+        data_category=messages.StringField(3),
+        experimental_strategy=messages.StringField(4),
+        data_format=messages.StringField(5),
+        platform=messages.StringField(6),
+        endpoint_type=messages.StringField(7),
+        analysis_workflow_type=messages.StringField(8)
+    )
 
     def cloud_storage_file_paths(self, request):
-        param_map = self.setup_param_map(request, ['platform', 'pipeline', 'sample_barcode'])
+        param_map = self.setup_param_map(request, [
+                'data_type', 
+                'data_category', 
+                'experimental_strategy', 
+                'data_format', 
+                'platform', 
+                'endpoint_type', 
+                'analysis_workflow_type', 
+                'sample_barcode'
+            ]
+        )
         self.cloud_storage_file_paths(param_map)
     
 class CohortsCloudStorageFilePathsHelper(CloudStorageFilePathsAPI):
 
-    GET_RESOURCE = endpoints.ResourceContainer(cohort_id=messages.IntegerField(1, required=True),
-                                               limit=messages.IntegerField(2),
-                                               platform=messages.StringField(3),
-                                               pipeline=messages.StringField(4))
+    GET_RESOURCE = endpoints.ResourceContainer(
+        cohort_id=messages.IntegerField(1, required=True),
+        limit=messages.IntegerField(2),
+        data_type=messages.StringField(3),
+        data_category=messages.StringField(4),
+        experimental_strategy=messages.StringField(5),
+        data_format=messages.StringField(6),
+        platform=messages.StringField(7),
+        endpoint_type=messages.StringField(8),
+        analysis_workflow_type=messages.StringField(9)
+    )
 
+    def validate_user(self, cohort_id):
+        user_email = None
+        if endpoints.get_current_user() is not None:
+            user_email = endpoints.get_current_user().email()
+
+        if user_email is None:
+            raise endpoints.UnauthorizedException(
+                "Authentication failed. Try signing in to {} to register "
+                "with the web application.".format(BASE_URL))
+
+        django.setup()
+        try:
+            user_id = Django_User.objects.get(email=user_email).id
+            Django_Cohort.objects.get(id=cohort_id)
+            Cohort_Perms.objects.get(cohort_id=cohort_id, user_id=user_id)
+        except (ObjectDoesNotExist, MultipleObjectsReturned), e:
+            logger.warn(e)
+            err_msg = "Error retrieving cohort {} for user {}: {}".format(cohort_id, user_email, e)
+            if 'Cohort_Perms' in e.message:
+                err_msg = "User {} does not have permissions on cohort {}. " \
+                          "Error: {}".format(user_email, cohort_id, e)
+            raise endpoints.UnauthorizedException(err_msg)
+        finally:
+            request_finished.send(self)
+    
     def cloud_storage_file_paths(self, request):
-        param_map = self.setup_param_map(request, ['platform', 'pipeline', 'limit', 'cohort_id'])
+        param_map = self.setup_param_map(request, [
+                'data_type', 
+                'data_category', 
+                'experimental_strategy', 
+                'data_format', 
+                'platform', 
+                'endpoint_type', 
+                'analysis_workflow_type', 
+                'limit', 
+                'cohort_id'
+            ]
+        )
         self.validate_user(param_map['cohort_id'])
         self.cloud_storage_file_paths(param_map)
