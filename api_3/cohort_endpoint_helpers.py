@@ -183,95 +183,9 @@ class CohortsGetListQueryBuilder(object):
 
         return samples_query_str, sample_query_tuple
 
-
-class CohortsCreatePreviewQueryBuilder(object):
-    def build_query_dictionaries(self, request):
-        """
-        Builds the query dictionaries for create and preview cohort endpoints.
-        Returns query_dict, gte_query_dict, lte_query_dict.
-        """
-        query_dict = {
-            k.name: request.get_assigned_value(k.name)
-            for k in request.all_fields()
-            if request.get_assigned_value(k.name)
-            and k.name is not 'name'
-            and not k.name.endswith('_gte')
-            and not k.name.endswith('_lte')
-            }
-
-        gte_query_dict = {
-            k.name.replace('_gte', ''): request.get_assigned_value(k.name)
-            for k in request.all_fields()
-            if request.get_assigned_value(k.name) and k.name.endswith('_gte')
-            }
-
-        lte_query_dict = {
-            k.name.replace('_lte', ''): request.get_assigned_value(k.name)
-            for k in request.all_fields()
-            if request.get_assigned_value(k.name) and k.name.endswith('_lte')
-            }
-
-        return query_dict, gte_query_dict, lte_query_dict
-
-    def build_query(self, program, query_dict, gte_query_dict, lte_query_dict):
-        """
-        Builds the queries that selects the patient and sample barcodes
-        that meet the criteria specified in the request body.
-        Returns patient query string,  sample query string, value tuple.
-        """
-
-        patient_query_str = 'SELECT DISTINCT(IF(case_barcode="", LEFT(sample_barcode,12), case_barcode)) ' \
-                            'AS case_barcode ' \
-                            'FROM metadata_samples ' \
-                            'WHERE '
-
-        sample_query_str = 'SELECT {}_sample_barcode, case_barcode ' \
-                           'FROM metadata_samples ' \
-                           'WHERE '.format(program)
-        value_tuple = ()
-
-        for key, value_list in query_dict.iteritems():
-            patient_query_str += ' AND ' if not patient_query_str.endswith('WHERE ') else ''
-            sample_query_str += ' AND ' if not sample_query_str.endswith('WHERE ') else ''
-            if "None" in value_list:
-                value_list.remove("None")
-                patient_query_str += ' ( {key} is null '.format(key=key)
-                sample_query_str += ' ( {key} is null '.format(key=key)
-                if len(value_list) > 0:
-                    patient_query_str += ' OR {key} IN ({vals}) '.format(
-                        key=key, vals=', '.join(['%s'] * len(value_list)))
-                    sample_query_str += ' OR {key} IN ({vals}) '.format(
-                        key=key, vals=', '.join(['%s'] * len(value_list)))
-                patient_query_str += ') '
-                sample_query_str += ') '
-            else:
-                patient_query_str += ' {key} IN ({vals}) '.format(key=key, vals=', '.join(['%s'] * len(value_list)))
-                sample_query_str += ' {key} IN ({vals}) '.format(key=key, vals=', '.join(['%s'] * len(value_list)))
-            value_tuple += tuple(value_list)
-
-        for key, value in gte_query_dict.iteritems():
-            patient_query_str += ' AND ' if not patient_query_str.endswith('WHERE ') else ''
-            patient_query_str += ' {} >=%s '.format(key)
-            sample_query_str += ' AND ' if not sample_query_str.endswith('WHERE ') else ''
-            sample_query_str += ' {} >=%s '.format(key)
-            value_tuple += (value,)
-
-        for key, value in lte_query_dict.iteritems():
-            patient_query_str += ' AND ' if not patient_query_str.endswith('WHERE ') else ''
-            patient_query_str += ' {} <=%s '.format(key)
-            sample_query_str += ' AND ' if not sample_query_str.endswith('WHERE ') else ''
-            sample_query_str += ' {} <=%s '.format(key)
-            value_tuple += (value,)
-
-        sample_query_str += ' GROUP BY sample_barcode'
-
-        return patient_query_str, sample_query_str, value_tuple
-
-
 class FilterDetails(messages.Message):
     name = messages.StringField(1)
     value = messages.StringField(2)
-
 
 class CohortsGetListMessageBuilder(object):
     def make_filter_details_from_cursor(self, filter_cursor_dict):
@@ -304,36 +218,6 @@ class CohortsGetListMessageBuilder(object):
             parent_id_data.append("None")
 
         return parent_id_data
-
-
-class CohortsSamplesFilesQueryBuilder(object):
-
-    def build_query(self, platform=None, pipeline=None, limit=None, cohort_id=None, sample_barcode=None):
-        '''
-        TODO: will need to add program and genomic build to method to add to metadata_data (union?), check changes to cohorts_samples
-        '''
-        query_str = 'SELECT DataFileNameKey, SecurityProtocol, Repository ' \
-                    'FROM metadata_data '
-
-        if cohort_id is None:
-            query_str += 'WHERE sample_barcode=%s '
-        else:
-            query_str += 'JOIN cohorts_samples ON metadata_data.sample_barcode=cohorts_samples.sample_barcode ' \
-                         'WHERE cohorts_samples.cohort_id=%s '
-
-        query_str += 'AND file_name_key != "" AND file_name_key is not null '
-        query_str += ' and metadata_data.Platform=%s ' if platform is not None else ''
-        query_str += ' and metadata_data.Pipeline=%s ' if pipeline is not None else ''
-        query_str += ' GROUP BY DataFileNameKey, SecurityProtocol, Repository '
-        query_str += ' LIMIT %s' if limit is not None else ' LIMIT 10000'
-
-        query_tuple = (cohort_id,) if cohort_id is not None else (sample_barcode,)
-        query_tuple += (platform,) if platform is not None else ()
-        query_tuple += (pipeline,) if pipeline is not None else ()
-        query_tuple += (limit,) if limit is not None else ()
-
-        return query_str, query_tuple
-
 
 class CohortsSamplesFilesMessageBuilder(object):
 

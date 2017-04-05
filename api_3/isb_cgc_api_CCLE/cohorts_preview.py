@@ -14,37 +14,18 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
-
 import endpoints
-import logging
-import MySQLdb
 
-from django.core.signals import request_finished
-from protorpc import remote, messages
-
+from api_3.cohort_create_preview_helper import CohortsPreviewHelper
 from api_3.isb_cgc_api_CCLE.isb_cgc_api_helpers import ISB_CGC_CCLE_Endpoints
-from api_3.cohort_endpoint_helpers import CohortsCreatePreviewQueryBuilder, \
-    are_there_bad_keys, are_there_no_acceptable_keys, construct_parameter_error_message
-
-from message_classes import MetadataRangesItem
-from api_3.api_helpers import sql_connection
-
-logger = logging.getLogger(__name__)
-
-
-class CohortPatientsSamplesList(messages.Message):
-    patients = messages.StringField(1, repeated=True)
-    patient_count = messages.IntegerField(2, variant=messages.Variant.INT32)
-    samples = messages.StringField(3, repeated=True)
-    sample_count = messages.IntegerField(4, variant=messages.Variant.INT32)
-
+from message_classes import MetadataRangesItem, shared_fields
 
 @ISB_CGC_CCLE_Endpoints.api_class(resource_name='cohorts')
-class CohortsPreviewAPI(remote.Service):
+class CohortsPreviewAPI(CohortsPreviewHelper):
 
     GET_RESOURCE = endpoints.ResourceContainer(**{field.name: field for field in MetadataRangesItem.all_fields()})
 
-    @endpoints.method(GET_RESOURCE, CohortPatientsSamplesList, path='cohorts/preview', http_method='GET')
+    @endpoints.method(GET_RESOURCE, CohortsPreviewHelper.CohortPatientsSamplesList, path='cohorts/preview', http_method='GET')
     def preview(self, request):
         """
         Takes a JSON object of filters in the request body and returns a "preview" of the cohort that would
@@ -52,48 +33,6 @@ class CohortsPreviewAPI(remote.Service):
         two lists: the lists of participant (aka patient) barcodes, and the list of sample barcodes.
         Authentication is not required.
         """
-        patient_cursor = None
-        sample_cursor = None
-
-        if are_there_bad_keys(request) or are_there_no_acceptable_keys(request):
-            err_msg = construct_parameter_error_message(request, True)
-            raise endpoints.BadRequestException(err_msg)
-
-        query_dict, gte_query_dict, lte_query_dict = CohortsCreatePreviewQueryBuilder().build_query_dictionaries(request)
-
-        patient_query_str, sample_query_str, value_tuple = CohortsCreatePreviewQueryBuilder().build_query(
-            'CCLE', query_dict, gte_query_dict, lte_query_dict)
-
-        patient_barcodes = []
-        sample_barcodes = []
-
-        try:
-            db = sql_connection()
-            patient_cursor = db.cursor(MySQLdb.cursors.DictCursor)
-            patient_cursor.execute(patient_query_str, value_tuple)
-            for row in patient_cursor.fetchall():
-                patient_barcodes.append(row['case_barcode'])
-
-            sample_cursor = db.cursor(MySQLdb.cursors.DictCursor)
-            sample_cursor.execute(sample_query_str, value_tuple)
-            for row in sample_cursor.fetchall():
-                sample_barcodes.append(row['sample_barcode'])
-
-        except (IndexError, TypeError), e:
-            logger.warn(e)
-            raise endpoints.NotFoundException("Error retrieving samples or patients: {}".format(e))
-        except MySQLdb.ProgrammingError as e:
-            msg = '{}:\n\tpatient query: {} {}\n\tsample query: {} {}' \
-                .format(e, patient_query_str, value_tuple, sample_query_str, value_tuple)
-            logger.warn(msg)
-            raise endpoints.BadRequestException("Error previewing cohort. {}".format(msg))
-        finally:
-            if patient_cursor: patient_cursor.close()
-            if sample_cursor: sample_cursor.close()
-            if db and db.open: db.close()
-            request_finished.send(self)
-
-        return CohortPatientsSamplesList(patients=patient_barcodes,
-                                         patient_count=len(patient_barcodes),
-                                         samples=sample_barcodes,
-                                         sample_count=len(sample_barcodes))
+        self.program = 'CCLE'
+        self. shared_fields = shared_fields
+        return super(CohortsPreviewAPI, self).preview(request)
