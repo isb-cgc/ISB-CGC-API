@@ -23,8 +23,8 @@ from api_3.isb_cgc_api_TCGA.cohorts_get import  CohortsGetAPI as TCGA_CohortsGet
 from api_3.isb_cgc_api_TCGA.cohorts_delete import  CohortsDeleteAPI as TCGA_CohortsDeleteAPI
 from api_3.isb_cgc_api_TCGA.cohorts_create import  CohortsCreateAPI as TCGA_CohortsCreateAPI
 from api_3.isb_cgc_api_TCGA.cohorts_cloudstoragefilepaths import  CohortsCloudStorageFilePathsAPI as TCGA_CohortsCloudStorageFilePathsAPI
-from api_3.isb_cgc_api_TCGA.patients_get import  PatientsGetAPI as TCGA_PatientsGetAPI
-from api_3.isb_cgc_api_TCGA.patients_annotations import  PatientsAnnotationAPI as TCGA_PatientsAnnotationAPI
+from api_3.isb_cgc_api_TCGA.patients_get import  CasesGetAPI as TCGA_CasesGetAPI
+from api_3.isb_cgc_api_TCGA.patients_annotations import  CasesAnnotationAPI as TCGA_CasesAnnotationAPI
 from api_3.isb_cgc_api_TCGA.samples_get import  SamplesGetAPI as TCGA_SamplesGetAPI
 from api_3.isb_cgc_api_TCGA.samples_cloudstoragefilepaths import  SamplesCloudStorageFilePathsAPI as TCGA_SamplesCloudStorageFilePathsAPI
 from api_3.isb_cgc_api_TCGA.samples_annotations import  SamplesAnnotationAPI as TCGA_SamplesAnnotationAPI
@@ -37,7 +37,7 @@ from api_3.isb_cgc_api_TARGET.cohorts_get import  CohortsGetAPI as TARGET_Cohort
 from api_3.isb_cgc_api_TARGET.cohorts_delete import  CohortsDeleteAPI as TARGET_CohortsDeleteAPI
 from api_3.isb_cgc_api_TARGET.cohorts_create import  CohortsCreateAPI as TARGET_CohortsCreateAPI
 from api_3.isb_cgc_api_TARGET.cohorts_cloudstoragefilepaths import  CohortsCloudStorageFilePathsAPI as TARGET_CohortsCloudStorageFilePathsAPI
-from api_3.isb_cgc_api_TARGET.patients_get import  PatientsGetAPI as TARGET_PatientsGetAPI
+from api_3.isb_cgc_api_TARGET.patients_get import  CasesGetAPI as TARGET_CasesGetAPI
 from api_3.isb_cgc_api_TARGET.samples_get import  SamplesGetAPI as TARGET_SamplesGetAPI
 from api_3.isb_cgc_api_TARGET.samples_cloudstoragefilepaths import  SamplesCloudStorageFilePathsAPI as TARGET_SamplesCloudStorageFilePathsAPI
 from api_3.isb_cgc_api_TARGET.users_get import  UserGetAPI as TARGET_UserGetAPI
@@ -48,7 +48,7 @@ from api_3.isb_cgc_api_CCLE.cohorts_get import  CohortsGetAPI as CCLE_CohortsGet
 from api_3.isb_cgc_api_CCLE.cohorts_delete import  CohortsDeleteAPI as CCLE_CohortsDeleteAPI
 from api_3.isb_cgc_api_CCLE.cohorts_create import  CohortsCreateAPI as CCLE_CohortsCreateAPI
 from api_3.isb_cgc_api_CCLE.cohorts_cloudstoragefilepaths import  CohortsCloudStorageFilePathsAPI as CCLE_CohortsCloudStorageFilePathsAPI
-from api_3.isb_cgc_api_CCLE.patients_get import  PatientsGetAPI as CCLE_PatientsGetAPI
+from api_3.isb_cgc_api_CCLE.patients_get import  CasesGetAPI as CCLE_CasesGetAPI
 from api_3.isb_cgc_api_CCLE.samples_get import  SamplesGetAPI as CCLE_SamplesGetAPI
 from api_3.isb_cgc_api_CCLE.samples_cloudstoragefilepaths import  SamplesCloudStorageFilePathsAPI as CCLE_SamplesCloudStorageFilePathsAPI
 from api_3.isb_cgc_api_CCLE.users_get import  UserGetAPI as CCLE_UserGetAPI
@@ -62,8 +62,8 @@ APPLICATION = endpoints.api_server([
     TCGA_CohortsDeleteAPI,
     TCGA_CohortsCreateAPI,
     TCGA_CohortsCloudStorageFilePathsAPI,
-    TCGA_PatientsGetAPI,
-    TCGA_PatientsAnnotationAPI,
+    TCGA_CasesGetAPI,
+    TCGA_CasesAnnotationAPI,
     TCGA_SamplesGetAPI,
     TCGA_SamplesCloudStorageFilePathsAPI,
     TCGA_SamplesAnnotationAPI,
@@ -76,7 +76,7 @@ APPLICATION = endpoints.api_server([
     TARGET_CohortsDeleteAPI,
     TARGET_CohortsCreateAPI,
     TARGET_CohortsCloudStorageFilePathsAPI,
-    TARGET_PatientsGetAPI,
+    TARGET_CasesGetAPI,
     TARGET_SamplesGetAPI,
     TARGET_SamplesCloudStorageFilePathsAPI,
     TARGET_UserGetAPI,
@@ -87,7 +87,7 @@ APPLICATION = endpoints.api_server([
     CCLE_CohortsDeleteAPI,
     CCLE_CohortsCreateAPI,
     CCLE_CohortsCloudStorageFilePathsAPI,
-    CCLE_PatientsGetAPI,
+    CCLE_CasesGetAPI,
     CCLE_SamplesGetAPI,
     CCLE_SamplesCloudStorageFilePathsAPI,
     CCLE_UserGetAPI

@@ -22,12 +22,11 @@ from api_3.isb_cgc_api_CCLE.isb_cgc_api_helpers import ISB_CGC_CCLE_Endpoints
 from api_3.isb_cgc_api_TARGET.message_classes import MetadataRangesItem, shared_fields
 
 @ISB_CGC_CCLE_Endpoints.api_class(resource_name='cohorts')
-class CohortsPreviewAPI(CohortsCreateHelper):
-    POST_RESOURCE = endpoints.ResourceContainer(MetadataRangesItem,
-                                                name=messages.StringField(2, required=True))
+class CohortsCreateAPI(CohortsCreateHelper):
+    POST_RESOURCE = endpoints.ResourceContainer(MetadataRangesItem, name=messages.StringField(2, required=True))
 
     @endpoints.method(POST_RESOURCE, CohortsCreateHelper.CreatedCohort, path='cohorts/create', http_method='POST')
-    def preview(self, request):
+    def create(self, request):
         """
         Creates and saves a cohort. Takes a JSON object in the request body to use as the cohort's filters.
         Authentication is required.
@@ -35,5 +34,5 @@ class CohortsPreviewAPI(CohortsCreateHelper):
         of samples in that cohort.
         """
         self.program = 'CCLE'
-        self. shared_fields = shared_fields
-        return super(CohortsPreviewAPI, self).create(request)
+        self.shared_fields = shared_fields
+        return super(CohortsCreateAPI, self).create(request)
