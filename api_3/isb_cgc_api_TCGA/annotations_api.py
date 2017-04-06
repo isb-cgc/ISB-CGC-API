@@ -43,7 +43,7 @@ class AnnotationAPI(remote.Service):
             request_barcode = request.get_assigned_value(barcode_type)
             query_tuple = str(request_barcode), 
             try:
-                self.validate_barcode(request_barcode, barcode_type)
+                self.validate_barcode(request_barcode)
             except AssertionError:
                 raise endpoints.BadRequestException(
                     '{0} is not the correct format for a sample barcode.  '
