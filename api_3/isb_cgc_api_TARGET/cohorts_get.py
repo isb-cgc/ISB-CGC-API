@@ -27,4 +27,4 @@ class CohortsGetAPI(CohortsGetHelper):
         Returns information about a specific cohort the user has READER or OWNER permission on
         when given a cohort ID. Authentication is required.
         """
-        super(CohortsGetAPI, self).get(request)
+        return super(CohortsGetAPI, self).get(request)

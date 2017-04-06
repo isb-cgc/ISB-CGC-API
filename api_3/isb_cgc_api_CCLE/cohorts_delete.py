@@ -26,4 +26,4 @@ class CohortsDeleteAPI(CohortsDeleteHelper):
         """
         Deletes a cohort. User must have owner permissions on the cohort.
         """
-        super(CohortsDeleteAPI, self).delete(request)
+        return super(CohortsDeleteAPI, self).delete(request)

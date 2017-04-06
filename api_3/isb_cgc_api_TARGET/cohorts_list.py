@@ -30,4 +30,4 @@ class CohortsListAPI(CohortsListHelper):
         Authentication is required. Optionally takes a cohort id as a parameter to
         only list information about one cohort.
         """
-        super(CohortsListAPI, self).list(unused_request)
+        return super(CohortsListAPI, self).list(unused_request)
