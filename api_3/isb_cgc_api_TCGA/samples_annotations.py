@@ -58,7 +58,7 @@ class SamplesAnnotationAPI(AnnotationAPI):
     def annotations(self, request):
         """
         Returns TCGA annotations about a specific sample,
-        Takes a patient barcode (of length , *eg* TCGA-01-0628-11A) as a required parameter.
+        Takes a sample barcode (of length 16, *eg* TCGA-01-0628-11A) as a required parameter.
         User does not need to be authenticated.
         """
         return self.process_annotations(request, 'sample_barcode', SamplesAnnotationsQueryBuilder(), logger)

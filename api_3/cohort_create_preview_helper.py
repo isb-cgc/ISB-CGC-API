@@ -67,9 +67,9 @@ class CohortsCreatePreviewAPI(remote.Service):
 
     def build_query(self, program, query_dict, gte_query_dict, lte_query_dict):
         """
-        Builds the queries that selects the patient and sample barcodes
+        Builds the queries that selects the case and sample barcodes
         that meet the criteria specified in the request body.
-        Returns patient query string,  sample query string, value tuple.
+        Returns case query string,  sample query string, value tuple.
         """
         sample_query_str = 'SELECT sample_barcode, c.case_barcode ' \
                            'FROM {0}_metadata_clinical c join {0}_metadata_biospecimen b on c.case_barcode = b.case_barcode ' \
@@ -125,7 +125,7 @@ class CohortsCreatePreviewAPI(remote.Service):
             rows = sample_cursor.fetchall()
         except (IndexError, TypeError) as e:
             logger.warn(e)
-            raise endpoints.NotFoundException("Error retrieving samples or patients: {}".format(e))
+            raise endpoints.NotFoundException("Error retrieving samples or cases: {}".format(e))
         except MySQLdb.ProgrammingError as e:
             msg = '{}:\n\tsample query: {} {}'.format(e, sample_query_str, value_tuple)
             logger.warn(msg)
@@ -151,14 +151,14 @@ class CohortsCreateHelper(CohortsCreatePreviewAPI):
         name = messages.StringField(2)
         last_date_saved = messages.StringField(3)
         filters = messages.MessageField(FilterDetails, 4, repeated=True)
-        patient_count = messages.IntegerField(5, variant=messages.Variant.INT32)
+        case_count = messages.IntegerField(5, variant=messages.Variant.INT32)
         sample_count = messages.IntegerField(6, variant=messages.Variant.INT32)
     
     def create(self, request):
         """
         Creates and saves a cohort. Takes a JSON object in the request body to use as the cohort's filters.
         Authentication is required.
-        Returns information about the saved cohort, including the number of patients and the number
+        Returns information about the saved cohort, including the number of cases and the number
         of samples in that cohort.
         """
         user = endpoints.get_current_user()
@@ -235,14 +235,14 @@ class CohortsCreateHelper(CohortsCreatePreviewAPI):
                              name=cohort_name,
                              last_date_saved=str(datetime.utcnow()),
                              filters=filter_data,
-                             patient_count=created_cohort.case_size(),
+                             case_count=created_cohort.case_size(),
                              sample_count=len(sample_barcodes)
                              )
     
 class CohortsPreviewHelper(CohortsCreatePreviewAPI):
-    class CohortPatientsSamplesList(messages.Message):
-        patients = messages.StringField(1, repeated=True)
-        patient_count = messages.IntegerField(2, variant=messages.Variant.INT32)
+    class CohortCasesSamplesList(messages.Message):
+        cases = messages.StringField(1, repeated=True)
+        case_count = messages.IntegerField(2, variant=messages.Variant.INT32)
         samples = messages.StringField(3, repeated=True)
         sample_count = messages.IntegerField(4, variant=messages.Variant.INT32)
     
@@ -250,21 +250,21 @@ class CohortsPreviewHelper(CohortsCreatePreviewAPI):
         """
         Takes a JSON object of filters in the request body and returns a "preview" of the cohort that would
         result from passing a similar request to the cohort **save** endpoint.  This preview consists of
-        two lists: the lists of participant (aka patient) barcodes, and the list of sample barcodes.
+        two lists: the lists of case barcodes, and the list of sample barcodes.
         Authentication is not required.
         """
         rows, _, _, _ = self.query_samples(request)
 
-        patient_barcodes = set()
+        case_barcodes = set()
         sample_barcodes = []
 
         for row in rows:
-            patient_barcodes.add(row['case_barcode'])
+            case_barcodes.add(row['case_barcode'])
             sample_barcodes.append(row['sample_barcode'])
-        patient_barcodes = list(patient_barcodes)
+        case_barcodes = list(case_barcodes)
 
-        return self.CohortPatientsSamplesList(patients=patient_barcodes,
-                                         patient_count=len(patient_barcodes),
+        return self.CohortCasesSamplesList(cases=case_barcodes,
+                                         case_count=len(case_barcodes),
                                          samples=sample_barcodes,
                                          sample_count=len(sample_barcodes))
 

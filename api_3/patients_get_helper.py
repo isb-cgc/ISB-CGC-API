@@ -30,7 +30,7 @@ from api_3.api_helpers import sql_connection
 logger = logging.getLogger(__name__)
 
 
-class PatientsGetQueryBuilder(object):
+class CasesGetQueryBuilder(object):
 
     def build_queries(self):
         clinical_query_str = 'select * ' \
@@ -55,18 +55,18 @@ class CasesGetHelper(remote.Service):
 
     def get(self, request, CaseDetails, MetadataItem):
         """
-        Returns information about a specific patient,
-        including a list of samples and aliquots derived from this patient.
-        Takes a patient barcode (of length 12, *eg* TCGA-B9-7268) as a required parameter.
+        Returns information about a specific case,
+        including a list of samples and aliquots derived from this case.
+        Takes a case (*eg* TCGA-B9-7268 for TCGA) as a required parameter.
         User does not need to be authenticated.
         """
 
         cursor = None
         db = None
 
-        patient_barcode = request.get_assigned_value('patient_barcode')
-        query_tuple = (str(patient_barcode),)
-        clinical_query_str, sample_query_str, aliquot_query_str = PatientsGetQueryBuilder().build_queries()
+        case_barcode = request.get_assigned_value('case_barcode')
+        query_tuple = (str(case_barcode),)
+        clinical_query_str, sample_query_str, aliquot_query_str = CasesGetQueryBuilder().build_queries()
 
         try:
             db = sql_connection()
@@ -78,8 +78,8 @@ class CasesGetHelper(remote.Service):
             if row is None:
                 cursor.close()
                 db.close()
-                logger.warn("Case barcode {} not found in metadata_clinical table.".format(patient_barcode))
-                raise endpoints.NotFoundException("Patient barcode {} not found".format(patient_barcode))
+                logger.warn("Case barcode {} not found in metadata_clinical table.".format(case_barcode))
+                raise endpoints.NotFoundException("Case barcode {} not found".format(case_barcode))
             constructor_dict = build_constructor_dict_for_message(MetadataItem(), row)
             clinical_data_item = MetadataItem(**constructor_dict)
 
@@ -94,11 +94,11 @@ class CasesGetHelper(remote.Service):
             return CaseDetails(clinical_data=clinical_data_item, samples=sample_list, aliquots=aliquot_list)
 
         except (IndexError, TypeError), e:
-            logger.info("Patient {} not found. Error: {}".format(patient_barcode, e))
-            raise endpoints.NotFoundException("Patient {} not found.".format(patient_barcode))
+            logger.info("Case {} not found. Error: {}".format(case_barcode, e))
+            raise endpoints.NotFoundException("Case {} not found.".format(case_barcode))
         except MySQLdb.ProgrammingError as e:
-            logger.warn("Error retrieving patient, sample, or aliquot data: {}".format(e))
-            raise endpoints.BadRequestException("Error retrieving patient, sample, or aliquot data: {}".format(e))
+            logger.warn("Error retrieving case, sample, or aliquot data: {}".format(e))
+            raise endpoints.BadRequestException("Error retrieving case, sample, or aliquot data: {}".format(e))
         finally:
             if cursor: cursor.close()
             if db and db.open: db.close()

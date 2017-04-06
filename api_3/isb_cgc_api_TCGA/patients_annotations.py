@@ -26,7 +26,7 @@ from api_3.isb_cgc_api_TCGA.isb_cgc_api_helpers import ISB_CGC_TCGA_Endpoints
 logger = logging.getLogger(__name__)
 
 
-class PatientsAnnotationsQueryBuilder(object):
+class CasesAnnotationsQueryBuilder(object):
 
     @staticmethod
     def build_query(entity_types=None):
@@ -57,14 +57,14 @@ class CasesAnnotationAPI(AnnotationAPI):
     def annotations(self, request):
         """
         Returns TCGA annotations about a specific sample,
-        Takes a patient barcode (of length , *eg* TCGA-01-0628-11A) as a required parameter.
+        Takes a case barcode (of length 12, *eg* TCGA-01-0628) as a required parameter.
         User does not need to be authenticated.
         """
-        return self.process_annotations(request, 'case_barcode', PatientsAnnotationsQueryBuilder(), logger)
+        return self.process_annotations(request, 'case_barcode', CasesAnnotationsQueryBuilder(), logger)
 
 
     def validate_barcode(self, case_barcode):
-        # check to make sure sample_barcode is in correct form
+        # check to make sure case_barcode is in correct form
         parts = case_barcode.split('-')
         assert len(parts) == 3
         assert len(parts[0]) == 4

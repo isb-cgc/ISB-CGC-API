@@ -25,12 +25,12 @@ class CohortsPreviewAPI(CohortsPreviewHelper):
 
     GET_RESOURCE = endpoints.ResourceContainer(**{field.name: field for field in MetadataRangesItem.all_fields()})
 
-    @endpoints.method(GET_RESOURCE, CohortsPreviewHelper.CohortPatientsSamplesList, path='cohorts/preview', http_method='GET')
+    @endpoints.method(GET_RESOURCE, CohortsPreviewHelper.CohortCasesSamplesList, path='cohorts/preview', http_method='GET')
     def preview(self, request):
         """
         Takes a JSON object of filters in the request body and returns a "preview" of the cohort that would
         result from passing a similar request to the cohort **save** endpoint.  This preview consists of
-        two lists: the lists of participant (aka patient) barcodes, and the list of sample barcodes.
+        two lists: the lists of case barcodes, and the list of sample barcodes.
         Authentication is not required.
         """
         self.program = 'TARGET'

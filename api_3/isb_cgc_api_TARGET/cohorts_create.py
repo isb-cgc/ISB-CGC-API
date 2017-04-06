@@ -30,7 +30,7 @@ class CohortsCreateAPI(CohortsCreateHelper):
         """
         Creates and saves a cohort. Takes a JSON object in the request body to use as the cohort's filters.
         Authentication is required.
-        Returns information about the saved cohort, including the number of patients and the number
+        Returns information about the saved cohort, including the number of cases and the number
         of samples in that cohort.
         """
         self.program = 'TARGET'

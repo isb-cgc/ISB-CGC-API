@@ -32,9 +32,9 @@ class CasesGetAPI(CasesGetHelper):
     @endpoints.method(CasesGetHelper.GET_RESOURCE, CaseDetails, path='cases/{case_barcode}', http_method='GET')
     def get(self, request):
         """
-        Returns information about a specific patient,
-        including a list of samples and aliquots derived from this patient.
-        Takes a patient barcode (of length 12, *eg* TCGA-B9-7268) as a required parameter.
+        Returns information about a specific case,
+        including a list of samples and aliquots derived from this case.
+        Takes a case barcode (of length 12, *eg* TCGA-B9-7268) as a required parameter.
         User does not need to be authenticated.
         """
         return super(CasesGetAPI, self).get(request, CaseDetails, MetadataItem)

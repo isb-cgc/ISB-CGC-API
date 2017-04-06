@@ -25,7 +25,7 @@ from api_3.samples_get_helper import DataDetails, SamplesGetAPI
 class SampleDetails(messages.Message):
     biospecimen_data = messages.MessageField(MetadataItem, 1)
     aliquots = messages.StringField(2, repeated=True)
-    patient = messages.StringField(3)
+    case = messages.StringField(3)
     data_details = messages.MessageField(DataDetails, 4, repeated=True)
     data_details_count = messages.IntegerField(5, variant=messages.Variant.INT32)
 
@@ -36,7 +36,7 @@ class SamplesGetAPI(SamplesGetAPI):
         """
         Given a sample barcode (of length 16, *eg* TCGA-B9-7268-01A), this endpoint returns
         all available "biospecimen" information about this sample,
-        the associated patient barcode, a list of associated aliquots,
+        the associated case barcode, a list of associated aliquots,
         and a list of "data_details" blocks describing each of the data files associated with this sample
         """
         return super(SamplesGetAPI, self).get(request, 'TCGA', SampleDetails, MetadataItem)

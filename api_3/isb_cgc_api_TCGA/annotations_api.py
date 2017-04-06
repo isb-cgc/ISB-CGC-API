@@ -55,7 +55,7 @@ class AnnotationAPI(remote.Service):
             if len(entity_types) > 0:
                 for itm in entity_types:
                     itm = itm.strip()
-                    if itm.lower() not in ['patient', 'aliquot', 'analyte', 'portion', 'slide', 'sample']:
+                    if itm.lower() not in ['case', 'aliquot', 'analyte', 'portion', 'slide', 'sample']:
                         raise endpoints.BadRequestException("'{}' is not a valid entry for entity_type. "
                             "Valid entries are 'case', 'aliquot', 'analyte', 'portion', 'slide', and 'sample'".
                             format(itm))

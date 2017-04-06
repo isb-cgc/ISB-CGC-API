@@ -59,7 +59,7 @@ class AliquotsAnnotationAPI(AnnotationAPI):
 
 
     def validate_barcode(self, aliquot_barcode):
-        # check to make sure sample_barcode is in correct form
+        # check to make sure aliquot_barcode is in correct form
             parts = aliquot_barcode.split('-')
             assert len(parts) == 7
             assert len(parts[0]) == 4

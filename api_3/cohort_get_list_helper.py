@@ -44,9 +44,9 @@ class CohortDetails(messages.Message):
     source_notes = messages.StringField(8)
     parent_id = messages.StringField(9, repeated=True)
     filters = messages.MessageField(FilterDetails, 10, repeated=True)
-    patient_count = messages.IntegerField(11, variant=messages.Variant.INT32)
+    case_count = messages.IntegerField(11, variant=messages.Variant.INT32)
     sample_count = messages.IntegerField(12, variant=messages.Variant.INT32)
-    patients = messages.StringField(13, repeated=True)
+    cases = messages.StringField(13, repeated=True)
     samples = messages.StringField(14, repeated=True)
 
 class CohortDetailsList(messages.Message):
@@ -125,19 +125,19 @@ class CohortsGetListQueryBuilder(object):
 
         return parent_query_str, parent_query_tuple
 
-    def build_patients_query(self, patient_query_dict):
+    def build_cases_query(self, case_query_dict):
         """
         Builds the query that selects the case count for a particular cohort
-        :param patient_query_dict: should be {'cohort_id': str(row['id])}
-        :return: patient_query_str, patient_query_tuple
+        :param case_query_dict: should be {'cohort_id': str(row['id])}
+        :return: case_query_str, case_query_tuple
         """
-        patients_query_str = 'SELECT case_barcode ' \
+        cases_query_str = 'SELECT case_barcode ' \
                              'FROM cohorts_samples '
 
-        patients_query_str += ' WHERE ' + '=%s AND '.join(key for key in patient_query_dict.keys()) + '=%s '
-        patient_query_tuple = tuple(value for value in patient_query_dict.values())
+        cases_query_str += ' WHERE ' + '=%s AND '.join(key for key in case_query_dict.keys()) + '=%s '
+        case_query_tuple = tuple(value for value in case_query_dict.values())
 
-        return patients_query_str, patient_query_tuple
+        return cases_query_str, case_query_tuple
 
     def build_samples_query(self, sample_query_dict):
         """
@@ -232,17 +232,17 @@ class CohortsGetListAPI(remote.Service):
         parent_id_data = CohortsGetListMessageBuilder().make_parent_id_list_from_cursor(
             cursor.fetchall(), row)
 
-        # get number of patients for each cohort
-        patient_query_str, patient_query_tuple = CohortsGetListQueryBuilder().build_patients_query(
+        # get number of cases for each cohort
+        case_query_str, case_query_tuple = CohortsGetListQueryBuilder().build_cases_query(
             {
                 'cohort_id':str(row['id'])
             }
         )
-        cursor.execute(patient_query_str, patient_query_tuple)
-        patient_count = len(cursor.fetchall())
-        patient_list = []
+        cursor.execute(case_query_str, case_query_tuple)
+        case_count = len(cursor.fetchall())
+        case_list = []
         for row in cursor.fetchall():
-            patient_list.append(row['case_barcode'])
+            case_list.append(row['case_barcode'])
 
         # get number of samples for each cohort
         sample_query_str, sample_query_tuple = CohortsGetListQueryBuilder().build_samples_query(
@@ -256,7 +256,7 @@ class CohortsGetListAPI(remote.Service):
         for row in cursor.fetchall():
             sample_list.append(row['sample_barcode'])
         
-        return parent_id_data, filter_data, patient_list, patient_count, sample_list, sample_count
+        return parent_id_data, filter_data, case_list, case_count, sample_list, sample_count
 
 class CohortsGetHelper(CohortsGetListAPI):
     GET_RESOURCE = endpoints.ResourceContainer(cohort_id=messages.IntegerField(1, required=True))
@@ -287,7 +287,7 @@ class CohortsGetHelper(CohortsGetListAPI):
                     "or {user_email} does not have permission to view it.".format(
                         id=cohort_id, user_email=user_email))
 
-            parent_id_data, filter_data, patient_list, _, sample_list, _ = self.get_cohort_details(cursor, row)
+            parent_id_data, filter_data, case_list, _, sample_list, _ = self.get_cohort_details(cursor, row)
 
             return CohortDetails(
                 id=str(row['id']),
@@ -300,9 +300,9 @@ class CohortsGetHelper(CohortsGetListAPI):
                 source_notes=str(row['source_notes']),
                 parent_id=parent_id_data,
                 filters=filter_data,
-                patient_count=len(patient_list),
+                case_count=len(case_list),
                 sample_count=len(sample_list),
-                patients=patient_list,
+                cases=case_list,
                 samples=sample_list
             )
 
@@ -338,7 +338,7 @@ class CohortsListHelper(CohortsGetListAPI):
             cursor, db = self.execute_getlist_query(param_map)
             data = []
             for row in cursor.fetchall():
-                parent_id_data, filter_data, _, patient_count, _, sample_count = self.get_cohort_details(cursor, row)
+                parent_id_data, filter_data, _, case_count, _, sample_count = self.get_cohort_details(cursor, row)
                 
                 data.append(
                     CohortDetails(
@@ -352,9 +352,9 @@ class CohortsListHelper(CohortsGetListAPI):
                         source_notes=str(row['source_notes']),
                         parent_id=parent_id_data,
                         filters=filter_data,
-                        patient_count=patient_count,
+                        case_count=case_count,
                         sample_count=sample_count,
-                        patients=None,
+                        cases=None,
                         samples=None
                     )
                 )

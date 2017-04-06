@@ -61,14 +61,14 @@ class SamplesGetQueryBuilder(object):
 
         return data_query_str
 
-    def build_patient_query(self, program):
+    def build_case_query(self, program):
 
-        patient_query_str = 'select case_barcode ' \
+        case_query_str = 'select case_barcode ' \
                             'from {}_metadata_biospecimen ' \
                             'where sample_barcode=%s ' \
                             'group by case_barcode'.format(program)
 
-        return patient_query_str
+        return case_query_str
 
 class DataDetails(messages.Message):
     file_gdc_id = messages.StringField(1)
@@ -107,7 +107,7 @@ class SamplesGetAPI(remote.Service):
         """
         Given a sample barcode (of length 16, *eg* TCGA-B9-7268-01A, for TCGA), this endpoint returns
         all available "biospecimen" information about this sample,
-        the associated patient barcode, a list of associated aliquots,
+        the associated case barcode, a list of associated aliquots,
         and a list of "data_details" blocks describing each of the data files associated with this sample
         """
         cursor = None
@@ -125,7 +125,7 @@ class SamplesGetAPI(remote.Service):
         aliquot_query_str = SamplesGetQueryBuilder().build_aliquot_query(param_list)
         biospecimen_query_str = SamplesGetQueryBuilder().build_biospecimen_query()
         data_query_str = SamplesGetQueryBuilder().build_data_query(param_list)
-        patient_query_str = SamplesGetQueryBuilder().build_patient_query()
+        case_query_str = SamplesGetQueryBuilder().build_case_query()
 
         try:
             db = sql_connection()
@@ -146,10 +146,10 @@ class SamplesGetAPI(remote.Service):
             cursor.execute(aliquot_query_str, extra_query_tuple)
             aliquot_list = [row['AliquotBarcode'] for row in cursor.fetchall()]
 
-            # get patient barcode (superfluous?)
-            cursor.execute(patient_query_str, query_tuple)
+            # get case barcode (superfluous?)
+            cursor.execute(case_query_str, query_tuple)
             row = cursor.fetchone()
-            patient_barcode = str(row["case_barcode"])
+            case_barcode = str(row["case_barcode"])
 
             # prepare to build list of data details messages
             cursor.execute(data_query_str, extra_query_tuple)
@@ -176,7 +176,7 @@ class SamplesGetAPI(remote.Service):
                                  biospecimen_data=biospecimen_data_item,
                                  data_details=data_details_list,
                                  data_details_count=len(data_details_list),
-                                 patient=patient_barcode)
+                                 case=case_barcode)
 
         except (IndexError, TypeError) as e:
             logger.info("Sample details for barcode {} not found. Error: {}".format(sample_barcode, e))
@@ -184,7 +184,7 @@ class SamplesGetAPI(remote.Service):
                 "Sample details for barcode {} not found.".format(sample_barcode))
         except MySQLdb.ProgrammingError as e:
             logger.warn(e)
-            raise endpoints.BadRequestException("Error retrieving biospecimen, patient, or other data. {}".format(e))
+            raise endpoints.BadRequestException("Error retrieving biospecimen, case, or other data. {}".format(e))
         finally:
             if cursor: cursor.close()
             if db and db.open: db.close()
