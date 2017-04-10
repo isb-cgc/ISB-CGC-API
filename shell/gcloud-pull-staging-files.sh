@@ -1,4 +1,4 @@
-./google-cloud-sdk/bin/gsutil cp "gs://${DEV_GCLOUD_BUCKET}/${DEV_APP_YAML}" ./app.yaml
+./google-cloud-sdk/bin/gsutil cp "gs://${DEV_GCLOUD_BUCKET}/${DEV_API_APP_YAML}" ./app.yaml
 ./google-cloud-sdk/bin/gsutil cp "gs://${DEV_GCLOUD_BUCKET}/${DEV_SECRETS_FILE}" ./client_secrets.json
 ./google-cloud-sdk/bin/gsutil cp "gs://${DEV_GCLOUD_BUCKET}/${DEV_JSON_FILE}" ./privatekey.json
 
