@@ -2,11 +2,16 @@
 __pycache__/
 *.py[~cod]
 
+# eclipse files
+.project
+.pydevproject
+
 # C extensions
 *.so
 
 # Distribution / packaging
 .Python
+doc/
 env/
 venv/
 build/
@@ -19,6 +24,7 @@ lib64/
 parts/
 sdist/
 var/
+*_diff.txt
 *.egg-info/
 .installed.cfg
 *.egg
