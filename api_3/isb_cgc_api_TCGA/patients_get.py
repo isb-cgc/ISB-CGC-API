@@ -37,4 +37,4 @@ class CasesGetAPI(CasesGetHelper):
         Takes a case barcode (of length 12, *eg* TCGA-B9-7268) as a required parameter.
         User does not need to be authenticated.
         """
-        return super(CasesGetAPI, self).get(request, CaseDetails, MetadataItem)
+        return super(CasesGetAPI, self).get(request, CaseDetails, MetadataItem, 'TCGA')

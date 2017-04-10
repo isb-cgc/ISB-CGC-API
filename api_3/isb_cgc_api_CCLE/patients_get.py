@@ -37,4 +37,4 @@ class CasesGetAPI(CasesGetHelper):
         Takes a case barcode (*eg* ACC-MESO-1) as a required parameter.
         User does not need to be authenticated.
         """
-        return super(CasesGetAPI, self).get(request, CaseDetails, MetadataItem)
+        return super(CasesGetAPI, self).get(request, CaseDetails, MetadataItem, 'CCLE')
