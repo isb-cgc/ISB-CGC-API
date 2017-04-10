@@ -106,28 +106,9 @@ class CohortsSamplesFilesMessageBuilder(object):
         bad_repo_count = 0
         bad_repo_set = set()
         for row in cursor_rows:
-            if not row.get('DataFileNameKey'):
+            if not row.get('file_name_key'):
                 continue
-
-            if 'controlled' not in str(row['SecurityProtocol']).lower():
-                # this may only be necessary for the vagrant db
-                path = row.get('DataFileNameKey') if row.get('DataFileNameKey') is None \
-                    else row.get('DataFileNameKey').replace('gs://' + settings.OPEN_DATA_BUCKET, '')
-                row['cloud_storage_path'] = "gs://{}{}".format(settings.OPEN_DATA_BUCKET, path)
-            else:
-                if row['Repository'].lower() == 'dcc':
-                    bucket_name = settings.DCC_CONTROLLED_DATA_BUCKET
-                elif row['Repository'].lower() == 'cghub':
-                    bucket_name = settings.CGHUB_CONTROLLED_DATA_BUCKET
-                else:
-                    bad_repo_count += 1
-                    bad_repo_set.add(row['Repository'])
-                    continue
-                # this may only be necessary for the vagrant db
-                path = row.get('DataFileNameKey') if row.get('DataFileNameKey') is None \
-                    else row.get('DataFileNameKey').replace('gs://' + bucket_name, '')
-
-                row['cloud_storage_path'] = "gs://{}{}".format(bucket_name, path)
+            row['cloud_storage_path'] = row.get('file_name_key')
         return bad_repo_count, bad_repo_set
 
 
