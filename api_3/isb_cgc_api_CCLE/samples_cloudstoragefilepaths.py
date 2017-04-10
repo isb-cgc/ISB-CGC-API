@@ -30,4 +30,4 @@ class SamplesCloudStorageFilePathsAPI(SamplesCloudStorageFilePathsHelper):
         Takes a sample barcode as a required parameter and
         returns cloud storage paths to files associated with that sample.
         """
-        return super(SamplesCloudStorageFilePathsAPI, self).cloud_storage_file_paths(request)
+        return super(SamplesCloudStorageFilePathsAPI, self).cloud_storage_file_paths(request, 'CCLE')

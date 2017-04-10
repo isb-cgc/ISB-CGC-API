@@ -30,4 +30,4 @@ class CohortsCloudStorageFilePathsAPI(CohortsCloudStorageFilePathsHelper):
         associated with all the samples in that cohort, up to a default limit of 10,000 files.
         Authentication is required. User must have READER or OWNER permissions on the cohort.
         """
-        return super(CohortsCloudStorageFilePathsAPI, self).cloud_storage_file_paths(request)
+        return super(CohortsCloudStorageFilePathsAPI, self).cloud_storage_file_paths(request, 'TCGA')

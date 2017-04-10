@@ -16,6 +16,7 @@ limitations under the License.
 
 """
 from collections import OrderedDict
+import httplib
 import logging
 import MySQLdb
 
@@ -42,7 +43,6 @@ logger = logging.getLogger(__name__)
 
 BASE_URL = settings.BASE_URL
 
-
 class GCSFilePathList(messages.Message):
     cloud_storage_file_paths = messages.StringField(1, repeated=True)
     count = messages.IntegerField(2, variant=messages.Variant.INT32)
@@ -55,35 +55,53 @@ class CloudStorageFilePathsAPI(remote.Service):
             param_map[param_name] = request.get_assigned_value(param_name)
         return param_map
 
-    def build_query(self, param_map):
-        '''
-        TODO: will need to add program and genomic build to method to add to metadata_data (union?), check changes to cohorts_samples
-        '''
-        query_str = 'SELECT DataFileNameKey, SecurityProtocol, Repository ' \
-                    'FROM metadata_data '
-        query_tuple = []
 
-        if 'sample_barcode' in param_map:
-            query_str += 'WHERE sample_barcode=%s '
-            query_tuple += [param_map['sample_barcode']]
-        else:
-            query_str += 'JOIN cohorts_samples ON metadata_data.sample_barcode=cohorts_samples.sample_barcode ' \
-                         'WHERE cohorts_samples.cohort_id=%s '
-            query_tuple += [param_map['cohort_id']]
-        query_str += 'AND file_name_key != "" AND file_name_key is not null '
-        for field, value in param_map:
-            if  field not in ['limit', 'cohort_id', 'sample_barcode']:
-                query_str += ' and metadata_data.{}=%s '.format(field)
-                query_tuple += [value]
-        query_str += ' GROUP BY DataFileNameKey, SecurityProtocol, Repository '
+    def get_genomic_builds(self, param_map):
+        builds = ['HG19', 'HG38']
+        if 'genomic_build' in param_map:
+            if 'HG19' == param_map['genomic_build'].upper():
+                builds = ['HG19']
+            elif 'HG38' == param_map['genomic_build'].upper():
+                builds = ['HG38']
+            else:
+                msg = 'Bad genomic build.  Acceptable genomic builds are HG19 and HG38.'
+                logger.warn(msg)
+                raise endpoints.BadRequestException("Error retrieving genomics data for cohort. {}".format(msg))
+        return builds
+
+    def build_query(self, param_map, program):
+        builds = self.get_genomic_builds(param_map)
+        final_query_str = ''
+        for build in builds:
+            query_str = 'SELECT md.file_name_key, md.access, program ' \
+                        'FROM {}_metadata_data_{} md '.format(program, build)
+            query_tuple = []
+    
+            if 'sample_barcode' in param_map:
+                query_str += 'WHERE sample_barcode=%s '
+                query_tuple += [param_map['sample_barcode']]
+            else:
+                query_str += 'JOIN cohorts_samples cs ON md.sample_barcode=cs.sample_barcode ' \
+                             'WHERE cs.cohort_id=%s '
+                query_tuple += [param_map['cohort_id']]
+            query_str += 'AND file_name_key != "" AND file_name_key is not null '
+            for field, value in param_map:
+                if  field not in ['limit', 'cohort_id', 'sample_barcode', 'genomic_build']:
+                    query_str += ' and md.{}=%s '.format(field)
+                    query_tuple += [value]
+            query_str += ' GROUP BY md.file_name_key, md.access, md.program '
+            if 0 < len(final_query_str):
+                final_query_str += ' UNION '
+            final_query_str += query_str
+        
         if 'limit' in param_map:
             query_str += ' LIMIT %s'  
             query_tuple += [param_map['limit']]
         else:
             query_str += ' LIMIT 10000'
-        return query_str, query_tuple
+        return final_query_str, query_tuple
 
-    def cloud_storage_file_paths(self, param_map):
+    def get_cloud_storage_file_paths(self, param_map, program):
         """
         Uses the param_map to pass to the query builder then executes the query to obtain the cloud
         storage file paths.  if cohort_id is on the parameter list, verifies that the calling user has
@@ -92,7 +110,7 @@ class CloudStorageFilePathsAPI(remote.Service):
         cursor = None
         db = None
 
-        query_str, query_tuple = self.build_query(param_map)
+        query_str, query_tuple = self.build_query(param_map, program)
 
         try:
             db = sql_connection()
@@ -105,7 +123,6 @@ class CloudStorageFilePathsAPI(remote.Service):
                 logger.warn("not returning {count} row(s) in sample_details due to repositories: {bad_repo_list}"
                             .format(count=bad_repo_count, bad_repo_list=list(bad_repo_set)))
             return GCSFilePathList(cloud_storage_file_paths=cloud_storage_path_list, count=len(cloud_storage_path_list))
-
         except (IndexError, TypeError), e:
             logger.warn(e)
             raise endpoints.NotFoundException("File paths for cohort {} not found.".format(param_map['cohort_id']))
@@ -127,23 +144,23 @@ class SamplesCloudStorageFilePathsHelper(CloudStorageFilePathsAPI):
         experimental_strategy=messages.StringField(4),
         data_format=messages.StringField(5),
         platform=messages.StringField(6),
-        endpoint_type=messages.StringField(7),
+        genomic_build=messages.StringField(7),
         analysis_workflow_type=messages.StringField(8)
     )
 
-    def cloud_storage_file_paths(self, request):
+    def cloud_storage_file_paths(self, request, program):
         param_map = self.setup_param_map(request, [
                 'data_type', 
                 'data_category', 
                 'experimental_strategy', 
                 'data_format', 
                 'platform', 
-                'endpoint_type', 
+                'genomic_build', 
                 'analysis_workflow_type', 
                 'sample_barcode'
             ]
         )
-        self.cloud_storage_file_paths(param_map)
+        return self.get_cloud_storage_file_paths(param_map, program)
     
 class CohortsCloudStorageFilePathsHelper(CloudStorageFilePathsAPI):
 
@@ -155,7 +172,7 @@ class CohortsCloudStorageFilePathsHelper(CloudStorageFilePathsAPI):
         experimental_strategy=messages.StringField(5),
         data_format=messages.StringField(6),
         platform=messages.StringField(7),
-        endpoint_type=messages.StringField(8),
+        genomic_build=messages.StringField(8),
         analysis_workflow_type=messages.StringField(9)
     )
 
@@ -184,18 +201,18 @@ class CohortsCloudStorageFilePathsHelper(CloudStorageFilePathsAPI):
         finally:
             request_finished.send(self)
     
-    def cloud_storage_file_paths(self, request):
-        param_map = self.setup_param_map(request, [
+    def cloud_storage_file_paths(self, request, program):
+        param_map = self.setup_param_map(request, program, [
                 'data_type', 
                 'data_category', 
                 'experimental_strategy', 
                 'data_format', 
                 'platform', 
-                'endpoint_type', 
+                'genomic_build', 
                 'analysis_workflow_type', 
                 'limit', 
                 'cohort_id'
             ]
         )
         self.validate_user(param_map['cohort_id'])
-        self.cloud_storage_file_paths(param_map)
+        self.get_cloud_storage_file_paths(param_map, program)
