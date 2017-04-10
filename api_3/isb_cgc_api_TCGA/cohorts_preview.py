@@ -34,5 +34,5 @@ class CohortsPreviewAPI(CohortsPreviewHelper):
         Authentication is not required.
         """
         self.program = 'TCGA'
-        self. shared_fields = shared_fields
+        self.shared_fields = shared_fields
         return super(CohortsPreviewAPI, self).preview(request)

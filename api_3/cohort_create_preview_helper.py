@@ -31,8 +31,10 @@ from django.core.signals import request_finished
 from api_3.cohort_endpoint_helpers import are_there_bad_keys, are_there_no_acceptable_keys, construct_parameter_error_message
 
 from api_3.api_helpers import sql_connection, WHITELIST_RE
-from cohorts.models import Cohort as Django_Cohort, Cohort_Perms, Samples, Filters
 from bq_data_access.cohort_bigquery import BigQueryCohortSupport
+from cohorts.models import Cohort as Django_Cohort, Cohort_Perms, Samples, Filters
+from projects.models import Program, Project
+from pandas.io.tests.test_gbq import _get_project_id
 
 logger = logging.getLogger(__name__)
 
@@ -71,7 +73,7 @@ class CohortsCreatePreviewAPI(remote.Service):
         that meet the criteria specified in the request body.
         Returns case query string,  sample query string, value tuple.
         """
-        sample_query_str = 'SELECT sample_barcode, c.case_barcode ' \
+        sample_query_str = 'SELECT sample_barcode, c.case_barcode, c.project_short_name as project_id ' \
                            'FROM {0}_metadata_clinical c join {0}_metadata_biospecimen b on c.case_barcode = b.case_barcode ' \
                            'WHERE '.format(program)
         value_tuple = ()
@@ -154,6 +156,16 @@ class CohortsCreateHelper(CohortsCreatePreviewAPI):
         case_count = messages.IntegerField(5, variant=messages.Variant.INT32)
         sample_count = messages.IntegerField(6, variant=messages.Variant.INT32)
     
+
+    def get_project_id(self, project_short_name):
+        # get the ISB superuser
+        isb_superuser = Django_User.objects.get(username='isb', is_staff=True, is_superuser=True, is_active=True)
+        # get the program
+        program = Program.objects.get(name='NAME', is_public=True, active=True, owner=isb_superuser)
+        # get the project
+        project = Project.objects.get(name=project_short_name[project_short_name.find('-') + 1:], active=True, owner=isb_superuser, program=program)
+        return project
+
     def create(self, request):
         """
         Creates and saves a cohort. Takes a JSON object in the request body to use as the cohort's filters.
@@ -178,9 +190,9 @@ class CohortsCreateHelper(CohortsCreatePreviewAPI):
         finally:
             request_finished.send(self)
 
+        # get the sample barcode information for use in creating the sample list for the cohort
         rows, query_dict, lte_query_dict, gte_query_dict = self.query_samples(request)
-        # TODO: We need to adjust this to pull the correct project ID as well
-        sample_barcodes = [{'sample_barcode': row['sample_barcode'], 'case_barcode': row['case_barcode'], 'project_id': None,} for row in rows]
+        sample_barcodes = [{'sample_barcode': row['sample_barcode'], 'case_barcode': row['case_barcode'], 'project_id': self.get_project_id(row['project_id'])} for row in rows]
         cohort_name = request.get_assigned_value('name')
 
         # Validate the cohort name against a whitelist
@@ -200,12 +212,11 @@ class CohortsCreateHelper(CohortsCreatePreviewAPI):
 
         # todo: maybe create all objects first, then save them all at the end?
         # 1. create new cohorts_cohort with name, active=True, last_date_saved=now
-        created_cohort = Django_Cohort.objects.create(name=cohort_name, active=True,
-                                                      last_date_saved=datetime.utcnow())
+        created_cohort = Django_Cohort.objects.create(name=cohort_name, active=True, last_date_saved=datetime.utcnow())
         created_cohort.save()
 
         # 2. insert samples into cohort_samples
-        sample_list = [Samples(cohort=created_cohort, sample_barcode=sample['sample_barcode'], case_barcode=sample['case_barcode'], project_id=sample['project_id']) for sample in sample_barcodes]
+        sample_list = [Samples(cohort=created_cohort, sample_barcode=sample['sample_barcode'], case_barcode=sample['case_barcode'], project=sample['project_id']) for sample in sample_barcodes]
         Samples.objects.bulk_create(sample_list)
 
         # 3. Set permission for user to be owner
@@ -267,4 +278,3 @@ class CohortsPreviewHelper(CohortsCreatePreviewAPI):
                                          case_count=len(case_barcodes),
                                          samples=sample_barcodes,
                                          sample_count=len(sample_barcodes))
-

@@ -34,5 +34,5 @@ class CohortsPreviewAPI(CohortsPreviewHelper):
         Authentication is not required.
         """
         self.program = 'TARGET'
-        self. shared_fields = shared_fields
+        self.shared_fields = shared_fields
         return super(CohortsPreviewAPI, self).preview(request)
