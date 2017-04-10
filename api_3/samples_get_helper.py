@@ -31,11 +31,16 @@ logger = logging.getLogger(__name__)
 class SamplesGetQueryBuilder(object):
     def build_aliquot_query(self, program, param_list):
 
-        aliquot_query_str = 'select AliquotBarcode ' \
-                            'from {}_metadata_data '.format(program) 
-        for column in param_list:
-            aliquot_query_str += ' and {}=%s '.format(column)
-        aliquot_query_str += ' group by AliquotBarcode'
+        aliquot_query_str = ''
+        for genomic_build in ['HG19', 'HG38']:
+            part_aliquot_query_str = 'select aliquot_barcode ' \
+                             'from {}_metadata_data_{} ' \
+                             'and file_name_key is not null and file_name_key !="" '.format(program, genomic_build)
+            for column in param_list:
+                part_aliquot_query_str += ' and {}=%s '.format(column)
+            if 0 < aliquot_query_str:
+                aliquot_query_str += ' union '
+            aliquot_query_str += part_aliquot_query_str
 
         return aliquot_query_str
 
@@ -49,15 +54,16 @@ class SamplesGetQueryBuilder(object):
 
     def build_data_query(self, program, datadict_class, param_list):
 
-        data_query_str = 'select {0} ' \
-                         'from {1}_metadata_data_HG19 ' \
-                         'and file_name_key is not null and file_name_key !="" ' \
-                         'union ' \
-                         'select {0} ' \
-                         'from {1}_metadata_data_HG38 ' \
-                         'and file_name_key is not null and file_name_key !="" '.format(', '.join(field.name for field in datadict_class.all_fields()), program)
-        for column in param_list:
-            data_query_str += ' and {}=%s '.format(column)
+        data_query_str = ''
+        for genomic_build in ['HG19', 'HG38']:
+            part_data_query_str = 'select {0} ' \
+                             'from {1}_metadata_data_{2} ' \
+                             'and file_name_key is not null and file_name_key !="" '.format(', '.join(field.name for field in datadict_class.all_fields()), program, genomic_build)
+            for column in param_list:
+                part_data_query_str += ' and {}=%s '.format(column)
+            if 0 < data_query_str:
+                data_query_str += ' union '
+            data_query_str += part_data_query_str
 
         return data_query_str
 
@@ -117,14 +123,16 @@ class SamplesGetAPI(remote.Service):
         param_list = ['sample_barcode']
         query_tuple = [sample_barcode]
         extra_query_tuple = query_tuple
-        for column in SamplesGetQueryBuilder.where_columns:
-            if request.get_assigned_value(column):
-                param_list += [column]
-                extra_query_tuple += [request.get_assigned_value(column)]
-
-        aliquot_query_str = SamplesGetQueryBuilder().build_aliquot_query(param_list)
-        biospecimen_query_str = SamplesGetQueryBuilder().build_biospecimen_query()
-        data_query_str = SamplesGetQueryBuilder().build_data_query(param_list)
+        for field in request.all_fields():
+            if 'sample_barcode' != field.name and request.get_assigned_value(field.name):
+                param_list += [field.name]
+                extra_query_tuple += [request.get_assigned_value(field.name)]
+        # need to take into account params used in the union between the genomic builds
+        extra_query_tuple += extra_query_tuple
+        
+        aliquot_query_str = SamplesGetQueryBuilder().build_aliquot_query(program, param_list)
+        biospecimen_query_str = SamplesGetQueryBuilder().build_biospecimen_query(program)
+        data_query_str = SamplesGetQueryBuilder().build_data_query(program, DataDetails(), param_list)
         case_query_str = SamplesGetQueryBuilder().build_case_query()
 
         try:
@@ -137,7 +145,7 @@ class SamplesGetAPI(remote.Service):
             if row is None:
                 cursor.close()
                 db.close()
-                error_message = "Sample barcode {} not found in metadata_biospecimen table.".format(query_tuple[0])
+                error_message = "Sample barcode {} not found in {}_metadata_biospecimen table.".format(query_tuple[0], self.program)
                 raise endpoints.NotFoundException(error_message)
             constructor_dict = build_constructor_dict_for_message(MetadataItem(), row)
             biospecimen_data_item = MetadataItem(**constructor_dict)
