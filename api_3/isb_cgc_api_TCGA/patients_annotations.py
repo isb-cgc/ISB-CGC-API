@@ -41,7 +41,7 @@ class CasesAnnotationsQueryBuilder(object):
     @staticmethod
     def build_metadata_query():
         query_str = 'select case_barcode ' \
-                    'from metadata_clinical ' \
+                    'from TCGA_metadata_clinical ' \
                     'where case_barcode=%s '
 
         return query_str

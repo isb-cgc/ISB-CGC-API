@@ -39,7 +39,9 @@ class AliquotsAnnotationsQueryBuilder(object):
 
     @staticmethod
     def build_metadata_query():
-        return 'select * from TCGA_metadata_data_HG19 where aliquot_barcode=%s '
+        return 'select * from TCGA_metadata_data_HG19 where aliquot_barcode=%s ' \
+            'union ' \
+            'select * from TCGA_metadata_data_HG38 where aliquot_barcode=%s'
 
 @ISB_CGC_TCGA_Endpoints.api_class(resource_name='aliquots')
 class AliquotsAnnotationAPI(AnnotationAPI):
