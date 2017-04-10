@@ -32,7 +32,7 @@ echo "Dependencies Installed"
 echo "Installing Python Libraries..."
 curl --silent https://bootstrap.pypa.io/get-pip.py | python
 pip install -q -r ${HOMEROOT}/requirements.txt -t ${HOMEROOT}/lib --upgrade --only-binary all
-pip install -t lib google-endpoints --ignore-installed
+pip install -t lib google-endpoints --ignore-installed --upgrade
 echo "Libraries Installed"
 
 # Install Google App Engine
