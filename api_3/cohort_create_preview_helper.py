@@ -34,7 +34,6 @@ from api_3.api_helpers import sql_connection, WHITELIST_RE
 from bq_data_access.cohort_bigquery import BigQueryCohortSupport
 from cohorts.models import Cohort as Django_Cohort, Cohort_Perms, Samples, Filters
 from projects.models import Program, Project
-from pandas.io.tests.test_gbq import _get_project_id
 
 logger = logging.getLogger(__name__)
 
@@ -157,11 +156,17 @@ class CohortsCreateHelper(CohortsCreatePreviewAPI):
         sample_count = messages.IntegerField(6, variant=messages.Variant.INT32)
     
 
-    def get_project_id(self, project_short_name):
+    def get_program(self, program_name):
         # get the ISB superuser
         isb_superuser = Django_User.objects.get(username='isb', is_staff=True, is_superuser=True, is_active=True)
         # get the program
-        program = Program.objects.get(name='NAME', is_public=True, active=True, owner=isb_superuser)
+        return Program.objects.get(name=program_name, is_public=True, active=True, owner=isb_superuser)
+
+    def get_project(self, project_short_name):
+        # get the ISB superuser
+        isb_superuser = Django_User.objects.get(username='isb', is_staff=True, is_superuser=True, is_active=True)
+        # get the program
+        program = self.get_program(project_short_name.split('-')[0])
         # get the project
         project = Project.objects.get(name=project_short_name[project_short_name.find('-') + 1:], active=True, owner=isb_superuser, program=program)
         return project
@@ -192,7 +197,7 @@ class CohortsCreateHelper(CohortsCreatePreviewAPI):
 
         # get the sample barcode information for use in creating the sample list for the cohort
         rows, query_dict, lte_query_dict, gte_query_dict = self.query_samples(request)
-        sample_barcodes = [{'sample_barcode': row['sample_barcode'], 'case_barcode': row['case_barcode'], 'project_id': self.get_project_id(row['project_id'])} for row in rows]
+        sample_barcodes = [{'sample_barcode': row['sample_barcode'], 'case_barcode': row['case_barcode'], 'project_id': self.get_project(row['project_id'])} for row in rows]
         cohort_name = request.get_assigned_value('name')
 
         # Validate the cohort name against a whitelist
@@ -228,11 +233,11 @@ class CohortsCreateHelper(CohortsCreatePreviewAPI):
         for key, value_list in query_dict.items():
             for val in value_list:
                 filter_data.append(self.FilterDetails(name=key, value=str(val)))
-                Filters.objects.create(resulting_cohort=created_cohort, name=key, value=val).save()
+                Filters.objects.create(resulting_cohort=created_cohort, name=key, value=val, program=self.get_program(self.program)).save()
 
         for key, val in [(k + '_lte', v) for k, v in lte_query_dict.items()] + [(k + '_gte', v) for k, v in gte_query_dict.items()]:
             filter_data.append(self.FilterDetails(name=key, value=str(val)))
-            Filters.objects.create(resulting_cohort=created_cohort, name=key, value=val).save()
+            Filters.objects.create(resulting_cohort=created_cohort, name=key, value=val, program=self.get_program(self.program)).save()
 
         # 5. Store cohort to BigQuery
         project_id = settings.BQ_PROJECT_ID
