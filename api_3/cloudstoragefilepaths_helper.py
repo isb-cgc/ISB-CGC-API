@@ -29,7 +29,8 @@ import django
 from django.conf import settings
 from django.core.signals import request_finished
 from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
-from django.contrib.auth.models import User as Django_User
+from sharing.models import User
+# from django.contrib.auth.models import User as Django_User
 try:
     from protorpc import remote, messages
 except Exception as e:
@@ -188,7 +189,7 @@ class CohortsCloudStorageFilePathsHelper(CloudStorageFilePathsAPI):
 
         django.setup()
         try:
-            user_id = Django_User.objects.get(email=user_email).id
+            user_id = User.objects.get(email=user_email).id
             Django_Cohort.objects.get(id=cohort_id)
             Cohort_Perms.objects.get(cohort_id=cohort_id, user_id=user_id)
         except (ObjectDoesNotExist, MultipleObjectsReturned), e:
