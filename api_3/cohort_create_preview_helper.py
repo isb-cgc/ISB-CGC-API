@@ -140,21 +140,21 @@ class CohortsCreatePreviewAPI(remote.Service):
         
         return rows, query_dict, lte_query_dict, gte_query_dict
     
+class FilterDetails(messages.Message):
+    name = messages.StringField(1)
+    value = messages.StringField(2)
+
+class CreatedCohort(messages.Message):
+    id = messages.StringField(1)
+    name = messages.StringField(2)
+    last_date_saved = messages.StringField(3)
+    filters = messages.MessageField(FilterDetails, 4, repeated=True)
+    case_count = messages.IntegerField(5, variant=messages.Variant.INT32)
+    sample_count = messages.IntegerField(6, variant=messages.Variant.INT32)
+
 class CohortsCreateHelper(CohortsCreatePreviewAPI):
     BASE_URL = settings.BASE_URL
     
-    class FilterDetails(messages.Message):
-        name = messages.StringField(1)
-        value = messages.StringField(2)
-    
-    class CreatedCohort(messages.Message):
-        id = messages.StringField(1)
-        name = messages.StringField(2)
-        last_date_saved = messages.StringField(3)
-        filters = messages.MessageField(CohortsCreateHelper.FilterDetails, 4, repeated=True)
-        case_count = messages.IntegerField(5, variant=messages.Variant.INT32)
-        sample_count = messages.IntegerField(6, variant=messages.Variant.INT32)
-
     def get_program(self, program_name):
         # get the ISB superuser
         isb_superuser = Django_User.objects.get(username='isb', is_staff=True, is_superuser=True, is_active=True)
@@ -231,11 +231,11 @@ class CohortsCreateHelper(CohortsCreatePreviewAPI):
         filter_data = []
         for key, value_list in query_dict.items():
             for val in value_list:
-                filter_data.append(self.FilterDetails(name=key, value=str(val)))
+                filter_data.append(FilterDetails(name=key, value=str(val)))
                 Filters.objects.create(resulting_cohort=created_cohort, name=key, value=val, program=self.get_program(self.program)).save()
 
         for key, val in [(k + '_lte', v) for k, v in lte_query_dict.items()] + [(k + '_gte', v) for k, v in gte_query_dict.items()]:
-            filter_data.append(self.FilterDetails(name=key, value=str(val)))
+            filter_data.append(FilterDetails(name=key, value=str(val)))
             Filters.objects.create(resulting_cohort=created_cohort, name=key, value=val, program=self.get_program(self.program)).save()
 
         # 5. Store cohort to BigQuery
@@ -246,13 +246,14 @@ class CohortsCreateHelper(CohortsCreatePreviewAPI):
 
         request_finished.send(self)
 
-        return self.CreatedCohort(id=str(created_cohort.id),
-                             name=cohort_name,
-                             last_date_saved=str(datetime.utcnow()),
-                             filters=filter_data,
-                             case_count=created_cohort.case_size(),
-                             sample_count=len(sample_barcodes)
-                             )
+        return CreatedCohort(
+            id=str(created_cohort.id),
+            name=cohort_name,
+            last_date_saved=str(datetime.utcnow()),
+            filters=filter_data,
+            case_count=created_cohort.case_size(),
+            sample_count=len(sample_barcodes)
+        )
     
 class CohortsPreviewHelper(CohortsCreatePreviewAPI):
     class CohortCasesSamplesList(messages.Message):
