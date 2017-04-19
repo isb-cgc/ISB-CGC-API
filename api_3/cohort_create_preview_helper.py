@@ -151,10 +151,9 @@ class CohortsCreateHelper(CohortsCreatePreviewAPI):
         id = messages.StringField(1)
         name = messages.StringField(2)
         last_date_saved = messages.StringField(3)
-        filters = messages.MessageField(FilterDetails, 4, repeated=True)
+        filters = messages.MessageField(CohortsCreateHelper.FilterDetails, 4, repeated=True)
         case_count = messages.IntegerField(5, variant=messages.Variant.INT32)
         sample_count = messages.IntegerField(6, variant=messages.Variant.INT32)
-    
 
     def get_program(self, program_name):
         # get the ISB superuser
