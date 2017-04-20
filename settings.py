@@ -1,5 +1,5 @@
 """
-Copyright 2016, Institute for Systems Biology
+Copyright 2017, Institute for Systems Biology
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
@@ -10,15 +10,16 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
-# Django settings for GAE_Django17 project.
-import os
 
+import os
+import sys
 import django
 
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY')
 DEBUG = os.environ.get('DEBUG')
 TEMPLATE_DEBUG = DEBUG
+
 ALLOWED_HOSTS = [
     os.environ.get('ALLOWED_HOST')
 ]
@@ -26,9 +27,15 @@ ALLOWED_HOSTS = [
 ### added for connecting to CloudSQL with SSL certs on MVM platform
 SSL_DIR = os.path.abspath(os.path.dirname(__file__))+os.sep
 
+print >> sys.stdout, "GAE_INSTANCE: "+os.getenv('GAE_INSTANCE', '')
+
+APP_ENGINE = 'ae-'
+IS_APP_ENGINE = os.getenv('GAE_INSTANCE', '').startswith(APP_ENGINE)
+
 #ADMINS = (
     # ('Your Name', 'your_email@example.com'),
 #)
+
 ADMINS = ()
 MANAGERS = ADMINS
 
@@ -73,6 +80,17 @@ if os.environ.has_key('DB_SSL_CERT'):
             'key': os.environ.get('DB_SSL_KEY')
         }
     }
+
+DB_SOCKET = DATABASES['default']['HOST'] if 'cloudsql' in DATABASES['default']['HOST'] else None
+
+IS_DEV = bool(os.environ.get('IS_DEV', False))
+
+# Default to localhost for the site ID
+SITE_ID = 3
+
+if IS_APP_ENGINE:
+    print >> sys.stdout, "[STATUS] AppEngine detected."
+    SITE_ID = 4
 
 # For running local unit tests for models
 import sys
