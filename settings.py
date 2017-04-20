@@ -35,6 +35,7 @@ IS_APP_ENGINE = os.getenv('GAE_INSTANCE', '').startswith(APP_ENGINE)
 #ADMINS = (
     # ('Your Name', 'your_email@example.com'),
 #)
+
 ADMINS = ()
 MANAGERS = ADMINS
 
