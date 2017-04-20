@@ -26,6 +26,7 @@ from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 from django.contrib.auth.models import User as Django_User
 from django.core.signals import request_finished
 from protorpc import remote, messages
+        
 from api_3.cohort_endpoint_helpers import FilterDetails
 from api_3.api_helpers import sql_connection
 
@@ -261,7 +262,6 @@ class CohortsGetListAPI(remote.Service):
 class CohortsGetHelper(CohortsGetListAPI):
     GET_RESOURCE = endpoints.ResourceContainer(cohort_id=messages.IntegerField(1, required=True))
 
-    @endpoints.method(GET_RESOURCE, CohortDetails, http_method='GET', path='cohorts/{cohort_id}')
     def get(self, request):
         """
         Returns information about a specific cohort the user has READER or OWNER permission on
