@@ -21,7 +21,7 @@ from api_3.isb_cgc_api_TCGA.isb_cgc_api_helpers import ISB_CGC_TCGA_Endpoints
 from message_classes import MetadataRangesItem, shared_fields
 
 @ISB_CGC_TCGA_Endpoints.api_class(resource_name='cohorts')
-class CohortsPreviewAPI(CohortsPreviewHelper):
+class TCGA_CohortsPreviewAPI(CohortsPreviewHelper):
 
     GET_RESOURCE = endpoints.ResourceContainer(**{field.name: field for field in MetadataRangesItem.all_fields()})
 
@@ -35,4 +35,4 @@ class CohortsPreviewAPI(CohortsPreviewHelper):
         """
         self.program = 'TCGA'
         self.shared_fields = shared_fields
-        return super(CohortsPreviewAPI, self).preview(request)
+        return super(TCGA_CohortsPreviewAPI, self).preview(request)

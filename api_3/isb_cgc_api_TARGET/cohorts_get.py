@@ -20,11 +20,11 @@ from api_3.isb_cgc_api_TARGET.isb_cgc_api_helpers import ISB_CGC_TARGET_Endpoint
 from api_3.cohort_get_list_helper import CohortDetails, CohortsGetHelper
 
 @ISB_CGC_TARGET_Endpoints.api_class(resource_name='cohorts')
-class CohortsGetAPI(CohortsGetHelper):
+class TARGET_CohortsGetAPI(CohortsGetHelper):
     @endpoints.method(CohortsGetHelper.GET_RESOURCE, CohortDetails, http_method='GET', path='cohorts/{cohort_id}')
     def get(self, request):
         """
         Returns information about a specific cohort the user has READER or OWNER permission on
         when given a cohort ID. Authentication is required.
         """
-        return super(CohortsGetAPI, self).get(request)
+        return super(TARGET_CohortsGetAPI, self).get(request)
