@@ -21,7 +21,7 @@ from api_3.isb_cgc_api_TARGET.isb_cgc_api_helpers import ISB_CGC_TARGET_Endpoint
 from api_3.cloudstoragefilepaths_helper import GCSFilePathList, CohortsCloudStorageFilePathsHelper
 
 @ISB_CGC_TARGET_Endpoints.api_class(resource_name='cohorts')
-class CohortsCloudStorageFilePathsAPI(CohortsCloudStorageFilePathsHelper):
+class TARGET_CohortsCloudStorageFilePathsAPI(CohortsCloudStorageFilePathsHelper):
     @endpoints.method(CohortsCloudStorageFilePathsHelper.GET_RESOURCE, GCSFilePathList,  http_method='GET',
                       path='cohorts/{cohort_id}/cloud_storage_file_paths')
     def cloud_storage_file_paths(self, request):
@@ -30,4 +30,4 @@ class CohortsCloudStorageFilePathsAPI(CohortsCloudStorageFilePathsHelper):
         associated with all the samples in that cohort, up to a default limit of 10,000 files.
         Authentication is required. User must have READER or OWNER permissions on the cohort.
         """
-        return super(CohortsCloudStorageFilePathsAPI, self).cloud_storage_file_paths(request, 'TARGET')
+        return super(TARGET_CohortsCloudStorageFilePathsAPI, self).cloud_storage_file_paths(request, 'TARGET')

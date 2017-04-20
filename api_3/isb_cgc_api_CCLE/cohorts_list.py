@@ -22,7 +22,7 @@ from api_3.cohort_get_list_helper import CohortDetailsList, CohortsListHelper
 from api_3.isb_cgc_api_CCLE.isb_cgc_api_helpers import ISB_CGC_CCLE_Endpoints
 
 @ISB_CGC_CCLE_Endpoints.api_class(resource_name='cohorts')
-class CohortsListAPI(CohortsListHelper):
+class CCLE_CohortsListAPI(CohortsListHelper):
     @endpoints.method(message_types.VoidMessage, CohortDetailsList, http_method='GET', path='cohorts')
     def list(self, unused_request):
         """
@@ -30,4 +30,4 @@ class CohortsListAPI(CohortsListHelper):
         Authentication is required. Optionally takes a cohort id as a parameter to
         only list information about one cohort.
         """
-        return super(CohortsListAPI, self).list(unused_request)
+        return super(CCLE_CohortsListAPI, self).list(unused_request)

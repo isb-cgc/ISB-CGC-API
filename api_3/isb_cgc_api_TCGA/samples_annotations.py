@@ -48,7 +48,7 @@ class SamplesAnnotationsQueryBuilder(object):
 
 
 @ISB_CGC_TCGA_Endpoints.api_class(resource_name='samples')
-class SamplesAnnotationAPI(AnnotationAPI):
+class TCGA_SamplesAnnotationAPI(AnnotationAPI):
 
     GET_RESOURCE = endpoints.ResourceContainer(sample_barcode=messages.StringField(1, required=True),
                                                entity_type=messages.StringField(2, repeated=True))

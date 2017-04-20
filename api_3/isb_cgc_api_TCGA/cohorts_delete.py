@@ -20,10 +20,10 @@ from api_3.cohorts_delete_helper import CohortsDeleteHelper, ReturnJSON
 from api_3.isb_cgc_api_TCGA.isb_cgc_api_helpers import ISB_CGC_TCGA_Endpoints
 
 @ISB_CGC_TCGA_Endpoints.api_class(resource_name='cohorts')
-class CohortsDeleteAPI(CohortsDeleteHelper):
+class TCGA_CohortsDeleteAPI(CohortsDeleteHelper):
     @endpoints.method(CohortsDeleteHelper.DELETE_RESOURCE, ReturnJSON, http_method='DELETE', path='cohorts/{cohort_id}')
     def delete(self, request):
         """
         Deletes a cohort. User must have owner permissions on the cohort.
         """
-        return super(CohortsDeleteAPI, self).delete(request)
+        return super(TCGA_CohortsDeleteAPI, self).delete(request)
