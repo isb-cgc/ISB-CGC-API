@@ -17,7 +17,7 @@ limitations under the License.
 import endpoints
 from protorpc import messages
 
-from api_3.cohort_create_preview_helper import CohortsCreateHelper
+from api_3.cohort_create_preview_helper import CohortsCreateHelper, CreatedCohort
 from api_3.isb_cgc_api_CCLE.isb_cgc_api_helpers import ISB_CGC_CCLE_Endpoints
 from api_3.isb_cgc_api_TARGET.message_classes import MetadataRangesItem, shared_fields
 
@@ -25,7 +25,7 @@ from api_3.isb_cgc_api_TARGET.message_classes import MetadataRangesItem, shared_
 class CohortsCreateAPI(CohortsCreateHelper):
     POST_RESOURCE = endpoints.ResourceContainer(MetadataRangesItem, name=messages.StringField(2, required=True))
 
-    @endpoints.method(POST_RESOURCE, CohortsCreateHelper.CreatedCohort, path='cohorts/create', http_method='POST')
+    @endpoints.method(POST_RESOURCE, CreatedCohort, path='cohorts/create', http_method='POST')
     def create(self, request):
         """
         Creates and saves a cohort. Takes a JSON object in the request body to use as the cohort's filters.
