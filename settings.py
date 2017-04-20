@@ -13,7 +13,6 @@ limitations under the License.
 
 import os
 import sys
-import django
 
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY')
@@ -368,6 +367,3 @@ SITE_SUPERUSER_PASSWORD = os.environ.get('SU_PASS')
 ############################
 
 CONN_MAX_AGE = 0
-
-# Initialize Django (when running ISB-CGC-API as standalone using dev_appserver.py)
-django.setup()
