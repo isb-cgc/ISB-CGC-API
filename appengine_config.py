@@ -1,5 +1,6 @@
 import os
 import sys
+import django
 
 from google.appengine.ext import vendor
 # Add any libraries installed in the "lib" folder.
@@ -14,3 +15,6 @@ SHARED_SOURCE_DIRECTORIES = [
 # Add the shared Django application subdirectory to the Python module search path
 for path in SHARED_SOURCE_DIRECTORIES:
     sys.path.append(path)
+
+# Initialize Django (when running ISB-CGC-API as standalone using dev_appserver.py)
+django.setup()
