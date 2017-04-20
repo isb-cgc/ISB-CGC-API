@@ -21,7 +21,7 @@ from api_3.isb_cgc_api_TCGA.isb_cgc_api_helpers import ISB_CGC_TCGA_Endpoints
 from api_3.cloudstoragefilepaths_helper import GCSFilePathList, SamplesCloudStorageFilePathsHelper
 
 @ISB_CGC_TCGA_Endpoints.api_class(resource_name='samples')
-class SamplesCloudStorageFilePathsAPI(SamplesCloudStorageFilePathsHelper):
+class TCGA_SamplesCloudStorageFilePathsAPI(SamplesCloudStorageFilePathsHelper):
 
     @endpoints.method(SamplesCloudStorageFilePathsHelper.GET_RESOURCE, GCSFilePathList,
                       path='samples/{sample_barcode}/cloud_storage_file_paths', http_method='GET')
@@ -30,4 +30,4 @@ class SamplesCloudStorageFilePathsAPI(SamplesCloudStorageFilePathsHelper):
         Takes a sample barcode as a required parameter and
         returns cloud storage paths to files associated with that sample.
         """
-        return super(SamplesCloudStorageFilePathsAPI, self).cloud_storage_file_paths(request, 'TCGA')
+        return super(TCGA_SamplesCloudStorageFilePathsAPI, self).cloud_storage_file_paths(request, 'TCGA')

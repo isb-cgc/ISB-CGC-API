@@ -30,7 +30,7 @@ class SampleDetails(messages.Message):
     data_details_count = messages.IntegerField(5, variant=messages.Variant.INT32)
 
 @ISB_CGC_TARGET_Endpoints.api_class(resource_name='samples')
-class SamplesGetAPI(SamplesGetAPI):
+class TARGET_SamplesGetAPI(SamplesGetAPI):
     @endpoints.method(SamplesGetAPI.GET_RESOURCE, SampleDetails, path='samples/{sample_barcode}', http_method='GET')
     def get(self, request):
         """
@@ -39,4 +39,4 @@ class SamplesGetAPI(SamplesGetAPI):
         the associated case barcode, a list of associated aliquots,
         and a list of "data_details" blocks describing each of the data files associated with this sample
         """
-        return super(SamplesGetAPI, self).get(request, 'TARGET', SampleDetails, MetadataItem)
+        return super(TARGET_SamplesGetAPI, self).get(request, 'TARGET', SampleDetails, MetadataItem)

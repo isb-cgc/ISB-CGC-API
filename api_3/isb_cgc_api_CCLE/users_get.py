@@ -22,11 +22,11 @@ from api_3.users_get_common import UserGetAPICommon, UserGetAPIReturnJSON
 from api_3.isb_cgc_api_CCLE.isb_cgc_api_helpers import ISB_CGC_CCLE_Endpoints
 
 @ISB_CGC_CCLE_Endpoints.api_class(resource_name='users')
-class UserGetAPI(UserGetAPICommon):
+class CCLE_UserGetAPI(UserGetAPICommon):
 
     @endpoints.method(message_types.VoidMessage, UserGetAPIReturnJSON, http_method='GET', path='users')
     def get(self, request):
         '''
         Returns the dbGaP authorization status of the user.
         '''
-        return super(UserGetAPI, self).get(request)
+        return super(CCLE_UserGetAPI, self).get(request)
