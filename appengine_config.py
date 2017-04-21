@@ -1,6 +1,5 @@
 import os
 import sys
-import django
 from google.appengine.ext import vendor
 
 # Per https://github.com/GoogleCloudPlatform/google-cloud-python/issues/1705#issuecomment-209721632 we have to unload
@@ -31,4 +30,5 @@ for path in SHARED_SOURCE_DIRECTORIES:
     sys.path.append(path)
 
 # Initialize Django (when running ISB-CGC-API as standalone using dev_appserver.py)
+import django
 django.setup()
