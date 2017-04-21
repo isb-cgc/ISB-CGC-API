@@ -26,8 +26,6 @@ ALLOWED_HOSTS = [
 ### added for connecting to CloudSQL with SSL certs on MVM platform
 SSL_DIR = os.path.abspath(os.path.dirname(__file__))+os.sep
 
-print >> sys.stdout, "GAE_INSTANCE: "+os.getenv('GAE_INSTANCE', '')
-
 APP_ENGINE = 'ae-'
 IS_APP_ENGINE = os.getenv('GAE_INSTANCE', '').startswith(APP_ENGINE)
 

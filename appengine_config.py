@@ -16,9 +16,6 @@ vendor.add('lib')
 # The default endpoints/GAE oauth2 is way too old.
 unload_module('oauth2client')
 
-import oauth2client
-print >> sys.stdout, "OAuth2 is now:" + str(oauth2client.__version__)
-
 BASE_DIR                = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir)) + os.sep
 
 SHARED_SOURCE_DIRECTORIES = [
