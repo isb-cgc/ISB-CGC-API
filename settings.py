@@ -23,6 +23,10 @@ ALLOWED_HOSTS = [
     os.environ.get('ALLOWED_HOST')
 ]
 
+### check if we are running in app engine
+APP_ENGINE = 'Google App Engine/'
+IS_APP_ENGINE = os.getenv('SERVER_SOFTWARE', '').startswith(APP_ENGINE)
+
 ### added for connecting to CloudSQL with SSL certs on MVM platform
 SSL_DIR = os.path.abspath(os.path.dirname(__file__))+os.sep
 
