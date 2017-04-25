@@ -48,37 +48,22 @@ MOLECULAR_CATEGORIES = {
 def sql_connection():
     env = os.getenv('SERVER_SOFTWARE')
     database = settings.DATABASES['default']
-    if env.startswith('Google App Engine/'):
-        # Connecting from App Engine
-        try:
-            db = MySQLdb.connect(
-                unix_socket = database['HOST'],
-                # port = 3306,
-                db=database['NAME'],
-                user=database['USER'],
-                passwd=database['PASSWORD'],
-                ssl=database['OPTIONS']['ssl'])
-        except:
-            print >> sys.stderr, "Unexpected ERROR in sql_connection(): ", sys.exc_info()[0]
-            #return HttpResponse( traceback.format_exc() )
-            raise # if you want to soldier bravely on despite the exception, but comment to stderr
-    else:
-        try:
-            connect_options = {
-                'host': database['HOST'],
-                'db': database['NAME'],
-                'user': database['USER'],
-                'passwd': database['PASSWORD']
-            }
+    try:
+        connect_options = {
+            'host': database['HOST'],
+            'db': database['NAME'],
+            'user': database['USER'],
+            'passwd': database['PASSWORD']
+        }
 
-            if 'OPTIONS' in database and 'ssl' in database['OPTIONS']:
-                connect_options['ssl'] = database['OPTIONS']['ssl']
+        if 'OPTIONS' in database and 'ssl' in database['OPTIONS']:
+            connect_options['ssl'] = database['OPTIONS']['ssl']
 
-            db = MySQLdb.connect(**connect_options)
-        except:
-            print >> sys.stderr, "Unexpected ERROR in sql_connection(): ", sys.exc_info()[0]
-            #return HttpResponse( traceback.format_exc() )
-            raise # if you want to soldier bravely on despite the exception, but comment to stderr
+        db = MySQLdb.connect(**connect_options)
+    except:
+        print >> sys.stderr, "Unexpected ERROR in sql_connection(): ", sys.exc_info()[0]
+        #return HttpResponse( traceback.format_exc() )
+        raise # if you want to soldier bravely on despite the exception, but comment to stderr
 
     return db
 
