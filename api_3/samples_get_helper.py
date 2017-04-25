@@ -133,7 +133,7 @@ class SamplesGetAPI(remote.Service):
         aliquot_query_str = SamplesGetQueryBuilder().build_aliquot_query(program, param_list)
         biospecimen_query_str = SamplesGetQueryBuilder().build_biospecimen_query(program)
         data_query_str = SamplesGetQueryBuilder().build_data_query(program, DataDetails(), param_list)
-        case_query_str = SamplesGetQueryBuilder().build_case_query()
+        case_query_str = SamplesGetQueryBuilder().build_case_query(program)
 
         try:
             db = sql_connection()

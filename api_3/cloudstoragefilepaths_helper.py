@@ -203,7 +203,7 @@ class CohortsCloudStorageFilePathsHelper(CloudStorageFilePathsAPI):
             request_finished.send(self)
     
     def cloud_storage_file_paths(self, request, program):
-        param_map = self.setup_param_map(request, program, [
+        param_map = self.setup_param_map(request, [
                 'data_type', 
                 'data_category', 
                 'experimental_strategy', 
