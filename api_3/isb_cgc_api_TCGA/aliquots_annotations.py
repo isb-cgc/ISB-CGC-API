@@ -57,7 +57,7 @@ class TCGA_AliquotsAnnotationAPI(AnnotationAPI):
         Takes an aliquot barcode (of length , *eg* TCGA-01-0628-11A-01D-0356-01) as a required parameter.
         User does not need to be authenticated.
         """
-        return self.process_annotations(request, 'case_barcode', AliquotsAnnotationsQueryBuilder(), logger)
+        return self.process_annotations(request, 'aliquot_barcode', AliquotsAnnotationsQueryBuilder(), logger)
 
 
     def validate_barcode(self, aliquot_barcode):

@@ -46,12 +46,10 @@ class AnnotationAPI(remote.Service):
                 self.validate_barcode(request_barcode)
             except AssertionError:
                 raise endpoints.BadRequestException(
-                    '{0} is not the correct format for a sample barcode.  '
-                    'Sample barcodes must be of the form XXXX-XX-XXXX-XXX'.
-                    format(request_barcode))
+                    '{0} is not the correct format for the {1} barcode.'.format(request_barcode, barcode_type))
             entity_types = request.get_assigned_value('entity_type')
-                    # check to make sure item_type_name is valid
-                    # check to make sure each item_type_name is valid
+
+            # check to make sure each entity type is valid
             if len(entity_types) > 0:
                 for itm in entity_types:
                     itm = itm.strip()

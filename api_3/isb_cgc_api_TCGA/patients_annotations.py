@@ -50,7 +50,7 @@ class CasesAnnotationsQueryBuilder(object):
 class TCGA_CasesAnnotationAPI(AnnotationAPI):
 
     GET_RESOURCE = endpoints.ResourceContainer(case_barcode=messages.StringField(1, required=True),
-                                               item_type_name=messages.StringField(2, repeated=True))
+                                               entity_type=messages.StringField(2, repeated=True))
 
     @endpoints.method(GET_RESOURCE, MetadataAnnotationList,
                       path='cases/{case_barcode}/annotations', http_method='GET')

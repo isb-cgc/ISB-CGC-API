@@ -48,7 +48,7 @@ MOLECULAR_CATEGORIES = {
 
 # Database connection
 def sql_connection():
-    return get_sql_connection
+    return get_sql_connection()
 
 def sql_bmi_by_ranges(value):
     if debug: print >> sys.stderr, 'Called ' + sys._getframe().f_code.co_name
