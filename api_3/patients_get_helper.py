@@ -70,7 +70,7 @@ class CasesGetHelper(remote.Service):
         db = None
 
         case_barcode = request.get_assigned_value('case_barcode')
-        query_tuple = (str(case_barcode),)
+        query_tuple = (str(case_barcode), str(case_barcode))
         clinical_query_str, sample_query_str, aliquot_query_str = CasesGetQueryBuilder().build_queries(program, ['HG19', 'HG38'])
 
         try:

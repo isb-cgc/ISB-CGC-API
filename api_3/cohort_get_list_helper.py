@@ -354,8 +354,8 @@ class CohortsListHelper(CohortsGetListAPI):
                         filters=filter_data,
                         case_count=case_count,
                         sample_count=sample_count,
-                        cases=None,
-                        samples=None
+                        cases=[],
+                        samples=[]
                     )
                 )
 
