@@ -16,7 +16,6 @@ limitations under the License.
 
 """
 from collections import OrderedDict
-import httplib
 import logging
 import MySQLdb
 
@@ -59,7 +58,7 @@ class CloudStorageFilePathsAPI(remote.Service):
 
     def get_genomic_builds(self, param_map):
         builds = ['HG19', 'HG38']
-        if 'genomic_build' in param_map:
+        if 'genomic_build' in param_map and param_map['genomic_build']:
             if 'HG19' == param_map['genomic_build'].upper():
                 builds = ['HG19']
             elif 'HG38' == param_map['genomic_build'].upper():
@@ -196,8 +195,7 @@ class CohortsCloudStorageFilePathsHelper(CloudStorageFilePathsAPI):
             logger.warn(e)
             err_msg = "Error retrieving cohort {} for user {}: {}".format(cohort_id, user_email, e)
             if 'Cohort_Perms' in e.message:
-                err_msg = "User {} does not have permissions on cohort {}. " \
-                          "Error: {}".format(user_email, cohort_id, e)
+                err_msg = "User {} does not have permissions on cohort {}.".format(user_email, cohort_id)
             raise endpoints.UnauthorizedException(err_msg)
         finally:
             request_finished.send(self)
@@ -216,4 +214,4 @@ class CohortsCloudStorageFilePathsHelper(CloudStorageFilePathsAPI):
             ]
         )
         self.validate_user(param_map['cohort_id'])
-        self.get_cloud_storage_file_paths(param_map, program)
+        return self.get_cloud_storage_file_paths(param_map, program)

@@ -100,8 +100,6 @@ class CohortsSamplesFilesMessageBuilder(object):
         Each dictionary with 'controlled' in the value for 'SecurityProtocol' must also
         have the key 'Repository'.
         :return: bad_repo_count, bad_repo_set
-
-        TODO: update DataFileNameKey to file_name_key
         """
         bad_repo_count = 0
         bad_repo_set = set()

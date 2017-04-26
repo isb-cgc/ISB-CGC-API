@@ -21,7 +21,7 @@ import django
 import pytz
 import datetime
 import logging
-from protorpc import remote, messages, message_types
+from protorpc import remote, messages
 from googleapiclient.errors import HttpError
 
 from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
@@ -39,6 +39,7 @@ INSTALLED_APP_CLIENT_ID = settings.INSTALLED_APP_CLIENT_ID
 
 
 def is_dbgap_authorized(user_email):
+    # TODOD: differentiate between TCGA and TARGET
     directory_service, http_auth = get_directory_resource()
     try:
         directory_service.members().get(groupKey=CONTROLLED_ACL_GOOGLE_GROUP,

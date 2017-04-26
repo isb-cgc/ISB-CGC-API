@@ -39,9 +39,7 @@ class AliquotsAnnotationsQueryBuilder(object):
 
     @staticmethod
     def build_metadata_query():
-        return 'select * from TCGA_metadata_data_HG19 where aliquot_barcode=%s ' \
-            'union ' \
-            'select * from TCGA_metadata_data_HG38 where aliquot_barcode=%s'
+        return 'select * from TCGA_metadata_data_HG19 where aliquot_barcode=%s '
 
 @ISB_CGC_TCGA_Endpoints.api_class(resource_name='aliquots')
 class TCGA_AliquotsAnnotationAPI(AnnotationAPI):
@@ -54,7 +52,7 @@ class TCGA_AliquotsAnnotationAPI(AnnotationAPI):
     def annotations(self, request):
         """
         Returns TCGA annotations about a specific aliquot,
-        Takes an aliquot barcode (of length , *eg* TCGA-01-0628-11A-01D-0356-01) as a required parameter.
+        Takes an aliquot barcode (of length 28, *eg* TCGA-01-0628-11A-01D-0356-01) as a required parameter.
         User does not need to be authenticated.
         """
         return self.process_annotations(request, 'aliquot_barcode', AliquotsAnnotationsQueryBuilder(), logger)

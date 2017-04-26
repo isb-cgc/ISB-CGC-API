@@ -187,7 +187,7 @@ class SamplesGetAPI(remote.Service):
                                  case=case_barcode)
 
         except (IndexError, TypeError) as e:
-            logger.info("Sample details for barcode {} not found. Error: {}".format(sample_barcode, e))
+            logger.info("Sample details for barcode {} not found. Error: {}, \nSQL: {}, \nParams: {}".format(sample_barcode, e, aliquot_query_str, extra_query_tuple))
             raise endpoints.NotFoundException(
                 "Sample details for barcode {} not found.".format(sample_barcode))
         except MySQLdb.ProgrammingError as e:
