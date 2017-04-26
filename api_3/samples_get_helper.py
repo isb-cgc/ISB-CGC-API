@@ -38,7 +38,7 @@ class SamplesGetQueryBuilder(object):
                              'and file_name_key is not null and file_name_key !="" '.format(program, genomic_build)
             for column in param_list:
                 part_aliquot_query_str += ' and {}=%s '.format(column)
-            if 0 < aliquot_query_str:
+            if 0 < len(aliquot_query_str):
                 aliquot_query_str += ' union '
             aliquot_query_str += part_aliquot_query_str
 
