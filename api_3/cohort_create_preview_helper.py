@@ -168,7 +168,7 @@ class CohortsCreateHelper(CohortsCreatePreviewAPI):
         program = self.get_program(project_short_name.split('-')[0])
         # get the project
         project = Project.objects.get(name=project_short_name[project_short_name.find('-') + 1:], active=True, owner=isb_superuser, program=program)
-        return project
+        return project.id
 
     def create(self, request):
         """

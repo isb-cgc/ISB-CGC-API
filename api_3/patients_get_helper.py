@@ -43,10 +43,10 @@ class CasesGetQueryBuilder(object):
 
         aliquot_query_str = ''
         for genomic_build in genomic_builds:
-            part_aliquot_query_str = 'select AliquotBarcode ' \
+            part_aliquot_query_str = 'select aliquot_barcode ' \
                                 'from {}_metadata_data_{} ' \
                                 'where case_barcode=%s ' \
-                                'group by AliquotBarcode'.format(program, genomic_build)
+                                'group by aliquot_barcode'.format(program, genomic_build)
             if 0 < len(aliquot_query_str):
                 aliquot_query_str += ' union '
             aliquot_query_str += part_aliquot_query_str
@@ -70,7 +70,7 @@ class CasesGetHelper(remote.Service):
         db = None
 
         case_barcode = request.get_assigned_value('case_barcode')
-        query_tuple = (str(case_barcode))
+        query_tuple = (str(case_barcode),)
         clinical_query_str, sample_query_str, aliquot_query_str = CasesGetQueryBuilder().build_queries(program, ['HG19'])
 
         try:
@@ -94,7 +94,7 @@ class CasesGetHelper(remote.Service):
 
             # get list of aliquots
             cursor.execute(aliquot_query_str, query_tuple)
-            aliquot_list = [row['AliquotBarcode'] for row in cursor.fetchall()]
+            aliquot_list = [row['aliquot_barcode'] for row in cursor.fetchall()]
 
             return CaseDetails(clinical_data=clinical_data_item, samples=sample_list, aliquots=aliquot_list)
         except (IndexError, TypeError), e:
