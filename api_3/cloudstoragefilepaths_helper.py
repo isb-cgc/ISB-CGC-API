@@ -85,7 +85,7 @@ class CloudStorageFilePathsAPI(remote.Service):
                              'WHERE cs.cohort_id=%s '
                 query_tuple += [param_map['cohort_id']]
             query_str += 'AND file_name_key != "" AND file_name_key is not null '
-            for field, value in param_map:
+            for field, value in param_map.iteritems():
                 if  field not in ['limit', 'cohort_id', 'sample_barcode', 'genomic_build']:
                     query_str += ' and md.{}=%s '.format(field)
                     query_tuple += [value]
