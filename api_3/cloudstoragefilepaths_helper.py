@@ -86,7 +86,7 @@ class CloudStorageFilePathsAPI(remote.Service):
                 query_tuple += [param_map['cohort_id']]
             query_str += 'AND file_name_key != "" AND file_name_key is not null '
             for field, value in param_map.iteritems():
-                if  field not in ['limit', 'cohort_id', 'sample_barcode', 'genomic_build']:
+                if  field not in ['limit', 'cohort_id', 'sample_barcode', 'genomic_build'] and value:
                     query_str += ' and md.{}=%s '.format(field)
                     query_tuple += [value]
             query_str += ' GROUP BY md.file_name_key, md.access, md.program '
@@ -125,7 +125,8 @@ class CloudStorageFilePathsAPI(remote.Service):
             return GCSFilePathList(cloud_storage_file_paths=cloud_storage_path_list, count=len(cloud_storage_path_list))
         except (IndexError, TypeError), e:
             logger.warn(e)
-            raise endpoints.NotFoundException("File paths for cohort {} not found.".format(param_map['cohort_id']))
+            raise endpoints.NotFoundException("File paths for cohort {} not found.\nSQL: {}\nparams: {}" \
+                            .format(param_map['cohort_id'] if 'cohort_id' in param_map else param_map['sample_barcode'], query_str, query_tuple))
         except MySQLdb.ProgrammingError as e:
             logger.warn("Error retrieving file paths. {}".format(e))
             raise endpoints.BadRequestException("Error retrieving file paths. {}".format(e))
