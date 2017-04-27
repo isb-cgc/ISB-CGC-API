@@ -144,7 +144,7 @@ class SamplesGetAPI(remote.Service):
             if row is None:
                 cursor.close()
                 db.close()
-                error_message = "Sample barcode {} not found in {}_metadata_biospecimen table.".format(query_tuple[0], self.program)
+                error_message = "Sample barcode {} not found in {}_metadata_biospecimen table.".format(query_tuple[0], program)
                 raise endpoints.NotFoundException(error_message)
             constructor_dict = build_constructor_dict_for_message(MetadataItem(), row)
             biospecimen_data_item = MetadataItem(**constructor_dict)

@@ -64,7 +64,7 @@ class CloudStorageFilePathsAPI(remote.Service):
             elif 'HG38' == param_map['genomic_build'].upper():
                 builds = ['HG38']
             else:
-                msg = 'Bad genomic build.  Acceptable genomic builds are HG19 and HG38.'
+                msg = 'Unknown genomic build.  Acceptable genomic builds are HG19 and HG38.'
                 logger.warn(msg)
                 raise endpoints.BadRequestException("Error retrieving genomics data for cohort. {}".format(msg))
         return builds
@@ -72,10 +72,10 @@ class CloudStorageFilePathsAPI(remote.Service):
     def build_query(self, param_map, program):
         builds = self.get_genomic_builds(param_map)
         final_query_str = ''
+        query_tuple = []
         for build in builds:
-            query_str = 'SELECT md.file_name_key, md.access, program ' \
+            query_str = 'SELECT md.file_name_key, md.access ' \
                         'FROM {}_metadata_data_{} md '.format(program, build)
-            query_tuple = []
     
             if 'sample_barcode' in param_map:
                 query_str += 'WHERE sample_barcode=%s '
@@ -89,7 +89,7 @@ class CloudStorageFilePathsAPI(remote.Service):
                 if  field not in ['limit', 'cohort_id', 'sample_barcode', 'genomic_build'] and value:
                     query_str += ' and md.{}=%s '.format(field)
                     query_tuple += [value]
-            query_str += ' GROUP BY md.file_name_key, md.access, md.program '
+            query_str += ' GROUP BY md.file_name_key, md.access '
             if 0 < len(final_query_str):
                 final_query_str += ' UNION '
             final_query_str += query_str
@@ -117,11 +117,7 @@ class CloudStorageFilePathsAPI(remote.Service):
             cursor = db.cursor(MySQLdb.cursors.DictCursor)
             cursor.execute(query_str, query_tuple)
             cursor_rows = cursor.fetchall()
-            bad_repo_count, bad_repo_set = CohortsSamplesFilesMessageBuilder().get_GCS_file_paths_and_bad_repos(cursor_rows)
-            cloud_storage_path_list = [row['cloud_storage_path'] for row in cursor_rows]
-            if bad_repo_count > 0:
-                logger.warn("not returning {count} row(s) in sample_details due to repositories: {bad_repo_list}"
-                            .format(count=bad_repo_count, bad_repo_list=list(bad_repo_set)))
+            cloud_storage_path_list = [row['file_name_key'] for row in cursor_rows]
             return GCSFilePathList(cloud_storage_file_paths=cloud_storage_path_list, count=len(cloud_storage_path_list))
         except (IndexError, TypeError), e:
             logger.warn(e)

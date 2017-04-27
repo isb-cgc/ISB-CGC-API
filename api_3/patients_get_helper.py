@@ -45,7 +45,7 @@ class CasesGetQueryBuilder(object):
         for genomic_build in genomic_builds:
             part_aliquot_query_str = 'select aliquot_barcode ' \
                                 'from {}_metadata_data_{} ' \
-                                'where case_barcode=%s ' \
+                                'where case_barcode=%s and aliquot_barcode is not null ' \
                                 'group by aliquot_barcode'.format(program, genomic_build)
             if 0 < len(aliquot_query_str):
                 aliquot_query_str += ' union '
@@ -96,7 +96,7 @@ class CasesGetHelper(remote.Service):
             cursor.execute(aliquot_query_str, query_tuple)
             aliquot_list = [row['aliquot_barcode'] for row in cursor.fetchall()]
 
-            return CaseDetails(clinical_data=clinical_data_item, samples=sample_list, aliquots=aliquot_list)
+            return CaseDetails(clinical_data=clinical_data_item, samples=sample_list, aliquots=aliquot_list if aliquot_list else [])
         except (IndexError, TypeError), e:
             logger.info("Case {} not found. Error: {}".format(case_barcode, e))
             raise endpoints.NotFoundException("Case {} not found.".format(case_barcode))
