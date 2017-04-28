@@ -64,7 +64,7 @@ class CloudStorageFilePathsAPI(remote.Service):
             elif 'HG38' == param_map['genomic_build'].upper():
                 builds = ['HG38']
             else:
-                msg = 'Unknown genomic build.  Acceptable genomic builds are HG19 and HG38.'
+                msg = 'Unknown genomic build: {}.  Acceptable genomic builds are HG19 and HG38.'.format(param_map['genomic_build'])
                 logger.warn(msg)
                 raise endpoints.BadRequestException("Error retrieving genomics data for cohort. {}".format(msg))
         return builds
@@ -94,7 +94,7 @@ class CloudStorageFilePathsAPI(remote.Service):
                 final_query_str += ' UNION '
             final_query_str += query_str
         
-        if 'limit' in param_map:
+        if 'limit' in param_map and param_map['limit']:
             query_str += ' LIMIT %s'  
             query_tuple += [param_map['limit']]
         else:

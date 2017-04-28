@@ -106,7 +106,7 @@ class CohortsCreatePreviewAPI(remote.Service):
             sample_query_str += ' {} <=%s '.format(key)
             value_tuple += (value,)
 
-        sample_query_str += ' GROUP BY sample_barcode, c.case_barcode, project_id'
+        sample_query_str += ' GROUP BY sample_barcode, c.case_barcode, project_short_name'
 
         return sample_query_str, value_tuple
 

@@ -35,7 +35,7 @@ class SamplesGetQueryBuilder(object):
         for genomic_build in ['HG19', 'HG38']:
             part_aliquot_query_str = 'select aliquot_barcode ' \
                              'from {}_metadata_data_{} ' \
-                             'and file_name_key is not null and file_name_key !="" '.format(program, genomic_build)
+                             'where file_name_key is not null and file_name_key !="" '.format(program, genomic_build)
             for column in param_list:
                 part_aliquot_query_str += ' and {}=%s '.format(column)
             if 0 < len(aliquot_query_str):
