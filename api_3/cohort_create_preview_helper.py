@@ -72,7 +72,7 @@ class CohortsCreatePreviewAPI(remote.Service):
         that meet the criteria specified in the request body.
         Returns case query string,  sample query string, value tuple.
         """
-        sample_query_str = 'SELECT sample_barcode, c.case_barcode, c.project_short_name as project_id ' \
+        sample_query_str = 'SELECT sample_barcode, c.case_barcode, c.project_short_name ' \
                            'FROM {0}_metadata_clinical c join {0}_metadata_biospecimen b on c.case_barcode = b.case_barcode ' \
                            'WHERE '.format(program)
         value_tuple = ()
@@ -168,7 +168,7 @@ class CohortsCreateHelper(CohortsCreatePreviewAPI):
         program = self.get_program(project_short_name.split('-')[0])
         # get the project
         project = Project.objects.get(name=project_short_name[project_short_name.find('-') + 1:], active=True, owner=isb_superuser, program=program)
-        return project.id
+        return project
 
     def create(self, request):
         """
@@ -196,7 +196,7 @@ class CohortsCreateHelper(CohortsCreatePreviewAPI):
 
         # get the sample barcode information for use in creating the sample list for the cohort
         rows, query_dict, lte_query_dict, gte_query_dict = self.query_samples(request)
-        sample_barcodes = [{'sample_barcode': row['sample_barcode'], 'case_barcode': row['case_barcode'], 'project_id': self.get_project(row['project_id'])} for row in rows]
+        sample_barcodes = [{'sample_barcode': row['sample_barcode'], 'case_barcode': row['case_barcode'], 'project': self.get_project(row['project_short_name'])} for row in rows]
         cohort_name = request.get_assigned_value('name')
 
         # Validate the cohort name against a whitelist
@@ -220,7 +220,7 @@ class CohortsCreateHelper(CohortsCreatePreviewAPI):
         created_cohort.save()
 
         # 2. insert samples into cohort_samples
-        sample_list = [Samples(cohort=created_cohort, sample_barcode=sample['sample_barcode'], case_barcode=sample['case_barcode'], project=sample['project_id']) for sample in sample_barcodes]
+        sample_list = [Samples(cohort=created_cohort, sample_barcode=sample['sample_barcode'], case_barcode=sample['case_barcode'], project=sample['project']) for sample in sample_barcodes]
         Samples.objects.bulk_create(sample_list)
 
         # 3. Set permission for user to be owner
