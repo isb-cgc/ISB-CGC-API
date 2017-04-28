@@ -57,7 +57,7 @@ class SamplesGetQueryBuilder(object):
         for genomic_build in ['HG19', 'HG38']:
             part_data_query_str = 'select {0} ' \
                              'from {1}_metadata_data_{2} ' \
-                             'and file_name_key is not null and file_name_key !="" '.format(', '.join(field.name for field in datadict_class.all_fields()), program, genomic_build)
+                             'where file_name_key is not null and file_name_key !="" '.format(', '.join(field.name for field in datadict_class.all_fields()), program, genomic_build)
             for column in param_list:
                 part_data_query_str += ' and {}=%s '.format(column)
             if 0 < len(data_query_str):
