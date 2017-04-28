@@ -23,8 +23,7 @@ import MySQLdb
 from protorpc import remote, messages
 
 from api_3.api_helpers import sql_connection
-from api_3.cohort_endpoint_helpers import build_constructor_dict_for_message, \
-    CohortsSamplesFilesMessageBuilder
+from api_3.cohort_endpoint_helpers import build_constructor_dict_for_message
 
 logger = logging.getLogger(__name__)
 
@@ -61,7 +60,7 @@ class SamplesGetQueryBuilder(object):
                              'and file_name_key is not null and file_name_key !="" '.format(', '.join(field.name for field in datadict_class.all_fields()), program, genomic_build)
             for column in param_list:
                 part_data_query_str += ' and {}=%s '.format(column)
-            if 0 < data_query_str:
+            if 0 < len(data_query_str):
                 data_query_str += ' union '
             data_query_str += part_data_query_str
 
@@ -161,12 +160,6 @@ class SamplesGetAPI(remote.Service):
             # prepare to build list of data details messages
             cursor.execute(data_query_str, extra_query_tuple)
             cursor_rows = cursor.fetchall()
-            # update every dictionary in cursor_rows to contain the full cloud_storage_path for each sample
-            bad_repo_count, bad_repo_set = \
-                CohortsSamplesFilesMessageBuilder().get_GCS_file_paths_and_bad_repos(cursor_rows)
-            if bad_repo_count > 0:
-                logger.warn("not returning {count} row(s) in sample_details due to repositories: {bad_repo_list}"
-                            .format(count=bad_repo_count, bad_repo_list=list(bad_repo_set)))
 
             # build a data details message for each row returned from metadata_data table
             data_details_list = []
@@ -174,10 +167,6 @@ class SamplesGetAPI(remote.Service):
                 constructor_dict = build_constructor_dict_for_message(DataDetails(), row)
                 data_details_item = DataDetails(**constructor_dict)
                 data_details_list.append(data_details_item)
-
-            if bad_repo_count > 0:
-                logger.warn("not returning {count} row(s) in sample_details due to repositories: {bad_repo_list}"
-                            .format(count=bad_repo_count, bad_repo_list=list(bad_repo_set)))
 
             return SampleDetails(aliquots=aliquot_list,
                                  biospecimen_data=biospecimen_data_item,
