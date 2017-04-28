@@ -35,7 +35,6 @@ try:
 except Exception as e:
     print 'couldn\'t import google protorpc, using mock for testing: %s' % (e)
 
-from api_3.cohort_endpoint_helpers import CohortsSamplesFilesMessageBuilder
 from api_3.api_helpers import sql_connection
 from cohorts.models import Cohort as Django_Cohort, Cohort_Perms
 

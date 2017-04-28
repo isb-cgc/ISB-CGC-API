@@ -87,29 +87,6 @@ class FilterDetails(messages.Message):
     name = messages.StringField(1)
     value = messages.StringField(2)
 
-class CohortsSamplesFilesMessageBuilder(object):
-
-    def get_GCS_file_paths_and_bad_repos(self, cursor_rows):
-        """
-         Used in cohorts.datafilenamekeys, samples.datafilenamekeys, samples.get.
-        Modifies cursor_rows to add the cloud storage path to each row representing a file.
-        A count of bad repositories and a set of bad repositories is returned in case
-        there are any errors with the data repository information in the row.
-        :param cursor_rows: list of dictionaries resulting from a database query.
-        Each dictionary with the key 'DataFileNameKey' must also have a 'SecurityProtocol' key.
-        Each dictionary with 'controlled' in the value for 'SecurityProtocol' must also
-        have the key 'Repository'.
-        :return: bad_repo_count, bad_repo_set
-        """
-        bad_repo_count = 0
-        bad_repo_set = set()
-        for row in cursor_rows:
-            if not row.get('file_name_key'):
-                continue
-            row['cloud_storage_path'] = row.get('file_name_key')
-        return bad_repo_count, bad_repo_set
-
-
 def build_constructor_dict_for_message(message_class, row):
     """
     Takes an instance of a message class and a dictionary of values from a database query
