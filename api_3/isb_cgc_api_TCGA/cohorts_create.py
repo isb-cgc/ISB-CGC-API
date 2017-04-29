@@ -19,7 +19,7 @@ from protorpc import messages
 
 from api_3.cohort_create_preview_helper import CohortsCreateHelper, CreatedCohort
 from api_3.isb_cgc_api_TCGA.isb_cgc_api_helpers import ISB_CGC_TCGA_Endpoints
-from api_3.isb_cgc_api_TARGET.message_classes import MetadataRangesItem, shared_fields
+from api_3.isb_cgc_api_TCGA.message_classes import MetadataRangesItem, shared_fields
 
 @ISB_CGC_TCGA_Endpoints.api_class(resource_name='cohorts')
 class TCGA_CohortsCreateAPI(CohortsCreateHelper):

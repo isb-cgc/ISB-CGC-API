@@ -115,8 +115,7 @@ class CohortsCreatePreviewAPI(remote.Service):
             err_msg = construct_parameter_error_message(request, True)
             raise endpoints.BadRequestException(err_msg)
         query_dict, gte_query_dict, lte_query_dict = self.build_query_dictionaries(request)
-        sample_query_str, value_tuple = self.build_query(
-            self.program, query_dict, gte_query_dict, lte_query_dict)
+        sample_query_str, value_tuple = self.build_query(self.program, query_dict, gte_query_dict, lte_query_dict)
         db = None
         sample_cursor = None
         try:
@@ -130,7 +129,7 @@ class CohortsCreatePreviewAPI(remote.Service):
         except MySQLdb.ProgrammingError as e:
             msg = '{}:\n\tsample query: {} {}'.format(e, sample_query_str, value_tuple)
             logger.warn(msg)
-            raise endpoints.BadRequestException("Error previewing cohort. {}".format(msg))
+            raise endpoints.BadRequestException("Error previewing cohort. {}".format(e))
         finally:
             if sample_cursor:
                 sample_cursor.close()
@@ -155,17 +154,17 @@ class CreatedCohort(messages.Message):
 class CohortsCreateHelper(CohortsCreatePreviewAPI):
     BASE_URL = settings.BASE_URL
     
-    def get_program(self, program_name):
+    def get_django_program(self, program_name):
         # get the ISB superuser
         isb_superuser = Django_User.objects.get(username='isb', is_staff=True, is_superuser=True, is_active=True)
         # get the program
         return Program.objects.get(name=program_name, is_public=True, active=True, owner=isb_superuser)
 
-    def get_project(self, project_short_name):
+    def get_django_project(self, project_short_name):
         # get the ISB superuser
         isb_superuser = Django_User.objects.get(username='isb', is_staff=True, is_superuser=True, is_active=True)
         # get the program
-        program = self.get_program(project_short_name.split('-')[0])
+        program = self.get_django_program(project_short_name.split('-')[0])
         # get the project
         project = Project.objects.get(name=project_short_name[project_short_name.find('-') + 1:], active=True, owner=isb_superuser, program=program)
         return project
@@ -196,7 +195,7 @@ class CohortsCreateHelper(CohortsCreatePreviewAPI):
 
         # get the sample barcode information for use in creating the sample list for the cohort
         rows, query_dict, lte_query_dict, gte_query_dict = self.query_samples(request)
-        sample_barcodes = [{'sample_barcode': row['sample_barcode'], 'case_barcode': row['case_barcode'], 'project': self.get_project(row['project_short_name'])} for row in rows]
+        sample_barcodes = [{'sample_barcode': row['sample_barcode'], 'case_barcode': row['case_barcode'], 'project': self.get_django_project(row['project_short_name'])} for row in rows]
         cohort_name = request.get_assigned_value('name')
 
         # Validate the cohort name against a whitelist
