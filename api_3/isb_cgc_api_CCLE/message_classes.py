@@ -3,12 +3,12 @@ from protorpc import messages
 class MetadataRangesItem(messages.Message):
     case_barcode                                                      = messages.StringField(1, repeated=True)
     case_gdc_id                                                       = messages.StringField(2, repeated=True)
-    endpoint_type                                                     = messages.StringField(3, repeated=True)
-    gender                                                            = messages.StringField(4, repeated=True)
-    histology                                                         = messages.StringField(5, repeated=True)
-    hist_subtype                                                      = messages.StringField(6, repeated=True)
-    program_name                                                      = messages.StringField(7, repeated=True)
-    project_disease_type                                              = messages.StringField(8, repeated=True)
+    disease_code                                                      = messages.StringField(3, repeated=True)
+    endpoint_type                                                     = messages.StringField(4, repeated=True)
+    gender                                                            = messages.StringField(5, repeated=True)
+    histology                                                         = messages.StringField(6, repeated=True)
+    hist_subtype                                                      = messages.StringField(7, repeated=True)
+    program_name                                                      = messages.StringField(8, repeated=True)
     project_short_name                                                = messages.StringField(9, repeated=True)
     site_primary                                                      = messages.StringField(10, repeated=True)
     source                                                            = messages.StringField(11, repeated=True)
@@ -23,12 +23,12 @@ class MetadataRangesItem(messages.Message):
 class MetadataItem(messages.Message):
     case_barcode                                                      = messages.StringField(1)
     case_gdc_id                                                       = messages.StringField(2)
-    endpoint_type                                                     = messages.StringField(3)
-    gender                                                            = messages.StringField(4)
-    histology                                                         = messages.StringField(5)
-    hist_subtype                                                      = messages.StringField(6)
-    program_name                                                      = messages.StringField(7)
-    project_disease_type                                              = messages.StringField(8)
+    disease_code                                                      = messages.StringField(3)
+    endpoint_type                                                     = messages.StringField(4)
+    gender                                                            = messages.StringField(5)
+    histology                                                         = messages.StringField(6)
+    hist_subtype                                                      = messages.StringField(7)
+    program_name                                                      = messages.StringField(8)
     project_short_name                                                = messages.StringField(9)
     site_primary                                                      = messages.StringField(10)
     source                                                            = messages.StringField(11)
@@ -37,4 +37,4 @@ class MetadataItem(messages.Message):
     sample_gdc_id                                                     = messages.StringField(14)
     sample_type                                                       = messages.StringField(15)
     
-shared_fields = ['case_barcode', 'endpoint_type', 'program_name', 'project_disease_type', 'project_short_name']
+shared_fields = ['case_barcode', 'disease_code', 'endpoint_type', 'program_name', 'project_short_name']
