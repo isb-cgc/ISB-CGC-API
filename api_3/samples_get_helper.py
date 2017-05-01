@@ -125,7 +125,11 @@ class SamplesGetAPI(remote.Service):
         sample_barcode = request.get_assigned_value('sample_barcode')
         param_list = ['sample_barcode']
         query_tuple = [sample_barcode]
-        extra_query_tuple = [sample_barcode, sample_barcode]
+        if 'CCLE' == program:
+            extra_query_tuple = [sample_barcode]
+        else:
+            extra_query_tuple = [sample_barcode, sample_barcode]
+            
         for field in request.all_fields():
             if 'sample_barcode' != field.name and request.get_assigned_value(field.name):
                 param_list += [field.name]

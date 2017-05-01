@@ -132,7 +132,7 @@ class CohortsGetListQueryBuilder(object):
         :param case_query_dict: should be {'cohort_id': str(row['id])}
         :return: case_query_str, case_query_tuple
         """
-        cases_query_str = 'SELECT case_barcode ' \
+        cases_query_str = 'SELECT cohort_id id, case_barcode ' \
                              'FROM cohorts_samples '
 
         cases_query_str += ' WHERE ' + '=%s AND '.join(key for key in case_query_dict.keys()) + '=%s '
