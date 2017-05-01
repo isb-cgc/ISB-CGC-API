@@ -240,10 +240,10 @@ class CohortsGetListAPI(remote.Service):
             }
         )
         cursor.execute(case_query_str, case_query_tuple)
-        case_count = len(cursor.fetchall())
         case_list = []
         for row in cursor.fetchall():
             case_list.append(row['case_barcode'])
+        case_count = len(case_list)
 
         # get number of samples for each cohort
         sample_query_str, sample_query_tuple = CohortsGetListQueryBuilder().build_samples_query(
@@ -252,10 +252,10 @@ class CohortsGetListAPI(remote.Service):
             }
         )
         cursor.execute(sample_query_str, sample_query_tuple)
-        sample_count = len(cursor.fetchall())
         sample_list = []
         for row in cursor.fetchall():
             sample_list.append(row['sample_barcode'])
+        sample_count = len(sample_list)
         
         return parent_id_data, filter_data, case_list, case_count, sample_list, sample_count
 
@@ -288,6 +288,11 @@ class CohortsGetHelper(CohortsGetListAPI):
                         id=cohort_id, user_email=user_email))
 
             parent_id_data, filter_data, case_list, _, sample_list, _ = self.get_cohort_details(cursor, row)
+
+            if len(sample_list) == 0:
+                sample_list = ["None"]
+            if len(case_list) == 0:
+                case_list = ["None"]
 
             return CohortDetails(
                 id=str(row['id']),

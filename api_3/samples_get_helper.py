@@ -29,9 +29,13 @@ logger = logging.getLogger(__name__)
 
 class SamplesGetQueryBuilder(object):
     def build_aliquot_query(self, program, param_list):
-
+        if 'CCLE' == program:
+            genomic_builds = ['HG19']
+        else:
+            genomic_builds = ['HG19', 'HG38']
+            
         aliquot_query_str = ''
-        for genomic_build in ['HG19', 'HG38']:
+        for genomic_build in genomic_builds:
             part_aliquot_query_str = 'select aliquot_barcode ' \
                              'from {}_metadata_data_{} ' \
                              'where file_name_key is not null and file_name_key !="" '.format(program, genomic_build)

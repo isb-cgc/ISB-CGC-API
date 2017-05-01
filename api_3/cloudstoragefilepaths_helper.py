@@ -55,8 +55,12 @@ class CloudStorageFilePathsAPI(remote.Service):
         return param_map
 
 
-    def get_genomic_builds(self, param_map):
-        builds = ['HG19', 'HG38']
+    def get_genomic_builds(self, param_map, program):
+        if 'CCLE' == program:
+            builds = ['HG19']
+        else:
+            builds = ['HG19', 'HG38']
+        
         if 'genomic_build' in param_map and param_map['genomic_build']:
             if 'HG19' == param_map['genomic_build'].upper():
                 builds = ['HG19']
@@ -69,7 +73,7 @@ class CloudStorageFilePathsAPI(remote.Service):
         return builds
 
     def build_query(self, param_map, program):
-        builds = self.get_genomic_builds(param_map)
+        builds = self.get_genomic_builds(param_map, program)
         final_query_str = ''
         query_tuple = []
         for build in builds:
