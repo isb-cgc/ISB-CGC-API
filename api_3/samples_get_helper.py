@@ -56,9 +56,13 @@ class SamplesGetQueryBuilder(object):
         return biospecimen_query_str
 
     def build_data_query(self, program, datadict_class, param_list):
-
+        if 'CCLE' == program:
+            genomic_builds = ['HG19']
+        else:
+            genomic_builds = ['HG19', 'HG38']
+            
         data_query_str = ''
-        for genomic_build in ['HG19', 'HG38']:
+        for genomic_build in genomic_builds:
             part_data_query_str = 'select {0} ' \
                              'from {1}_metadata_data_{2} ' \
                              'where file_name_key is not null and file_name_key !="" '.format(', '.join(field.name for field in datadict_class.all_fields()), program, genomic_build)
