@@ -98,10 +98,10 @@ class CloudStorageFilePathsAPI(remote.Service):
             final_query_str += query_str
         
         if 'limit' in param_map and param_map['limit']:
-            query_str += ' LIMIT %s'  
+            final_query_str += ' LIMIT %s'  
             query_tuple += [param_map['limit']]
         else:
-            query_str += ' LIMIT 10000'
+            final_query_str += ' LIMIT 10000'
         return final_query_str, query_tuple
 
     def get_cloud_storage_file_paths(self, param_map, program):
