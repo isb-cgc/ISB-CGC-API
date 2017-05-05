@@ -235,7 +235,7 @@ class CohortsCreateHelper(CohortsCreatePreviewAPI):
 
         for key, val in [(k + '_lte', v) for k, v in lte_query_dict.items()] + [(k + '_gte', v) for k, v in gte_query_dict.items()]:
             filter_data.append(FilterDetails(name=key, value=str(val)))
-            Filters.objects.create(resulting_cohort=created_cohort, name=key, value=val, program=self.get_program(self.program)).save()
+            Filters.objects.create(resulting_cohort=created_cohort, name=key, value=val, program=self.get_django_program(self.program)).save()
 
         # 5. Store cohort to BigQuery
         project_id = settings.BQ_PROJECT_ID
