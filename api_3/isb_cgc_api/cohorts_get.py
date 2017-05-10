@@ -17,7 +17,7 @@ limitations under the License.
 import endpoints
 
 from api_3.isb_cgc_api.isb_cgc_api_helpers import ISB_CGC_Endpoints
-from api_3.cohort_get_list_helper import CohortDetails, CohortsGetHelper
+from api_3.isb_cgc_api.cohort_get_list_helper import CohortDetails, CohortsGetHelper
 
 @ISB_CGC_Endpoints.api_class(resource_name='cohorts')
 class CohortsGetAPI(CohortsGetHelper):
