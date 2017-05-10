@@ -365,6 +365,7 @@ class MetadataItem(messages.Message):
     
 shared_fields = ['batch_number', 'bcr', 'case_barcode', 'disease_code', 'endpoint_type', 'program_name', 'project_short_name']
 
+
 class MetadataAnnotationItem(messages.Message):
     aliquot_barcode                = messages.StringField(1)
     annotation_gdc_id              = messages.StringField(2)

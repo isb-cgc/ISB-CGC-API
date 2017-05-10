@@ -1,4 +1,18 @@
+'''
+copyright 2017, Institute for Systems Biology.
 
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+'''
 from argparse import ArgumentParser
 import MySQLdb
 
@@ -29,6 +43,38 @@ FIELD_TYPES ={
     'datetime': 'datetime'
 }
 
+def write_allowed_values(db, rows, path, program, write_file=False):
+# 'DATA_TYPE': 'int', 'COLUMN_NAME': 'age_began_smoking_in_years'
+    if not write_file:
+        return
+
+    MAX_VALUES = 70
+    cursor = db.cursor()
+    seen_rows = set()
+    try:
+        with open(path, 'w') as av:
+            av.write('{\n')
+            clinical_query = 'select {} from %s_metadata_clinical group by 1 order by 1' % (program)
+            biospecimen_query = 'select {} from %s_metadata_biospecimen group by 1 order by 1' % (program)
+            body = ''
+            for row in rows:
+                if row['DATA_TYPE'] != 'varchar' or row['COLUMN_NAME'] in seen_rows:
+                    continue
+                seen_rows.add(row['COLUMN_NAME'])
+                try:
+                    currows = get_table_column_info(cursor, clinical_query.format(row['COLUMN_NAME']))
+                except:
+                    currows = get_table_column_info(cursor, biospecimen_query.format(row['COLUMN_NAME']))
+                if MAX_VALUES < len(currows):
+                    continue
+                
+                body += '    "{}": [\n        {}\n    ],\n'.format(row['COLUMN_NAME'], '        '.join('"{}",\n'.format(value[0]) for value in currows)[:-2])
+            av.write(body[:-2])
+            av.write('\n}\n')
+             
+    except:
+        cursor.close()
+        
 
 def write_metadata_file(rows, path, write_file=False):
 
@@ -73,8 +119,8 @@ def write_metadata_file(rows, path, write_file=False):
         item_text += ')\n    ' if field_type is not 'IntegerField' else ', variant=messages.Variant.INT32)\n    '
         i += 1
     
-    shared_text = '\nshared_fields = [%s]' % (', '.join("'" + row + "'" for row in shared_rows))
-
+    shared_text = '\nshared_fields = [%s]\n' % (', '.join("'" + row + "'" for row in shared_rows))
+    
     if write_file is True:
         with open(path, 'w') as f:
             f.write('from protorpc import messages\n\n')
@@ -147,6 +193,9 @@ def main(args):
                             'AND COLUMN_NAME != "metadata_annotation_id" ' + 'group by COLUMN_NAME, DATA_TYPE, COLUMN_TYPE ' \
                              'ORDER BY column_name'
                 write_annotation_file(get_table_column_info(cursor, annotation_query_str % (program[0])), path_template % (program[0]), write_file=write_file)
+            
+            path = 'api_3/isb_cgc_api_{0}/allowed_values_v3_{0}.json'.format(program[0])
+            write_allowed_values(db, combined_rows, path, program[0], write_file)
     finally:
         if cursor:
             cursor.close()
