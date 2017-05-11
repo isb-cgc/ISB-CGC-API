@@ -129,15 +129,15 @@ class SamplesGetAPI(remote.Service):
         sample_barcode = request.get_assigned_value('sample_barcode')
         param_list = ['sample_barcode']
         query_tuple = [sample_barcode]
-        if 'CCLE' == program:
-            extra_query_tuple = [sample_barcode]
-        else:
-            extra_query_tuple = [sample_barcode, sample_barcode]
-            
+        extra_query_tuple = [sample_barcode]
         for field in request.all_fields():
             if 'sample_barcode' != field.name and request.get_assigned_value(field.name):
                 param_list += [field.name]
                 extra_query_tuple += [request.get_assigned_value(field.name)]
+
+        if 'CCLE' != program:
+            extra_query_tuple += extra_query_tuple
+            
         # need to take into account params used in the union between the genomic builds
         
         aliquot_query_str = SamplesGetQueryBuilder().build_aliquot_query(program, param_list)
