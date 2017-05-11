@@ -46,6 +46,8 @@ class CohortsCloudStorageFilePathsAPI(CohortsCloudStorageFilePathsHelper):
         query_tuple = []
         for program in ('CCLE', 'TARGET', 'TCGA'):
             for build in builds:
+                if program == 'CCLE' and build != 'HG19':
+                    continue
                 final_query_str, query_tuple = self.build_program_query(final_query_str, query_tuple, program, param_map, build)
         
         if 'limit' in param_map and param_map['limit']:
