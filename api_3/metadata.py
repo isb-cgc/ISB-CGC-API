@@ -51,7 +51,7 @@ OPEN_DATA_BUCKET = settings.OPEN_DATA_BUCKET
 
 METADATA_SHORTLIST = [
     # 'adenocarcinoma_invasion',
-    'age_at_initial_pathologic_diagnosis',
+    'age_at_diagnosis',
     # 'anatomic_neoplasm_subdivision',
     # 'avg_percent_lymphocyte_infiltration',
     # 'avg_percent_monocyte_infiltration',
@@ -161,7 +161,7 @@ METADATA_SHORTLIST = [
 ]
 
 metadata_dict = {
-    'age_at_initial_pathologic_diagnosis': 'INTEGER',
+    'age_at_diagnosis': 'INTEGER',
     'anatomic_neoplasm_subdivision': 'VARCHAR(63)',
     'avg_percent_lymphocyte_infiltration': 'FLOAT',
     'avg_percent_monocyte_infiltration': 'FLOAT',
@@ -273,7 +273,7 @@ class MetaValueListCount(messages.Message):
 
 class MetaAttrValuesList(messages.Message):
     adenocarcinoma_invasion                             = messages.MessageField(MetaValueListCount, 1, repeated=True)
-    age_at_initial_pathologic_diagnosis                 = messages.MessageField(MetaValueListCount, 2, repeated=True)
+    age_at_diagnosis                 = messages.MessageField(MetaValueListCount, 2, repeated=True)
     anatomic_neoplasm_subdivision                       = messages.MessageField(MetaValueListCount, 3, repeated=True)
     avg_percent_lymphocyte_infiltration                 = messages.FloatField(4, repeated=True)
     avg_percent_monocyte_infiltration                   = messages.FloatField(5, repeated=True)
@@ -381,7 +381,7 @@ class MetaAttrValuesList(messages.Message):
 
 class MetadataItem(messages.Message):
     adenocarcinoma_invasion                                         = messages.StringField(1)
-    age_at_initial_pathologic_diagnosis                             = messages.IntegerField(2)
+    age_at_diagnosis                             = messages.IntegerField(2)
     anatomic_neoplasm_subdivision                                   = messages.StringField(3)
     avg_percent_lymphocyte_infiltration                             = messages.FloatField(4)
     avg_percent_monocyte_infiltration                               = messages.FloatField(5)
@@ -490,7 +490,7 @@ class MetadataItem(messages.Message):
 Incoming object needs to use age and BMI that's a string (eg. 10_to_39)
 '''
 class IncomingMetadataItem(messages.Message):
-    age_at_initial_pathologic_diagnosis                             = messages.StringField(1, repeated=True)
+    age_at_diagnosis                             = messages.StringField(1, repeated=True)
     anatomic_neoplasm_subdivision                                   = messages.StringField(2, repeated=True)
     avg_percent_lymphocyte_infiltration                             = messages.FloatField(3, repeated=True)
     avg_percent_monocyte_infiltration                               = messages.FloatField(4, repeated=True)
@@ -1180,7 +1180,7 @@ def count_metadata(user, cohort_id=None, sample_ids=None, filters=None):
             value_list = []
 
             # Special case for age ranges and BMI
-            if key == 'CLIN:age_at_initial_pathologic_diagnosis':
+            if key == 'CLIN:age_at_diagnosis':
                 feature['values'] = normalize_ages(feature['values'])
             elif key == 'CLIN:BMI':
                 feature['values'] = normalize_BMI(feature['values'])
