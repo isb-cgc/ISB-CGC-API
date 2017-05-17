@@ -23,15 +23,16 @@ ALLOWED_HOSTS = [
     os.environ.get('ALLOWED_HOST')
 ]
 
-### check if we are running in app engine
+### Check what we're running in
+APP_ENGINE_FLEX = 'aef-'
 APP_ENGINE = 'Google App Engine/'
+IS_APP_ENGINE_FLEX = os.getenv('GAE_INSTANCE', '').startswith(APP_ENGINE_FLEX)
 IS_APP_ENGINE = os.getenv('SERVER_SOFTWARE', '').startswith(APP_ENGINE)
+IS_DEV = bool(os.environ.get('IS_DEV', False))
 
 ### added for connecting to CloudSQL with SSL certs on MVM platform
 SSL_DIR = os.path.abspath(os.path.dirname(__file__))+os.sep
 
-APP_ENGINE = 'ae-'
-IS_APP_ENGINE = os.getenv('GAE_INSTANCE', '').startswith(APP_ENGINE)
 
 #ADMINS = (
     # ('Your Name', 'your_email@example.com'),
@@ -45,7 +46,6 @@ BQ_PROJECT_ID = os.environ.get('BQ_PROJECT_ID')
 
 BASE_URL = os.environ.get('CLOUD_BASE_URL')
 BASE_API_URL = os.environ.get('CLOUD_API_URL')
-SITE_ID = 4
 
 # Compute services
 PAIRWISE_SERVICE_URL = os.environ.get('PAIRWISE_SERVICE_URL')
@@ -62,8 +62,6 @@ COHORT_DATASET_ID = os.environ.get('COHORT_DATASET_ID')
 DEVELOPER_COHORT_TABLE_ID = os.environ.get('DEVELOPER_COHORT_TABLE_ID')
 
 NIH_AUTH_ON = os.environ.get('NIH_AUTH_ON', False)
-
-IS_DEV = os.environ.get('IS_DEV', False)
 
 DATABASES = {
     'default': {
@@ -86,17 +84,14 @@ if os.environ.has_key('DB_SSL_CERT'):
 
 DB_SOCKET = DATABASES['default']['HOST'] if 'cloudsql' in DATABASES['default']['HOST'] else None
 
-IS_DEV = bool(os.environ.get('IS_DEV', False))
-
 # Default to localhost for the site ID
 SITE_ID = 3
 
-if IS_APP_ENGINE:
+if IS_APP_ENGINE_FLEX or IS_APP_ENGINE:
     print >> sys.stdout, "[STATUS] AppEngine detected."
     SITE_ID = 4
 
 # For running local unit tests for models
-import sys
 if 'test' in sys.argv:
     DATABASES = os.environ.get('TEST_DATABASE')
 
