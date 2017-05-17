@@ -1,4 +1,4 @@
-./google-cloud-sdk/bin/gsutil cp "gs://${TEST_GCLOUD_BUCKET}/${TEST_APP_YAML}" ./app.yaml
+./google-cloud-sdk/bin/gsutil cp "gs://${TEST_GCLOUD_BUCKET}/${TEST_API_APP_YAML}" ./app.yaml
 ./google-cloud-sdk/bin/gsutil cp "gs://${TEST_GCLOUD_BUCKET}/${TEST_SECRETS_FILE}" ./client_secrets.json
 ./google-cloud-sdk/bin/gsutil cp "gs://${TEST_GCLOUD_BUCKET}/${TEST_PEM_FILE}" ./privatekey.pem
 
