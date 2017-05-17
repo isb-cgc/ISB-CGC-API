@@ -35,7 +35,7 @@ class SamplesGetQueryBuilder(object):
 
         aliquot_query_str = 'select AliquotBarcode ' \
                             'from metadata_data ' \
-                            'where SampleBarcode=%s '
+                            'where sample_barcode=%s '
 
         aliquot_query_str += ' and platform=%s ' if platform is not None else ''
         aliquot_query_str += ' and pipeline=%s ' if pipeline is not None else ''
@@ -47,14 +47,14 @@ class SamplesGetQueryBuilder(object):
 
         biospecimen_query_str = 'select * ' \
                                 'from metadata_biospecimen ' \
-                                'where SampleBarcode=%s'
+                                'where sample_barcode=%s'
 
         return biospecimen_query_str
 
     def build_data_query(self, platform=None, pipeline=None):
 
         data_query_str = 'select ' \
-                         'SampleBarcode, ' \
+                         'sample_barcode, ' \
                          'DataCenterName, ' \
                          'DataCenterType, ' \
                          'DataFileName, ' \
@@ -66,12 +66,12 @@ class SamplesGetQueryBuilder(object):
                          'Pipeline,' \
                          'Platform,' \
                          'platform_full_name,' \
-                         'Project,' \
+                         'program_name,' \
                          'Repository,' \
                          'SDRFFileName,' \
                          'SecurityProtocol ' \
                          'from metadata_data ' \
-                         'where SampleBarcode=%s ' \
+                         'where sample_barcode=%s ' \
                          'and DataFileNameKey is not null and DataFileNameKey !=""'
 
         data_query_str += ' and platform=%s ' if platform is not None else ''
@@ -81,16 +81,16 @@ class SamplesGetQueryBuilder(object):
 
     def build_patient_query(self):
 
-        patient_query_str = 'select ParticipantBarcode ' \
+        patient_query_str = 'select case_barcode ' \
                             'from metadata_biospecimen ' \
-                            'where SampleBarcode=%s ' \
-                            'group by ParticipantBarcode'
+                            'where sample_barcode=%s ' \
+                            'group by case_barcode'
 
         return patient_query_str
 
 
 class DataDetails(messages.Message):
-    SampleBarcode = messages.StringField(1)
+    sample_Barcode = messages.StringField(1)
     DataCenterName = messages.StringField(2)
     DataCenterType = messages.StringField(3)
     DataFileName = messages.StringField(4)
@@ -173,7 +173,7 @@ class SamplesGetAPI(remote.Service):
             # get patient barcode (superfluous?)
             cursor.execute(patient_query_str, query_tuple)
             row = cursor.fetchone()
-            patient_barcode = str(row["ParticipantBarcode"])
+            patient_barcode = str(row["case_barcode"])
 
             # prepare to build list of data details messages
             cursor.execute(data_query_str, extra_query_tuple)

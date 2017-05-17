@@ -85,12 +85,12 @@ def get_table_info(table_id):
 
     return table_info
 
-def build_query(project_name, dataset_name, table_name, gene_symbol, value_field, cohort_dataset, cohort_table, cohort_id_array, study_id_array):
+def build_query(project_name, dataset_name, table_name, gene_symbol, value_field, cohort_dataset, cohort_table, cohort_id_array, project_id_array):
     # Generate the 'IN' statement string: (%s, %s, ..., %s)
     cohort_id_stmt = ', '.join([str(cohort_id) for cohort_id in cohort_id_array])
-    study_id_stmt = ''
-    if study_id_array is not None:
-        study_id_stmt = ', '.join([str(study_id) for study_id in study_id_array])
+    project_id_stmt = ''
+    if project_id_array is not None:
+        project_id_stmt = ', '.join([str(project_id) for project_id in project_id_array])
 
     query_template = \
         ("SELECT ParticipantBarcode AS patient_id, SampleBarcode AS sample_id, AliquotBarcode AS aliquot_id, {value_field} AS value "
@@ -100,14 +100,14 @@ def build_query(project_name, dataset_name, table_name, gene_symbol, value_field
          "    SELECT sample_barcode "
          "    FROM [{project_name}:{cohort_dataset}.{cohort_table}] "
          "    WHERE cohort_id IN ({cohort_id_list})"
-         "         AND (study_id IS NULL")
+         "         AND (project_id IS NULL")
 
-    query_template += (" OR study_id IN ({study_id_list})))" if study_id_array is not None else "))")
+    query_template += (" OR project_id IN ({project_id_list})))" if project_id_array is not None else "))")
 
     query = query_template.format(dataset_name=dataset_name, project_name=project_name, table_name=table_name,
                                   gene_symbol=gene_symbol, value_field=value_field,
                                   cohort_dataset=cohort_dataset, cohort_table=cohort_table,
-                                  cohort_id_list=cohort_id_stmt, study_id_list=study_id_stmt)
+                                  cohort_id_list=cohort_id_stmt, project_id_list=project_id_stmt)
 
     logging.debug("BQ_QUERY_GEXP: " + query)
     return query

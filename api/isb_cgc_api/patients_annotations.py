@@ -41,7 +41,7 @@ class PatientsAnnotationsQueryBuilder(object):
     def build_query(item_type_name=None):
         query_str = 'select * ' \
                     'from metadata_annotation ' \
-                    'where ParticipantBarcode=%s '
+                    'where case_barcode=%s '
         if len(item_type_name) > 0:
             query_str += 'and itemTypeName in (' + ', '.join(['%s']*len(item_type_name)) + ')'
 
@@ -52,7 +52,7 @@ class PatientsAnnotationsQueryBuilder(object):
     def build_metadata_samples_query():
         query_str = 'select * ' \
                     'from metadata_samples ' \
-                    'where ParticipantBarcode=%s '
+                    'where case_barcode=%s '
 
         return query_str
 

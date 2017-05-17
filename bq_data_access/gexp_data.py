@@ -108,29 +108,29 @@ class GEXPFeatureProvider(FeatureDataProvider):
     def process_data_point(self, data_point):
         return data_point['value']
 
-    def build_query(self, project_name, dataset_name, table_name, feature_def, cohort_dataset, cohort_table, cohort_id_array, study_id_array):
+    def build_query(self, project_name, dataset_name, table_name, feature_def, cohort_dataset, cohort_table, cohort_id_array, project_id_array):
         # Generate the 'IN' statement string: (%s, %s, ..., %s)
         cohort_id_stmt = ', '.join([str(cohort_id) for cohort_id in cohort_id_array])
-        study_id_stmt = ''
-        if study_id_array is not None:
-            study_id_stmt = ', '.join([str(study_id) for study_id in study_id_array])
+        project_id_stmt = ''
+        if project_id_array is not None:
+            project_id_stmt = ', '.join([str(project_id) for project_id in project_id_array])
 
-        query_template = "SELECT ParticipantBarcode AS patient_id, SampleBarcode AS sample_id, AliquotBarcode AS aliquot_id, {value_field} AS value " \
+        query_template = "SELECT ParticipantBarcode AS case_id, SampleBarcode AS sample_id, AliquotBarcode AS aliquot_id, {value_field} AS value " \
              "FROM [{project_name}:{dataset_name}.{table_name}] AS gexp " \
              "WHERE {gene_label_field}='{gene_symbol}' " \
              "AND SampleBarcode IN ( " \
              "     SELECT sample_barcode " \
              "     FROM [{project_name}:{cohort_dataset}.{cohort_table}] " \
              "     WHERE cohort_id IN ({cohort_id_list}) " \
-             "          AND (study_id IS NULL"
+             "          AND (project_id IS NULL"
 
-        query_template += (" OR study_id IN ({study_id_list})))" if study_id_array is not None else "))")
+        query_template += (" OR project_id IN ({project_id_list})))" if project_id_array is not None else "))")
 
         query = query_template.format(dataset_name=dataset_name, project_name=project_name, table_name=table_name,
                                       gene_label_field=GENE_LABEL_FIELD,
                                       gene_symbol=feature_def.gene, value_field=feature_def.value_field,
                                       cohort_dataset=cohort_dataset, cohort_table=cohort_table,
-                                      cohort_id_list=cohort_id_stmt, study_id_list=study_id_stmt)
+                                      cohort_id_list=cohort_id_stmt, project_id_list=project_id_stmt)
 
         logging.debug("BQ_QUERY_GEXP: " + query)
         return query
@@ -155,7 +155,7 @@ class GEXPFeatureProvider(FeatureDataProvider):
 
         for row in query_result_array:
             result.append({
-                'patient_id': row['f'][0]['v'],
+                'case_id': row['f'][0]['v'],
                 'sample_id': row['f'][1]['v'],
                 'aliquot_id': row['f'][2]['v'],
                 'value': float(row['f'][3]['v'])

@@ -51,7 +51,7 @@ class SamplesAnnotationsQueryBuilder(object):
     def build_metadata_samples_query():
         query_str = 'select * ' \
                     'from metadata_samples ' \
-                    'where SampleBarcode=%s '
+                    'where sample_barcode=%s '
 
         return query_str
 
