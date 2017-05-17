@@ -1,6 +1,6 @@
 ./google-cloud-sdk/bin/gsutil cp "gs://${TEST_GCLOUD_BUCKET}/${TEST_API_APP_YAML}" ./app.yaml
 ./google-cloud-sdk/bin/gsutil cp "gs://${TEST_GCLOUD_BUCKET}/${TEST_SECRETS_FILE}" ./client_secrets.json
-./google-cloud-sdk/bin/gsutil cp "gs://${TEST_GCLOUD_BUCKET}/${TEST_PEM_FILE}" ./privatekey.pem
+./google-cloud-sdk/bin/gsutil cp "gs://${TEST_GCLOUD_BUCKET}/${TEST_JSON_FILE}" ./privatekey.json
 
 if [ -n "${TEST_NIH_AUTH_ON}" ]; then
   ./google-cloud-sdk/bin/gsutil cp "gs://${TEST_GCLOUD_BUCKET}/saml/advanced_settings.json" ./saml/advanced_settings.json
