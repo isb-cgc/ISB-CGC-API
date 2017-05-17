@@ -88,7 +88,7 @@ DB_SOCKET = DATABASES['default']['HOST'] if 'cloudsql' in DATABASES['default']['
 SITE_ID = 3
 
 if IS_APP_ENGINE_FLEX or IS_APP_ENGINE:
-    print >> sys.stdout, "[STATUS] AppEngine Flex detected."
+    print >> sys.stdout, "[STATUS] AppEngine detected."
     SITE_ID = 4
 
 # For running local unit tests for models
