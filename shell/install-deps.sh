@@ -1,27 +1,26 @@
 if [ -n "$CI" ]; then
-export HOME=/home/ubuntu/${CIRCLE_PROJECT_REPONAME}
-export HOMEROOT=/home/ubuntu/${CIRCLE_PROJECT_REPONAME}
-
-# Clone dependencies
-git clone -b isb-cgc-test https://github.com/isb-cgc/ISB-CGC-Common.git
-
+    export HOME=/home/ubuntu/${CIRCLE_PROJECT_REPONAME}
+    export HOMEROOT=/home/ubuntu/${CIRCLE_PROJECT_REPONAME}
+    # Clone dependencies
+    git clone -b test https://github.com/isb-cgc/ISB-CGC-Common.git
 else
-export $(cat /home/vagrant/www/.env | grep -v ^# | xargs) 2> /dev/null
-export HOME=/home/vagrant
-export HOMEROOT=/home/vagrant/www
+    export $(cat /home/vagrant/www/.env | grep -v ^# | xargs) 2> /dev/null
+    export HOME=/home/vagrant
+    export HOMEROOT=/home/vagrant/www
 fi
 
 # Install and update apt-get info
 echo "Preparing System..."
 apt-get -y install software-properties-common
+
 if [ -n "$CI" ]; then
-# CI Takes care of Python update
-apt-get update -qq
+    # CI Takes care of Python update
+    apt-get update -qq
 else
-# Add apt-get repository to update python from 2.7.6 (default) to latest 2.7.x
-add-apt-repository -y ppa:fkrull/deadsnakes-python2.7
-apt-get update -qq
-apt-get install -qq -y python2.7
+    # Add apt-get repository to update python from 2.7.6 (default) to latest 2.7.x
+    add-apt-repository -y ppa:fkrull/deadsnakes-python2.7
+    apt-get update -qq
+    apt-get install -qq -y python2.7
 fi
 
 # Install apt-get dependencies
@@ -32,11 +31,10 @@ echo "Dependencies Installed"
 # Install PIP + Dependencies
 echo "Installing Python Libraries..."
 curl --silent https://bootstrap.pypa.io/get-pip.py | python
+# If we are in Frameworks 2.0, uncomment this and remove the endpoints entry from the libraries: section in the app.yaml
+# pip install -t lib google-endpoints --ignore-installed --upgrade
 pip install -q -r ${HOMEROOT}/requirements.txt -t ${HOMEROOT}/lib --upgrade --only-binary all
 echo "Libraries Installed"
-
-# Install SASS
-#gem install sass
 
 # Install Google App Engine
 echo "Installing Google App Engine..."
@@ -45,8 +43,6 @@ unzip -nq ${HOME}/google_appengine.zip -d $HOME
 export PATH=$PATH:${HOME}/google_appengine/
 export PYTHONPATH=$PYTHONPATH:${HOME}/google_appengine/
 echo $PYTHONPATH
-#mkdir ${HOMEROOT}/lib/endpoints/ 2> /dev/null
-#cp ${HOME}/google_appengine/lib/endpoints-1.0/endpoints/* ${HOMEROOT}/lib/endpoints/
 echo "Google App Engine Installed"
 
 # Install Google Cloud SDK

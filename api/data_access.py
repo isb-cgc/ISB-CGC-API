@@ -37,7 +37,7 @@ from api.pairwise import PairwiseInputVector, Pairwise
 from api.pairwise_api import PairwiseResults, PairwiseResultVector, PairwiseFilterMessage
 from api.api_helpers import sql_connection
 
-from projects.models import Study
+from projects.models import Project
 
 import sys
 
@@ -47,7 +47,7 @@ VIZ_UNIT_DATADICTIONARY = {
     'BMI': 'kg/m^2',
 }
 
-ISB_CGC_STUDIES = {
+ISB_CGC_PROJECTS = {
     'list': []
 }
 
@@ -55,25 +55,25 @@ ISB_CGC_STUDIES = {
 # Due to the way sql connections are done, it's easiest to duplicate this method and the static variable
 # it creates. The original is in Cohorts/views, and all changes will happen there first.
 #
-# Generate the ISB_CGC_STUDIES['list'] value set based on the get_isbcgc_study_set sproc
-def fetch_isbcgc_study_set():
+# Generate the ISB_CGC_PROJECTS['list'] value set based on the get_isbcgc_project_set sproc
+def fetch_isbcgc_project_set():
     try:
         cursor = None
         db = sql_connection()
-        if not ISB_CGC_STUDIES['list'] or len(ISB_CGC_STUDIES['list']) <= 0:
+        if not ISB_CGC_PROJECTS['list'] or len(ISB_CGC_PROJECTS['list']) <= 0:
             cursor = db.cursor()
-            cursor.execute("SELECT COUNT(SPECIFIC_NAME) FROM INFORMATION_SCHEMA.ROUTINES WHERE SPECIFIC_NAME = 'get_isbcgc_study_set';")
+            cursor.execute("SELECT COUNT(SPECIFIC_NAME) FROM INFORMATION_SCHEMA.ROUTINES WHERE SPECIFIC_NAME = 'get_isbcgc_project_set';")
             # Only try to fetch the study set if the sproc exists
             if cursor.fetchall()[0][0] > 0:
-                cursor.execute("CALL get_isbcgc_study_set();")
-                ISB_CGC_STUDIES['list'] = []
+                cursor.execute("CALL get_isbcgc_project_set();")
+                ISB_CGC_PROJECTS['list'] = []
                 for row in cursor.fetchall():
-                    ISB_CGC_STUDIES['list'].append(row[0])
+                    ISB_CGC_PROJECTS['list'].append(row[0])
             else:
                 # Otherwise just warn
-                logger.warn("[WARNING] Stored procedure get_isbcgc_study_set was not found!")
+                logger.warn("[WARNING] Stored procedure get_isbcgc_project_set was not found!")
 
-        return ISB_CGC_STUDIES['list']
+        return ISB_CGC_PROJECTS['list']
     except Exception as e:
         logger.error(e)
         logger.error(traceback.format_exc())
@@ -152,10 +152,11 @@ DATAPOINT_COHORT_THRESHOLD = 1
 
 class PlotDataPoint(Message):
     sample_id = StringField(1)
-    x = StringField(2)
-    y = StringField(3)
-    c = StringField(4)
-    cohort = IntegerField(5, repeated=True)
+    case_id = StringField(2)
+    x = StringField(3)
+    y = StringField(4)
+    c = StringField(5)
+    cohort = IntegerField(6, repeated=True)
 
 
 class PlotDataTypes(Message):
@@ -392,7 +393,7 @@ class FeatureDataEndpoints(remote.Service):
                             "[WARNING] No valid log base was supplied - log transformation will not be applied!"
                         )
 
-        vms = VectorMergeSupport('NA', 'sample_id', ['x', 'y', 'c']) # changed so that it plots per sample not patient
+        vms = VectorMergeSupport('NA', 'sample_id', 'case_id', ['x', 'y', 'c']) # changed so that it plots per sample not patient
         vms.add_dict_array(x_vec, 'x', 'value')
         vms.add_dict_array(y_vec, 'y', 'value')
         vms.add_dict_array(c_vec, 'c', 'value')
@@ -496,7 +497,7 @@ class FeatureDataEndpoints(remote.Service):
                     logging.error("Invalid internal feature ID '{}'".format(feature_id))
                     raise NotFoundException()
 
-            # Get the study IDs these cohorts' samples come from
+            # Get the project IDs these cohorts' samples come from
             cohort_vals = ()
             cohort_params = ""
 
@@ -509,9 +510,9 @@ class FeatureDataEndpoints(remote.Service):
             db = sql_connection()
             cursor = db.cursor()
 
-            tcga_studies = fetch_isbcgc_study_set()
+            tcga_studies = fetch_isbcgc_project_set()
 
-            cursor.execute("SELECT DISTINCT study_id FROM cohorts_samples WHERE cohort_id IN ("+cohort_params+");",cohort_vals)
+            cursor.execute("SELECT DISTINCT project_id FROM cohorts_samples WHERE cohort_id IN ("+cohort_params+");",cohort_vals)
 
             # Only samples whose source studies are TCGA studies, or extended from them, should be used
             confirmed_study_ids = []
@@ -525,11 +526,11 @@ class FeatureDataEndpoints(remote.Service):
                     unconfirmed_study_ids.append(row[0])
 
             if len(unconfirmed_study_ids) > 0:
-                studies = Study.objects.filter(id__in=unconfirmed_study_ids)
+                projects = Project.objects.filter(id__in=unconfirmed_study_ids)
 
-                for study in studies:
-                    if study.get_my_root_and_depth()['root'] in tcga_studies:
-                        confirmed_study_ids.append(study.id)
+                for project in projects:
+                    if project.get_my_root_and_depth()['root'] in tcga_studies:
+                        confirmed_study_ids.append(project.id)
 
             return self.get_merged_feature_vectors(x_id, y_id, c_id, cohort_id_array, logTransform, confirmed_study_ids)
         except NotFoundException as nfe:
