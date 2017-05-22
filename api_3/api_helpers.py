@@ -95,7 +95,7 @@ def sql_age_by_ranges(value):
         #value is a list of ranges
         first = True
         if 'None' in value:
-            result += 'age_at_initial_pathologic_diagnosis is null or '
+            result += 'age_at_diagnosis is null or '
             value.remove('None')
         for val in value:
             if first:
@@ -104,33 +104,33 @@ def sql_age_by_ranges(value):
             else:
                 result += ' or'
             if str(val) == '10 to 39':
-                result += ' (age_at_initial_pathologic_diagnosis >= 10 and age_at_initial_pathologic_diagnosis < 40)'
+                result += ' (age_at_diagnosis >= 10 and age_at_diagnosis < 40)'
             elif str(val) == '40 to 49':
-                result += ' (age_at_initial_pathologic_diagnosis >= 40 and age_at_initial_pathologic_diagnosis < 50)'
+                result += ' (age_at_diagnosis >= 40 and age_at_diagnosis < 50)'
             elif str(val) == '50 to 59':
-                result += ' (age_at_initial_pathologic_diagnosis >= 50 and age_at_initial_pathologic_diagnosis < 60)'
+                result += ' (age_at_diagnosis >= 50 and age_at_diagnosis < 60)'
             elif str(val) == '60 to 69':
-                result += ' (age_at_initial_pathologic_diagnosis >= 60 and age_at_initial_pathologic_diagnosis < 70)'
+                result += ' (age_at_diagnosis >= 60 and age_at_diagnosis < 70)'
             elif str(val) == '70 to 79':
-                result += ' (age_at_initial_pathologic_diagnosis >= 70 and age_at_initial_pathologic_diagnosis < 80)'
+                result += ' (age_at_diagnosis >= 70 and age_at_diagnosis < 80)'
             elif str(val).lower() == 'over 80':
-                result += ' (age_at_initial_pathologic_diagnosis >= 80)'
+                result += ' (age_at_diagnosis >= 80)'
     else:
         #value is a single range
         if str(value) == '10 to 39':
-            result += ' (age_at_initial_pathologic_diagnosis >= 10 and age_at_initial_pathologic_diagnosis < 40)'
+            result += ' (age_at_diagnosis >= 10 and age_at_diagnosis < 40)'
         elif str(value) == '40 to 49':
-            result += ' (age_at_initial_pathologic_diagnosis >= 40 and age_at_initial_pathologic_diagnosis < 50)'
+            result += ' (age_at_diagnosis >= 40 and age_at_diagnosis < 50)'
         elif str(value) == '50 to 59':
-            result += ' (age_at_initial_pathologic_diagnosis >= 50 and age_at_initial_pathologic_diagnosis < 60)'
+            result += ' (age_at_diagnosis >= 50 and age_at_diagnosis < 60)'
         elif str(value) == '60 to 69':
-            result += ' (age_at_initial_pathologic_diagnosis >= 60 and age_at_initial_pathologic_diagnosis < 70)'
+            result += ' (age_at_diagnosis >= 60 and age_at_diagnosis < 70)'
         elif str(value) == '70 to 79':
-            result += ' (age_at_initial_pathologic_diagnosis >= 70 and age_at_initial_pathologic_diagnosis < 80)'
+            result += ' (age_at_diagnosis >= 70 and age_at_diagnosis < 80)'
         elif str(value).lower() == 'over 80':
-            result += ' (age_at_initial_pathologic_diagnosis >= 80)'
+            result += ' (age_at_diagnosis >= 80)'
         elif str(value) == 'None':
-            result += ' age_at_initial_pathologic_diagnosis is null'
+            result += ' age_at_diagnosis is null'
 
     return result
 
@@ -339,7 +339,7 @@ def build_where_clause(filters, alt_key_map=False):
                 big_query_str += ' and'
 
             # If it's age ranges, give it special treament due to normalizations
-            if key == 'age_at_initial_pathologic_diagnosis':
+            if key == 'age_at_diagnosis':
                 if value == 'None':
                     query_str += ' %s IS NULL' % key
                 else:
