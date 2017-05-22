@@ -1,9 +1,9 @@
 from protorpc import messages
 
 class MetadataRangesItem(messages.Message):
-    age_at_initial_pathologic_diagnosis                               = messages.IntegerField(1, repeated=True, variant=messages.Variant.INT32)
-    age_at_initial_pathologic_diagnosis_lte                           = messages.IntegerField(2, variant=messages.Variant.INT32)
-    age_at_initial_pathologic_diagnosis_gte                           = messages.IntegerField(3, variant=messages.Variant.INT32)
+    age_at_diagnosis                                                  = messages.IntegerField(1, repeated=True, variant=messages.Variant.INT32)
+    age_at_diagnosis_lte                                              = messages.IntegerField(2, variant=messages.Variant.INT32)
+    age_at_diagnosis_gte                                              = messages.IntegerField(3, variant=messages.Variant.INT32)
     
     age_began_smoking_in_years                                        = messages.IntegerField(4, repeated=True, variant=messages.Variant.INT32)
     age_began_smoking_in_years_lte                                    = messages.IntegerField(5, variant=messages.Variant.INT32)
@@ -256,7 +256,7 @@ class MetadataRangesItem(messages.Message):
     sample_type                                                       = messages.StringField(204, repeated=True)
     
 class MetadataItem(messages.Message):
-    age_at_initial_pathologic_diagnosis                               = messages.IntegerField(1, variant=messages.Variant.INT32)
+    age_at_diagnosis                                                  = messages.IntegerField(1, variant=messages.Variant.INT32)
     age_began_smoking_in_years                                        = messages.IntegerField(2, variant=messages.Variant.INT32)
     anatomic_neoplasm_subdivision                                     = messages.StringField(3)
     batch_number                                                      = messages.IntegerField(4, variant=messages.Variant.INT32)

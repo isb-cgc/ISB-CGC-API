@@ -314,7 +314,7 @@ class FeatureDataEndpoints(remote.Service):
             ...
         ]
 
-        :param x_id: Feature identifier for x-axis e.g. 'CLIN:age_at_initial_pathologic_diagnosis'
+        :param x_id: Feature identifier for x-axis e.g. 'CLIN:age_at_diagnosis'
         :param y_id: Feature identifier for y-axis. If None, values for 'y' in the response will be marked as missing.
         :param c_id: Feature identifier for color-by. If None, values for 'c' in the response will be marked as missing.
         :param cohort_id_array: Cohort identifier array.

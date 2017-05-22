@@ -42,7 +42,7 @@ schema = [
     },
     {
         "type": "INTEGER",
-        "name": "age_at_initial_pathologic_diagnosis"
+        "name": "age_at_diagnosis"
     },
     {
         "type": "STRING",
