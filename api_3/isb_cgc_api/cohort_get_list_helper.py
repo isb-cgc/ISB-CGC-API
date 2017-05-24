@@ -289,10 +289,24 @@ class CohortsGetHelper(CohortsGetListAPI):
 
             parent_id_data, filter_data, case_list, _, sample_list, _ = self.get_cohort_details(cursor, row)
 
+            temp_list = []
             if len(sample_list) == 0:
                 sample_list = ["None"]
+            else:
+                temp_list = []
+                for sample in sample_list:
+                    if sample is not None:
+                        temp_list += [sample]
+                sample_list = temp_list
+                
             if len(case_list) == 0:
                 case_list = ["None"]
+            else:
+                temp_list = []
+                for case in case_list:
+                    if case is not None:
+                        temp_list += [case]
+                case_list = temp_list
 
             return CohortDetails(
                 id=str(row['id']),
