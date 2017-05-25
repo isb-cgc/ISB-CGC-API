@@ -48,11 +48,11 @@ class InvalidUserFeatureIDException(Exception):
 
 
 class UserFeatureDef(object):
-    def __init__(self, bq_table, column_name, study_id, is_numeric, filters):
-        logging.debug(str([bq_table, column_name, study_id, is_numeric, filters]))
+    def __init__(self, bq_table, column_name, project_id, is_numeric, filters):
+        logging.debug(str([bq_table, column_name, project_id, is_numeric, filters]))
         self.bq_table = bq_table
         self.column_name = column_name
-        self.study_id = study_id
+        self.project_id = project_id
         self.filters = filters
         self.bq_row_id = None
         self.type = "STRING" if is_numeric else "FLOAT"
@@ -81,10 +81,10 @@ class UserFeatureDef(object):
     @classmethod
     def from_user_feature_id(cls, feature_id):
         logging.debug("UserFeatureDef.from_user_feature_id {0}".format(str([feature_id])))
-        # ID breakdown: Study ID:Feature ID
+        # ID breakdown: project ID:Feature ID
         # Example ID: USER:1:6
         regex = re_compile("^USER:"
-                           # Study ID
+                           # project ID
                            "([0-9]+):"
                            # Feature ID
                            "([0-9]+)$"
@@ -93,7 +93,7 @@ class UserFeatureDef(object):
         feature_fields = regex.findall(feature_id)
         if len(feature_fields) == 0:
             raise FeatureNotFoundException(feature_id)
-        study_id, user_feature_id = feature_fields[0]
+        project_id, user_feature_id = feature_fields[0]
         bq_id = None
         shared_id = None
         is_numeric = False
@@ -121,12 +121,12 @@ class UserFeatureDef(object):
             raise e
 
         if shared_id is not None:
-            return cls.from_feature_id(bq_id, study_id)
+            return cls.from_feature_id(bq_id, project_id)
 
         if bq_id is None:
             raise FeatureNotFoundException(feature_id)
 
-        # Else we're querying a very specific feature from a specific study
+        # Else we're querying a very specific feature from a specific project
         bq_table, column_name, symbol = cls.get_table_and_field(bq_id)
         if bq_table is None or column_name is None:
             raise FeatureNotFoundException(feature_id)
@@ -139,17 +139,17 @@ class UserFeatureDef(object):
                 'Symbol': symbol
             }
 
-        return [cls(bq_table, column_name, study_id, is_numeric, filters)]
+        return [cls(bq_table, column_name, project_id, is_numeric, filters)]
 
     @classmethod
-    def from_feature_id(cls, feature_id, study_id=None):
-        logging.debug("UserFeatureDef.from_feature_id: {0}".format(str([feature_id, study_id])))
+    def from_feature_id(cls, feature_id, project_id=None):
+        logging.debug("UserFeatureDef.from_feature_id: {0}".format(str([feature_id, project_id])))
         if feature_id is None:
             raise FeatureNotFoundException(feature_id)
-        # ID breakdown: Study ID:Feature ID
+        # ID breakdown: project ID:Feature ID
         # Example ID: USER:1:6
         regex = re_compile("^USER:"
-                           # Study ID
+                           # project ID
                            "([0-9]+):"
                            # Feature ID
                            "([0-9]+)$"
@@ -158,14 +158,14 @@ class UserFeatureDef(object):
         feature_fields = regex.findall(feature_id)
         if len(feature_fields) == 0:
             raise FeatureNotFoundException(feature_id)
-        study_id, user_feature_id = feature_fields[0]
+        project_id, user_feature_id = feature_fields[0]
 
 
         try:
             db = sql_connection()
             cursor = db.cursor(MySQLdb.cursors.DictCursor)
             cursor.execute("""
-                SELECT bq_map_id, study_id, is_numeric
+                SELECT bq_map_id, project_id, is_numeric
                 FROM projects_user_feature_definitions
                 WHERE id = %s
             """, (user_feature_id,))
@@ -178,7 +178,7 @@ class UserFeatureDef(object):
                     filters = {
                         'Symbol': symbol
                     }
-                results.append(cls(bq_table, column_name, row['study_id'], row['is_numeric'] == 1, filters))
+                results.append(cls(bq_table, column_name, row['project_id'], row['is_numeric'] == 1, filters))
 
             cursor.close()
             db.close()
@@ -193,25 +193,25 @@ class UserFeatureDef(object):
     def unpack_value_from_bigquery_row(self, bq_row):
         return bq_row['f'][self.bq_row_id + 2]['v']
 
-    def build_query(self, cohort_table, cohort_ids, study_id_array):
+    def build_query(self, cohort_table, cohort_ids, project_id_array):
 
         cohort_str = ",".join([str(cohort_id) for cohort_id in cohort_ids])
-        study_id_stmt = ''
-        if study_id_array is not None and len(study_id_array):
-            study_id_stmt = ', '.join([str(study_id) for study_id in study_id_array])
+        project_id_stmt = ''
+        if project_id_array is not None and len(project_id_array):
+            project_id_stmt = ', '.join([str(project_id) for project_id in project_id_array])
 
         query_template =  "SELECT {fdef_id} AS fdef_id, t.sample_barcode, t.{column_name} FROM [{table_name}] AS t " \
                           "JOIN [{cohort_table}] AS c ON c.sample_barcode = t.sample_barcode " \
-                          "WHERE c.cohort_id IN ({cohort_list}) AND (c.study_id IS NULL"
+                          "WHERE c.cohort_id IN ({cohort_list}) AND (c.project_id IS NULL"
 
 
-        query_template += (" OR c.study_id IN ({study_id_list}))" if study_id_array is not None and len(study_id_array) else ")")
+        query_template += (" OR c.project_id IN ({project_id_list}))" if project_id_array is not None and len(project_id_array) else ")")
         query = query_template.format(fdef_id=self.bq_row_id,
                               column_name=self.column_name,
                               table_name=self.bq_table,
                               cohort_table=cohort_table,
                               cohort_list=cohort_str,
-                              study_id_list=study_id_stmt)
+                              project_id_list=project_id_stmt)
 
         if self.filters is not None:
             for key, val in self.filters.items():
@@ -228,7 +228,7 @@ class UserFeatureProvider(FeatureDataProvider):
     def __init__(self, feature_id, user_feature_id=None, **kwargs):
         self.feature_defs = None
         self.parse_internal_feature_id(feature_id, user_feature_id=user_feature_id)
-        self._study_ids = None
+        self._project_ids = None
         super(UserFeatureProvider, self).__init__(**kwargs)
 
     def get_feature_type(self):
@@ -266,7 +266,7 @@ class UserFeatureProvider(FeatureDataProvider):
     def get_value_type(self):
         return self.feature_defs[0].get_value_type()
 
-    def build_query(self, study_ids, cohort_id_array, cohort_dataset, cohort_table, study_id_array):
+    def build_query(self, project_ids, cohort_id_array, cohort_dataset, cohort_table, project_id_array):
         """
         Builds the BigQuery query string for USER data. The query string is constructed from one or more data sources
         (queries), such that each associated UserFeatureDef instance constructs one data source. Each data source
@@ -304,12 +304,12 @@ class UserFeatureProvider(FeatureDataProvider):
         """
         queries = []
         cohort_table_full = settings.BIGQUERY_PROJECT_NAME + ':' + cohort_dataset + '.' + cohort_table
-        # TODO: this is a hack to append study_ids to the tcga study id list. study_id_array is actually empty.
-        study_id_array += study_ids
+        # TODO: this is a hack to append project_ids to the tcga project id list. project_id_array is actually empty.
+        project_id_array += project_ids
         for feature_def in self.feature_defs:
-            if int(feature_def.study_id) in study_ids:
+            if int(feature_def.project_id) in project_ids:
                 # Build our query
-                queries.append(feature_def.build_query(cohort_table_full, cohort_id_array, study_id_array))
+                queries.append(feature_def.build_query(cohort_table_full, cohort_id_array, project_id_array))
 
         # Create a combination query using the UNION ALL operator. Each data source defined above (query1, query2, ...)
         # will be combined as follows:
@@ -367,31 +367,31 @@ class UserFeatureProvider(FeatureDataProvider):
 
         return result
 
-    def get_study_ids(self, cohort_id_array):
+    def get_project_ids(self, cohort_id_array):
         """
-        Returns: The user study identifiers associated with the samples in all given cohorts.
+        Returns: The user project identifiers associated with the samples in all given cohorts.
         """
-        if self._study_ids is not None:
-            return self._study_ids
+        if self._project_ids is not None:
+            return self._project_ids
 
-        study_ids = ()
+        project_ids = ()
         for cohort_id in cohort_id_array:
             try:
                 db = sql_connection()
                 cursor = db.cursor(MySQLdb.cursors.DictCursor)
 
-                cursor.execute("SELECT study_id FROM cohorts_samples WHERE cohort_id = %s GROUP BY study_id", (cohort_id,))
+                cursor.execute("SELECT project_id FROM cohorts_samples WHERE cohort_id = %s GROUP BY project_id", (cohort_id,))
                 for row in cursor.fetchall():
-                    if row['study_id'] is not None:
-                        study_ids += (row['study_id'],)
+                    if row['project_id'] is not None:
+                        project_ids += (row['project_id'],)
 
             except Exception as e:
                 if db: db.close()
                 if cursor: cursor.close()
                 raise e
 
-        self._study_ids = study_ids
-        return self._study_ids
+        self._project_ids = project_ids
+        return self._project_ids
 
     def parse_internal_feature_id(self, feature_id, user_feature_id=None):
         if user_feature_id is None or user_feature_id is '':
@@ -406,12 +406,12 @@ class UserFeatureProvider(FeatureDataProvider):
         for index, feature_def in enumerate(self.feature_defs):
             feature_def.bq_row_id = index
 
-    def _submit_query_and_get_job_ref(self, project_id, project_name, dataset_name, cohort_dataset, cohort_table, cohort_id_array, study_id_array):
-        study_ids = self.get_study_ids(cohort_id_array)
+    def _submit_query_and_get_job_ref(self, project_id, project_name, dataset_name, cohort_dataset, cohort_table, cohort_id_array, project_id_array):
+        project_ids = self.get_project_ids(cohort_id_array)
 
         bigquery_service = self.get_bq_service()
 
-        query_body = self.build_query(study_ids, cohort_id_array, cohort_dataset, cohort_table, study_id_array)
+        query_body = self.build_query(project_ids, cohort_id_array, cohort_dataset, cohort_table, project_id_array)
         query_job = self.submit_bigquery_job(bigquery_service, project_id, query_body)
 
         self.job_reference = query_job['jobReference']
@@ -423,23 +423,23 @@ class UserFeatureProvider(FeatureDataProvider):
         Answers if this instance would submit a BigQuery job if the submit_query_and_get_job_ref member function
         was called.
         """
-        study_ids = self.get_study_ids(cohort_id_array)
+        project_ids = self.get_project_ids(cohort_id_array)
         queryable = False
 
         for feature_def in self.feature_defs:
-            if int(feature_def.study_id) in study_ids:
+            if int(feature_def.project_id) in project_ids:
                 queryable = True
                 break
 
         return queryable
 
-    def get_data_job_reference(self, cohort_id_array, cohort_dataset, cohort_table, study_id_array):
+    def get_data_job_reference(self, cohort_id_array, cohort_dataset, cohort_table, project_id_array):
         project_id = settings.BQ_PROJECT_ID
         project_name = settings.BIGQUERY_PROJECT_NAME
         dataset_name = settings.BIGQUERY_DATASET
 
         result = self._submit_query_and_get_job_ref(project_id, project_name, dataset_name,
-                                                    cohort_dataset, cohort_table, cohort_id_array, study_id_array)
+                                                    cohort_dataset, cohort_table, cohort_id_array, project_id_array)
         return result
 
     @classmethod
