@@ -71,12 +71,12 @@ class CohortsPreviewAPI(remote.Service):
             patient_cursor = db.cursor(MySQLdb.cursors.DictCursor)
             patient_cursor.execute(patient_query_str, value_tuple)
             for row in patient_cursor.fetchall():
-                patient_barcodes.append(row['ParticipantBarcode'])
+                patient_barcodes.append(row['case_barcode'])
 
             sample_cursor = db.cursor(MySQLdb.cursors.DictCursor)
             sample_cursor.execute(sample_query_str, value_tuple)
             for row in sample_cursor.fetchall():
-                sample_barcodes.append(row['SampleBarcode'])
+                sample_barcodes.append(row['sample_barcode'])
 
         except (IndexError, TypeError), e:
             logger.warn(e)

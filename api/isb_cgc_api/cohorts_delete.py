@@ -37,7 +37,6 @@ BASE_URL = settings.BASE_URL
 class ReturnJSON(messages.Message):
     message = messages.StringField(1)
 
-
 @ISB_CGC_Endpoints.api_class(resource_name='cohorts')
 class CohortsDeleteAPI(remote.Service):
     DELETE_RESOURCE = endpoints.ResourceContainer(cohort_id=messages.IntegerField(1, required=True))
