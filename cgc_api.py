@@ -15,59 +15,67 @@ See the License for the specific language governing permissions and
 limitations under the License.
 
 """
-
 import endpoints
 
-from api.feature_access import FeatureAccessEndpoints
-from api.single_feature_access import SingleFeatureDataAccess
-from api.data_access import FeatureDataEndpoints
+from api_3.isb_cgc_api.cohorts_delete import CohortsDeleteAPI
+from api_3.isb_cgc_api.cohorts_get import CohortsGetAPI
+from api_3.isb_cgc_api.cohorts_list import CohortsListAPI
+from api_3.isb_cgc_api.cohorts_cloudstoragefilepaths import CohortsCloudStorageFilePathsAPI
 
-from api.Cohort import Cohort_Endpoints
+from api_3.isb_cgc_api_TCGA.cohorts_preview import TCGA_CohortsPreviewAPI
+from api_3.isb_cgc_api_TCGA.cohorts_create import TCGA_CohortsCreateAPI
+from api_3.isb_cgc_api_TCGA.patients_get import TCGA_CasesGetAPI
+from api_3.isb_cgc_api_TCGA.patients_annotations import TCGA_CasesAnnotationAPI
+from api_3.isb_cgc_api_TCGA.samples_get import TCGA_SamplesGetAPI
+from api_3.isb_cgc_api_TCGA.samples_cloudstoragefilepaths import TCGA_SamplesCloudStorageFilePathsAPI
+from api_3.isb_cgc_api_TCGA.samples_annotations import TCGA_SamplesAnnotationAPI
+from api_3.isb_cgc_api_TCGA.aliquots_annotations import TCGA_AliquotsAnnotationAPI
+from api_3.isb_cgc_api_TCGA.users_get import TCGA_UserGetAPI
 
-from api.metadata import Meta_Endpoints, Meta_Endpoints_v2
-from api.pairwise_api import Pairwise_Endpoints
-from api.seqpeek_view_api import SeqPeekViewDataAccessAPI
-from api.isb_cgc_api.cohorts_list import CohortsListAPI
-from api.isb_cgc_api.cohorts_preview import CohortsPreviewAPI
-from api.isb_cgc_api.cohorts_get import CohortsGetAPI
-from api.isb_cgc_api.cohorts_delete import CohortsDeleteAPI
-from api.isb_cgc_api.cohorts_create import CohortsCreateAPI
-from api.isb_cgc_api.cohorts_cloudstoragefilepaths import CohortsCloudStorageFilePathsAPI
-from api.isb_cgc_api.patients_get import PatientsGetAPI
-from api.isb_cgc_api.patients_annotations import PatientsAnnotationAPI
-from api.isb_cgc_api.samples_get import SamplesGetAPI
-from api.isb_cgc_api.samples_cloudstoragefilepaths import SamplesCloudStorageFilePathsAPI
-from api.isb_cgc_api.samples_annotations import SamplesAnnotationAPI
-from api.isb_cgc_api.aliquots_annotations import AliquotsAnnotationAPI
-from api.isb_cgc_api.users_get import UserGetAPI
+from api_3.isb_cgc_api_TARGET.cohorts_preview import TARGET_CohortsPreviewAPI
+from api_3.isb_cgc_api_TARGET.cohorts_create import TARGET_CohortsCreateAPI
+from api_3.isb_cgc_api_TARGET.patients_get import TARGET_CasesGetAPI
+from api_3.isb_cgc_api_TARGET.samples_get import TARGET_SamplesGetAPI
+from api_3.isb_cgc_api_TARGET.samples_cloudstoragefilepaths import TARGET_SamplesCloudStorageFilePathsAPI
+from api_3.isb_cgc_api_TARGET.users_get import TARGET_UserGetAPI
 
+from api_3.isb_cgc_api_CCLE.cohorts_preview import CCLE_CohortsPreviewAPI
+from api_3.isb_cgc_api_CCLE.cohorts_create import CCLE_CohortsCreateAPI
+from api_3.isb_cgc_api_CCLE.patients_get import CCLE_CasesGetAPI
+from api_3.isb_cgc_api_CCLE.samples_get import CCLE_SamplesGetAPI
+from api_3.isb_cgc_api_CCLE.samples_cloudstoragefilepaths import CCLE_SamplesCloudStorageFilePathsAPI
+from api_3.isb_cgc_api_CCLE.users_get import CCLE_UserGetAPI
 
 package = 'isb-cgc-api'
 
-
 APPLICATION = endpoints.api_server([
-    Cohort_Endpoints,
-
-    FeatureAccessEndpoints,
-    Meta_Endpoints,
-    Meta_Endpoints_v2,
-    FeatureDataEndpoints,
-    SingleFeatureDataAccess,
-    Pairwise_Endpoints,
-    SeqPeekViewDataAccessAPI,
-
-    CohortsListAPI,
-    CohortsPreviewAPI,
-    CohortsGetAPI,
     CohortsDeleteAPI,
-    CohortsCreateAPI,
+    CohortsGetAPI,
+    CohortsListAPI,
     CohortsCloudStorageFilePathsAPI,
-    PatientsGetAPI,
-    PatientsAnnotationAPI,
-    SamplesGetAPI,
-    SamplesCloudStorageFilePathsAPI,
-    SamplesAnnotationAPI,
-    AliquotsAnnotationAPI,
-    UserGetAPI,
+
+    TCGA_CohortsPreviewAPI,
+    TCGA_CohortsCreateAPI,
+    TCGA_CasesGetAPI,
+    TCGA_CasesAnnotationAPI,
+    TCGA_SamplesGetAPI,
+    TCGA_SamplesCloudStorageFilePathsAPI,
+    TCGA_SamplesAnnotationAPI,
+    TCGA_AliquotsAnnotationAPI,
+    TCGA_UserGetAPI,
+        
+    TARGET_CohortsPreviewAPI,
+    TARGET_CohortsCreateAPI,
+    TARGET_CasesGetAPI,
+    TARGET_SamplesGetAPI,
+    TARGET_SamplesCloudStorageFilePathsAPI,
+    TARGET_UserGetAPI,
+        
+    CCLE_CohortsPreviewAPI,
+    CCLE_CohortsCreateAPI,
+    CCLE_CasesGetAPI,
+    CCLE_SamplesGetAPI,
+    CCLE_SamplesCloudStorageFilePathsAPI,
+    CCLE_UserGetAPI
 ])
 

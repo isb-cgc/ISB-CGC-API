@@ -32,7 +32,7 @@ from isb_cgc_api_helpers import ISB_CGC_Endpoints, CohortsCreatePreviewQueryBuil
 from message_classes import MetadataRangesItem
 
 from api.api_helpers import sql_connection, WHITELIST_RE
-from cohorts.models import Cohort as Django_Cohort, Cohort_Perms, Patients, Samples, Filters
+from cohorts.models import Cohort as Django_Cohort, Cohort_Perms, Samples, Filters
 from bq_data_access.cohort_bigquery import BigQueryCohortSupport
 
 logger = logging.getLogger(__name__)
@@ -98,10 +98,9 @@ class CohortsCreateAPI(remote.Service):
         try:
             db = sql_connection()
             cursor = db.cursor(MySQLdb.cursors.DictCursor)
-            cursor.execute(patient_query_str, value_tuple)
-            patient_barcodes = [row['ParticipantBarcode'] for row in cursor.fetchall()]
             cursor.execute(sample_query_str, value_tuple)
-            sample_barcodes = [row['SampleBarcode'] for row in cursor.fetchall()]
+            # TODO: We need to adjust this to pull the correct project ID as well
+            sample_barcodes = [{'sample_barcode': row['sample_barcode'], 'case_barcode': row['case_barcode'], 'project_id': None,} for row in cursor.fetchall()]
 
         except (IndexError, TypeError), e:
             logger.warn(e)
@@ -128,7 +127,7 @@ class CohortsCreateAPI(remote.Service):
             raise endpoints.BadRequestException(
                 "Your cohort's name contains invalid characters (" + match.__str__() + "); please choose another name.")
 
-        if len(patient_barcodes) == 0 or len(sample_barcodes) == 0:
+        if len(sample_barcodes) == 0:
             raise endpoints.BadRequestException(
                 "The cohort could not be saved because no samples meet the specified parameters.")
 
@@ -138,22 +137,15 @@ class CohortsCreateAPI(remote.Service):
                                                       last_date_saved=datetime.utcnow())
         created_cohort.save()
 
-        # 2. insert patients into cohort_patients
-        patient_barcodes = list(set(patient_barcodes))
-        patient_list = [Patients(cohort=created_cohort, patient_id=patient_code) for patient_code in
-                        patient_barcodes]
-        Patients.objects.bulk_create(patient_list)
-
-        # 3. insert samples into cohort_samples
-        sample_barcodes = list(set(sample_barcodes))
-        sample_list = [Samples(cohort=created_cohort, sample_id=sample_code) for sample_code in sample_barcodes]
+        # 2. insert samples into cohort_samples
+        sample_list = [Samples(cohort=created_cohort, sample_barcode=sample['sample_barcode'], case_barcode=sample['case_barcode'], project_id=sample['project_id']) for sample in sample_barcodes]
         Samples.objects.bulk_create(sample_list)
 
-        # 4. Set permission for user to be owner
+        # 3. Set permission for user to be owner
         perm = Cohort_Perms(cohort=created_cohort, user=django_user, perm=Cohort_Perms.OWNER)
         perm.save()
 
-        # 5. Create filters applied
+        # 4. Create filters applied
         filter_data = []
         for key, value_list in query_dict.items():
             for val in value_list:
@@ -164,11 +156,11 @@ class CohortsCreateAPI(remote.Service):
             filter_data.append(FilterDetails(name=key, value=str(val)))
             Filters.objects.create(resulting_cohort=created_cohort, name=key, value=val).save()
 
-        # 6. Store cohort to BigQuery
+        # 5. Store cohort to BigQuery
         project_id = settings.BQ_PROJECT_ID
         cohort_settings = settings.GET_BQ_COHORT_SETTINGS()
         bcs = BigQueryCohortSupport(project_id, cohort_settings.dataset_id, cohort_settings.table_id)
-        bcs.add_cohort_with_sample_barcodes(created_cohort.id, sample_barcodes)
+        bcs.add_cohort_to_bq(created_cohort.id, sample_barcodes)
 
         request_finished.send(self)
 
@@ -176,6 +168,6 @@ class CohortsCreateAPI(remote.Service):
                              name=cohort_name,
                              last_date_saved=str(datetime.utcnow()),
                              filters=filter_data,
-                             patient_count=len(patient_barcodes),
+                             patient_count=created_cohort.case_size(),
                              sample_count=len(sample_barcodes)
                              )
