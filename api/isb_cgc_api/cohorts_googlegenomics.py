@@ -89,7 +89,7 @@ class CohortsGoogleGenomicssAPI(remote.Service):
 
         query_str = 'SELECT SampleBarcode, GG_dataset_id, GG_readgroupset_id ' \
                     'FROM metadata_data ' \
-                    'JOIN cohorts_samples ON metadata_data.SampleBarcode=cohorts_samples.sample_id ' \
+                    'JOIN cohorts_samples ON metadata_data.SampleBarcode=cohorts_samples.sample_barcode ' \
                     'WHERE cohorts_samples.cohort_id=%s ' \
                     'AND GG_dataset_id !="" AND GG_readgroupset_id !="" ' \
                     'GROUP BY SampleBarcode, GG_dataset_id, GG_readgroupset_id;'
