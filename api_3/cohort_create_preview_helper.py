@@ -202,7 +202,7 @@ class CohortsCreateHelper(CohortsCreatePreviewAPI):
                 project2django[row['project_short_name']] = self.get_django_project(row['project_short_name'])
         logger.info('set up sample barcodes')
         sample_barcodes = [{'sample_barcode': row['sample_barcode'], 'case_barcode': row['case_barcode'], 'project': project2django[row['project_short_name']]} for row in rows]
-        logger.info('finished set up django project map')
+        logger.info('finished set up sample barcodes')
         cohort_name = request.get_assigned_value('name')
 
         # Validate the cohort name against a whitelist
@@ -240,20 +240,21 @@ class CohortsCreateHelper(CohortsCreatePreviewAPI):
         filter_data = []
         # special case sample barcode since the list can be ALL the sample barcodes in the program
         django_program = self.get_django_program(self.program)
-        sample_barcodes = set()
+        edit_barcodes = set()
         for key, value_list in query_dict.items():
+            if 'sample_barcode' == key:
+                edit_barcodes |= value_list
+                continue
             for val in value_list:
-                if 'sample_barcode' == key:
-                    sample_barcodes |= value_list
-                else:
-                    filter_data.append(FilterDetails(name=key, value=str(val)))
-                    Filters.objects.create(resulting_cohort=created_cohort, name=key, value=val, program=django_program).save()
-        if 0 < len(sample_barcodes):
-            if len(sample_barcodes) < 6:
-                val = 'barcodes: {}'.format(', '.join(sorted(list(sample_barcodes))))
+                filter_data.append(FilterDetails(name=key, value=str(val)))
+                Filters.objects.create(resulting_cohort=created_cohort, name=key, value=val, program=django_program).save()
+        if 0 < len(edit_barcodes):
+            if len(edit_barcodes) < 6:
+                val = 'barcodes: {}'.format(', '.join(sorted(list(edit_barcodes))))
             else:
-                val = '{} barcodes beginning with {}'.format(len(sample_barcodes), ', '.join(sorted(list(sample_barcodes))[:5]))
+                val = '{} barcodes beginning with {}'.format(len(edit_barcodes), ', '.join(sorted(list(edit_barcodes))[:5]))
             filter_data.append(FilterDetails(name='sample_barcode', value=val))
+            Filters.objects.create(resulting_cohort=created_cohort, name='sample_barcode', value=val, program=django_program).save()
 
         for key, val in [(k + '_lte', v) for k, v in lte_query_dict.items()] + [(k + '_gte', v) for k, v in gte_query_dict.items()]:
             filter_data.append(FilterDetails(name=key, value=str(val)))
