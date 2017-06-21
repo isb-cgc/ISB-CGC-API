@@ -243,7 +243,7 @@ class CohortsCreateHelper(CohortsCreatePreviewAPI):
         edit_barcodes = set()
         for key, value_list in query_dict.items():
             if 'sample_barcode' == key:
-                edit_barcodes |= value_list
+                edit_barcodes |= set(value_list)
                 continue
             for val in value_list:
                 filter_data.append(FilterDetails(name=key, value=str(val)))
