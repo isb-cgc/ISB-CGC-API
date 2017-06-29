@@ -195,7 +195,14 @@ class CohortsCreateHelper(CohortsCreatePreviewAPI):
 
         # get the sample barcode information for use in creating the sample list for the cohort
         rows, query_dict, lte_query_dict, gte_query_dict = self.query_samples(request)
-        sample_barcodes = [{'sample_barcode': row['sample_barcode'], 'case_barcode': row['case_barcode'], 'project': self.get_django_project(row['project_short_name'])} for row in rows]
+        logger.info('set up django project map')
+        project2django = {}
+        for row in rows:
+            if row['project_short_name'] not in project2django:
+                project2django[row['project_short_name']] = self.get_django_project(row['project_short_name'])
+        logger.info('set up sample barcodes')
+        sample_barcodes = [{'sample_barcode': row['sample_barcode'], 'case_barcode': row['case_barcode'], 'project': project2django[row['project_short_name']]} for row in rows]
+        logger.info('finished set up sample barcodes')
         cohort_name = request.get_assigned_value('name')
 
         # Validate the cohort name against a whitelist
@@ -220,22 +227,39 @@ class CohortsCreateHelper(CohortsCreatePreviewAPI):
 
         # 2. insert samples into cohort_samples
         sample_list = [Samples(cohort=created_cohort, sample_barcode=sample['sample_barcode'], case_barcode=sample['case_barcode'], project=sample['project']) for sample in sample_barcodes]
+        logger.info('call samples bulk_create()')
         Samples.objects.bulk_create(sample_list)
+        logger.info('completed samples bulk_create()')
 
         # 3. Set permission for user to be owner
         perm = Cohort_Perms(cohort=created_cohort, user=django_user, perm=Cohort_Perms.OWNER)
         perm.save()
 
         # 4. Create filters applied
+        logger.info('creating filters')
         filter_data = []
+        # special case sample barcode since the list can be ALL the sample barcodes in the program
+        django_program = self.get_django_program(self.program)
+        edit_barcodes = set()
         for key, value_list in query_dict.items():
+            if 'sample_barcode' == key:
+                edit_barcodes |= set(value_list)
+                continue
             for val in value_list:
                 filter_data.append(FilterDetails(name=key, value=str(val)))
-                Filters.objects.create(resulting_cohort=created_cohort, name=key, value=val, program=self.get_django_program(self.program)).save()
+                Filters.objects.create(resulting_cohort=created_cohort, name=key, value=val, program=django_program).save()
+        if 0 < len(edit_barcodes):
+            if len(edit_barcodes) < 6:
+                val = 'barcodes: {}'.format(', '.join(sorted(list(edit_barcodes))))
+            else:
+                val = '{} barcodes beginning with {}'.format(len(edit_barcodes), ', '.join(sorted(list(edit_barcodes))[:5]))
+            filter_data.append(FilterDetails(name='sample_barcode', value=val))
+            Filters.objects.create(resulting_cohort=created_cohort, name='sample_barcode', value=val, program=django_program).save()
 
         for key, val in [(k + '_lte', v) for k, v in lte_query_dict.items()] + [(k + '_gte', v) for k, v in gte_query_dict.items()]:
             filter_data.append(FilterDetails(name=key, value=str(val)))
-            Filters.objects.create(resulting_cohort=created_cohort, name=key, value=val, program=self.get_django_program(self.program)).save()
+            Filters.objects.create(resulting_cohort=created_cohort, name=key, value=val, program=django_program).save()
+        logger.info('completed filters')
 
         # 5. Store cohort to BigQuery
         project_id = settings.BQ_PROJECT_ID
