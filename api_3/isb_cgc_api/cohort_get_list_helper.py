@@ -50,8 +50,22 @@ class CohortDetails(messages.Message):
     cases = messages.StringField(13, repeated=True)
     samples = messages.StringField(14, repeated=True)
 
+class CohortListDetails(messages.Message):
+    id = messages.StringField(1)
+    name = messages.StringField(2)
+    last_date_saved = messages.StringField(3)
+    permission = messages.StringField(4)
+    email = messages.StringField(5)
+    comments = messages.StringField(6)
+    source_type = messages.StringField(7)
+    source_notes = messages.StringField(8)
+    parent_id = messages.StringField(9, repeated=True)
+    filters = messages.MessageField(FilterDetails, 10, repeated=True)
+    case_count = messages.IntegerField(11, variant=messages.Variant.INT32)
+    sample_count = messages.IntegerField(12, variant=messages.Variant.INT32)
+
 class CohortDetailsList(messages.Message):
-    items = messages.MessageField(CohortDetails, 1, repeated=True)
+    items = messages.MessageField(CohortListDetails, 1, repeated=True)
     count = messages.IntegerField(2, variant=messages.Variant.INT32)
 
 class CohortsGetListQueryBuilder(object):
@@ -342,8 +356,7 @@ class CohortsListHelper(CohortsGetListAPI):
     def list(self, unused_request):
         """
         Returns information about cohorts a user has either READER or OWNER permission on.
-        Authentication is required. Optionally takes a cohort id as a parameter to
-        only list information about one cohort.
+        Authentication is required.
         """
         user_id, user_email = self.validate_user()
 
@@ -360,7 +373,7 @@ class CohortsListHelper(CohortsGetListAPI):
                 parent_id_data, filter_data, _, case_count, _, sample_count = self.get_cohort_details(cursor, row)
                 
                 data.append(
-                    CohortDetails(
+                    CohortListDetails(
                         id=str(row['id']),
                         name=str(row['name']),
                         last_date_saved=str(row['last_date_saved']),
@@ -372,9 +385,7 @@ class CohortsListHelper(CohortsGetListAPI):
                         parent_id=parent_id_data,
                         filters=filter_data,
                         case_count=case_count,
-                        sample_count=sample_count,
-                        cases=[],
-                        samples=[]
+                        sample_count=sample_count
                     )
                 )
 
