@@ -27,7 +27,6 @@ class CohortsListAPI(CohortsListHelper):
     def list(self, unused_request):
         """
         Returns information about cohorts a user has either READER or OWNER permission on.
-        Authentication is required. Optionally takes a cohort id as a parameter to
-        only list information about one cohort.
+        Authentication is required.
         """
         return super(CohortsListAPI, self).list(unused_request)
