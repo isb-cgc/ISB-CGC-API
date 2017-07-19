@@ -250,19 +250,47 @@ LOGGING = {
     'filters': {
         'require_debug_false': {
             '()': 'django.utils.log.RequireDebugFalse'
-        }
+        },
+        'require_debug_true': {
+            '()': 'django.utils.log.RequireDebugTrue'
+        },
+    },
+    'formatters': {
+        'verbose': {
+            'format': '[%(levelname)s] @%(asctime)s in %(module)s/%(process)d/%(thread)d - %(message)s'
+        },
+        'simple': {
+            'format': '[%(levelname)s] @%(asctime)s in %(module)s: %(message)s'
+        },
     },
     'handlers': {
         'mail_admins': {
             'level': 'ERROR',
             'filters': ['require_debug_false'],
             'class': 'django.utils.log.AdminEmailHandler'
-        }
+        },
+        'console_dev': {
+            'level': 'DEBUG',
+            'filters': ['require_debug_true'],
+            'class': 'logging.StreamHandler',
+            'formatter': 'verbose',
+        },
+        'console_prod': {
+            'level': 'DEBUG',
+            'filters': ['require_debug_false'],
+            'class': 'logging.StreamHandler',
+            'formatter': 'simple',
+        },
     },
     'loggers': {
         'django.request': {
             'handlers': ['mail_admins'],
             'level': 'ERROR',
+            'propagate': True,
+        },
+        'main_logger': {
+            'handlers': ['console_dev', 'console_prod'],
+            'level': 'DEBUG',
             'propagate': True,
         },
     }
@@ -352,6 +380,9 @@ OPEN_ACL_GOOGLE_GROUP               = os.environ.get('OPEN_ACL_GOOGLE_GROUP')
 ######################################
 GOOGLE_GROUP_ADMIN           = os.environ.get('GOOGLE_GROUP_ADMIN', '')
 SUPERADMIN_FOR_REPORTS       = os.environ.get('SUPERADMIN_FOR_REPORTS', '')
+
+# Dataset configuration file path
+DATASET_CONFIGURATION_PATH   = os.environ.get('DATASET_CONFIGURATION_PATH', '')
 
 ##############################
 #   Start django-finalware   #
