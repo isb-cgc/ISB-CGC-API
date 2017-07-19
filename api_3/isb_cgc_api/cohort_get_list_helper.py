@@ -254,9 +254,9 @@ class CohortsGetListAPI(remote.Service):
             }
         )
         cursor.execute(case_query_str, case_query_tuple)
-        case_list = []
+        case_list = set()
         for row in cursor.fetchall():
-            case_list.append(row['case_barcode'])
+            case_list.add(row['case_barcode'])
         case_count = len(case_list)
 
         # get number of samples for each cohort
