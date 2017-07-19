@@ -1875,10 +1875,9 @@ class Meta_Endpoints_API(remote.Service):
                 nih_user = NIH_User.objects.get(user_id=user_id)
                 is_dbGaP_authorized = nih_user.dbGaP_authorized and nih_user.active
             except (ObjectDoesNotExist, MultipleObjectsReturned), e:
-                logger.error("%s does not have an entry in NIH_User: %s" % (user_email, str(e)))
-                logger.error(traceback.format_exc())
+                logger.warn("[STATUS] %s does not have an entry in NIH_User: %s" % (user_email, str(e)))
         else:
-            logger.error("Authentication required for cohort_files endpoint.")
+            logger.error("[ERROR] Authentication required for cohort_files endpoint.")
             raise endpoints.UnauthorizedException("No user email found.")
 
         if request.__getattribute__('page') is not None:
@@ -1892,6 +1891,8 @@ class Meta_Endpoints_API(remote.Service):
 
         sample_query = 'select sample_barcode from cohorts_samples where cohort_id=%s;'
         sample_list = ()
+        db = None
+        cursor = None
         try:
             db = sql_connection()
             cursor = db.cursor(MySQLdb.cursors.DictCursor)
