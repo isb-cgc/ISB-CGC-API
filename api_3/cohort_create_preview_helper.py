@@ -284,7 +284,11 @@ class CohortsCreateHelper(CohortsCreatePreviewAPI):
         project_id = settings.BQ_PROJECT_ID
         cohort_settings = settings.GET_BQ_COHORT_SETTINGS()
         bcs = BigQueryCohortSupport(project_id, cohort_settings.dataset_id, cohort_settings.table_id)
-        bcs.add_cohort_to_bq(created_cohort.id, sample_barcodes)
+        batch = 5000
+        start = 0
+        while start < len(sample_barcodes):
+            bcs.add_cohort_to_bq(created_cohort.id, sample_barcodes[start:start + batch])
+            start += batch
 
         request_finished.send(self)
 
