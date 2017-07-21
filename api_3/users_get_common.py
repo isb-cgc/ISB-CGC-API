@@ -20,6 +20,7 @@ import logging
 import endpoints
 from protorpc import remote, messages
 
+from accounts.models import AuthorizedDataset
 from dataset_utils.dataset_access_support_factory import DatasetAccessSupportFactory
 
 logger = logging.getLogger(__name__)
@@ -49,12 +50,14 @@ class UserGetAPICommon(remote.Service):
         authorized = False
         allowed = False
         for dataset in authorized_datasets:
-            if program in dataset:
+            ad = AuthorizedDataset.objects.filter(whitelist_id=dataset.dataset_id)
+            if program in ad.name:
                 authorized = True
                 allowed = True
         if not allowed:
             for dataset in all_datasets:
-                if program in dataset:
+                ad = AuthorizedDataset.objects.filter(whitelist_id=dataset.dataset_id)
+                if program in ad.name:
                     allowed = True
             
         if not allowed:
