@@ -20,7 +20,10 @@ import logging
 import endpoints
 from protorpc import remote, messages
 
-from accounts.models import AuthorizedDataset
+from django.contrib.auth.models import User
+from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
+
+from accounts.models import AuthorizedDataset, NIH_User, UserAuthorizedDatasets
 from dataset_utils.dataset_access_support_factory import DatasetAccessSupportFactory
 
 logger = logging.getLogger(__name__)
@@ -43,22 +46,36 @@ class UserGetAPICommon(remote.Service):
         if user_email is None:
             raise endpoints.UnauthorizedException("Authentication unsuccessful.")
 
-        das = DatasetAccessSupportFactory.from_webapp_django_settings()
-        authorized_datasets = das.get_datasets_for_era_login(user_email)
-        all_datasets = das.get_all_datasets_and_google_groups()
-        
         authorized = False
         allowed = False
-        for dataset in authorized_datasets:
-            ad = AuthorizedDataset.objects.filter(whitelist_id=dataset.dataset_id)
-            if program in ad.name:
-                authorized = True
-                allowed = True
-        if not allowed:
-            for dataset in all_datasets:
-                ad = AuthorizedDataset.objects.filter(whitelist_id=dataset.dataset_id)
-                if program in ad.name:
-                    allowed = True
+        try:
+            user = User.objects.get(email=user_email)
+        except ObjectDoesNotExist, MultipleObjectsReturned:
+            user = None
+
+        if user:
+            # FIND NIH_USER FOR USER
+            try:
+                nih_user = NIH_User.objects.filter(user=user).first()
+            except:
+                nih_user = None
+    
+            # IF USER HAS LINKED ERA COMMONS ID
+            if nih_user:
+                # FIND ALL DATASETS USER HAS ACCESS TO
+                das = DatasetAccessSupportFactory.from_webapp_django_settings()
+                authorized_datasets = das.get_datasets_for_era_login(user_email)
+                for dataset in authorized_datasets:
+                    ad = AuthorizedDataset.objects.filter(whitelist_id=dataset.dataset_id)
+                    if program in ad.name:
+                        authorized = True
+                        allowed = True
+                if not allowed:
+                    user_auth_datasets = AuthorizedDataset.objects.filter(id__in=UserAuthorizedDatasets.objects.filter(nih_user_id=nih_user.id).values_list('authorized_dataset', flat=True))
+                    for dataset in user_auth_datasets:
+                        ad = AuthorizedDataset.objects.filter(whitelist_id=dataset.dataset_id)
+                        if program in ad.name:
+                            allowed = True
             
         if not allowed:
             return UserGetAPIReturnJSON(message="{} is not on the controlled-access google group.".format(user_email),
