@@ -11,3 +11,4 @@ if [ -n "${UAT_NIH_AUTH_ON}" ]; then
   ./google-cloud-sdk/bin/gsutil cp "gs://${GCLOUD_BUCKET_UAT}/saml/certs/cert.pem" ./saml/certs/cert.pem
   ./google-cloud-sdk/bin/gsutil cp "gs://${GCLOUD_BUCKET_UAT}/saml/certs/key.pem" ./saml/certs/key.pem
   ./google-cloud-sdk/bin/gsutil cp "gs://${GCLOUD_BUCKET_UAT}/NIH_FTP.txt" ./NIH_FTP.txt
+fi
