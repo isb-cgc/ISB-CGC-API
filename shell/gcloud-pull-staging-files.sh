@@ -10,4 +10,4 @@ if [ -n "${DEV_NIH_AUTH_ON}" ]; then
   ./google-cloud-sdk/bin/gsutil cp "gs://${DEV_GCLOUD_BUCKET}/saml/certs/cert.pem" ./saml/certs/cert.pem
   ./google-cloud-sdk/bin/gsutil cp "gs://${DEV_GCLOUD_BUCKET}/saml/certs/key.pem" ./saml/certs/key.pem
   ./google-cloud-sdk/bin/gsutil cp "gs://${DEV_GCLOUD_BUCKET}/NIH_FTP.txt" ./NIH_FTP.txt
-fi
+fi 
