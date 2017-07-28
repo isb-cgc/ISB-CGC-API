@@ -23,8 +23,8 @@ class InputNestedOne(messages.Message):
     case_count = messages.IntegerField(2, variant=messages.Variant.INT32)
 
 class InputNestedTwo(messages.Message):
-    samples = messages.StringField(3, repeated=True)
-    sample_count = messages.IntegerField(4, variant=messages.Variant.INT32)
+    samples = messages.StringField(1, repeated=True)
+    sample_count = messages.IntegerField(2, variant=messages.Variant.INT32)
 
 class InputNestedThree(messages.Message):
     str_one = messages.StringField(1, repeated=True)
@@ -33,9 +33,9 @@ class InputNestedThree(messages.Message):
     int_two = messages.IntegerField(4, variant=messages.Variant.INT32)
     
 class InputWrapper(messages.Message):
-    one = InputNestedOne
-    two = InputNestedTwo
-    three = InputNestedThree
+    one = messages.MessageField(InputNestedOne, 1)
+    two = messages.MessageField(InputNestedTwo, 2)
+    three = messages.MessageField(InputNestedThree, 3)
 
 @ISB_CGC_Endpoints.api_class(resource_name='isb_cgc_test')
 class ISB_CGC_Test(remote.Service):
@@ -44,7 +44,7 @@ class ISB_CGC_Test(remote.Service):
     @endpoints.method(POST_RESOURCE, Output, path='test', http_method='POST')
     def api_test(self, request):
         """
-        Test input that consists of a messege with nested messages, how it appears in the api explorer and 
+        Test input that consists of a message with nested messages, how it appears in the api explorer and 
         how the values are passed along
         """
         query_dict = {
@@ -52,5 +52,5 @@ class ISB_CGC_Test(remote.Service):
             for k in request.all_fields()
             if k.name is not 'name'
         }
-        echo = 'input:\n\t{}'.format('\n\t'.join('{}: {}'.format((key, value) for key, value in query_dict.iteritems())))
+        echo = 'input:\n\t{}'.format('\n\t'.join(('{}: {}'.format(key, value) for key, value in query_dict.iteritems())))
         return Output(id = 'id', echo = echo)
