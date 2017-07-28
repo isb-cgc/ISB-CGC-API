@@ -66,16 +66,31 @@ class UserGetAPICommon(remote.Service):
                 das = DatasetAccessSupportFactory.from_webapp_django_settings()
                 authorized_datasets = das.get_datasets_for_era_login(user_email)
                 for dataset in authorized_datasets:
-                    ad = AuthorizedDataset.objects.filter(whitelist_id=dataset.dataset_id)
-                    if program in ad.name:
-                        authorized = True
-                        allowed = True
+                    try:
+                        ad = AuthorizedDataset.objects.get(whitelist_id=dataset.dataset_id)
+                        if program in ad.name:
+                            authorized = True
+                    except (ObjectDoesNotExist) as e:
+                        logger.exception('didn\'t find an expected authorized dataset for {}: {}'.format(dataset, e))
+                        raise
+                    except (MultipleObjectsReturned) as e:
+                        authdatasets = AuthorizedDataset.objects.filter(whitelist_id=dataset.dataset_id).values_list('name',flat=True)
+                        logger.exception('found more than one expected authorized dataset for {} named {}: {}'.format(dataset, ", ".join(authdatasets), e))
+                        raise
                 if not allowed:
                     user_auth_datasets = AuthorizedDataset.objects.filter(id__in=UserAuthorizedDatasets.objects.filter(nih_user_id=nih_user.id).values_list('authorized_dataset', flat=True))
                     for dataset in user_auth_datasets:
-                        ad = AuthorizedDataset.objects.filter(whitelist_id=dataset.dataset_id)
-                        if program in ad.name:
-                            allowed = True
+                        try:
+                            ad = AuthorizedDataset.objects.get(whitelist_id=dataset.dataset_id)
+                            if program in ad.name:
+                                allowed = True
+                        except (ObjectDoesNotExist) as e:
+                            logger.exception('didn\'t find an expected authorized dataset for {}: {}'.format(dataset, e))
+                            raise
+                        except (MultipleObjectsReturned) as e:
+                            authdatasets = AuthorizedDataset.objects.filter(whitelist_id=dataset.dataset_id).values_list('name',flat=True)
+                            logger.exception('found more than one expected authorized dataset for {} named {}: {}'.format(dataset, ", ".join(authdatasets), e))
+                            raise
             
         if not allowed:
             return UserGetAPIReturnJSON(message="{} is not on the controlled-access google group.".format(user_email),
