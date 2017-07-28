@@ -63,6 +63,8 @@ DEVELOPER_COHORT_TABLE_ID = os.environ.get('DEVELOPER_COHORT_TABLE_ID')
 
 NIH_AUTH_ON = os.environ.get('NIH_AUTH_ON', False)
 
+IS_DEV = os.environ.get('IS_DEV', False)
+
 DATABASES = {
     'default': {
         'ENGINE': os.environ.get('DATABASE_ENGINE', 'django.db.backends.mysql'),
@@ -362,7 +364,6 @@ SOCIALACCOUNT_PROVIDERS = \
 
 GOOGLE_APPLICATION_CREDENTIALS  = os.environ.get('GOOGLE_APPLICATION_CREDENTIALS')
 CLIENT_SECRETS                  = os.environ.get('CLIENT_SECRETS')
-PEM_FILE                        = os.environ.get('PEM_FILE')
 CLIENT_EMAIL                    = os.environ.get('CLIENT_EMAIL')
 WEB_CLIENT_ID                   = os.environ.get('WEB_CLIENT_ID')
 INSTALLED_APP_CLIENT_ID         = os.environ.get('INSTALLED_APP_CLIENT_ID')
