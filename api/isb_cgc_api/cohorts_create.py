@@ -39,7 +39,6 @@ logger = logging.getLogger(__name__)
 
 BASE_URL = settings.BASE_URL
 
-
 class FilterDetails(messages.Message):
     name = messages.StringField(1)
     value = messages.StringField(2)

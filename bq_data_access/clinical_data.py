@@ -29,7 +29,7 @@ from bq_data_access.utils import DurationLogged
 
 CLINICAL_FEATURE_TYPE = 'CLIN'
 
-BSP_TABLE_NAME = 'Biospecimen_data'
+BSP_TABLE_NAME = 'Biospecimen'
 
 class InvalidClinicalFeatureIDException(Exception):
     def __init__(self, feature_id, reason):
@@ -84,7 +84,7 @@ class ClinicalFeatureDef(object):
 class ClinicalFeatureProvider(FeatureDataProvider):
     TABLES = [
         {
-            'name': 'Clinical_data',
+            'name': 'Clinical',
             'info': 'Clinical',
             'id': 'tcga_clinical'
         }
