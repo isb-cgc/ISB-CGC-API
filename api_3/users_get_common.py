@@ -65,8 +65,7 @@ class UserGetAPICommon(remote.Service):
                 # FIND ALL DATASETS USER HAS ACCESS TO
                 user_auth_datasets = AuthorizedDataset.objects.filter(id__in=UserAuthorizedDatasets.objects.filter(nih_user_id=nih_user.id).values_list('authorized_dataset', flat=True))
                 for dataset in user_auth_datasets:
-                    ad = AuthorizedDataset.objects.get(whitelist_id=dataset.dataset_id)
-                    if program in ad.name:
+                    if program in dataset.name:
                         authorized = True
                         allowed = True
                 if not allowed:
