@@ -2,7 +2,7 @@ if [ -n "$CI" ]; then
     export HOME=/home/ubuntu/${CIRCLE_PROJECT_REPONAME}
     export HOMEROOT=/home/ubuntu/${CIRCLE_PROJECT_REPONAME}
     # Clone dependencies
-    git clone -b master https://github.com/isb-cgc/ISB-CGC-Common.git
+    git clone -b isb-cgc-test https://github.com/isb-cgc/ISB-CGC-Common.git
 else
     export $(cat /home/vagrant/www/.env | grep -v ^# | xargs) 2> /dev/null
     export HOME=/home/vagrant
