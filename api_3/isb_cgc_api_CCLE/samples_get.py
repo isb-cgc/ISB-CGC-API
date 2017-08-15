@@ -31,7 +31,7 @@ class SampleDetails(messages.Message):
 
 @ISB_CGC_CCLE_Endpoints.api_class(resource_name='samples')
 class CCLE_SamplesGetAPI(SamplesGetAPI):
-    @endpoints.method(SamplesGetAPI.GET_RESOURCE, SampleDetails, path='samples/{sample_barcode}', http_method='GET')
+    @endpoints.method(SamplesGetAPI.GET_RESOURCE, SampleDetails, path='ccle/samples/{sample_barcode}', http_method='GET')
     def get(self, request):
         """
         Given a sample barcode (*eg* CCLE-ACC-MESO-1), this endpoint returns
