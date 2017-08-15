@@ -25,7 +25,7 @@ from api_3.isb_cgc_api_TCGA.message_classes import MetadataRangesItem, shared_fi
 class TCGA_CohortsCreateAPI(CohortsCreateHelper):
     POST_RESOURCE = endpoints.ResourceContainer(MetadataRangesItem, name=messages.StringField(2, required=True))
 
-    @endpoints.method(POST_RESOURCE, CreatedCohort, path='cohorts/create', http_method='POST')
+    @endpoints.method(POST_RESOURCE, CreatedCohort, path='tcga/cohorts/create', http_method='POST')
     def create(self, request):
         """
         Creates and saves a cohort. Takes a JSON object in the request body to use as the cohort's filters.

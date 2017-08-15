@@ -25,7 +25,7 @@ class TARGET_CohortsPreviewAPI(CohortsPreviewHelper):
 
     GET_RESOURCE = endpoints.ResourceContainer(**{field.name: field for field in MetadataRangesItem.all_fields()})
 
-    @endpoints.method(GET_RESOURCE, CohortsPreviewHelper.CohortCasesSamplesList, path='cohorts/preview', http_method='GET')
+    @endpoints.method(GET_RESOURCE, CohortsPreviewHelper.CohortCasesSamplesList, path='target/cohorts/preview', http_method='GET')
     def preview(self, request):
         """
         Takes a JSON object of filters in the request body and returns a "preview" of the cohort that would
