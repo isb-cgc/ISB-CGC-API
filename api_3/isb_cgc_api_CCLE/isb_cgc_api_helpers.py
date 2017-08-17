@@ -23,5 +23,6 @@ ISB_CGC_CCLE_Endpoints = endpoints.api(name='isb_cgc_ccle_api', version='v3',
                                   description="Get information about cohorts, cases, and samples for CCLE. Create cohorts.",
                                   allowed_client_ids=[INSTALLED_APP_CLIENT_ID, endpoints.API_EXPLORER_CLIENT_ID,
                                                       settings.WEB_CLIENT_ID],
+                                  package_path='ccle',
                                   documentation='http://isb-cancer-genomics-cloud.readthedocs.io/en/latest/sections/progapi/Programmatic-API.html#isb-cgc-api-v3',
                                   title="ISB-CGC CCLE API")
