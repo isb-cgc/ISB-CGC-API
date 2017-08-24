@@ -39,20 +39,22 @@ class CasesGetQueryBuilder(object):
 
         sample_query_str = 'select sample_barcode ' \
                            'from {}_metadata_biospecimen ' \
-                           'where case_barcode=%s'.format(program)
+                           'where case_barcode=%s ' \
+                           'group by sample_barcode ' \
+                           'order by sample_barcode'.format(program)
 
         aliquot_query_str = ''
         for genomic_build in genomic_builds:
             part_aliquot_query_str = 'select aliquot_barcode ' \
                                 'from {}_metadata_data_{} ' \
                                 'where case_barcode=%s and aliquot_barcode is not null ' \
-                                'group by aliquot_barcode'.format(program, genomic_build)
+                                'group by aliquot_barcode ' \
+                                'order by aliquot_barcode'.format(program, genomic_build)
             if 0 < len(aliquot_query_str):
                 aliquot_query_str += ' union '
             aliquot_query_str += part_aliquot_query_str
 
         return clinical_query_str, sample_query_str, aliquot_query_str
-
 
 class CasesGetHelper(remote.Service):
 

@@ -70,7 +70,7 @@ class UserGetAPICommon(remote.Service):
                         allowed = True
                 if not allowed:
                     das = DatasetAccessSupportFactory.from_webapp_django_settings()
-                    authorized_datasets = das.get_datasets_for_era_login(user_email)
+                    authorized_datasets = das.get_datasets_for_era_login(nih_user.NIH_username)
                     for dataset in authorized_datasets:
                         try:
                             ad = AuthorizedDataset.objects.get(whitelist_id=dataset.dataset_id)

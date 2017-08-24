@@ -44,7 +44,6 @@ from api_3.isb_cgc_api_CCLE.cohorts_create import CCLE_CohortsCreateAPI
 from api_3.isb_cgc_api_CCLE.patients_get import CCLE_CasesGetAPI
 from api_3.isb_cgc_api_CCLE.samples_get import CCLE_SamplesGetAPI
 from api_3.isb_cgc_api_CCLE.samples_cloudstoragefilepaths import CCLE_SamplesCloudStorageFilePathsAPI
-from api_3.isb_cgc_api_CCLE.users_get import CCLE_UserGetAPI
 
 package = 'isb-cgc-api'
 
@@ -75,7 +74,6 @@ APPLICATION = endpoints.api_server([
     CCLE_CohortsCreateAPI,
     CCLE_CasesGetAPI,
     CCLE_SamplesGetAPI,
-    CCLE_SamplesCloudStorageFilePathsAPI,
-    CCLE_UserGetAPI
+    CCLE_SamplesCloudStorageFilePathsAPI
 ])
 
