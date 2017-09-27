@@ -19,7 +19,7 @@ from protorpc import messages
 
 from api_3.cohort_create_preview_helper import CohortsCreateHelper, CreatedCohort
 from api_3.isb_cgc_api_TARGET.isb_cgc_api_helpers import ISB_CGC_TARGET_Endpoints
-from api_3.isb_cgc_api_TARGET.message_classes import MetadataRangesItem, shared_fields
+from api_3.isb_cgc_api_TARGET.message_classes import MetadataRangesItem
 
 @ISB_CGC_TARGET_Endpoints.api_class(resource_name='cohorts')
 class TARGET_CohortsCreateAPI(CohortsCreateHelper):
@@ -34,5 +34,4 @@ class TARGET_CohortsCreateAPI(CohortsCreateHelper):
         of samples in that cohort.
         """
         self.program = 'TARGET'
-        self.shared_fields = shared_fields
         return super(TARGET_CohortsCreateAPI, self).create(request)
