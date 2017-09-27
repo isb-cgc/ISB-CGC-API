@@ -18,7 +18,7 @@ import endpoints
 
 from api_3.cohort_create_preview_helper import CohortsPreviewHelper
 from api_3.isb_cgc_api_TCGA.isb_cgc_api_helpers import ISB_CGC_TCGA_Endpoints
-from message_classes import MetadataRangesItem, shared_fields
+from message_classes import MetadataRangesItem
 
 @ISB_CGC_TCGA_Endpoints.api_class(resource_name='cohorts')
 class TCGA_CohortsPreviewAPI(CohortsPreviewHelper):
@@ -34,5 +34,4 @@ class TCGA_CohortsPreviewAPI(CohortsPreviewHelper):
         Authentication is not required.
         """
         self.program = 'TCGA'
-        self.shared_fields = shared_fields
         return super(TCGA_CohortsPreviewAPI, self).preview(request)
