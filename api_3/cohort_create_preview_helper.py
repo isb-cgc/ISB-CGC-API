@@ -151,7 +151,7 @@ class CohortsCreatePreviewAPI(remote.Service):
 
                 cursor = None
                 try:
-                    cursor = db.cursor(MySQLdb.cursors.DictCursor)
+                    cursor = db.cursor()
                     cursor.execute(query_str, value_tuple)
                     rows = set(cursor.fetchall())
                     if 0 == len(rows):
