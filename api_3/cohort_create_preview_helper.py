@@ -130,7 +130,7 @@ class CohortsCreatePreviewAPI(remote.Service):
             ret_lte_query_dict = {}
             ret_gte_query_dict = {}
             ret_rows = None
-            for table in (['Clinical'], ['Biospecimen'], ['Data_HG19'], ['Data_HG38']):
+            for table in ('Clinical', 'Biospecimen', 'Data_HG19', 'Data_HG38'):
                 fields = request.get_assigned_value(table)
                 if not fields:
                     continue
