@@ -155,7 +155,7 @@ class CohortsCreatePreviewAPI(remote.Service):
 
                 cursor = None
                 try:
-                    cursor = db.cursor()
+                    cursor = db.cursor(MySQLdb.cursors.DictCursor)
                     cursor.execute(query_str, value_tuple)
                     rows = set(cursor.fetchall())
                     if 0 == len(rows):
@@ -165,7 +165,17 @@ class CohortsCreatePreviewAPI(remote.Service):
                     if ret_rows is None:
                         ret_rows = rows
                     else:
-                        ret_rows &= rows
+                        logger.info('\tmerging current samples with previous samples')
+                        cur_samples = set()
+                        for row in rows:
+                            cur_samples.add(row['sample_barcode'])
+                        not_in_sample = set()
+                        for row in ret_rows:
+                            if row['sample_barcode'] not in cur_samples:
+                                not_in_sample.add(row)
+                        for row in not_in_sample:
+                            ret_rows.discard(row)
+                        logger.info('\tfinished merging current samples with previous samples')
                             
                 except (IndexError, TypeError) as e:
                     logger.exception(e)
