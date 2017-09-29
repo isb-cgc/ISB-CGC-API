@@ -124,7 +124,11 @@ class CohortsCreatePreviewAPI(remote.Service):
                 raise endpoints.NotFoundException("Error connecting to database: {}".format(e))
             
             fields = request.get_assigned_value('Common')
-            common_query_dict, common_gte_query_dict, common_lte_query_dict = self.build_query_dictionaries(fields)
+            common_query_dict = {}
+            common_gte_query_dict = {}
+            common_lte_query_dict = {}
+            if fields is not None:
+                common_query_dict, common_gte_query_dict, common_lte_query_dict = self.build_query_dictionaries(fields)
             
             ret_query_dict = {}
             ret_lte_query_dict = {}
