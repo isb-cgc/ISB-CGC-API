@@ -157,7 +157,7 @@ class CohortsCreatePreviewAPI(remote.Service):
                 try:
                     cursor = db.cursor(MySQLdb.cursors.DictCursor)
                     cursor.execute(query_str, value_tuple)
-                    rows = set(cursor.fetchall())
+                    rows = cursor.fetchall()
                     if 0 == len(rows):
                         # if any query returns no rows, then, overall, no sample_barcode will match
                         return [], '', '', ''
@@ -192,7 +192,7 @@ class CohortsCreatePreviewAPI(remote.Service):
                 db.close()
             request_finished.send(self)
         
-        return sorted(ret_rows), ret_query_dict, ret_lte_query_dict, ret_gte_query_dict
+        return ret_rows, ret_query_dict, ret_lte_query_dict, ret_gte_query_dict
     
 class FilterDetails(messages.Message):
     name = messages.StringField(1)
