@@ -192,7 +192,7 @@ class CohortsCreatePreviewAPI(remote.Service):
                 db.close()
             request_finished.send(self)
         
-        return sorted(ret_rows), ret_query_dict, ret_lte_query_dict, ret_gte_query_dict
+        return ret_rows, ret_query_dict, ret_lte_query_dict, ret_gte_query_dict
     
 class FilterDetails(messages.Message):
     name = messages.StringField(1)
