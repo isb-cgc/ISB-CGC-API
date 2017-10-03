@@ -174,7 +174,7 @@ class CohortsCreatePreviewAPI(remote.Service):
                             if row['sample_barcode'] not in cur_samples:
                                 not_in_sample += [row]
                         for row in not_in_sample:
-                            ret_rows.discard(row)
+                            ret_rows.remove(row)
                         logger.info('\tfinished merging current samples with previous samples')
                 except (IndexError, TypeError) as e:
                     logger.exception(e)
