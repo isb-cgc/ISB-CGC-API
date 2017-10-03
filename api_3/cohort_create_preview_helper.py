@@ -169,7 +169,7 @@ class CohortsCreatePreviewAPI(remote.Service):
                         cur_samples = set()
                         for row in rows:
                             cur_samples.add(row['sample_barcode'])
-                        not_in_sample = set()
+                        not_in_sample = []
                         for row in ret_rows:
                             if row['sample_barcode'] not in cur_samples:
                                 not_in_sample.add(row)
