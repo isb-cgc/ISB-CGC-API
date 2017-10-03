@@ -172,11 +172,10 @@ class CohortsCreatePreviewAPI(remote.Service):
                         not_in_sample = []
                         for row in ret_rows:
                             if row['sample_barcode'] not in cur_samples:
-                                not_in_sample.add(row)
+                                not_in_sample += [row]
                         for row in not_in_sample:
                             ret_rows.discard(row)
                         logger.info('\tfinished merging current samples with previous samples')
-                            
                 except (IndexError, TypeError) as e:
                     logger.exception(e)
                     raise endpoints.NotFoundException("Error retrieving samples and cases: {}\n{} {}".format(e, query_str, value_tuple))
