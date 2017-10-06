@@ -23,7 +23,7 @@ from message_classes import MetadataRangesItem
 @ISB_CGC_TCGA_Endpoints.api_class(resource_name='cohorts')
 class TCGA_CohortsPreviewAPI(CohortsPreviewHelper):
 
-    GET_RESOURCE = endpoints.ResourceContainer(**{field.name: field for field in MetadataRangesItem.all_fields()})
+    GET_RESOURCE = endpoints.ResourceContainer(MetadataRangesItem)
 
     @endpoints.method(GET_RESOURCE, CohortsPreviewHelper.CohortCasesSamplesList, path='tcga/cohorts/preview', http_method='GET')
     def preview(self, request):
