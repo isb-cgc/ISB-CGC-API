@@ -20,6 +20,7 @@ limitations under the License.
 import django
 import re
 import endpoints
+from endpoints.EndpointsErrorMessage import State
 import logging
 import MySQLdb
 from protorpc import remote, messages
@@ -362,6 +363,10 @@ class CohortsPreviewHelper(CohortsCreatePreviewAPI):
         samples = messages.StringField(3, repeated=True)
         sample_count = messages.IntegerField(4, variant=messages.Variant.INT32)
     
+    class ErrorMessage(messages.Message):
+        state = messages.EnumField(State, 1, required=True)
+        error_message = messages.StringField(2)
+
     def preview(self, request):
         """
         Takes a JSON object of filters in the request body and returns a "preview" of the cohort that would
@@ -374,10 +379,13 @@ class CohortsPreviewHelper(CohortsCreatePreviewAPI):
         case_barcodes = set()
         sample_barcodes = []
 
-        for row in rows:
-            case_barcodes.add(row['case_barcode'])
-            sample_barcodes.append(row['sample_barcode'])
-        case_barcodes = list(case_barcodes)
+        if rows:
+            for row in rows:
+                case_barcodes.add(row['case_barcode'])
+                sample_barcodes.append(row['sample_barcode'])
+            case_barcodes = list(case_barcodes)
+        else:
+            raise endpoints.EndpointsErrorMessage(self.ErrorMessage(State.REQUEST_ERROR, 'must specify criteria'))
 
         return self.CohortCasesSamplesList(cases=case_barcodes,
                                          case_count=len(case_barcodes),
