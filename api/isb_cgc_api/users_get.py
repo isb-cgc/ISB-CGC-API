@@ -35,14 +35,13 @@ from accounts.models import NIH_User
 
 logger = logging.getLogger(__name__)
 
-CONTROLLED_ACL_GOOGLE_GROUP = settings.ACL_GOOGLE_GROUP
 INSTALLED_APP_CLIENT_ID = settings.INSTALLED_APP_CLIENT_ID
 
 
 def is_dbgap_authorized(user_email):
     directory_service, http_auth = get_directory_resource()
     try:
-        directory_service.members().get(groupKey=CONTROLLED_ACL_GOOGLE_GROUP,
+        directory_service.members().get(groupKey="",
                                         memberKey=user_email).execute(http=http_auth)
         return True
     except HttpError, e:
@@ -86,7 +85,7 @@ class UserGetAPI(remote.Service):
             django_user = Django_User.objects.get(email=user_email)
         except (ObjectDoesNotExist, MultipleObjectsReturned), e:
             logger.error("Email {} is in {} group but did not have a unique entry in auth_user table. Error: {}"
-                         .format(user_email, CONTROLLED_ACL_GOOGLE_GROUP, e))
+                         .format(user_email, "", e))
             request_finished.send(self)
             raise endpoints.NotFoundException("{} is in the controlled-access google group "
                                               "but does not have an entry in the user database."
@@ -98,7 +97,7 @@ class UserGetAPI(remote.Service):
         except (ObjectDoesNotExist, MultipleObjectsReturned), e:
             logger.error("Email {} is in {} group but did not have a unique entry in "
                          "accounts_nih_user table. Error: {}"
-                         .format(user_email, CONTROLLED_ACL_GOOGLE_GROUP, e))
+                         .format(user_email, "", e))
             request_finished.send(self)
             raise endpoints.NotFoundException("{} is in the controlled-access google group "
                                               "but does not have an entry in the nih_user database."
@@ -107,7 +106,7 @@ class UserGetAPI(remote.Service):
         # 3. check if their entry in accounts_nih_user is currently active
         if not nih_user.active:
             logger.error("Email {} is in {} group but their entry in accounts_nih_user table is inactive."
-                         .format(user_email, CONTROLLED_ACL_GOOGLE_GROUP))
+                         .format(user_email, ""))
             request_finished.send(self)
             raise endpoints.NotFoundException("{} is in the controlled-access google group "
                                               "but has an inactive entry in the nih_user database."
@@ -117,7 +116,7 @@ class UserGetAPI(remote.Service):
         if not nih_user.dbGaP_authorized:
             logger.error("Email {} is in {} group but their entry in accounts_nih_user table "
                          "is not dbGaP_authorized."
-                         .format(user_email, CONTROLLED_ACL_GOOGLE_GROUP))
+                         .format(user_email, ""))
             request_finished.send(self)
             raise endpoints.NotFoundException("{} is in the controlled-access google group "
                                               "but their entry in the nih_user database is not dbGaP_authorized."
@@ -131,7 +130,7 @@ class UserGetAPI(remote.Service):
         if (expire_time - now_in_utc).total_seconds() <= 0:
             logger.error("Email {} is in {} group but their entry in accounts_nih_user table "
                          "is expired."
-                         .format(user_email, CONTROLLED_ACL_GOOGLE_GROUP))
+                         .format(user_email, ""))
             request_finished.send(self)
             raise endpoints.NotFoundException("{} is in the controlled-access google group "
                                               "but their entry in the nih_user database is expired."
