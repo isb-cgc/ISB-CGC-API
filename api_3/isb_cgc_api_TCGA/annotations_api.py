@@ -24,11 +24,11 @@ from django.core.signals import request_finished
 from protorpc import remote, messages
 
 from api_3.cohort_endpoint_helpers import build_constructor_dict_for_message
-from api_3.isb_cgc_api_TCGA.message_classes import MetadataAnnotationItem
+from api_3.isb_cgc_api_TCGA.message_classes import AnnotationMetadataItem
 from api_3.api_helpers import sql_connection
 
 class MetadataAnnotationList(messages.Message):
-    items = messages.MessageField(MetadataAnnotationItem, 1, repeated=True)
+    items = messages.MessageField(AnnotationMetadataItem, 1, repeated=True)
     count = messages.IntegerField(2, variant=messages.Variant.INT32)
 
 class AnnotationAPI(remote.Service):
@@ -83,8 +83,8 @@ class AnnotationAPI(remote.Service):
                 raise endpoints.NotFoundException(msg)
             items = []
             for row in rows:
-                constructor_dict = build_constructor_dict_for_message(MetadataAnnotationItem(), row)
-                items.append(MetadataAnnotationItem(**constructor_dict))
+                constructor_dict = build_constructor_dict_for_message(AnnotationMetadataItem(), row)
+                items.append(AnnotationMetadataItem(**constructor_dict))
             
             return MetadataAnnotationList(items=items, count=len(items))
 

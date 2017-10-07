@@ -31,7 +31,7 @@ class SampleDetails(messages.Message):
 
 @ISB_CGC_TARGET_Endpoints.api_class(resource_name='samples')
 class TARGET_SamplesGetAPI(SamplesGetAPI):
-    @endpoints.method(SamplesGetAPI.GET_RESOURCE, SampleDetails, path='samples/{sample_barcode}', http_method='GET')
+    @endpoints.method(SamplesGetAPI.GET_RESOURCE, SampleDetails, path='target/samples/{sample_barcode}', http_method='GET')
     def get(self, request):
         """
         Given a sample barcode (of length 20-22, *eg* TARGET-51-PALFYG-01A), this endpoint returns
