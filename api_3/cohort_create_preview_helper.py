@@ -379,8 +379,9 @@ class CohortsPreviewHelper(CohortsCreatePreviewAPI):
                 case_barcodes.add(row['case_barcode'])
                 sample_barcodes.append(row['sample_barcode'])
             case_barcodes = list(case_barcodes)
-        else:
-            raise ValueError('must specify a criteria')
+
+        if len(sample_barcodes) == 0:
+            raise endpoints.BadRequestException("No samples meet the specified parameters.")
 
         return self.CohortCasesSamplesList(cases=case_barcodes,
                                          case_count=len(case_barcodes),
