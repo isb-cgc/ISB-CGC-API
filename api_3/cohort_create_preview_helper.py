@@ -258,9 +258,13 @@ class CohortsCreateHelper(CohortsCreatePreviewAPI):
         rows, query_dict, lte_query_dict, gte_query_dict = self.query(request)
         logger.info('set up django project map')
         project2django = {}
-        for row in rows:
-            if row['project_short_name'] not in project2django:
-                project2django[row['project_short_name']] = self.get_django_project(row['project_short_name'])
+        if rows:
+            for row in rows:
+                if row['project_short_name'] not in project2django:
+                    project2django[row['project_short_name']] = self.get_django_project(row['project_short_name'])
+        else:
+            raise endpoints.BadRequestException("No samples meet the specified parameters.")
+
         logger.info('set up sample barcodes')
         sample_barcodes = [{'sample_barcode': row['sample_barcode'], 'case_barcode': row['case_barcode'], 'project': project2django[row['project_short_name']]} for row in rows]
         logger.info('finished set up sample barcodes')
