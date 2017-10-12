@@ -20,7 +20,6 @@ limitations under the License.
 import django
 import re
 import endpoints
-from endpoints.EndpointsErrorMessage import State
 import logging
 import MySQLdb
 from protorpc import remote, messages
@@ -136,6 +135,8 @@ class CohortsCreatePreviewAPI(remote.Service):
             ret_gte_query_dict = {}
             ret_rows = None
             for table in ('Clinical', 'Biospecimen', 'Data_HG19', 'Data_HG38'):
+                if 'CCLE' == self.program and 'Data_HG38' == table:
+                    continue
                 fields = request.get_assigned_value(table)
                 if not fields:
                     continue
@@ -259,9 +260,13 @@ class CohortsCreateHelper(CohortsCreatePreviewAPI):
         rows, query_dict, lte_query_dict, gte_query_dict = self.query(request)
         logger.info('set up django project map')
         project2django = {}
-        for row in rows:
-            if row['project_short_name'] not in project2django:
-                project2django[row['project_short_name']] = self.get_django_project(row['project_short_name'])
+        if rows:
+            for row in rows:
+                if row['project_short_name'] not in project2django:
+                    project2django[row['project_short_name']] = self.get_django_project(row['project_short_name'])
+        else:
+            raise endpoints.BadRequestException("No samples meet the specified parameters.")
+
         logger.info('set up sample barcodes')
         sample_barcodes = [{'sample_barcode': row['sample_barcode'], 'case_barcode': row['case_barcode'], 'project': project2django[row['project_short_name']]} for row in rows]
         logger.info('finished set up sample barcodes')
@@ -363,10 +368,6 @@ class CohortsPreviewHelper(CohortsCreatePreviewAPI):
         samples = messages.StringField(3, repeated=True)
         sample_count = messages.IntegerField(4, variant=messages.Variant.INT32)
     
-    class ErrorMessage(messages.Message):
-        state = messages.EnumField(State, 1, required=True)
-        error_message = messages.StringField(2)
-
     def preview(self, request):
         """
         Takes a JSON object of filters in the request body and returns a "preview" of the cohort that would
@@ -384,8 +385,9 @@ class CohortsPreviewHelper(CohortsCreatePreviewAPI):
                 case_barcodes.add(row['case_barcode'])
                 sample_barcodes.append(row['sample_barcode'])
             case_barcodes = list(case_barcodes)
-        else:
-            raise endpoints.EndpointsErrorMessage(self.ErrorMessage(State.REQUEST_ERROR, 'must specify criteria'))
+
+        if len(sample_barcodes) == 0:
+            raise endpoints.BadRequestException("No samples meet the specified parameters.")
 
         return self.CohortCasesSamplesList(cases=case_barcodes,
                                          case_count=len(case_barcodes),
