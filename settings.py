@@ -372,7 +372,6 @@ INSTALLED_APP_CLIENT_ID         = os.environ.get('INSTALLED_APP_CLIENT_ID')
 #################################
 
 LOGIN_EXPIRATION_HOURS = 24
-ACL_GOOGLE_GROUP                    = os.environ.get('ACL_GOOGLE_GROUP')
 OPEN_ACL_GOOGLE_GROUP               = os.environ.get('OPEN_ACL_GOOGLE_GROUP')
 
 ######################################

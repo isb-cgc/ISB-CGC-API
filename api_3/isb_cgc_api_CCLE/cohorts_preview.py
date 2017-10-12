@@ -18,14 +18,14 @@ import endpoints
 
 from api_3.cohort_create_preview_helper import CohortsPreviewHelper
 from api_3.isb_cgc_api_CCLE.isb_cgc_api_helpers import ISB_CGC_CCLE_Endpoints
-from message_classes import MetadataRangesItem, shared_fields
+from message_classes import MetadataRangesItem
 
 @ISB_CGC_CCLE_Endpoints.api_class(resource_name='cohorts')
 class CCLE_CohortsPreviewAPI(CohortsPreviewHelper):
 
-    GET_RESOURCE = endpoints.ResourceContainer(**{field.name: field for field in MetadataRangesItem.all_fields()})
+    POST_RESOURCE = endpoints.ResourceContainer(MetadataRangesItem)
 
-    @endpoints.method(GET_RESOURCE, CohortsPreviewHelper.CohortCasesSamplesList, path='cohorts/preview', http_method='GET')
+    @endpoints.method(POST_RESOURCE, CohortsPreviewHelper.CohortCasesSamplesList, path='tcga/cohorts/preview', http_method='POST')
     def preview(self, request):
         """
         Takes a JSON object of filters in the request body and returns a "preview" of the cohort that would
@@ -34,5 +34,4 @@ class CCLE_CohortsPreviewAPI(CohortsPreviewHelper):
         Authentication is not required.
         """
         self.program = 'CCLE'
-        self.shared_fields = shared_fields
         return super(CCLE_CohortsPreviewAPI, self).preview(request)

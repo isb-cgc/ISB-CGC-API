@@ -31,7 +31,7 @@ class SampleDetails(messages.Message):
 
 @ISB_CGC_TCGA_Endpoints.api_class(resource_name='samples')
 class TCGA_SamplesGetAPI(SamplesGetAPI):
-    @endpoints.method(SamplesGetAPI.GET_RESOURCE, SampleDetails, path='samples/{sample_barcode}', http_method='GET')
+    @endpoints.method(SamplesGetAPI.GET_RESOURCE, SampleDetails, path='tcga/samples/{sample_barcode}', http_method='GET')
     def get(self, request):
         """
         Given a sample barcode (of length 16, *eg* TCGA-B9-7268-01A), this endpoint returns

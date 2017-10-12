@@ -1,94 +1,242 @@
 {
-    "disease_code": [
-        "ALL",
-        "AML",
-        "CCSK",
-        "NBL",
-        "OS",
-        "RT",
-        "WT"
-    ],
-    "endpoint_type": [
-        "current",
-        "legacy"
-    ],
-    "ethnicity": [
-        "None",
-        "Hispanic or Latino",
-        "Not Hispanic or Latino"
-    ],
-    "first_event": [
-        "None",
-        "Censored",
-        "Death",
-        "Death without remission",
-        "Event",
-        "Induction failure",
-        "Progression",
-        "Relapse",
-        "Second Malignant Neoplasm"
-    ],
-    "gender": [
-        "None",
-        "Female",
-        "Male"
-    ],
-    "program_name": [
-        "TARGET"
-    ],
-    "project_short_name": [
-        "TARGET-ALL-P1",
-        "TARGET-ALL-P2",
-        "TARGET-AML",
-        "TARGET-CCSK",
-        "TARGET-NBL",
-        "TARGET-OS",
-        "TARGET-RT",
-        "TARGET-WT"
-    ],
-    "race": [
-        "None",
-        "American Indian or Alaska Native",
-        "Asian",
-        "Black or African American",
-        "Native Hawaiian or other Pacific Islander",
-        "Other",
-        "White"
-    ],
-    "vital_status": [
-        "None",
-        "alive",
-        "dead"
-    ],
-    "sample_type": [
-        "01",
-        "02",
-        "03",
-        "04",
-        "06",
-        "08",
-        "09",
-        "10",
-        "11",
-        "13",
-        "14",
-        "15",
-        "20",
-        "40",
-        "41",
-        "42",
-        "50",
-        "60"
-    ],
-    "tumor_code": [
-        "00",
-        "10",
-        "20",
-        "21",
-        "30",
-        "40",
-        "50",
-        "51",
-        "52"
-    ]
+    "Common": {
+        "disease_code": [
+            "ALL",
+            "AML",
+            "CCSK",
+            "NBL",
+            "OS",
+            "RT",
+            "WT"
+        ],
+        "endpoint_type": [
+            "current",
+            "legacy"
+        ],
+        "program_name": [
+            "TARGET"
+        ],
+        "project_short_name": [
+            "TARGET-ALL-P1",
+            "TARGET-ALL-P2",
+            "TARGET-AML",
+            "TARGET-CCSK",
+            "TARGET-NBL",
+            "TARGET-OS",
+            "TARGET-RT",
+            "TARGET-WT"
+        ]
+    },
+    "Clinical": {
+        "ethnicity": [
+            "Hispanic or Latino",
+            "Not Hispanic or Latino"
+        ],
+        "first_event": [
+            "Censored",
+            "Death",
+            "Death without remission",
+            "Event",
+            "Induction failure",
+            "Progression",
+            "Relapse",
+            "Second Malignant Neoplasm"
+        ],
+        "gender": [
+            "Female",
+            "Male"
+        ],
+        "race": [
+            "American Indian or Alaska Native",
+            "Asian",
+            "Black or African American",
+            "Native Hawaiian or other Pacific Islander",
+            "Other",
+            "White"
+        ],
+        "vital_status": [
+            "alive",
+            "dead"
+        ]
+    },
+    "Biospecimen": {
+        "sample_type": [
+            "01",
+            "02",
+            "03",
+            "04",
+            "06",
+            "08",
+            "09",
+            "10",
+            "11",
+            "13",
+            "14",
+            "15",
+            "20",
+            "40",
+            "41",
+            "42",
+            "50",
+            "60"
+        ],
+        "tumor_code": [
+            "00",
+            "10",
+            "20",
+            "21",
+            "30",
+            "40",
+            "50",
+            "51",
+            "52"
+        ]
+    },
+    "Data_HG19": {
+        "access": [
+            "controlled",
+            "open"
+        ],
+        "analysis_workflow_type": [
+            
+        ],
+        "center_code": [
+            "01",
+            "12",
+            "13",
+            "37"
+        ],
+        "center_name": [
+            "Baylor College of Medicine",
+            "Broad Institute of MIT and Harvard",
+            "Canada's Michael Smith Genome Sciences Centre",
+            "Complete Genomics Inc."
+        ],
+        "center_type": [
+            "CGCC",
+            "COM"
+        ],
+        "data_category": [
+            "Biospecimen",
+            "Clinical",
+            "Raw sequencing data"
+        ],
+        "data_format": [
+            "BAM",
+            "XLSX"
+        ],
+        "data_type": [
+            "Aligned reads",
+            "Biospecimen Supplement",
+            "Clinical Supplement"
+        ],
+        "experimental_strategy": [
+            "Bisulfite-Seq",
+            "miRNA-Seq",
+            "RNA-Seq",
+            "VALIDATION",
+            "WGS",
+            "WXS"
+        ],
+        "file_state": [
+            "submitted"
+        ],
+        "file_uploaded": [
+            "false",
+            "true"
+        ],
+        "platform": [
+            "Complete Genomics",
+            "Illumina GA",
+            "Illumina HiSeq",
+            "Ion Torrent PGM"
+        ],
+        "sample_type": [
+            "01",
+            "02",
+            "03",
+            "04",
+            "06",
+            "09",
+            "10",
+            "11",
+            "14",
+            "15",
+            "20",
+            "40",
+            "41",
+            "42",
+            "50"
+        ],
+        "species": [
+            "Homo sapiens"
+        ]
+    },
+    "Data_HG38": {
+        "access": [
+            "controlled",
+            "open"
+        ],
+        "analysis_workflow_type": [
+            "BWA with Mark Duplicates and Cocleaning",
+            "BWA-aln",
+            "STAR 2-Pass"
+        ],
+        "center_code": [
+            
+        ],
+        "center_name": [
+            
+        ],
+        "center_type": [
+            
+        ],
+        "data_category": [
+            "Biospecimen",
+            "Clinical",
+            "Raw Sequencing Data"
+        ],
+        "data_format": [
+            "BAM",
+            "XLSX"
+        ],
+        "data_type": [
+            "Aligned Reads",
+            "Biospecimen Supplement",
+            "Clinical Supplement"
+        ],
+        "experimental_strategy": [
+            "miRNA-Seq",
+            "RNA-Seq",
+            "WXS"
+        ],
+        "file_state": [
+            "submitted"
+        ],
+        "file_uploaded": [
+            "false"
+        ],
+        "platform": [
+            "Illumina"
+        ],
+        "sample_type": [
+            "01",
+            "02",
+            "03",
+            "04",
+            "06",
+            "09",
+            "10",
+            "11",
+            "14",
+            "20",
+            "40",
+            "41",
+            "42",
+            "50"
+        ],
+        "species": [
+            "Homo sapiens"
+        ]
+    }
 }
