@@ -38,7 +38,7 @@ echo "Libraries Installed"
 
 # Install Google App Engine
 echo "Installing Google App Engine..."
-wget -q https://storage.googleapis.com/appengine-sdks/featured/google_appengine_1.9.31.zip -O ${HOME}/google_appengine.zip
+wget -q https://storage.googleapis.com/appengine-sdks/featured/google_appengine_1.9.61.zip -O ${HOME}/google_appengine.zip
 unzip -nq ${HOME}/google_appengine.zip -d $HOME
 export PATH=$PATH:${HOME}/google_appengine/
 export PYTHONPATH=$PYTHONPATH:${HOME}/google_appengine/
