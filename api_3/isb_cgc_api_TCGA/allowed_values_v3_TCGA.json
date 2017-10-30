@@ -20,7 +20,6 @@
             "LUAD",
             "LUSC",
             "MESO",
-            "NA",
             "OV",
             "PAAD",
             "PCPG",
@@ -63,7 +62,6 @@
             "TCGA-LUAD",
             "TCGA-LUSC",
             "TCGA-MESO",
-            "TCGA-NA",
             "TCGA-OV",
             "TCGA-PAAD",
             "TCGA-PCPG",
@@ -694,6 +692,7 @@
             "Illumina GA",
             "Illumina HiSeq",
             "Illumina Human 1M Duo",
+            "Illumina HumanHap550",
             "Illumina MiSeq",
             "Ion Torrent PGM",
             "LS 454"
