@@ -14,6 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 from argparse import ArgumentParser
+from datetime import datetime
 import MySQLdb
 
 def get_sql_connection(args):
@@ -183,6 +184,7 @@ def main(args):
             ('TCGA', True),
         ]
         for program in programs:
+            print datetime.now(), 'starting program {}'.format(program)
             cursor = db.cursor(MySQLdb.cursors.DictCursor)
         
             write_file = not bool(args.dry_run)
@@ -191,19 +193,16 @@ def main(args):
             create_metadata_file(cursor, program[0], 'Common', path_template % (program[0]), column_filter, False, False, write_file)
             column_filter += [
                 'acl',
-                'aliquot_gdc_id',
                 'analysis_gdc_id',
                 'analysis_workflow_link',
                 'archive_gdc_id',
                 'archive_revision',
                 'archive_revision_lte',
                 'archive_revision_gte',
-                'case_gdc_id',
                 'file_gdc_id',
                 'file_name_key',
                 'index_file_id',
                 'md5sum',
-                'sample_gdc_id',
                 'type'
             ]
             create_metadata_file(cursor, program[0], 'Clinical', path_template % (program[0]), column_filter, True, False, write_file)
@@ -217,6 +216,7 @@ def main(args):
             create_nesting_class(table_list, path_template % (program[0]), write_file)
             if program[1]:
                 create_metadata_file(cursor, program[0], 'Annotation', path_template % (program[0]), column_filter, True, True, write_file)
+            print datetime.now(), 'finished program {}'.format(program)
     finally:
         if cursor:
             cursor.close()
@@ -236,6 +236,8 @@ if __name__ == '__main__':
     parser.set_defaults(feature=True)
     args = parser.parse_args()
 
+    print datetime.now(), 'starting...'
     main(args)
+    print datetime.now(), 'finished'
 
 
