@@ -60,6 +60,8 @@ class FilesGetPath(remote.Service):
                         paths += row[1]
                 except Exception as e:
                     print 'problem executing sql({}):\n\t{}\n\t{}'.format(e, sql, params)
-        
-        return [item for sublist in uuid2paths.values() for item in sublist]
+                    raise
+        filepaths = FilesGetPath.FilePaths()
+        filepaths.paths = [item for sublist in uuid2paths.values() for item in sublist]
+        return filepaths
 
