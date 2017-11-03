@@ -22,7 +22,7 @@ from api_3.isb_cgc_api.isb_cgc_api_helpers import ISB_CGC_Endpoints
 from api_3.api_helpers import sql_connection
 
 @ISB_CGC_Endpoints.api_class(resource_name='files')
-class FilesGetPath(object):
+class FilesGetPath(remote.Service):
     GET_RESOURCE = endpoints.ResourceContainer(file_uuids=messages.StringField(1, repeated=True))
     class FilePaths(messages.Message):
         paths = messages.StringField(1, repeated = True)
