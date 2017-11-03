@@ -21,6 +21,7 @@ from api_3.isb_cgc_api.cohorts_delete import CohortsDeleteAPI
 from api_3.isb_cgc_api.cohorts_get import CohortsGetAPI
 from api_3.isb_cgc_api.cohorts_list import CohortsListAPI
 from api_3.isb_cgc_api.cohorts_cloudstoragefilepaths import CohortsCloudStorageFilePathsAPI
+from api_3.isb_cgc_api.files_get_file_paths import FilesGetPath
  
 from api_3.isb_cgc_api_TCGA.cohorts_preview import TCGA_CohortsPreviewAPI
 from api_3.isb_cgc_api_TCGA.cohorts_create import TCGA_CohortsCreateAPI
@@ -52,6 +53,7 @@ APPLICATION = endpoints.api_server([
     CohortsGetAPI,
     CohortsListAPI,
     CohortsCloudStorageFilePathsAPI,
+    FilesGetPath,
  
     TCGA_CohortsPreviewAPI,
     TCGA_CohortsCreateAPI,
