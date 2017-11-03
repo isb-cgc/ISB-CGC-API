@@ -31,16 +31,18 @@ class FilesGetPath(remote.Service):
     def get(self, request):
         """
         from the list of file gdc UUIDs, returns the google cloud storage file paths for those UUIDs.  the returned 
-        filepaths will be in the same orde ras the passed in UUIDs
+        filepaths will be in the same order as the passed in UUIDs
         """
         uuids = request.get_assigned_value('file_uuids')
         in_clause = ''
+        params = []
         for uuid in uuids:
-            in_clause += '"{}", '.format(uuid)
+            in_clause += '%s, '
+            params += ['{}'.format(uuid)]
         in_clause = in_clause[:-2]
         
         uuid2paths = {}
-        sql = 'select file_gdc_id, file_name_key from {}_metadata_data_{} where file_gdc_id in (%s)'
+        sql = 'select file_gdc_id, file_name_key from {}_metadata_data_{} where file_gdc_id in ({}) order by 1, 2'
         programs = ['CCLE', 'TARGET', 'TCGA']
         db = sql_connection()
         for program in programs:
@@ -50,11 +52,14 @@ class FilesGetPath(remote.Service):
                 builds = ['HG19', 'HG38']
             
             for build in builds:
-                cursor = db.cursor()
-                cursor.execute(sql.format(program, build), in_clause)
-                for row in cursor:
-                    paths = uuid2paths.setdefault(row[0], [])
-                    paths += row[1]
+                try:
+                    cursor = db.cursor()
+                    cursor.execute(sql.format(program, build, in_clause), params)
+                    for row in cursor:
+                        paths = uuid2paths.setdefault(row[0], [])
+                        paths += row[1]
+                except Exception as e:
+                    print 'problem executing sql({}):\n\t{}\n\t{}'.format(e, sql, params)
         
         return [item for sublist in uuid2paths.values() for item in sublist]
 
