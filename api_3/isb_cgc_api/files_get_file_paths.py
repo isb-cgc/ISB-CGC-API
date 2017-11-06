@@ -57,7 +57,7 @@ class FilesGetPath(remote.Service):
                     cursor.execute(sql.format(program, build, in_clause), params)
                     for row in cursor:
                         paths = uuid2paths.setdefault(row[0], [])
-                        paths += row[1]
+                        paths += [row[1]]
                 except Exception as e:
                     print 'problem executing sql({}):\n\t{}\n\t{}'.format(e, sql, params)
                     raise
