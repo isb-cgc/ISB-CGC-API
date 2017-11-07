@@ -34,13 +34,13 @@ echo "Dependencies Installed"
 echo "Installing Python Libraries..."
 curl --silent https://bootstrap.pypa.io/get-pip.py | python
 # If we are in Frameworks 2.0, uncomment this and remove the endpoints entry from the libraries: section in the app.yaml
-# pip install -t lib google-endpoints --ignore-installed --upgrade
+pip install -t lib google-endpoints --ignore-installed --upgrade
 pip install -q -r ${HOMEROOT}/requirements.txt -t ${HOMEROOT}/lib --upgrade --only-binary all
 echo "Libraries Installed"
 
 # Install Google App Engine
 echo "Installing Google App Engine..."
-wget -q https://storage.googleapis.com/appengine-sdks/featured/google_appengine_1.9.31.zip -O ${HOME}/google_appengine.zip
+wget -q https://storage.googleapis.com/appengine-sdks/featured/google_appengine_1.9.61.zip -O ${HOME}/google_appengine.zip
 unzip -nq ${HOME}/google_appengine.zip -d $HOME
 export PATH=$PATH:${HOME}/google_appengine/
 export PYTHONPATH=$PYTHONPATH:${HOME}/google_appengine/
