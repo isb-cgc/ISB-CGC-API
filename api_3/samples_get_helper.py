@@ -36,7 +36,7 @@ class SamplesGetQueryBuilder(object):
             
         aliquot_query_str = ''
         for genomic_build in genomic_builds:
-            part_aliquot_query_str = 'select aliquot_barcode ' \
+            part_aliquot_query_str = 'select aliquot_barcode, aliquot_gdc_id ' \
                              'from {}_metadata_data_{} ' \
                              'where file_name_key is not null and file_name_key !="" '.format(program, genomic_build)
             for column in param_list:
@@ -76,7 +76,7 @@ class SamplesGetQueryBuilder(object):
 
     def build_case_query(self, program):
 
-        case_query_str = 'select case_barcode ' \
+        case_query_str = 'select case_barcode, case_gdc_id ' \
                             'from {}_metadata_biospecimen ' \
                             'where sample_barcode=%s ' \
                             'group by case_barcode'.format(program)
@@ -168,6 +168,7 @@ class SamplesGetAPI(remote.Service):
             cursor.execute(case_query_str, query_tuple)
             row = cursor.fetchone()
             case_barcode = str(row["case_barcode"])
+            case_gdc_id = str(row["case_gdc_id"])
 
             # prepare to build list of data details messages
             cursor.execute(data_query_str, extra_query_tuple)
@@ -184,7 +185,8 @@ class SamplesGetAPI(remote.Service):
                                  biospecimen_data=biospecimen_data_item,
                                  data_details=data_details_list,
                                  data_details_count=len(data_details_list),
-                                 case=case_barcode)
+                                 case_barcode=case_barcode,
+                                 case_gdc_id=case_gdc_id)
 
         except (IndexError, TypeError) as e:
             logger.info("Sample details for barcode {} not found. Error: {}, \nSQL: {}, \nParams: {}".format(sample_barcode, e, aliquot_query_str, extra_query_tuple))
