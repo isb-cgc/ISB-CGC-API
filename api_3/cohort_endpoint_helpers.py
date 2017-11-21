@@ -21,7 +21,6 @@ import logging
 logger = logging.getLogger(__name__)
 
 INSTALLED_APP_CLIENT_ID = settings.INSTALLED_APP_CLIENT_ID
-CONTROLLED_ACL_GOOGLE_GROUP = settings.ACL_GOOGLE_GROUP
 
 BUILTIN_ENDPOINTS_PARAMETERS = [
     'alt',

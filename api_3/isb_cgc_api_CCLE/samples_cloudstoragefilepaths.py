@@ -24,7 +24,7 @@ from api_3.cloudstoragefilepaths_helper import GCSFilePathList, SamplesCloudStor
 class CCLE_SamplesCloudStorageFilePathsAPI(SamplesCloudStorageFilePathsHelper):
 
     @endpoints.method(SamplesCloudStorageFilePathsHelper.GET_RESOURCE, GCSFilePathList,
-                      path='samples/{sample_barcode}/cloud_storage_file_paths', http_method='GET')
+                      path='ccle/samples/{sample_barcode}/cloud_storage_file_paths', http_method='GET')
     def cloud_storage_file_paths(self, request):
         """
         Takes a sample barcode as a required parameter and
