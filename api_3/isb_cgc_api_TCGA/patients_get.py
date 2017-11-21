@@ -29,7 +29,7 @@ class CaseDetails(messages.Message):
 
 @ISB_CGC_TCGA_Endpoints.api_class(resource_name='cases')
 class TCGA_CasesGetAPI(CasesGetHelper):
-    @endpoints.method(CasesGetHelper.GET_RESOURCE, CaseDetails, path='cases/{case_barcode}', http_method='GET')
+    @endpoints.method(CasesGetHelper.GET_RESOURCE, CaseDetails, path='tcga/cases/{case_barcode}', http_method='GET')
     def get(self, request):
         """
         Returns information about a specific case,

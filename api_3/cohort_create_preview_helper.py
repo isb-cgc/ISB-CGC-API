@@ -66,78 +66,134 @@ class CohortsCreatePreviewAPI(remote.Service):
 
         return query_dict, gte_query_dict, lte_query_dict
 
-    def build_query(self, program, query_dict, gte_query_dict, lte_query_dict):
+    def build_query(self, program, table, query_dict, gte_query_dict, lte_query_dict):
         """
         Builds the queries that selects the case and sample barcodes
         that meet the criteria specified in the request body.
         Returns case query string,  sample query string, value tuple.
         """
-        sample_query_str = 'SELECT sample_barcode, c.case_barcode, c.project_short_name ' \
-                           'FROM {0}_metadata_clinical c join {0}_metadata_biospecimen b on c.case_barcode = b.case_barcode ' \
-                           'WHERE '.format(program)
+        if (0 == len(query_dict) and 0 == len(gte_query_dict) and 0 == len(lte_query_dict)):
+            logger.info('no predicates specified for {}'.format(table))
+            return None, None
+        
+        if 'Clinical' == table:
+            query_str = 'SELECT sample_barcode, c.case_barcode, c.project_short_name ' \
+                               'FROM {0}_metadata_clinical c join {0}_metadata_biospecimen b on c.case_barcode = b.case_barcode ' \
+                               'WHERE '.format(program)
+        else:
+            query_str = 'SELECT sample_barcode, case_barcode, project_short_name ' \
+                               'FROM {0}_metadata_{1} ' \
+                               'WHERE '.format(program, table[:1].lower() + table[1:])
         value_tuple = ()
 
+        alias = 'c.' if 'Clinical' == table else ''
         for key, value_list in query_dict.iteritems():
-            if key in self.shared_fields:
-                key = 'c.' + key
-            sample_query_str += ' AND ' if not sample_query_str.endswith('WHERE ') else ''
+            query_str += ' AND ' if not query_str.endswith('WHERE ') else ''
             if "None" in value_list:
                 value_list.remove("None")
-                sample_query_str += ' ( {key} is null '.format(key=key)
+                query_str += ' ( {alias}{key} is null '.format(alias=alias, key=key)
                 if len(value_list) > 0:
-                    sample_query_str += ' OR {key} IN ({vals}) '.format(
-                        key=key, vals=', '.join(['%s'] * len(value_list)))
-                sample_query_str += ') '
+                    query_str += ' OR {alias}{key} IN ({vals}) '.format(
+                        alias=alias, key=key, vals=', '.join(['%s'] * len(value_list)))
+                query_str += ') '
             else:
-                sample_query_str += ' {key} IN ({vals}) '.format(key=key, vals=', '.join(['%s'] * len(value_list)))
+                query_str += ' {alias}{key} IN ({vals}) '.format(alias=alias, key=key, vals=', '.join(['%s'] * len(value_list)))
             value_tuple += tuple(value_list)
 
         for key, value in gte_query_dict.iteritems():
-            if key in self.shared_fields:
-                key = 'c.' + key
-            sample_query_str += ' AND ' if not sample_query_str.endswith('WHERE ') else ''
-            sample_query_str += ' {} >=%s '.format(key)
+            query_str += ' AND ' if not query_str.endswith('WHERE ') else ''
+            query_str += ' {}{} >=%s '.format(alias, key)
             value_tuple += (value,)
 
         for key, value in lte_query_dict.iteritems():
-            if key in self.shared_fields:
-                key = 'c.' + key
-            sample_query_str += ' AND ' if not sample_query_str.endswith('WHERE ') else ''
-            sample_query_str += ' {} <=%s '.format(key)
+            query_str += ' AND ' if not query_str.endswith('WHERE ') else ''
+            query_str += ' {}{} <=%s '.format(alias, key)
             value_tuple += (value,)
 
-        sample_query_str += ' GROUP BY sample_barcode, c.case_barcode, project_short_name'
+        query_str += ' GROUP BY sample_barcode, {0}case_barcode, {0}project_short_name'.format(alias)
 
-        return sample_query_str, value_tuple
+        return query_str, value_tuple
 
-    def query_samples(self, request):
-        if are_there_bad_keys(request) or are_there_no_acceptable_keys(request):
-            err_msg = construct_parameter_error_message(request, True)
-            raise endpoints.BadRequestException(err_msg)
-        query_dict, gte_query_dict, lte_query_dict = self.build_query_dictionaries(request)
-        sample_query_str, value_tuple = self.build_query(self.program, query_dict, gte_query_dict, lte_query_dict)
-        db = None
-        sample_cursor = None
+    def query(self, request):
         try:
-            db = sql_connection()
-            sample_cursor = db.cursor(MySQLdb.cursors.DictCursor)
-            sample_cursor.execute(sample_query_str, value_tuple)
-            rows = sample_cursor.fetchall()
-        except (IndexError, TypeError) as e:
-            logger.warn(e)
-            raise endpoints.NotFoundException("Error retrieving samples or cases: {}".format(e))
-        except MySQLdb.ProgrammingError as e:
-            msg = '{}:\n\tsample query: {} {}'.format(e, sample_query_str, value_tuple)
-            logger.warn(msg)
-            raise endpoints.BadRequestException("Error previewing cohort. {}".format(e))
+            db = None
+            try:
+                db = sql_connection()
+            except Exception as e:
+                logger.exception(e)
+                raise endpoints.NotFoundException("Error connecting to database: {}".format(e))
+            
+            fields = request.get_assigned_value('Common')
+            common_query_dict = {}
+            common_gte_query_dict = {}
+            common_lte_query_dict = {}
+            if fields is not None:
+                common_query_dict, common_gte_query_dict, common_lte_query_dict = self.build_query_dictionaries(fields)
+            
+            ret_query_dict = {}
+            ret_lte_query_dict = {}
+            ret_gte_query_dict = {}
+            ret_rows = None
+            for table in ('Clinical', 'Biospecimen', 'Data_HG19', 'Data_HG38'):
+                if 'CCLE' == self.program and 'Data_HG38' == table:
+                    continue
+                fields = request.get_assigned_value(table)
+                if not fields:
+                    continue
+                if are_there_bad_keys(fields) or are_there_no_acceptable_keys(fields):
+                    err_msg = construct_parameter_error_message(fields, True)
+                    raise endpoints.BadRequestException(err_msg)
+                query_dict, gte_query_dict, lte_query_dict = self.build_query_dictionaries(fields)
+                query_dict.update(common_query_dict)
+                lte_query_dict.update(common_lte_query_dict)
+                gte_query_dict.update(common_gte_query_dict)
+
+                ret_query_dict.update(query_dict)
+                ret_lte_query_dict.update(lte_query_dict)
+                ret_gte_query_dict.update(gte_query_dict)
+                query_str, value_tuple = self.build_query(self.program, table, query_dict, gte_query_dict, lte_query_dict)
+                if not query_str:
+                    continue
+
+                cursor = None
+                try:
+                    cursor = db.cursor(MySQLdb.cursors.DictCursor)
+                    cursor.execute(query_str, value_tuple)
+                    rows = list(cursor.fetchall())
+                    if 0 == len(rows):
+                        # if any query returns no rows, then, overall, no sample_barcode will match
+                        return [], '', '', ''
+                        
+                    if ret_rows is None:
+                        ret_rows = rows
+                    else:
+                        logger.info('\tmerging current samples with previous samples')
+                        cur_samples = set()
+                        for row in rows:
+                            cur_samples.add(row['sample_barcode'])
+                        not_in_sample = []
+                        for row in ret_rows:
+                            if row['sample_barcode'] not in cur_samples:
+                                not_in_sample += [row]
+                        for row in not_in_sample:
+                            ret_rows.remove(row)
+                        logger.info('\tfinished merging current samples with previous samples')
+                except (IndexError, TypeError) as e:
+                    logger.exception(e)
+                    raise endpoints.NotFoundException("Error retrieving samples and cases: {}\n{} {}".format(e, query_str, value_tuple))
+                except MySQLdb.ProgrammingError as e:
+                    msg = '{}:\n\tsample query: {} {}'.format(e, query_str, value_tuple)
+                    logger.exception(msg)
+                    raise endpoints.BadRequestException("Error creating/previewing cohort. {}".format(e))
+                finally:
+                    if cursor:
+                        cursor.close()
         finally:
-            if sample_cursor:
-                sample_cursor.close()
             if db and db.open:
                 db.close()
             request_finished.send(self)
         
-        return rows, query_dict, lte_query_dict, gte_query_dict
+        return ret_rows, ret_query_dict, ret_lte_query_dict, ret_gte_query_dict
     
 class FilterDetails(messages.Message):
     name = messages.StringField(1)
@@ -201,12 +257,16 @@ class CohortsCreateHelper(CohortsCreatePreviewAPI):
             request_finished.send(self)
 
         # get the sample barcode information for use in creating the sample list for the cohort
-        rows, query_dict, lte_query_dict, gte_query_dict = self.query_samples(request)
+        rows, query_dict, lte_query_dict, gte_query_dict = self.query(request)
         logger.info('set up django project map')
         project2django = {}
-        for row in rows:
-            if row['project_short_name'] not in project2django:
-                project2django[row['project_short_name']] = self.get_django_project(row['project_short_name'])
+        if rows:
+            for row in rows:
+                if row['project_short_name'] not in project2django:
+                    project2django[row['project_short_name']] = self.get_django_project(row['project_short_name'])
+        else:
+            raise endpoints.BadRequestException("No samples meet the specified parameters.")
+
         logger.info('set up sample barcodes')
         sample_barcodes = [{'sample_barcode': row['sample_barcode'], 'case_barcode': row['case_barcode'], 'project': project2django[row['project_short_name']]} for row in rows]
         logger.info('finished set up sample barcodes')
@@ -315,15 +375,19 @@ class CohortsPreviewHelper(CohortsCreatePreviewAPI):
         two lists: the lists of case barcodes, and the list of sample barcodes.
         Authentication is not required.
         """
-        rows, _, _, _ = self.query_samples(request)
+        rows, _, _, _ = self.query(request)
 
         case_barcodes = set()
         sample_barcodes = []
 
-        for row in rows:
-            case_barcodes.add(row['case_barcode'])
-            sample_barcodes.append(row['sample_barcode'])
-        case_barcodes = list(case_barcodes)
+        if rows:
+            for row in rows:
+                case_barcodes.add(row['case_barcode'])
+                sample_barcodes.append(row['sample_barcode'])
+            case_barcodes = list(case_barcodes)
+
+        if len(sample_barcodes) == 0:
+            raise endpoints.BadRequestException("No samples meet the specified parameters.")
 
         return self.CohortCasesSamplesList(cases=case_barcodes,
                                          case_count=len(case_barcodes),
