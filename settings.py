@@ -359,7 +359,6 @@ SOCIALACCOUNT_PROVIDERS = \
 
 GOOGLE_APPLICATION_CREDENTIALS  = os.environ.get('GOOGLE_APPLICATION_CREDENTIALS')
 CLIENT_SECRETS                  = os.environ.get('CLIENT_SECRETS')
-PEM_FILE                        = os.environ.get('PEM_FILE')
 CLIENT_EMAIL                    = os.environ.get('CLIENT_EMAIL')
 WEB_CLIENT_ID                   = os.environ.get('WEB_CLIENT_ID')
 INSTALLED_APP_CLIENT_ID         = os.environ.get('INSTALLED_APP_CLIENT_ID')
