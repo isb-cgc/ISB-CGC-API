@@ -138,7 +138,7 @@ class CohortsCreatePreviewAPI(remote.Service):
                 if 'CCLE' == self.program and 'Data_HG38' == table:
                     continue
                 fields = request.get_assigned_value(table)
-                if not fields:
+                if not fields and not len(common_gte_query_dict.keys()) and not len(common_lte_query_dict.keys()) and not len(common_query_dict.keys()):
                     continue
                 if are_there_bad_keys(fields) or are_there_no_acceptable_keys(fields):
                     err_msg = construct_parameter_error_message(fields, True)
