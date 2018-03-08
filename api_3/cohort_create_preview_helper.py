@@ -144,7 +144,7 @@ class CohortsCreatePreviewAPI(remote.Service):
                 if fields and (are_there_bad_keys(fields) or are_there_no_acceptable_keys(fields)):
                     err_msg = construct_parameter_error_message(request, True)
                     raise endpoints.BadRequestException(err_msg)
-                query_dict, gte_query_dict, lte_query_dict = self.build_query_dictionaries(request)
+                query_dict, gte_query_dict, lte_query_dict = self.build_query_dictionaries(fields)
                 query_dict.update(common_query_dict)
                 logger.info("Query dict: {}".format(str(query_dict)))
                 lte_query_dict.update(common_lte_query_dict)
