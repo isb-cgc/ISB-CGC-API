@@ -160,8 +160,10 @@ class CohortsCreatePreviewAPI(remote.Service):
                     cursor = db.cursor(MySQLdb.cursors.DictCursor)
                     cursor.execute(query_str, value_tuple)
                     logger.info("[STATUS] Preview Query: {}".format(query_str))
+                    logger.info("[STATUS] Preview param vals: {}".format(str(value_tuple)))
                     rows = list(cursor.fetchall())
                     if 0 == len(rows):
+                        logger.info("[STATUS] Preview Query returned no rows!")
                         # if any query returns no rows, then, overall, no sample_barcode will match
                         return [], '', '', ''
                         
