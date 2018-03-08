@@ -145,6 +145,7 @@ class CohortsCreatePreviewAPI(remote.Service):
                     raise endpoints.BadRequestException(err_msg)
                 query_dict, gte_query_dict, lte_query_dict = self.build_query_dictionaries(fields)
                 query_dict.update(common_query_dict)
+                logger.debug("Query dict: {}".format(str(query_dict)))
                 lte_query_dict.update(common_lte_query_dict)
                 gte_query_dict.update(common_gte_query_dict)
 
@@ -159,11 +160,8 @@ class CohortsCreatePreviewAPI(remote.Service):
                 try:
                     cursor = db.cursor(MySQLdb.cursors.DictCursor)
                     cursor.execute(query_str, value_tuple)
-                    logger.info("[STATUS] Preview Query: {}".format(query_str))
-                    logger.info("[STATUS] Preview param vals: {}".format(str(value_tuple)))
                     rows = list(cursor.fetchall())
                     if 0 == len(rows):
-                        logger.info("[STATUS] Preview Query returned no rows!")
                         # if any query returns no rows, then, overall, no sample_barcode will match
                         return [], '', '', ''
                         
@@ -191,6 +189,10 @@ class CohortsCreatePreviewAPI(remote.Service):
                 finally:
                     if cursor:
                         cursor.close()
+
+        except Exception as e:
+            logger.error("[ERROR] While building query: ")
+            logger.exception(e)
         finally:
             if db and db.open:
                 db.close()
