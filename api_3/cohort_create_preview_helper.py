@@ -190,10 +190,6 @@ class CohortsCreatePreviewAPI(remote.Service):
                 finally:
                     if cursor:
                         cursor.close()
-
-        except Exception as e:
-            logger.error("[ERROR] While building query: ")
-            logger.exception(e)
         finally:
             if db and db.open:
                 db.close()
