@@ -26,7 +26,7 @@ fi
 # Install apt-get dependencies
 echo "Installing Dependencies..."
 apt-get install -qq -y unzip libffi-dev libssl-dev libmysqlclient-dev python2.7-dev git
-echo "Dependencies Installed"
+echo "Dependencies Installed "
 
 # Install PIP + Dependencies
 echo "Installing Python Libraries..."
