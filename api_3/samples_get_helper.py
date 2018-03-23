@@ -79,7 +79,7 @@ class SamplesGetQueryBuilder(object):
         case_query_str = 'select case_barcode, case_gdc_id ' \
                             'from {}_metadata_biospecimen ' \
                             'where sample_barcode=%s ' \
-                            'group by case_barcode'.format(program)
+                            'group by case_barcode, case_gdc_id'.format(program)
 
         return case_query_str
 

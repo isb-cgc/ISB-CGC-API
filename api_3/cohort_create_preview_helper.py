@@ -127,9 +127,8 @@ class CohortsCreatePreviewAPI(remote.Service):
             common_query_dict = {}
             common_gte_query_dict = {}
             common_lte_query_dict = {}
-            if fields is not None:
+            if fields:
                 common_query_dict, common_gte_query_dict, common_lte_query_dict = self.build_query_dictionaries(fields)
-            
             ret_query_dict = {}
             ret_lte_query_dict = {}
             ret_gte_query_dict = {}
@@ -137,14 +136,23 @@ class CohortsCreatePreviewAPI(remote.Service):
             for table in ('Clinical', 'Biospecimen', 'Data_HG19', 'Data_HG38'):
                 if 'CCLE' == self.program and 'Data_HG38' == table:
                     continue
+
                 fields = request.get_assigned_value(table)
-                if not fields:
-                    continue
-                if are_there_bad_keys(fields) or are_there_no_acceptable_keys(fields):
-                    err_msg = construct_parameter_error_message(fields, True)
+
+                if fields and (are_there_bad_keys(fields) or are_there_no_acceptable_keys(fields)):
+                    err_msg = construct_parameter_error_message(request, True)
                     raise endpoints.BadRequestException(err_msg)
-                query_dict, gte_query_dict, lte_query_dict = self.build_query_dictionaries(fields)
+                elif not (len(common_gte_query_dict.keys()) or len(common_lte_query_dict.keys()) or len(common_query_dict.keys())):
+                    continue
+
+                query_dict = {}
+                gte_query_dict = {}
+                lte_query_dict = {}
+                if fields:
+                    query_dict, gte_query_dict, lte_query_dict = self.build_query_dictionaries(fields)
+                    
                 query_dict.update(common_query_dict)
+                logger.info("Query dict: {}".format(str(query_dict)))
                 lte_query_dict.update(common_lte_query_dict)
                 gte_query_dict.update(common_gte_query_dict)
 

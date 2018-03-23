@@ -26,17 +26,9 @@ ALLOWED_HOSTS = [
 ### Check what we're running in
 APP_ENGINE_FLEX = 'aef-'
 APP_ENGINE = 'Google App Engine/'
+IS_DEV = (os.environ.get('IS_DEV', 'False') == 'True')
 IS_APP_ENGINE_FLEX = os.getenv('GAE_INSTANCE', '').startswith(APP_ENGINE_FLEX)
 IS_APP_ENGINE = os.getenv('SERVER_SOFTWARE', '').startswith(APP_ENGINE)
-IS_DEV = bool(os.environ.get('IS_DEV', False))
-
-### added for connecting to CloudSQL with SSL certs on MVM platform
-SSL_DIR = os.path.abspath(os.path.dirname(__file__))+os.sep
-
-
-#ADMINS = (
-    # ('Your Name', 'your_email@example.com'),
-#)
 
 ADMINS = ()
 MANAGERS = ADMINS
@@ -359,7 +351,6 @@ SOCIALACCOUNT_PROVIDERS = \
 
 GOOGLE_APPLICATION_CREDENTIALS  = os.environ.get('GOOGLE_APPLICATION_CREDENTIALS')
 CLIENT_SECRETS                  = os.environ.get('CLIENT_SECRETS')
-PEM_FILE                        = os.environ.get('PEM_FILE')
 CLIENT_EMAIL                    = os.environ.get('CLIENT_EMAIL')
 WEB_CLIENT_ID                   = os.environ.get('WEB_CLIENT_ID')
 INSTALLED_APP_CLIENT_ID         = os.environ.get('INSTALLED_APP_CLIENT_ID')
