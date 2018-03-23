@@ -26,12 +26,9 @@ ALLOWED_HOSTS = [
 ### Check what we're running in
 APP_ENGINE_FLEX = 'aef-'
 APP_ENGINE = 'Google App Engine/'
+IS_DEV = (os.environ.get('IS_DEV', 'False') == 'True')
 IS_APP_ENGINE_FLEX = os.getenv('GAE_INSTANCE', '').startswith(APP_ENGINE_FLEX)
 IS_APP_ENGINE = os.getenv('SERVER_SOFTWARE', '').startswith(APP_ENGINE)
-
-#ADMINS = (
-    # ('Your Name', 'your_email@example.com'),
-#)
 
 ADMINS = ()
 MANAGERS = ADMINS
