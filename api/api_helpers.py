@@ -1,6 +1,6 @@
 """
 
-Copyright 2017, Institute for Systems Biology
+Copyright 2018, Institute for Systems Biology
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -22,7 +22,6 @@ import MySQLdb
 import httplib2
 from oauth2client.client import GoogleCredentials, AccessTokenCredentials
 from django.conf import settings
-import traceback
 from googleapiclient.discovery import build
 
 debug = settings.DEBUG
