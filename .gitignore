@@ -20,6 +20,7 @@ dist/
 downloads/
 eggs/
 lib/
+ISB-CGC-Common/
 lib64/
 parts/
 sdist/
