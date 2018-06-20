@@ -12,6 +12,9 @@ def unload_module(module_name):
 
 # Add any libraries installed in the "lib" folder.
 vendor.add('lib')
+if bool(os.environ.get('LOCAL_DEV', 'False') == 'True'):
+    print "Local development detected, vendoring in endpoints_lib..."
+    vendor.add('endpoints_lib')
 
 # The default endpoints/GAE oauth2 is way too old.
 unload_module('oauth2client')
