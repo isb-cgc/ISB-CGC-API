@@ -52,6 +52,7 @@ jobs:
             - ./shell
             - ./ISB-CGC-Common
             - ./saml
+            - ./lib
             - ./appengine_config.py
             - ./cgc_api.py
             - ./app.yaml
