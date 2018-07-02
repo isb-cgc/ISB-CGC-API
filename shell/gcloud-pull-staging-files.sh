@@ -5,6 +5,9 @@ mkdir ./txt
 ./google-cloud-sdk/bin/gsutil cp "gs://${DEV_GCLOUD_BUCKET}/${DEV_SECRETS_FILE}" ./client_secrets.json
 ./google-cloud-sdk/bin/gsutil cp "gs://${DEV_GCLOUD_BUCKET}/${DEV_JSON_FILE}" ./privatekey.json
 
+./google-cloud-sdk/bin/gsutil cp "gs://${DEV_GCLOUD_BUCKET}/${SERVICE_ACCOUNT_BLACKLIST_JSON_FILE}" ./
+./google-cloud-sdk/bin/gsutil cp "gs://${DEV_GCLOUD_BUCKET}/${GOOGLE_ORG_WHITELIST_JSON_FILE}" ./
+./google-cloud-sdk/bin/gsutil cp "gs://${DEV_GCLOUD_BUCKET}/${MANAGED_SERVICE_ACCOUNTS_JSON_FILE}" ./
 ./google-cloud-sdk/bin/gsutil cp "gs://${DEV_GCLOUD_BUCKET}/${DEV_DATASET_JSON_FILE}" ./
 
 if [ -n "${DEV_NIH_AUTH_ON}" ]; then
@@ -16,5 +19,5 @@ if [ -n "${DEV_NIH_AUTH_ON}" ]; then
 fi
 
 # Pack staged files for caching
-cp *.json ./json
-cp *.txt ./txt
+cp --verbose *.json ./json
+cp --verbose *.txt ./txt
