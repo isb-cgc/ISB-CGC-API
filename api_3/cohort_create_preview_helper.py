@@ -73,7 +73,6 @@ class CohortsCreatePreviewAPI(remote.Service):
         Returns case query string,  sample query string, value tuple.
         """
         if (0 == len(query_dict) and 0 == len(gte_query_dict) and 0 == len(lte_query_dict)):
-            logger.info('no predicates specified for {}'.format(table))
             return None, None
         
         if 'Clinical' == table:
@@ -125,14 +124,16 @@ class CohortsCreatePreviewAPI(remote.Service):
             
             fields = request.get_assigned_value('Common')
             common_query_dict = {}
-            common_gte_query_dict = {}
-            common_lte_query_dict = {}
+
             if fields:
-                common_query_dict, common_gte_query_dict, common_lte_query_dict = self.build_query_dictionaries(fields)
+                common_query_dict = self.build_query_dictionaries(fields)
+
+            # Our return values
             ret_query_dict = {}
             ret_lte_query_dict = {}
             ret_gte_query_dict = {}
             ret_rows = None
+
             for table in ('Clinical', 'Biospecimen', 'Data_HG19', 'Data_HG38'):
                 if 'CCLE' == self.program and 'Data_HG38' == table:
                     continue
@@ -142,24 +143,22 @@ class CohortsCreatePreviewAPI(remote.Service):
                 if fields and (are_there_bad_keys(fields) or are_there_no_acceptable_keys(fields)):
                     err_msg = construct_parameter_error_message(request, True)
                     raise endpoints.BadRequestException(err_msg)
-                elif not (len(common_gte_query_dict.keys()) or len(common_lte_query_dict.keys()) or len(common_query_dict.keys())):
-                    continue
 
                 query_dict = {}
                 gte_query_dict = {}
                 lte_query_dict = {}
+
                 if fields:
                     query_dict, gte_query_dict, lte_query_dict = self.build_query_dictionaries(fields)
                     
                 query_dict.update(common_query_dict)
-                logger.info("Query dict: {}".format(str(query_dict)))
-                lte_query_dict.update(common_lte_query_dict)
-                gte_query_dict.update(common_gte_query_dict)
 
                 ret_query_dict.update(query_dict)
                 ret_lte_query_dict.update(lte_query_dict)
                 ret_gte_query_dict.update(gte_query_dict)
+
                 query_str, value_tuple = self.build_query(self.program, table, query_dict, gte_query_dict, lte_query_dict)
+
                 if not query_str:
                     continue
 
@@ -175,7 +174,6 @@ class CohortsCreatePreviewAPI(remote.Service):
                     if ret_rows is None:
                         ret_rows = rows
                     else:
-                        logger.info('\tmerging current samples with previous samples')
                         cur_samples = set()
                         for row in rows:
                             cur_samples.add(row['sample_barcode'])
@@ -185,7 +183,6 @@ class CohortsCreatePreviewAPI(remote.Service):
                                 not_in_sample += [row]
                         for row in not_in_sample:
                             ret_rows.remove(row)
-                        logger.info('\tfinished merging current samples with previous samples')
                 except (IndexError, TypeError) as e:
                     logger.exception(e)
                     raise endpoints.NotFoundException("Error retrieving samples and cases: {}\n{} {}".format(e, query_str, value_tuple))
@@ -266,7 +263,6 @@ class CohortsCreateHelper(CohortsCreatePreviewAPI):
 
         # get the sample barcode information for use in creating the sample list for the cohort
         rows, query_dict, lte_query_dict, gte_query_dict = self.query(request)
-        logger.info('set up django project map')
         project2django = {}
         if rows:
             for row in rows:
@@ -275,9 +271,7 @@ class CohortsCreateHelper(CohortsCreatePreviewAPI):
         else:
             raise endpoints.BadRequestException("No samples meet the specified parameters.")
 
-        logger.info('set up sample barcodes')
         sample_barcodes = [{'sample_barcode': row['sample_barcode'], 'case_barcode': row['case_barcode'], 'project': project2django[row['project_short_name']]} for row in rows]
-        logger.info('finished set up sample barcodes')
         cohort_name = request.get_assigned_value('name')
 
         # Validate the cohort name against a whitelist
@@ -306,9 +300,7 @@ class CohortsCreateHelper(CohortsCreatePreviewAPI):
         # 2. insert samples into cohort_samples
         try:
             sample_list = [Samples(cohort=created_cohort, sample_barcode=sample['sample_barcode'], case_barcode=sample['case_barcode'], project=sample['project']) for sample in sample_barcodes]
-            logger.info('call samples bulk_create()')
             Samples.objects.bulk_create(sample_list)
-            logger.info('completed samples bulk_create()')
         finally:
             request_finished.send(self)
 
@@ -320,7 +312,6 @@ class CohortsCreateHelper(CohortsCreatePreviewAPI):
             request_finished.send(self)
 
         # 4. Create filters applied
-        logger.info('creating filters')
         filter_data = []
         django_program = self.get_django_program(self.program)
         try:
@@ -346,7 +337,6 @@ class CohortsCreateHelper(CohortsCreatePreviewAPI):
                 Filters.objects.create(resulting_cohort=created_cohort, name=key, value=val, program=django_program).save()
         finally:
             request_finished.send(self)
-        logger.info('completed filters')
 
         # 5. Store cohort to BigQuery
         project_id = settings.BQ_PROJECT_ID
