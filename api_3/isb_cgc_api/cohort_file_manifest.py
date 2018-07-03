@@ -74,6 +74,14 @@ class CohortFileManifest(remote.Service):
         fetch_count=messages.IntegerField(2),
         offset=messages.IntegerField(3),
         genomic_build=messages.StringField(4),
+        do_filter_count=messages.BooleanField(6)
+    )
+
+    POST_RESOURCE = endpoints.ResourceContainer(
+        cohort_id=messages.IntegerField(1, required=True),
+        fetch_count=messages.IntegerField(2),
+        offset=messages.IntegerField(3),
+        genomic_build=messages.StringField(4),
         do_filter_count=messages.BooleanField(6),
         filters=messages.MessageField(FileManifestFilters, 5)
     )
@@ -125,13 +133,15 @@ class CohortFileManifest(remote.Service):
 
             params['access'] = has_access
 
-            filter_obj = request.get_assigned_value('filters') or {}
+            filter_obj = request.get_assigned_value('filters') if 'filters' in [k.name for k in request.all_fields()] else None
 
-            inc_filters = {}
+            inc_filters = {
+                filter.name: filter_obj.get_assigned_value(filter.name)
+                           for filter in filter_obj.all_fields()
+                           if filter_obj.get_assigned_value(filter.name)
+                } if filter_obj else {}
 
-            for filter in filter_obj.all_fields():
-                if filter_obj.get_assigned_value(filter.name):
-                    inc_filters[filter.name] = filter_obj.get_assigned_value(filter.name)
+            logger.info("inc_filters: {}".format(str(inc_filters)))
 
             response = cohort_files(cohort_id, user=user, inc_filters=inc_filters, **params)
 
@@ -178,7 +188,7 @@ class CohortFileManifestAPI(CohortFileManifest):
         """
         return super(CohortFileManifestAPI, self).file_manifest(request)
 
-    @endpoints.method(CohortFileManifest.GET_RESOURCE, FileManifest, http_method='POST', path='cohorts/{cohort_id}/file_manifest')
+    @endpoints.method(CohortFileManifest.POST_RESOURCE, FileManifest, http_method='POST', path='cohorts/{cohort_id}/file_manifest')
     def file_manifest_filtered(self, request):
         """
         Takes a cohort id as a required parameter and returns cloud storage paths to files
