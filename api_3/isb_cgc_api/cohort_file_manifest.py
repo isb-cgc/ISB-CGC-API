@@ -141,8 +141,6 @@ class CohortFileManifest(remote.Service):
                            if filter_obj.get_assigned_value(filter.name)
                 } if filter_obj else {}
 
-            logger.info("inc_filters: {}".format(str(inc_filters)))
-
             response = cohort_files(cohort_id, user=user, inc_filters=inc_filters, **params)
 
             file_manifest = FileManifest()
