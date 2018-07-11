@@ -31,7 +31,7 @@ class SampleDetails(messages.Message):
     data_details_count = messages.IntegerField(6, variant=messages.Variant.INT32)
 
 @ISB_CGC_CCLE_Endpoints.api_class(resource_name='samples')
-class CCLE_SamplesGetAPI(SamplesGetAPI):
+class CCLESamplesGetAPI(SamplesGetAPI):
     @endpoints.method(SamplesGetAPI.GET_RESOURCE, SampleDetails, path='ccle/samples/{sample_barcode}', http_method='GET')
     def get(self, request):
         """
@@ -40,4 +40,4 @@ class CCLE_SamplesGetAPI(SamplesGetAPI):
         the associated case barcode, a list of associated aliquots,
         and a list of "data_details" blocks describing each of the data files associated with this sample
         """
-        return super(CCLE_SamplesGetAPI, self).get(request, 'CCLE', SampleDetails, MetadataItem)
+        return super(CCLESamplesGetAPI, self).get(request, 'CCLE', SampleDetails, MetadataItem)

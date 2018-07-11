@@ -22,7 +22,7 @@ from api_3.isb_cgc_api_CCLE.isb_cgc_api_helpers import ISB_CGC_CCLE_Endpoints
 from api_3.isb_cgc_api_CCLE.message_classes import MetadataRangesItem
 
 @ISB_CGC_CCLE_Endpoints.api_class(resource_name='cohorts')
-class CCLE_CohortsCreateAPI(CohortsCreateHelper):
+class CCLECohortsCreateAPI(CohortsCreateHelper):
     POST_RESOURCE = endpoints.ResourceContainer(MetadataRangesItem, name=messages.StringField(2, required=True))
 
     @endpoints.method(POST_RESOURCE, CreatedCohort, path='ccle/cohorts/create', http_method='POST')
@@ -34,4 +34,4 @@ class CCLE_CohortsCreateAPI(CohortsCreateHelper):
         of samples in that cohort.
         """
         self.program = 'CCLE'
-        return super(CCLE_CohortsCreateAPI, self).create(request)
+        return super(CCLECohortsCreateAPI, self).create(request)

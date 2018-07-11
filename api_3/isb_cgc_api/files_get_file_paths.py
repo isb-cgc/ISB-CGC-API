@@ -21,11 +21,13 @@ from api_3.isb_cgc_api.isb_cgc_api_helpers import ISB_CGC_Endpoints
 
 from api_3.api_helpers import sql_connection
 
+
 @ISB_CGC_Endpoints.api_class(resource_name='files')
 class FilesGetPath(remote.Service):
     GET_RESOURCE = endpoints.ResourceContainer(file_uuids=messages.StringField(1, repeated=True))
+
     class FilePaths(messages.Message):
-        paths = messages.StringField(1, repeated = True)
+        paths = messages.StringField(1, repeated=True)
 
     @endpoints.method(GET_RESOURCE, FilePaths, http_method='GET', path='file_paths')
     def get(self, request):
@@ -64,4 +66,3 @@ class FilesGetPath(remote.Service):
         filepaths = FilesGetPath.FilePaths()
         filepaths.paths = [item for sublist in uuid2paths.values() for item in sublist]
         return filepaths
-

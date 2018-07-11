@@ -28,7 +28,7 @@ class CaseDetails(messages.Message):
     aliquots = messages.StringField(3, repeated=True)
 
 @ISB_CGC_CCLE_Endpoints.api_class(resource_name='cases')
-class CCLE_CasesGetAPI(CasesGetHelper):
+class CCLECasesGetAPI(CasesGetHelper):
     @endpoints.method(CasesGetHelper.GET_RESOURCE, CaseDetails, path='ccle/cases/{case_barcode}', http_method='GET')
     def get(self, request):
         """
@@ -37,4 +37,4 @@ class CCLE_CasesGetAPI(CasesGetHelper):
         Takes a case barcode (*eg* ACC-MESO-1) as a required parameter.
         User does not need to be authenticated.
         """
-        return super(CCLE_CasesGetAPI, self).get(request, CaseDetails, MetadataItem, 'CCLE')
+        return super(CCLECasesGetAPI, self).get(request, CaseDetails, MetadataItem, 'CCLE')

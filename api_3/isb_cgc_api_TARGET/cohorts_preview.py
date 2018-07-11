@@ -21,7 +21,7 @@ from api_3.isb_cgc_api_TARGET.isb_cgc_api_helpers import ISB_CGC_TARGET_Endpoint
 from message_classes import MetadataRangesItem
 
 @ISB_CGC_TARGET_Endpoints.api_class(resource_name='cohorts')
-class TARGET_CohortsPreviewAPI(CohortsPreviewHelper):
+class TARGETCohortsPreviewAPI(CohortsPreviewHelper):
 
     POST_RESOURCE = endpoints.ResourceContainer(MetadataRangesItem)
 
@@ -34,4 +34,4 @@ class TARGET_CohortsPreviewAPI(CohortsPreviewHelper):
         Authentication is not required.
         """
         self.program = 'TARGET'
-        return super(TARGET_CohortsPreviewAPI, self).preview(request)
+        return super(TARGETCohortsPreviewAPI, self).preview(request)

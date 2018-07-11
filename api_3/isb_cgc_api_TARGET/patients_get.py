@@ -28,7 +28,7 @@ class CaseDetails(messages.Message):
     aliquots = messages.StringField(3, repeated=True)
 
 @ISB_CGC_TARGET_Endpoints.api_class(resource_name='cases')
-class TARGET_CasesGetAPI(CasesGetHelper):
+class TARGETCasesGetAPI(CasesGetHelper):
     @endpoints.method(CasesGetHelper.GET_RESOURCE, CaseDetails, path='target/cases/{case_barcode}', http_method='GET')
     def get(self, request):
         """
@@ -37,4 +37,4 @@ class TARGET_CasesGetAPI(CasesGetHelper):
         Takes a case barcode (of length 16, *eg* TARGET-51-PALFYG) as a required parameter.
         User does not need to be authenticated.
         """
-        return super(TARGET_CasesGetAPI, self).get(request, CaseDetails, MetadataItem, 'TARGET')
+        return super(TARGETCasesGetAPI, self).get(request, CaseDetails, MetadataItem, 'TARGET')
