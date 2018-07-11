@@ -1,0 +1,4140 @@
+{
+  "openapi": "3.0.0",
+  "servers": [
+    {
+      "url": "https://api-dot-isb-cgc.appspot.com/_ah/api"
+    }
+  ],
+  "info": {
+    "description": "Get information about cases and samples for CCLE; preview and create cohorts containing CCLE cases and samples.",
+    "title": "ISB-CGC API: CCLE",
+    "version": "v3"
+  },
+  "paths": {
+    "/isb_cgc_ccle_api/v3/ccle/cases/{case_barcode}": {
+      "get": {
+        "operationId": "CCLECasesGetAPI_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "case_barcode",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Api3IsbCgcApiCCLEPatientsGetCaseDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/isb_cgc_ccle_api/v3/ccle/cohorts/create": {
+      "post": {
+        "operationId": "CCLECohortsCreateAPI_create",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "name",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Api3CohortCreatePreviewHelperCreatedCohort"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "$ref": "#/components/requestBodies/Api3IsbCgcApiCCLEMessageClassesMetadataRangesItem"
+        }
+      }
+    },
+    "/isb_cgc_ccle_api/v3/ccle/samples/{sample_barcode}": {
+      "get": {
+        "operationId": "CCLESamplesGetAPI_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "sample_barcode",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "data_type",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "data_category",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "experimental_strategy",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "data_format",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "platform",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "endpoint_type",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "analysis_workflow_type",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Api3IsbCgcApiCCLESamplesGetSampleDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/isb_cgc_ccle_api/v3/ccle/samples/{sample_barcode}/cloud_storage_file_paths": {
+      "get": {
+        "operationId": "CCLESamplesCloudStorageFilePathsAPI_cloudStorageFilePaths",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "sample_barcode",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "data_type",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "data_category",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "experimental_strategy",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "data_format",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "platform",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "genomic_build",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "analysis_workflow_type",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Api3CloudstoragefilepathsHelperGCSFilePathList"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/isb_cgc_ccle_api/v3/tcga/cohorts/preview": {
+      "post": {
+        "operationId": "CCLECohortsPreviewAPI_preview",
+        "responses": {
+          "200": {
+            "description": "A successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Api3CohortCreatePreviewHelperCohortCasesSamplesList"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "$ref": "#/components/requestBodies/Api3IsbCgcApiCCLEMessageClassesMetadataRangesItem"
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Api3CloudstoragefilepathsHelperGCSFilePathList": {
+        "properties": {
+          "cloud_storage_file_paths": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "count": {
+            "format": "int32",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "Api3CohortCreatePreviewHelperCohortCasesSamplesList": {
+        "properties": {
+          "case_count": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "cases": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "sample_count": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "samples": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "Api3CohortCreatePreviewHelperCreatedCohort": {
+        "properties": {
+          "case_count": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "filters": {
+            "items": {
+              "$ref": "#/components/schemas/Api3CohortCreatePreviewHelperFilterDetails"
+            },
+            "type": "array"
+          },
+          "id": {
+            "type": "string"
+          },
+          "last_date_saved": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "sample_count": {
+            "format": "int32",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "Api3CohortCreatePreviewHelperFilterDetails": {
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "value": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "Api3CohortEndpointHelpersFilterDetails": {
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "value": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "Api3IsbCgcApiCCLEMessageClassesBiospecimenMetadataItem": {
+        "properties": {
+          "case_barcode": {
+            "type": "string"
+          },
+          "case_gdc_id": {
+            "type": "string"
+          },
+          "sample_barcode": {
+            "type": "string"
+          },
+          "sample_gdc_id": {
+            "type": "string"
+          },
+          "sample_type": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "Api3IsbCgcApiCCLEMessageClassesBiospecimenMetadataRangesItem": {
+        "properties": {
+          "case_barcode": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "case_gdc_id": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "sample_barcode": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "sample_gdc_id": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "sample_type": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "Api3IsbCgcApiCCLEMessageClassesClinicalMetadataItem": {
+        "properties": {
+          "case_barcode": {
+            "type": "string"
+          },
+          "case_gdc_id": {
+            "type": "string"
+          },
+          "gender": {
+            "type": "string"
+          },
+          "hist_subtype": {
+            "type": "string"
+          },
+          "histology": {
+            "type": "string"
+          },
+          "site_primary": {
+            "type": "string"
+          },
+          "source": {
+            "type": "string"
+          },
+          "summary_file_count": {
+            "format": "int32",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "Api3IsbCgcApiCCLEMessageClassesClinicalMetadataRangesItem": {
+        "properties": {
+          "case_barcode": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "case_gdc_id": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "gender": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "hist_subtype": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "histology": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "site_primary": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "source": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "summary_file_count": {
+            "items": {
+              "format": "int32",
+              "type": "integer"
+            },
+            "type": "array"
+          },
+          "summary_file_count_gte": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "summary_file_count_lte": {
+            "format": "int32",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "Api3IsbCgcApiCCLEMessageClassesCommonMetadataItem": {
+        "properties": {
+          "disease_code": {
+            "type": "string"
+          },
+          "endpoint_type": {
+            "type": "string"
+          },
+          "program_name": {
+            "type": "string"
+          },
+          "project_short_name": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "Api3IsbCgcApiCCLEMessageClassesCommonMetadataRangesItem": {
+        "properties": {
+          "disease_code": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "endpoint_type": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "program_name": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "project_short_name": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "Api3IsbCgcApiCCLEMessageClassesDataHG19MetadataItem": {
+        "properties": {
+          "access": {
+            "type": "string"
+          },
+          "aliquot_barcode": {
+            "type": "string"
+          },
+          "aliquot_gdc_id": {
+            "type": "string"
+          },
+          "analysis_workflow_type": {
+            "type": "string"
+          },
+          "case_barcode": {
+            "type": "string"
+          },
+          "case_gdc_id": {
+            "type": "string"
+          },
+          "center_code": {
+            "type": "string"
+          },
+          "center_name": {
+            "type": "string"
+          },
+          "center_type": {
+            "type": "string"
+          },
+          "data_category": {
+            "type": "string"
+          },
+          "data_format": {
+            "type": "string"
+          },
+          "data_type": {
+            "type": "string"
+          },
+          "experimental_strategy": {
+            "type": "string"
+          },
+          "file_name": {
+            "type": "string"
+          },
+          "file_state": {
+            "type": "string"
+          },
+          "file_uploaded": {
+            "type": "string"
+          },
+          "index_file_name": {
+            "type": "string"
+          },
+          "platform": {
+            "type": "string"
+          },
+          "sample_barcode": {
+            "type": "string"
+          },
+          "sample_gdc_id": {
+            "type": "string"
+          },
+          "sample_type": {
+            "type": "string"
+          },
+          "species": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "Api3IsbCgcApiCCLEMessageClassesDataHG19MetadataRangesItem": {
+        "properties": {
+          "access": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "aliquot_barcode": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "aliquot_gdc_id": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "analysis_workflow_type": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "case_barcode": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "case_gdc_id": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "center_code": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "center_name": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "center_type": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "data_category": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "data_format": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "data_type": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "experimental_strategy": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "file_name": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "file_state": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "file_uploaded": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "index_file_name": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "platform": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "sample_barcode": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "sample_gdc_id": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "sample_type": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "species": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "Api3IsbCgcApiCCLEMessageClassesMetadataItem": {
+        "properties": {
+          "Biospecimen": {
+            "$ref": "#/components/schemas/Api3IsbCgcApiCCLEMessageClassesBiospecimenMetadataItem"
+          },
+          "Clinical": {
+            "$ref": "#/components/schemas/Api3IsbCgcApiCCLEMessageClassesClinicalMetadataItem"
+          },
+          "Common": {
+            "$ref": "#/components/schemas/Api3IsbCgcApiCCLEMessageClassesCommonMetadataItem"
+          },
+          "Data_HG19": {
+            "$ref": "#/components/schemas/Api3IsbCgcApiCCLEMessageClassesDataHG19MetadataItem"
+          }
+        },
+        "type": "object"
+      },
+      "Api3IsbCgcApiCCLEMessageClassesMetadataRangesItem": {
+        "properties": {
+          "Biospecimen": {
+            "$ref": "#/components/schemas/Api3IsbCgcApiCCLEMessageClassesBiospecimenMetadataRangesItem"
+          },
+          "Clinical": {
+            "$ref": "#/components/schemas/Api3IsbCgcApiCCLEMessageClassesClinicalMetadataRangesItem"
+          },
+          "Common": {
+            "$ref": "#/components/schemas/Api3IsbCgcApiCCLEMessageClassesCommonMetadataRangesItem"
+          },
+          "Data_HG19": {
+            "$ref": "#/components/schemas/Api3IsbCgcApiCCLEMessageClassesDataHG19MetadataRangesItem"
+          }
+        },
+        "type": "object"
+      },
+      "Api3IsbCgcApiCCLEPatientsGetCaseDetails": {
+        "properties": {
+          "aliquots": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "clinical_data": {
+            "$ref": "#/components/schemas/Api3IsbCgcApiCCLEMessageClassesMetadataItem"
+          },
+          "samples": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "Api3IsbCgcApiCCLESamplesGetSampleDetails": {
+        "properties": {
+          "aliquots": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "biospecimen_data": {
+            "$ref": "#/components/schemas/Api3IsbCgcApiCCLEMessageClassesMetadataItem"
+          },
+          "case_barcode": {
+            "type": "string"
+          },
+          "case_gdc_id": {
+            "type": "string"
+          },
+          "data_details": {
+            "items": {
+              "$ref": "#/components/schemas/Api3SamplesGetHelperDataDetails"
+            },
+            "type": "array"
+          },
+          "data_details_count": {
+            "format": "int32",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "Api3IsbCgcApiCohortFileManifestFileDetail": {
+        "properties": {
+          "access": {
+            "type": "string"
+          },
+          "case_barcode": {
+            "type": "string"
+          },
+          "case_gdc_uuid": {
+            "type": "string"
+          },
+          "data_category": {
+            "type": "string"
+          },
+          "data_format": {
+            "type": "string"
+          },
+          "data_type": {
+            "type": "string"
+          },
+          "disease_code": {
+            "type": "string"
+          },
+          "experimental_strategy": {
+            "type": "string"
+          },
+          "file_gdc_uuid": {
+            "type": "string"
+          },
+          "file_path": {
+            "type": "string"
+          },
+          "platform": {
+            "type": "string"
+          },
+          "program": {
+            "type": "string"
+          },
+          "project_short_name": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "Api3IsbCgcApiCohortFileManifestFileManifest": {
+        "properties": {
+          "files": {
+            "items": {
+              "$ref": "#/components/schemas/Api3IsbCgcApiCohortFileManifestFileDetail"
+            },
+            "type": "array"
+          },
+          "files_retrieved": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "total_file_count": {
+            "format": "int32",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "Api3IsbCgcApiCohortGetListHelperCohortDetails": {
+        "properties": {
+          "case_count": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "cases": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "comments": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "filters": {
+            "items": {
+              "$ref": "#/components/schemas/Api3CohortEndpointHelpersFilterDetails"
+            },
+            "type": "array"
+          },
+          "id": {
+            "type": "string"
+          },
+          "last_date_saved": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "parent_id": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "permission": {
+            "type": "string"
+          },
+          "sample_count": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "samples": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "source_notes": {
+            "type": "string"
+          },
+          "source_type": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "Api3IsbCgcApiCohortGetListHelperCohortDetailsList": {
+        "properties": {
+          "count": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/Api3IsbCgcApiCohortGetListHelperCohortListDetails"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "Api3IsbCgcApiCohortGetListHelperCohortListDetails": {
+        "properties": {
+          "case_count": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "comments": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "filters": {
+            "items": {
+              "$ref": "#/components/schemas/Api3CohortEndpointHelpersFilterDetails"
+            },
+            "type": "array"
+          },
+          "id": {
+            "type": "string"
+          },
+          "last_date_saved": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "parent_id": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "permission": {
+            "type": "string"
+          },
+          "sample_count": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "source_notes": {
+            "type": "string"
+          },
+          "source_type": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "Api3IsbCgcApiCohortsDeleteReturnJSON": {
+        "properties": {
+          "message": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "Api3IsbCgcApiFilesGetFilePathsFilePaths": {
+        "properties": {
+          "paths": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "Api3IsbCgcApiTARGETMessageClassesBiospecimenMetadataItem": {
+        "properties": {
+          "case_barcode": {
+            "type": "string"
+          },
+          "case_gdc_id": {
+            "type": "string"
+          },
+          "sample_barcode": {
+            "type": "string"
+          },
+          "sample_gdc_id": {
+            "type": "string"
+          },
+          "sample_type": {
+            "type": "string"
+          },
+          "tumor_code": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "Api3IsbCgcApiTARGETMessageClassesBiospecimenMetadataRangesItem": {
+        "properties": {
+          "case_barcode": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "case_gdc_id": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "sample_barcode": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "sample_gdc_id": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "sample_type": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "tumor_code": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "Api3IsbCgcApiTARGETMessageClassesClinicalMetadataItem": {
+        "properties": {
+          "age_at_diagnosis": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "case_barcode": {
+            "type": "string"
+          },
+          "case_gdc_id": {
+            "type": "string"
+          },
+          "days_to_birth": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "days_to_death": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "days_to_last_followup": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "days_to_last_known_alive": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "ethnicity": {
+            "type": "string"
+          },
+          "event_free_survival": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "first_event": {
+            "type": "string"
+          },
+          "gender": {
+            "type": "string"
+          },
+          "protocol": {
+            "type": "string"
+          },
+          "race": {
+            "type": "string"
+          },
+          "summary_file_count": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "vital_status": {
+            "type": "string"
+          },
+          "wbc_at_diagnosis": {
+            "format": "double",
+            "type": "number"
+          },
+          "year_of_diagnosis": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "year_of_last_follow_up": {
+            "format": "int32",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "Api3IsbCgcApiTARGETMessageClassesClinicalMetadataRangesItem": {
+        "properties": {
+          "age_at_diagnosis": {
+            "items": {
+              "format": "int32",
+              "type": "integer"
+            },
+            "type": "array"
+          },
+          "age_at_diagnosis_gte": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "age_at_diagnosis_lte": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "case_barcode": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "case_gdc_id": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "days_to_birth": {
+            "items": {
+              "format": "int32",
+              "type": "integer"
+            },
+            "type": "array"
+          },
+          "days_to_birth_gte": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "days_to_birth_lte": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "days_to_death": {
+            "items": {
+              "format": "int32",
+              "type": "integer"
+            },
+            "type": "array"
+          },
+          "days_to_death_gte": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "days_to_death_lte": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "days_to_last_followup": {
+            "items": {
+              "format": "int32",
+              "type": "integer"
+            },
+            "type": "array"
+          },
+          "days_to_last_followup_gte": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "days_to_last_followup_lte": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "days_to_last_known_alive": {
+            "items": {
+              "format": "int32",
+              "type": "integer"
+            },
+            "type": "array"
+          },
+          "days_to_last_known_alive_gte": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "days_to_last_known_alive_lte": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "ethnicity": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "event_free_survival": {
+            "items": {
+              "format": "int32",
+              "type": "integer"
+            },
+            "type": "array"
+          },
+          "event_free_survival_gte": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "event_free_survival_lte": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "first_event": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "gender": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "protocol": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "race": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "summary_file_count": {
+            "items": {
+              "format": "int32",
+              "type": "integer"
+            },
+            "type": "array"
+          },
+          "summary_file_count_gte": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "summary_file_count_lte": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "vital_status": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "wbc_at_diagnosis": {
+            "items": {
+              "format": "double",
+              "type": "number"
+            },
+            "type": "array"
+          },
+          "wbc_at_diagnosis_gte": {
+            "format": "double",
+            "type": "number"
+          },
+          "wbc_at_diagnosis_lte": {
+            "format": "double",
+            "type": "number"
+          },
+          "year_of_diagnosis": {
+            "items": {
+              "format": "int32",
+              "type": "integer"
+            },
+            "type": "array"
+          },
+          "year_of_diagnosis_gte": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "year_of_diagnosis_lte": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "year_of_last_follow_up": {
+            "items": {
+              "format": "int32",
+              "type": "integer"
+            },
+            "type": "array"
+          },
+          "year_of_last_follow_up_gte": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "year_of_last_follow_up_lte": {
+            "format": "int32",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "Api3IsbCgcApiTARGETMessageClassesCommonMetadataItem": {
+        "properties": {
+          "disease_code": {
+            "type": "string"
+          },
+          "endpoint_type": {
+            "type": "string"
+          },
+          "program_name": {
+            "type": "string"
+          },
+          "project_short_name": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "Api3IsbCgcApiTARGETMessageClassesCommonMetadataRangesItem": {
+        "properties": {
+          "disease_code": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "endpoint_type": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "program_name": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "project_short_name": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "Api3IsbCgcApiTARGETMessageClassesDataHG19MetadataItem": {
+        "properties": {
+          "access": {
+            "type": "string"
+          },
+          "aliquot_barcode": {
+            "type": "string"
+          },
+          "aliquot_gdc_id": {
+            "type": "string"
+          },
+          "analysis_workflow_type": {
+            "type": "string"
+          },
+          "case_barcode": {
+            "type": "string"
+          },
+          "case_gdc_id": {
+            "type": "string"
+          },
+          "center_code": {
+            "type": "string"
+          },
+          "center_name": {
+            "type": "string"
+          },
+          "center_type": {
+            "type": "string"
+          },
+          "data_category": {
+            "type": "string"
+          },
+          "data_format": {
+            "type": "string"
+          },
+          "data_type": {
+            "type": "string"
+          },
+          "experimental_strategy": {
+            "type": "string"
+          },
+          "file_name": {
+            "type": "string"
+          },
+          "file_state": {
+            "type": "string"
+          },
+          "file_uploaded": {
+            "type": "string"
+          },
+          "index_file_name": {
+            "type": "string"
+          },
+          "platform": {
+            "type": "string"
+          },
+          "sample_barcode": {
+            "type": "string"
+          },
+          "sample_gdc_id": {
+            "type": "string"
+          },
+          "sample_type": {
+            "type": "string"
+          },
+          "species": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "Api3IsbCgcApiTARGETMessageClassesDataHG19MetadataRangesItem": {
+        "properties": {
+          "access": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "aliquot_barcode": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "aliquot_gdc_id": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "analysis_workflow_type": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "case_barcode": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "case_gdc_id": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "center_code": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "center_name": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "center_type": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "data_category": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "data_format": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "data_type": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "experimental_strategy": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "file_name": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "file_state": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "file_uploaded": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "index_file_name": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "platform": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "sample_barcode": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "sample_gdc_id": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "sample_type": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "species": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "Api3IsbCgcApiTARGETMessageClassesDataHG38MetadataItem": {
+        "properties": {
+          "access": {
+            "type": "string"
+          },
+          "aliquot_barcode": {
+            "type": "string"
+          },
+          "aliquot_gdc_id": {
+            "type": "string"
+          },
+          "analysis_workflow_type": {
+            "type": "string"
+          },
+          "case_barcode": {
+            "type": "string"
+          },
+          "case_gdc_id": {
+            "type": "string"
+          },
+          "center_code": {
+            "type": "string"
+          },
+          "center_name": {
+            "type": "string"
+          },
+          "center_type": {
+            "type": "string"
+          },
+          "data_category": {
+            "type": "string"
+          },
+          "data_format": {
+            "type": "string"
+          },
+          "data_type": {
+            "type": "string"
+          },
+          "experimental_strategy": {
+            "type": "string"
+          },
+          "file_name": {
+            "type": "string"
+          },
+          "file_state": {
+            "type": "string"
+          },
+          "file_uploaded": {
+            "type": "string"
+          },
+          "index_file_name": {
+            "type": "string"
+          },
+          "platform": {
+            "type": "string"
+          },
+          "sample_barcode": {
+            "type": "string"
+          },
+          "sample_gdc_id": {
+            "type": "string"
+          },
+          "sample_type": {
+            "type": "string"
+          },
+          "species": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "Api3IsbCgcApiTARGETMessageClassesDataHG38MetadataRangesItem": {
+        "properties": {
+          "access": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "aliquot_barcode": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "aliquot_gdc_id": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "analysis_workflow_type": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "case_barcode": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "case_gdc_id": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "center_code": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "center_name": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "center_type": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "data_category": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "data_format": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "data_type": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "experimental_strategy": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "file_name": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "file_state": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "file_uploaded": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "index_file_name": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "platform": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "sample_barcode": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "sample_gdc_id": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "sample_type": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "species": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "Api3IsbCgcApiTARGETMessageClassesMetadataItem": {
+        "properties": {
+          "Biospecimen": {
+            "$ref": "#/components/schemas/Api3IsbCgcApiTARGETMessageClassesBiospecimenMetadataItem"
+          },
+          "Clinical": {
+            "$ref": "#/components/schemas/Api3IsbCgcApiTARGETMessageClassesClinicalMetadataItem"
+          },
+          "Common": {
+            "$ref": "#/components/schemas/Api3IsbCgcApiTARGETMessageClassesCommonMetadataItem"
+          },
+          "Data_HG19": {
+            "$ref": "#/components/schemas/Api3IsbCgcApiTARGETMessageClassesDataHG19MetadataItem"
+          },
+          "Data_HG38": {
+            "$ref": "#/components/schemas/Api3IsbCgcApiTARGETMessageClassesDataHG38MetadataItem"
+          }
+        },
+        "type": "object"
+      },
+      "Api3IsbCgcApiTARGETMessageClassesMetadataRangesItem": {
+        "properties": {
+          "Biospecimen": {
+            "$ref": "#/components/schemas/Api3IsbCgcApiTARGETMessageClassesBiospecimenMetadataRangesItem"
+          },
+          "Clinical": {
+            "$ref": "#/components/schemas/Api3IsbCgcApiTARGETMessageClassesClinicalMetadataRangesItem"
+          },
+          "Common": {
+            "$ref": "#/components/schemas/Api3IsbCgcApiTARGETMessageClassesCommonMetadataRangesItem"
+          },
+          "Data_HG19": {
+            "$ref": "#/components/schemas/Api3IsbCgcApiTARGETMessageClassesDataHG19MetadataRangesItem"
+          },
+          "Data_HG38": {
+            "$ref": "#/components/schemas/Api3IsbCgcApiTARGETMessageClassesDataHG38MetadataRangesItem"
+          }
+        },
+        "type": "object"
+      },
+      "Api3IsbCgcApiTARGETPatientsGetCaseDetails": {
+        "properties": {
+          "aliquots": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "clinical_data": {
+            "$ref": "#/components/schemas/Api3IsbCgcApiTARGETMessageClassesMetadataItem"
+          },
+          "samples": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "Api3IsbCgcApiTARGETSamplesGetSampleDetails": {
+        "properties": {
+          "aliquots": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "biospecimen_data": {
+            "$ref": "#/components/schemas/Api3IsbCgcApiTARGETMessageClassesMetadataItem"
+          },
+          "case_barcode": {
+            "type": "string"
+          },
+          "case_gdc_id": {
+            "type": "string"
+          },
+          "data_details": {
+            "items": {
+              "$ref": "#/components/schemas/Api3SamplesGetHelperDataDetails"
+            },
+            "type": "array"
+          },
+          "data_details_count": {
+            "format": "int32",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "Api3IsbCgcApiTCGAAnnotationsApiMetadataAnnotationList": {
+        "properties": {
+          "count": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/Api3IsbCgcApiTCGAMessageClassesAnnotationMetadataItem"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "Api3IsbCgcApiTCGAMessageClassesAnnotationMetadataItem": {
+        "properties": {
+          "aliquot_barcode": {
+            "type": "string"
+          },
+          "annotation_gdc_id": {
+            "type": "string"
+          },
+          "annotation_submitter_id": {
+            "type": "string"
+          },
+          "case_barcode": {
+            "type": "string"
+          },
+          "case_gdc_id": {
+            "type": "string"
+          },
+          "category": {
+            "type": "string"
+          },
+          "classification": {
+            "type": "string"
+          },
+          "entity_barcode": {
+            "type": "string"
+          },
+          "entity_gdc_id": {
+            "type": "string"
+          },
+          "entity_type": {
+            "type": "string"
+          },
+          "notes": {
+            "type": "string"
+          },
+          "sample_barcode": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "Api3IsbCgcApiTCGAMessageClassesBiospecimenMetadataItem": {
+        "properties": {
+          "avg_percent_lymphocyte_infiltration": {
+            "format": "double",
+            "type": "number"
+          },
+          "avg_percent_monocyte_infiltration": {
+            "format": "double",
+            "type": "number"
+          },
+          "avg_percent_necrosis": {
+            "format": "double",
+            "type": "number"
+          },
+          "avg_percent_neutrophil_infiltration": {
+            "format": "double",
+            "type": "number"
+          },
+          "avg_percent_normal_cells": {
+            "format": "double",
+            "type": "number"
+          },
+          "avg_percent_stromal_cells": {
+            "format": "double",
+            "type": "number"
+          },
+          "avg_percent_tumor_cells": {
+            "format": "double",
+            "type": "number"
+          },
+          "avg_percent_tumor_nuclei": {
+            "format": "double",
+            "type": "number"
+          },
+          "batch_number": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "bcr": {
+            "type": "string"
+          },
+          "case_barcode": {
+            "type": "string"
+          },
+          "case_gdc_id": {
+            "type": "string"
+          },
+          "days_to_collection": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "days_to_sample_procurement": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "max_percent_lymphocyte_infiltration": {
+            "format": "double",
+            "type": "number"
+          },
+          "max_percent_monocyte_infiltration": {
+            "format": "double",
+            "type": "number"
+          },
+          "max_percent_necrosis": {
+            "format": "double",
+            "type": "number"
+          },
+          "max_percent_neutrophil_infiltration": {
+            "format": "double",
+            "type": "number"
+          },
+          "max_percent_normal_cells": {
+            "format": "double",
+            "type": "number"
+          },
+          "max_percent_stromal_cells": {
+            "format": "double",
+            "type": "number"
+          },
+          "max_percent_tumor_cells": {
+            "format": "double",
+            "type": "number"
+          },
+          "max_percent_tumor_nuclei": {
+            "format": "double",
+            "type": "number"
+          },
+          "min_percent_lymphocyte_infiltration": {
+            "format": "double",
+            "type": "number"
+          },
+          "min_percent_monocyte_infiltration": {
+            "format": "double",
+            "type": "number"
+          },
+          "min_percent_necrosis": {
+            "format": "double",
+            "type": "number"
+          },
+          "min_percent_neutrophil_infiltration": {
+            "format": "double",
+            "type": "number"
+          },
+          "min_percent_normal_cells": {
+            "format": "double",
+            "type": "number"
+          },
+          "min_percent_stromal_cells": {
+            "format": "double",
+            "type": "number"
+          },
+          "min_percent_tumor_cells": {
+            "format": "double",
+            "type": "number"
+          },
+          "min_percent_tumor_nuclei": {
+            "format": "double",
+            "type": "number"
+          },
+          "num_portions": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "num_slides": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "pathology_report_uuid": {
+            "type": "string"
+          },
+          "preservation_method": {
+            "type": "string"
+          },
+          "sample_barcode": {
+            "type": "string"
+          },
+          "sample_gdc_id": {
+            "type": "string"
+          },
+          "sample_type": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "Api3IsbCgcApiTCGAMessageClassesBiospecimenMetadataRangesItem": {
+        "properties": {
+          "avg_percent_lymphocyte_infiltration": {
+            "items": {
+              "format": "double",
+              "type": "number"
+            },
+            "type": "array"
+          },
+          "avg_percent_lymphocyte_infiltration_gte": {
+            "format": "double",
+            "type": "number"
+          },
+          "avg_percent_lymphocyte_infiltration_lte": {
+            "format": "double",
+            "type": "number"
+          },
+          "avg_percent_monocyte_infiltration": {
+            "items": {
+              "format": "double",
+              "type": "number"
+            },
+            "type": "array"
+          },
+          "avg_percent_monocyte_infiltration_gte": {
+            "format": "double",
+            "type": "number"
+          },
+          "avg_percent_monocyte_infiltration_lte": {
+            "format": "double",
+            "type": "number"
+          },
+          "avg_percent_necrosis": {
+            "items": {
+              "format": "double",
+              "type": "number"
+            },
+            "type": "array"
+          },
+          "avg_percent_necrosis_gte": {
+            "format": "double",
+            "type": "number"
+          },
+          "avg_percent_necrosis_lte": {
+            "format": "double",
+            "type": "number"
+          },
+          "avg_percent_neutrophil_infiltration": {
+            "items": {
+              "format": "double",
+              "type": "number"
+            },
+            "type": "array"
+          },
+          "avg_percent_neutrophil_infiltration_gte": {
+            "format": "double",
+            "type": "number"
+          },
+          "avg_percent_neutrophil_infiltration_lte": {
+            "format": "double",
+            "type": "number"
+          },
+          "avg_percent_normal_cells": {
+            "items": {
+              "format": "double",
+              "type": "number"
+            },
+            "type": "array"
+          },
+          "avg_percent_normal_cells_gte": {
+            "format": "double",
+            "type": "number"
+          },
+          "avg_percent_normal_cells_lte": {
+            "format": "double",
+            "type": "number"
+          },
+          "avg_percent_stromal_cells": {
+            "items": {
+              "format": "double",
+              "type": "number"
+            },
+            "type": "array"
+          },
+          "avg_percent_stromal_cells_gte": {
+            "format": "double",
+            "type": "number"
+          },
+          "avg_percent_stromal_cells_lte": {
+            "format": "double",
+            "type": "number"
+          },
+          "avg_percent_tumor_cells": {
+            "items": {
+              "format": "double",
+              "type": "number"
+            },
+            "type": "array"
+          },
+          "avg_percent_tumor_cells_gte": {
+            "format": "double",
+            "type": "number"
+          },
+          "avg_percent_tumor_cells_lte": {
+            "format": "double",
+            "type": "number"
+          },
+          "avg_percent_tumor_nuclei": {
+            "items": {
+              "format": "double",
+              "type": "number"
+            },
+            "type": "array"
+          },
+          "avg_percent_tumor_nuclei_gte": {
+            "format": "double",
+            "type": "number"
+          },
+          "avg_percent_tumor_nuclei_lte": {
+            "format": "double",
+            "type": "number"
+          },
+          "batch_number": {
+            "items": {
+              "format": "int32",
+              "type": "integer"
+            },
+            "type": "array"
+          },
+          "batch_number_gte": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "batch_number_lte": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "bcr": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "case_barcode": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "case_gdc_id": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "days_to_collection": {
+            "items": {
+              "format": "int32",
+              "type": "integer"
+            },
+            "type": "array"
+          },
+          "days_to_collection_gte": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "days_to_collection_lte": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "days_to_sample_procurement": {
+            "items": {
+              "format": "int32",
+              "type": "integer"
+            },
+            "type": "array"
+          },
+          "days_to_sample_procurement_gte": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "days_to_sample_procurement_lte": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "max_percent_lymphocyte_infiltration": {
+            "items": {
+              "format": "double",
+              "type": "number"
+            },
+            "type": "array"
+          },
+          "max_percent_lymphocyte_infiltration_gte": {
+            "format": "double",
+            "type": "number"
+          },
+          "max_percent_lymphocyte_infiltration_lte": {
+            "format": "double",
+            "type": "number"
+          },
+          "max_percent_monocyte_infiltration": {
+            "items": {
+              "format": "double",
+              "type": "number"
+            },
+            "type": "array"
+          },
+          "max_percent_monocyte_infiltration_gte": {
+            "format": "double",
+            "type": "number"
+          },
+          "max_percent_monocyte_infiltration_lte": {
+            "format": "double",
+            "type": "number"
+          },
+          "max_percent_necrosis": {
+            "items": {
+              "format": "double",
+              "type": "number"
+            },
+            "type": "array"
+          },
+          "max_percent_necrosis_gte": {
+            "format": "double",
+            "type": "number"
+          },
+          "max_percent_necrosis_lte": {
+            "format": "double",
+            "type": "number"
+          },
+          "max_percent_neutrophil_infiltration": {
+            "items": {
+              "format": "double",
+              "type": "number"
+            },
+            "type": "array"
+          },
+          "max_percent_neutrophil_infiltration_gte": {
+            "format": "double",
+            "type": "number"
+          },
+          "max_percent_neutrophil_infiltration_lte": {
+            "format": "double",
+            "type": "number"
+          },
+          "max_percent_normal_cells": {
+            "items": {
+              "format": "double",
+              "type": "number"
+            },
+            "type": "array"
+          },
+          "max_percent_normal_cells_gte": {
+            "format": "double",
+            "type": "number"
+          },
+          "max_percent_normal_cells_lte": {
+            "format": "double",
+            "type": "number"
+          },
+          "max_percent_stromal_cells": {
+            "items": {
+              "format": "double",
+              "type": "number"
+            },
+            "type": "array"
+          },
+          "max_percent_stromal_cells_gte": {
+            "format": "double",
+            "type": "number"
+          },
+          "max_percent_stromal_cells_lte": {
+            "format": "double",
+            "type": "number"
+          },
+          "max_percent_tumor_cells": {
+            "items": {
+              "format": "double",
+              "type": "number"
+            },
+            "type": "array"
+          },
+          "max_percent_tumor_cells_gte": {
+            "format": "double",
+            "type": "number"
+          },
+          "max_percent_tumor_cells_lte": {
+            "format": "double",
+            "type": "number"
+          },
+          "max_percent_tumor_nuclei": {
+            "items": {
+              "format": "double",
+              "type": "number"
+            },
+            "type": "array"
+          },
+          "max_percent_tumor_nuclei_gte": {
+            "format": "double",
+            "type": "number"
+          },
+          "max_percent_tumor_nuclei_lte": {
+            "format": "double",
+            "type": "number"
+          },
+          "min_percent_lymphocyte_infiltration": {
+            "items": {
+              "format": "double",
+              "type": "number"
+            },
+            "type": "array"
+          },
+          "min_percent_lymphocyte_infiltration_gte": {
+            "format": "double",
+            "type": "number"
+          },
+          "min_percent_lymphocyte_infiltration_lte": {
+            "format": "double",
+            "type": "number"
+          },
+          "min_percent_monocyte_infiltration": {
+            "items": {
+              "format": "double",
+              "type": "number"
+            },
+            "type": "array"
+          },
+          "min_percent_monocyte_infiltration_gte": {
+            "format": "double",
+            "type": "number"
+          },
+          "min_percent_monocyte_infiltration_lte": {
+            "format": "double",
+            "type": "number"
+          },
+          "min_percent_necrosis": {
+            "items": {
+              "format": "double",
+              "type": "number"
+            },
+            "type": "array"
+          },
+          "min_percent_necrosis_gte": {
+            "format": "double",
+            "type": "number"
+          },
+          "min_percent_necrosis_lte": {
+            "format": "double",
+            "type": "number"
+          },
+          "min_percent_neutrophil_infiltration": {
+            "items": {
+              "format": "double",
+              "type": "number"
+            },
+            "type": "array"
+          },
+          "min_percent_neutrophil_infiltration_gte": {
+            "format": "double",
+            "type": "number"
+          },
+          "min_percent_neutrophil_infiltration_lte": {
+            "format": "double",
+            "type": "number"
+          },
+          "min_percent_normal_cells": {
+            "items": {
+              "format": "double",
+              "type": "number"
+            },
+            "type": "array"
+          },
+          "min_percent_normal_cells_gte": {
+            "format": "double",
+            "type": "number"
+          },
+          "min_percent_normal_cells_lte": {
+            "format": "double",
+            "type": "number"
+          },
+          "min_percent_stromal_cells": {
+            "items": {
+              "format": "double",
+              "type": "number"
+            },
+            "type": "array"
+          },
+          "min_percent_stromal_cells_gte": {
+            "format": "double",
+            "type": "number"
+          },
+          "min_percent_stromal_cells_lte": {
+            "format": "double",
+            "type": "number"
+          },
+          "min_percent_tumor_cells": {
+            "items": {
+              "format": "double",
+              "type": "number"
+            },
+            "type": "array"
+          },
+          "min_percent_tumor_cells_gte": {
+            "format": "double",
+            "type": "number"
+          },
+          "min_percent_tumor_cells_lte": {
+            "format": "double",
+            "type": "number"
+          },
+          "min_percent_tumor_nuclei": {
+            "items": {
+              "format": "double",
+              "type": "number"
+            },
+            "type": "array"
+          },
+          "min_percent_tumor_nuclei_gte": {
+            "format": "double",
+            "type": "number"
+          },
+          "min_percent_tumor_nuclei_lte": {
+            "format": "double",
+            "type": "number"
+          },
+          "num_portions": {
+            "items": {
+              "format": "int32",
+              "type": "integer"
+            },
+            "type": "array"
+          },
+          "num_portions_gte": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "num_portions_lte": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "num_slides": {
+            "items": {
+              "format": "int32",
+              "type": "integer"
+            },
+            "type": "array"
+          },
+          "num_slides_gte": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "num_slides_lte": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "pathology_report_uuid": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "preservation_method": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "sample_barcode": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "sample_gdc_id": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "sample_type": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "Api3IsbCgcApiTCGAMessageClassesClinicalMetadataItem": {
+        "properties": {
+          "age_at_diagnosis": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "age_began_smoking_in_years": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "anatomic_neoplasm_subdivision": {
+            "type": "string"
+          },
+          "batch_number": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "bcr": {
+            "type": "string"
+          },
+          "bmi": {
+            "format": "double",
+            "type": "number"
+          },
+          "case_barcode": {
+            "type": "string"
+          },
+          "case_gdc_id": {
+            "type": "string"
+          },
+          "clinical_M": {
+            "type": "string"
+          },
+          "clinical_N": {
+            "type": "string"
+          },
+          "clinical_T": {
+            "type": "string"
+          },
+          "clinical_stage": {
+            "type": "string"
+          },
+          "colorectal_cancer": {
+            "type": "string"
+          },
+          "country": {
+            "type": "string"
+          },
+          "days_to_birth": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "days_to_death": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "days_to_initial_pathologic_diagnosis": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "days_to_last_followup": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "days_to_last_known_alive": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "days_to_submitted_specimen_dx": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "ethnicity": {
+            "type": "string"
+          },
+          "gender": {
+            "type": "string"
+          },
+          "gleason_score_combined": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "h_pylori_infection": {
+            "type": "string"
+          },
+          "height": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "histological_type": {
+            "type": "string"
+          },
+          "history_of_colon_polyps": {
+            "type": "string"
+          },
+          "history_of_neoadjuvant_treatment": {
+            "type": "string"
+          },
+          "hpv_calls": {
+            "type": "string"
+          },
+          "hpv_status": {
+            "type": "string"
+          },
+          "icd_10": {
+            "type": "string"
+          },
+          "icd_o_3_histology": {
+            "type": "string"
+          },
+          "icd_o_3_site": {
+            "type": "string"
+          },
+          "lymphatic_invasion": {
+            "type": "string"
+          },
+          "lymphnodes_examined": {
+            "type": "string"
+          },
+          "lymphovascular_invasion_present": {
+            "type": "string"
+          },
+          "menopause_status": {
+            "type": "string"
+          },
+          "mononucleotide_and_dinucleotide_marker_panel_analysis_status": {
+            "type": "string"
+          },
+          "neoplasm_histologic_grade": {
+            "type": "string"
+          },
+          "new_tumor_event_after_initial_treatment": {
+            "type": "string"
+          },
+          "number_of_lymphnodes_examined": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "number_of_lymphnodes_positive_by_he": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "number_pack_years_smoked": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "other_dx": {
+            "type": "string"
+          },
+          "other_malignancy_anatomic_site": {
+            "type": "string"
+          },
+          "other_malignancy_histological_type": {
+            "type": "string"
+          },
+          "other_malignancy_type": {
+            "type": "string"
+          },
+          "pathologic_M": {
+            "type": "string"
+          },
+          "pathologic_N": {
+            "type": "string"
+          },
+          "pathologic_T": {
+            "type": "string"
+          },
+          "pathologic_stage": {
+            "type": "string"
+          },
+          "person_neoplasm_cancer_status": {
+            "type": "string"
+          },
+          "pregnancies": {
+            "type": "string"
+          },
+          "primary_neoplasm_melanoma_dx": {
+            "type": "string"
+          },
+          "primary_therapy_outcome_success": {
+            "type": "string"
+          },
+          "psa_value": {
+            "format": "double",
+            "type": "number"
+          },
+          "race": {
+            "type": "string"
+          },
+          "residual_tumor": {
+            "type": "string"
+          },
+          "stopped_smoking_year": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "summary_file_count": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "tobacco_smoking_history": {
+            "type": "string"
+          },
+          "tss_code": {
+            "type": "string"
+          },
+          "tumor_tissue_site": {
+            "type": "string"
+          },
+          "tumor_type": {
+            "type": "string"
+          },
+          "venous_invasion": {
+            "type": "string"
+          },
+          "vital_status": {
+            "type": "string"
+          },
+          "weight": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "year_of_diagnosis": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "year_of_tobacco_smoking_onset": {
+            "format": "int32",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "Api3IsbCgcApiTCGAMessageClassesClinicalMetadataRangesItem": {
+        "properties": {
+          "age_at_diagnosis": {
+            "items": {
+              "format": "int32",
+              "type": "integer"
+            },
+            "type": "array"
+          },
+          "age_at_diagnosis_gte": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "age_at_diagnosis_lte": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "age_began_smoking_in_years": {
+            "items": {
+              "format": "int32",
+              "type": "integer"
+            },
+            "type": "array"
+          },
+          "age_began_smoking_in_years_gte": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "age_began_smoking_in_years_lte": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "anatomic_neoplasm_subdivision": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "batch_number": {
+            "items": {
+              "format": "int32",
+              "type": "integer"
+            },
+            "type": "array"
+          },
+          "batch_number_gte": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "batch_number_lte": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "bcr": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "bmi": {
+            "items": {
+              "format": "double",
+              "type": "number"
+            },
+            "type": "array"
+          },
+          "bmi_gte": {
+            "format": "double",
+            "type": "number"
+          },
+          "bmi_lte": {
+            "format": "double",
+            "type": "number"
+          },
+          "case_barcode": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "case_gdc_id": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "clinical_M": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "clinical_N": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "clinical_T": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "clinical_stage": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "colorectal_cancer": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "country": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "days_to_birth": {
+            "items": {
+              "format": "int32",
+              "type": "integer"
+            },
+            "type": "array"
+          },
+          "days_to_birth_gte": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "days_to_birth_lte": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "days_to_death": {
+            "items": {
+              "format": "int32",
+              "type": "integer"
+            },
+            "type": "array"
+          },
+          "days_to_death_gte": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "days_to_death_lte": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "days_to_initial_pathologic_diagnosis": {
+            "items": {
+              "format": "int32",
+              "type": "integer"
+            },
+            "type": "array"
+          },
+          "days_to_initial_pathologic_diagnosis_gte": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "days_to_initial_pathologic_diagnosis_lte": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "days_to_last_followup": {
+            "items": {
+              "format": "int32",
+              "type": "integer"
+            },
+            "type": "array"
+          },
+          "days_to_last_followup_gte": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "days_to_last_followup_lte": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "days_to_last_known_alive": {
+            "items": {
+              "format": "int32",
+              "type": "integer"
+            },
+            "type": "array"
+          },
+          "days_to_last_known_alive_gte": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "days_to_last_known_alive_lte": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "days_to_submitted_specimen_dx": {
+            "items": {
+              "format": "int32",
+              "type": "integer"
+            },
+            "type": "array"
+          },
+          "days_to_submitted_specimen_dx_gte": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "days_to_submitted_specimen_dx_lte": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "ethnicity": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "gender": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "gleason_score_combined": {
+            "items": {
+              "format": "int32",
+              "type": "integer"
+            },
+            "type": "array"
+          },
+          "gleason_score_combined_gte": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "gleason_score_combined_lte": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "h_pylori_infection": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "height": {
+            "items": {
+              "format": "int32",
+              "type": "integer"
+            },
+            "type": "array"
+          },
+          "height_gte": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "height_lte": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "histological_type": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "history_of_colon_polyps": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "history_of_neoadjuvant_treatment": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "hpv_calls": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "hpv_status": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "icd_10": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "icd_o_3_histology": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "icd_o_3_site": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "lymphatic_invasion": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "lymphnodes_examined": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "lymphovascular_invasion_present": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "menopause_status": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "mononucleotide_and_dinucleotide_marker_panel_analysis_status": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "neoplasm_histologic_grade": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "new_tumor_event_after_initial_treatment": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "number_of_lymphnodes_examined": {
+            "items": {
+              "format": "int32",
+              "type": "integer"
+            },
+            "type": "array"
+          },
+          "number_of_lymphnodes_examined_gte": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "number_of_lymphnodes_examined_lte": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "number_of_lymphnodes_positive_by_he": {
+            "items": {
+              "format": "int32",
+              "type": "integer"
+            },
+            "type": "array"
+          },
+          "number_of_lymphnodes_positive_by_he_gte": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "number_of_lymphnodes_positive_by_he_lte": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "number_pack_years_smoked": {
+            "items": {
+              "format": "int32",
+              "type": "integer"
+            },
+            "type": "array"
+          },
+          "number_pack_years_smoked_gte": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "number_pack_years_smoked_lte": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "other_dx": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "other_malignancy_anatomic_site": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "other_malignancy_histological_type": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "other_malignancy_type": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "pathologic_M": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "pathologic_N": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "pathologic_T": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "pathologic_stage": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "person_neoplasm_cancer_status": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "pregnancies": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "primary_neoplasm_melanoma_dx": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "primary_therapy_outcome_success": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "psa_value": {
+            "items": {
+              "format": "double",
+              "type": "number"
+            },
+            "type": "array"
+          },
+          "psa_value_gte": {
+            "format": "double",
+            "type": "number"
+          },
+          "psa_value_lte": {
+            "format": "double",
+            "type": "number"
+          },
+          "race": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "residual_tumor": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "stopped_smoking_year": {
+            "items": {
+              "format": "int32",
+              "type": "integer"
+            },
+            "type": "array"
+          },
+          "stopped_smoking_year_gte": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "stopped_smoking_year_lte": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "summary_file_count": {
+            "items": {
+              "format": "int32",
+              "type": "integer"
+            },
+            "type": "array"
+          },
+          "summary_file_count_gte": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "summary_file_count_lte": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "tobacco_smoking_history": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "tss_code": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "tumor_tissue_site": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "tumor_type": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "venous_invasion": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "vital_status": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "weight": {
+            "items": {
+              "format": "int32",
+              "type": "integer"
+            },
+            "type": "array"
+          },
+          "weight_gte": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "weight_lte": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "year_of_diagnosis": {
+            "items": {
+              "format": "int32",
+              "type": "integer"
+            },
+            "type": "array"
+          },
+          "year_of_diagnosis_gte": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "year_of_diagnosis_lte": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "year_of_tobacco_smoking_onset": {
+            "items": {
+              "format": "int32",
+              "type": "integer"
+            },
+            "type": "array"
+          },
+          "year_of_tobacco_smoking_onset_gte": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "year_of_tobacco_smoking_onset_lte": {
+            "format": "int32",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "Api3IsbCgcApiTCGAMessageClassesCommonMetadataItem": {
+        "properties": {
+          "disease_code": {
+            "type": "string"
+          },
+          "endpoint_type": {
+            "type": "string"
+          },
+          "program_name": {
+            "type": "string"
+          },
+          "project_short_name": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "Api3IsbCgcApiTCGAMessageClassesCommonMetadataRangesItem": {
+        "properties": {
+          "disease_code": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "endpoint_type": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "program_name": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "project_short_name": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "Api3IsbCgcApiTCGAMessageClassesDataHG19MetadataItem": {
+        "properties": {
+          "access": {
+            "type": "string"
+          },
+          "aliquot_barcode": {
+            "type": "string"
+          },
+          "aliquot_gdc_id": {
+            "type": "string"
+          },
+          "analysis_workflow_type": {
+            "type": "string"
+          },
+          "archive_file_name": {
+            "type": "string"
+          },
+          "archive_submitter_id": {
+            "type": "string"
+          },
+          "case_barcode": {
+            "type": "string"
+          },
+          "case_gdc_id": {
+            "type": "string"
+          },
+          "center_code": {
+            "type": "string"
+          },
+          "center_name": {
+            "type": "string"
+          },
+          "center_type": {
+            "type": "string"
+          },
+          "data_category": {
+            "type": "string"
+          },
+          "data_format": {
+            "type": "string"
+          },
+          "data_type": {
+            "type": "string"
+          },
+          "experimental_strategy": {
+            "type": "string"
+          },
+          "file_name": {
+            "type": "string"
+          },
+          "file_state": {
+            "type": "string"
+          },
+          "file_uploaded": {
+            "type": "string"
+          },
+          "index_file_name": {
+            "type": "string"
+          },
+          "platform": {
+            "type": "string"
+          },
+          "sample_barcode": {
+            "type": "string"
+          },
+          "sample_gdc_id": {
+            "type": "string"
+          },
+          "sample_type": {
+            "type": "string"
+          },
+          "species": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "Api3IsbCgcApiTCGAMessageClassesDataHG19MetadataRangesItem": {
+        "properties": {
+          "access": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "aliquot_barcode": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "aliquot_gdc_id": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "analysis_workflow_type": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "archive_file_name": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "archive_submitter_id": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "case_barcode": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "case_gdc_id": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "center_code": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "center_name": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "center_type": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "data_category": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "data_format": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "data_type": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "experimental_strategy": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "file_name": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "file_state": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "file_uploaded": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "index_file_name": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "platform": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "sample_barcode": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "sample_gdc_id": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "sample_type": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "species": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "Api3IsbCgcApiTCGAMessageClassesDataHG38MetadataItem": {
+        "properties": {
+          "access": {
+            "type": "string"
+          },
+          "aliquot_barcode": {
+            "type": "string"
+          },
+          "aliquot_gdc_id": {
+            "type": "string"
+          },
+          "analysis_workflow_type": {
+            "type": "string"
+          },
+          "archive_file_name": {
+            "type": "string"
+          },
+          "archive_submitter_id": {
+            "type": "string"
+          },
+          "case_barcode": {
+            "type": "string"
+          },
+          "case_gdc_id": {
+            "type": "string"
+          },
+          "center_code": {
+            "type": "string"
+          },
+          "center_name": {
+            "type": "string"
+          },
+          "center_type": {
+            "type": "string"
+          },
+          "data_category": {
+            "type": "string"
+          },
+          "data_format": {
+            "type": "string"
+          },
+          "data_type": {
+            "type": "string"
+          },
+          "experimental_strategy": {
+            "type": "string"
+          },
+          "file_name": {
+            "type": "string"
+          },
+          "file_state": {
+            "type": "string"
+          },
+          "file_uploaded": {
+            "type": "string"
+          },
+          "index_file_name": {
+            "type": "string"
+          },
+          "platform": {
+            "type": "string"
+          },
+          "sample_barcode": {
+            "type": "string"
+          },
+          "sample_gdc_id": {
+            "type": "string"
+          },
+          "sample_type": {
+            "type": "string"
+          },
+          "species": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "Api3IsbCgcApiTCGAMessageClassesDataHG38MetadataRangesItem": {
+        "properties": {
+          "access": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "aliquot_barcode": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "aliquot_gdc_id": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "analysis_workflow_type": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "archive_file_name": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "archive_submitter_id": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "case_barcode": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "case_gdc_id": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "center_code": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "center_name": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "center_type": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "data_category": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "data_format": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "data_type": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "experimental_strategy": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "file_name": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "file_state": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "file_uploaded": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "index_file_name": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "platform": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "sample_barcode": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "sample_gdc_id": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "sample_type": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "species": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "Api3IsbCgcApiTCGAMessageClassesMetadataItem": {
+        "properties": {
+          "Biospecimen": {
+            "$ref": "#/components/schemas/Api3IsbCgcApiTCGAMessageClassesBiospecimenMetadataItem"
+          },
+          "Clinical": {
+            "$ref": "#/components/schemas/Api3IsbCgcApiTCGAMessageClassesClinicalMetadataItem"
+          },
+          "Common": {
+            "$ref": "#/components/schemas/Api3IsbCgcApiTCGAMessageClassesCommonMetadataItem"
+          },
+          "Data_HG19": {
+            "$ref": "#/components/schemas/Api3IsbCgcApiTCGAMessageClassesDataHG19MetadataItem"
+          },
+          "Data_HG38": {
+            "$ref": "#/components/schemas/Api3IsbCgcApiTCGAMessageClassesDataHG38MetadataItem"
+          }
+        },
+        "type": "object"
+      },
+      "Api3IsbCgcApiTCGAMessageClassesMetadataRangesItem": {
+        "properties": {
+          "Biospecimen": {
+            "$ref": "#/components/schemas/Api3IsbCgcApiTCGAMessageClassesBiospecimenMetadataRangesItem"
+          },
+          "Clinical": {
+            "$ref": "#/components/schemas/Api3IsbCgcApiTCGAMessageClassesClinicalMetadataRangesItem"
+          },
+          "Common": {
+            "$ref": "#/components/schemas/Api3IsbCgcApiTCGAMessageClassesCommonMetadataRangesItem"
+          },
+          "Data_HG19": {
+            "$ref": "#/components/schemas/Api3IsbCgcApiTCGAMessageClassesDataHG19MetadataRangesItem"
+          },
+          "Data_HG38": {
+            "$ref": "#/components/schemas/Api3IsbCgcApiTCGAMessageClassesDataHG38MetadataRangesItem"
+          }
+        },
+        "type": "object"
+      },
+      "Api3IsbCgcApiTCGAPatientsGetCaseDetails": {
+        "properties": {
+          "aliquots": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "clinical_data": {
+            "$ref": "#/components/schemas/Api3IsbCgcApiTCGAMessageClassesMetadataItem"
+          },
+          "samples": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "Api3IsbCgcApiTCGASamplesGetSampleDetails": {
+        "properties": {
+          "aliquots": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "biospecimen_data": {
+            "$ref": "#/components/schemas/Api3IsbCgcApiTCGAMessageClassesMetadataItem"
+          },
+          "case_barcode": {
+            "type": "string"
+          },
+          "case_gdc_id": {
+            "type": "string"
+          },
+          "data_details": {
+            "items": {
+              "$ref": "#/components/schemas/Api3SamplesGetHelperDataDetails"
+            },
+            "type": "array"
+          },
+          "data_details_count": {
+            "format": "int32",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "Api3SamplesGetHelperDataDetails": {
+        "properties": {
+          "access": {
+            "type": "string"
+          },
+          "analysis_workflow_type": {
+            "type": "string"
+          },
+          "data_category": {
+            "type": "string"
+          },
+          "data_format": {
+            "type": "string"
+          },
+          "data_type": {
+            "type": "string"
+          },
+          "disease_code": {
+            "type": "string"
+          },
+          "endpoint_type": {
+            "type": "string"
+          },
+          "experimental_strategy": {
+            "type": "string"
+          },
+          "file_gdc_id": {
+            "type": "string"
+          },
+          "file_name": {
+            "type": "string"
+          },
+          "file_name_key": {
+            "type": "string"
+          },
+          "file_size": {
+            "format": "int64",
+            "type": "string"
+          },
+          "index_file_name": {
+            "type": "string"
+          },
+          "platform": {
+            "type": "string"
+          },
+          "program_name": {
+            "type": "string"
+          },
+          "project_short_name": {
+            "type": "string"
+          },
+          "sample_barcode": {
+            "type": "string"
+          },
+          "sample_gdc_id": {
+            "type": "string"
+          },
+          "sample_type": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "Api3UsersGetCommonUserGetAPIReturnJSON": {
+        "properties": {
+          "dbGaP_allowed": {
+            "type": "boolean"
+          },
+          "dbGaP_authorized": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      }
+    },
+    "requestBodies": {
+      "Api3IsbCgcApiCCLEMessageClassesMetadataRangesItem": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Api3IsbCgcApiCCLEMessageClassesMetadataRangesItem"
+            }
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "google_id_token": {
+        "type": "oauth2",
+        "x-google-issuer": "https://accounts.google.com",
+        "x-google-jwks_uri": "https://www.googleapis.com/oauth2/v3/certs",
+        "flows": {
+          "implicit": {
+            "authorizationUrl": "/",
+            "scopes": {}
+          }
+        }
+      }
+    }
+  }
+}
