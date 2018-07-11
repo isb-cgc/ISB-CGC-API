@@ -22,7 +22,7 @@ from api_3.isb_cgc_api_TARGET.isb_cgc_api_helpers import ISB_CGC_TARGET_Endpoint
 from api_3.isb_cgc_api_TARGET.message_classes import MetadataRangesItem
 
 @ISB_CGC_TARGET_Endpoints.api_class(resource_name='cohorts')
-class TARGET_CohortsCreateAPI(CohortsCreateHelper):
+class TARGETCohortsCreateAPI(CohortsCreateHelper):
     POST_RESOURCE = endpoints.ResourceContainer(MetadataRangesItem, name=messages.StringField(2, required=True))
 
     @endpoints.method(POST_RESOURCE, CreatedCohort, path='target/cohorts/create', http_method='POST')
@@ -34,4 +34,4 @@ class TARGET_CohortsCreateAPI(CohortsCreateHelper):
         of samples in that cohort.
         """
         self.program = 'TARGET'
-        return super(TARGET_CohortsCreateAPI, self).create(request)
+        return super(TARGETCohortsCreateAPI, self).create(request)

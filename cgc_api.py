@@ -24,28 +24,28 @@ from api_3.isb_cgc_api.cohorts_cloudstoragefilepaths import CohortsCloudStorageF
 from api_3.isb_cgc_api.files_get_file_paths import FilesGetPath
 from api_3.isb_cgc_api.cohort_file_manifest import CohortFileManifestAPI
  
-from api_3.isb_cgc_api_TCGA.cohorts_preview import TCGA_CohortsPreviewAPI
-from api_3.isb_cgc_api_TCGA.cohorts_create import TCGA_CohortsCreateAPI
-from api_3.isb_cgc_api_TCGA.patients_get import TCGA_CasesGetAPI
-from api_3.isb_cgc_api_TCGA.patients_annotations import TCGA_CasesAnnotationAPI
-from api_3.isb_cgc_api_TCGA.samples_get import TCGA_SamplesGetAPI
-from api_3.isb_cgc_api_TCGA.samples_cloudstoragefilepaths import TCGA_SamplesCloudStorageFilePathsAPI
-from api_3.isb_cgc_api_TCGA.samples_annotations import TCGA_SamplesAnnotationAPI
-from api_3.isb_cgc_api_TCGA.aliquots_annotations import TCGA_AliquotsAnnotationAPI
-from api_3.isb_cgc_api_TCGA.users_get import TCGA_UserGetAPI
+from api_3.isb_cgc_api_TCGA.cohorts_preview import TCGACohortsPreviewAPI
+from api_3.isb_cgc_api_TCGA.cohorts_create import TCGACohortsCreateAPI
+from api_3.isb_cgc_api_TCGA.patients_get import TCGACasesGetAPI
+from api_3.isb_cgc_api_TCGA.patients_annotations import TCGACasesAnnotationAPI
+from api_3.isb_cgc_api_TCGA.samples_get import TCGASamplesGetAPI
+from api_3.isb_cgc_api_TCGA.samples_cloudstoragefilepaths import TCGASamplesCloudStorageFilePathsAPI
+from api_3.isb_cgc_api_TCGA.samples_annotations import TCGASamplesAnnotationAPI
+from api_3.isb_cgc_api_TCGA.aliquots_annotations import TCGAAliquotsAnnotationAPI
+from api_3.isb_cgc_api_TCGA.users_get import TCGAUserGetAPI
  
-from api_3.isb_cgc_api_TARGET.cohorts_preview import TARGET_CohortsPreviewAPI
-from api_3.isb_cgc_api_TARGET.cohorts_create import TARGET_CohortsCreateAPI
-from api_3.isb_cgc_api_TARGET.patients_get import TARGET_CasesGetAPI
-from api_3.isb_cgc_api_TARGET.samples_get import TARGET_SamplesGetAPI
-from api_3.isb_cgc_api_TARGET.samples_cloudstoragefilepaths import TARGET_SamplesCloudStorageFilePathsAPI
-from api_3.isb_cgc_api_TARGET.users_get import TARGET_UserGetAPI
+from api_3.isb_cgc_api_TARGET.cohorts_preview import TARGETCohortsPreviewAPI
+from api_3.isb_cgc_api_TARGET.cohorts_create import TARGETCohortsCreateAPI
+from api_3.isb_cgc_api_TARGET.patients_get import TARGETCasesGetAPI
+from api_3.isb_cgc_api_TARGET.samples_get import TARGETSamplesGetAPI
+from api_3.isb_cgc_api_TARGET.samples_cloudstoragefilepaths import TARGETSamplesCloudStorageFilePathsAPI
+from api_3.isb_cgc_api_TARGET.users_get import TARGETUserGetAPI
  
-from api_3.isb_cgc_api_CCLE.cohorts_preview import CCLE_CohortsPreviewAPI
-from api_3.isb_cgc_api_CCLE.cohorts_create import CCLE_CohortsCreateAPI
-from api_3.isb_cgc_api_CCLE.patients_get import CCLE_CasesGetAPI
-from api_3.isb_cgc_api_CCLE.samples_get import CCLE_SamplesGetAPI
-from api_3.isb_cgc_api_CCLE.samples_cloudstoragefilepaths import CCLE_SamplesCloudStorageFilePathsAPI
+from api_3.isb_cgc_api_CCLE.cohorts_preview import CCLECohortsPreviewAPI
+from api_3.isb_cgc_api_CCLE.cohorts_create import CCLECohortsCreateAPI
+from api_3.isb_cgc_api_CCLE.patients_get import CCLECasesGetAPI
+from api_3.isb_cgc_api_CCLE.samples_get import CCLESamplesGetAPI
+from api_3.isb_cgc_api_CCLE.samples_cloudstoragefilepaths import CCLESamplesCloudStorageFilePathsAPI
  
 package = 'isb-cgc-api'
  
@@ -57,26 +57,26 @@ APPLICATION = endpoints.api_server([
     CohortFileManifestAPI,
     FilesGetPath,
  
-    TCGA_CohortsPreviewAPI,
-    TCGA_CohortsCreateAPI,
-    TCGA_CasesGetAPI,
-    TCGA_CasesAnnotationAPI,
-    TCGA_SamplesGetAPI,
-    TCGA_SamplesCloudStorageFilePathsAPI,
-    TCGA_SamplesAnnotationAPI,
-    TCGA_AliquotsAnnotationAPI,
-    TCGA_UserGetAPI,
+    TCGACohortsPreviewAPI,
+    TCGACohortsCreateAPI,
+    TCGACasesGetAPI,
+    TCGACasesAnnotationAPI,
+    TCGASamplesGetAPI,
+    TCGASamplesCloudStorageFilePathsAPI,
+    TCGASamplesAnnotationAPI,
+    TCGAAliquotsAnnotationAPI,
+    TCGAUserGetAPI,
          
-    TARGET_CohortsPreviewAPI,
-    TARGET_CohortsCreateAPI,
-    TARGET_CasesGetAPI,
-    TARGET_SamplesGetAPI,
-    TARGET_SamplesCloudStorageFilePathsAPI,
-    TARGET_UserGetAPI,
+    TARGETCohortsPreviewAPI,
+    TARGETCohortsCreateAPI,
+    TARGETCasesGetAPI,
+    TARGETSamplesGetAPI,
+    TARGETSamplesCloudStorageFilePathsAPI,
+    TARGETUserGetAPI,
          
-    CCLE_CohortsPreviewAPI,
-    CCLE_CohortsCreateAPI,
-    CCLE_CasesGetAPI,
-    CCLE_SamplesGetAPI,
-    CCLE_SamplesCloudStorageFilePathsAPI
+    CCLECohortsPreviewAPI,
+    CCLECohortsCreateAPI,
+    CCLECasesGetAPI,
+    CCLESamplesGetAPI,
+    CCLESamplesCloudStorageFilePathsAPI
 ])

@@ -47,7 +47,7 @@ class CasesAnnotationsQueryBuilder(object):
         return query_str
 
 @ISB_CGC_TCGA_Endpoints.api_class(resource_name='cases')
-class TCGA_CasesAnnotationAPI(AnnotationAPI):
+class TCGACasesAnnotationAPI(AnnotationAPI):
 
     GET_RESOURCE = endpoints.ResourceContainer(case_barcode=messages.StringField(1, required=True),
                                                entity_type=messages.StringField(2, repeated=True))

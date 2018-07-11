@@ -42,7 +42,7 @@ class AliquotsAnnotationsQueryBuilder(object):
         return 'select * from TCGA_metadata_data_HG19 where aliquot_barcode=%s '
 
 @ISB_CGC_TCGA_Endpoints.api_class(resource_name='aliquots')
-class TCGA_AliquotsAnnotationAPI(AnnotationAPI):
+class TCGAAliquotsAnnotationAPI(AnnotationAPI):
 
     GET_RESOURCE = endpoints.ResourceContainer(aliquot_barcode=messages.StringField(1, required=True),
                                                entity_type=messages.StringField(2, repeated=True))
