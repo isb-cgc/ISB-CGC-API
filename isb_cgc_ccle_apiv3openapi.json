@@ -52,7 +52,7 @@
         },
         "filters": {
           "items": {
-            "$ref": "#/definitions/#/definitions/#/definitions/Api3CohortCreatePreviewHelperFilterDetails"
+            "$ref": "#/definitions/Api3CohortCreatePreviewHelperFilterDetails"
           },
           "type": "array"
         },
@@ -627,7 +627,7 @@
       "properties": {
         "files": {
           "items": {
-            "$ref": "#/definitions/#/definitions/#/definitions/#/definitions/Api3IsbCgcApiCohortFileManifestFileDetail"
+            "$ref": "#/definitions/Api3IsbCgcApiCohortFileManifestFileDetail"
           },
           "type": "array"
         },
@@ -662,7 +662,7 @@
         },
         "filters": {
           "items": {
-            "$ref": "#/definitions/#/definitions/#/definitions/#/definitions/Api3CohortEndpointHelpersFilterDetails"
+            "$ref": "#/definitions/Api3CohortEndpointHelpersFilterDetails"
           },
           "type": "array"
         },
@@ -711,7 +711,7 @@
         },
         "items": {
           "items": {
-            "$ref": "#/definitions/#/definitions/#/definitions/#/definitions/Api3IsbCgcApiCohortGetListHelperCohortListDetails"
+            "$ref": "#/definitions/Api3IsbCgcApiCohortGetListHelperCohortListDetails"
           },
           "type": "array"
         }
@@ -732,7 +732,7 @@
         },
         "filters": {
           "items": {
-            "$ref": "#/definitions/#/definitions/#/definitions/#/definitions/Api3CohortEndpointHelpersFilterDetails"
+            "$ref": "#/definitions/Api3CohortEndpointHelpersFilterDetails"
           },
           "type": "array"
         },
@@ -1587,19 +1587,19 @@
     "Api3IsbCgcApiTARGETMessageClassesMetadataItem": {
       "properties": {
         "Biospecimen": {
-          "$ref": "#/definitions/#/definitions/Api3IsbCgcApiTARGETMessageClassesBiospecimenMetadataItem"
+          "$ref": "#/definitions/Api3IsbCgcApiTARGETMessageClassesBiospecimenMetadataItem"
         },
         "Clinical": {
-          "$ref": "#/definitions/#/definitions/Api3IsbCgcApiTARGETMessageClassesClinicalMetadataItem"
+          "$ref": "#/definitions/Api3IsbCgcApiTARGETMessageClassesClinicalMetadataItem"
         },
         "Common": {
-          "$ref": "#/definitions/#/definitions/Api3IsbCgcApiTARGETMessageClassesCommonMetadataItem"
+          "$ref": "#/definitions/Api3IsbCgcApiTARGETMessageClassesCommonMetadataItem"
         },
         "Data_HG19": {
-          "$ref": "#/definitions/#/definitions/Api3IsbCgcApiTARGETMessageClassesDataHG19MetadataItem"
+          "$ref": "#/definitions/Api3IsbCgcApiTARGETMessageClassesDataHG19MetadataItem"
         },
         "Data_HG38": {
-          "$ref": "#/definitions/#/definitions/Api3IsbCgcApiTARGETMessageClassesDataHG38MetadataItem"
+          "$ref": "#/definitions/Api3IsbCgcApiTARGETMessageClassesDataHG38MetadataItem"
         }
       },
       "type": "object"
@@ -1607,19 +1607,19 @@
     "Api3IsbCgcApiTARGETMessageClassesMetadataRangesItem": {
       "properties": {
         "Biospecimen": {
-          "$ref": "#/definitions/#/definitions/Api3IsbCgcApiTARGETMessageClassesBiospecimenMetadataRangesItem"
+          "$ref": "#/definitions/Api3IsbCgcApiTARGETMessageClassesBiospecimenMetadataRangesItem"
         },
         "Clinical": {
-          "$ref": "#/definitions/#/definitions/Api3IsbCgcApiTARGETMessageClassesClinicalMetadataRangesItem"
+          "$ref": "#/definitions/Api3IsbCgcApiTARGETMessageClassesClinicalMetadataRangesItem"
         },
         "Common": {
-          "$ref": "#/definitions/#/definitions/Api3IsbCgcApiTARGETMessageClassesCommonMetadataRangesItem"
+          "$ref": "#/definitions/Api3IsbCgcApiTARGETMessageClassesCommonMetadataRangesItem"
         },
         "Data_HG19": {
-          "$ref": "#/definitions/#/definitions/Api3IsbCgcApiTARGETMessageClassesDataHG19MetadataRangesItem"
+          "$ref": "#/definitions/Api3IsbCgcApiTARGETMessageClassesDataHG19MetadataRangesItem"
         },
         "Data_HG38": {
-          "$ref": "#/definitions/#/definitions/Api3IsbCgcApiTARGETMessageClassesDataHG38MetadataRangesItem"
+          "$ref": "#/definitions/Api3IsbCgcApiTARGETMessageClassesDataHG38MetadataRangesItem"
         }
       },
       "type": "object"
@@ -1633,7 +1633,7 @@
           "type": "array"
         },
         "clinical_data": {
-          "$ref": "#/definitions/#/definitions/Api3IsbCgcApiTARGETMessageClassesMetadataItem"
+          "$ref": "#/definitions/Api3IsbCgcApiTARGETMessageClassesMetadataItem"
         },
         "samples": {
           "items": {
@@ -1653,7 +1653,7 @@
           "type": "array"
         },
         "biospecimen_data": {
-          "$ref": "#/definitions/#/definitions/Api3IsbCgcApiTARGETMessageClassesMetadataItem"
+          "$ref": "#/definitions/Api3IsbCgcApiTARGETMessageClassesMetadataItem"
         },
         "case_barcode": {
           "type": "string"
@@ -1663,7 +1663,7 @@
         },
         "data_details": {
           "items": {
-            "$ref": "#/definitions/#/definitions/Api3SamplesGetHelperDataDetails"
+            "$ref": "#/definitions/Api3SamplesGetHelperDataDetails"
           },
           "type": "array"
         },
@@ -1682,7 +1682,7 @@
         },
         "items": {
           "items": {
-            "$ref": "#/definitions/#/definitions/#/definitions/Api3IsbCgcApiTCGAMessageClassesAnnotationMetadataItem"
+            "$ref": "#/definitions/Api3IsbCgcApiTCGAMessageClassesAnnotationMetadataItem"
           },
           "type": "array"
         }
@@ -3708,19 +3708,19 @@
     "Api3IsbCgcApiTCGAMessageClassesMetadataItem": {
       "properties": {
         "Biospecimen": {
-          "$ref": "#/definitions/#/definitions/#/definitions/Api3IsbCgcApiTCGAMessageClassesBiospecimenMetadataItem"
+          "$ref": "#/definitions/Api3IsbCgcApiTCGAMessageClassesBiospecimenMetadataItem"
         },
         "Clinical": {
-          "$ref": "#/definitions/#/definitions/#/definitions/Api3IsbCgcApiTCGAMessageClassesClinicalMetadataItem"
+          "$ref": "#/definitions/Api3IsbCgcApiTCGAMessageClassesClinicalMetadataItem"
         },
         "Common": {
-          "$ref": "#/definitions/#/definitions/#/definitions/Api3IsbCgcApiTCGAMessageClassesCommonMetadataItem"
+          "$ref": "#/definitions/Api3IsbCgcApiTCGAMessageClassesCommonMetadataItem"
         },
         "Data_HG19": {
-          "$ref": "#/definitions/#/definitions/#/definitions/Api3IsbCgcApiTCGAMessageClassesDataHG19MetadataItem"
+          "$ref": "#/definitions/Api3IsbCgcApiTCGAMessageClassesDataHG19MetadataItem"
         },
         "Data_HG38": {
-          "$ref": "#/definitions/#/definitions/#/definitions/Api3IsbCgcApiTCGAMessageClassesDataHG38MetadataItem"
+          "$ref": "#/definitions/Api3IsbCgcApiTCGAMessageClassesDataHG38MetadataItem"
         }
       },
       "type": "object"
@@ -3728,19 +3728,19 @@
     "Api3IsbCgcApiTCGAMessageClassesMetadataRangesItem": {
       "properties": {
         "Biospecimen": {
-          "$ref": "#/definitions/#/definitions/#/definitions/Api3IsbCgcApiTCGAMessageClassesBiospecimenMetadataRangesItem"
+          "$ref": "#/definitions/Api3IsbCgcApiTCGAMessageClassesBiospecimenMetadataRangesItem"
         },
         "Clinical": {
-          "$ref": "#/definitions/#/definitions/#/definitions/Api3IsbCgcApiTCGAMessageClassesClinicalMetadataRangesItem"
+          "$ref": "#/definitions/Api3IsbCgcApiTCGAMessageClassesClinicalMetadataRangesItem"
         },
         "Common": {
-          "$ref": "#/definitions/#/definitions/#/definitions/Api3IsbCgcApiTCGAMessageClassesCommonMetadataRangesItem"
+          "$ref": "#/definitions/Api3IsbCgcApiTCGAMessageClassesCommonMetadataRangesItem"
         },
         "Data_HG19": {
-          "$ref": "#/definitions/#/definitions/#/definitions/Api3IsbCgcApiTCGAMessageClassesDataHG19MetadataRangesItem"
+          "$ref": "#/definitions/Api3IsbCgcApiTCGAMessageClassesDataHG19MetadataRangesItem"
         },
         "Data_HG38": {
-          "$ref": "#/definitions/#/definitions/#/definitions/Api3IsbCgcApiTCGAMessageClassesDataHG38MetadataRangesItem"
+          "$ref": "#/definitions/Api3IsbCgcApiTCGAMessageClassesDataHG38MetadataRangesItem"
         }
       },
       "type": "object"
@@ -3754,7 +3754,7 @@
           "type": "array"
         },
         "clinical_data": {
-          "$ref": "#/definitions/#/definitions/#/definitions/Api3IsbCgcApiTCGAMessageClassesMetadataItem"
+          "$ref": "#/definitions/Api3IsbCgcApiTCGAMessageClassesMetadataItem"
         },
         "samples": {
           "items": {
@@ -3774,7 +3774,7 @@
           "type": "array"
         },
         "biospecimen_data": {
-          "$ref": "#/definitions/#/definitions/#/definitions/Api3IsbCgcApiTCGAMessageClassesMetadataItem"
+          "$ref": "#/definitions/Api3IsbCgcApiTCGAMessageClassesMetadataItem"
         },
         "case_barcode": {
           "type": "string"
@@ -3784,7 +3784,7 @@
         },
         "data_details": {
           "items": {
-            "$ref": "#/definitions/#/definitions/#/definitions/Api3SamplesGetHelperDataDetails"
+            "$ref": "#/definitions/Api3SamplesGetHelperDataDetails"
           },
           "type": "array"
         },

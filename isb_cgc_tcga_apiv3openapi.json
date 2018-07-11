@@ -142,7 +142,7 @@
       "properties": {
         "files": {
           "items": {
-            "$ref": "#/definitions/#/definitions/Api3IsbCgcApiCohortFileManifestFileDetail"
+            "$ref": "#/definitions/Api3IsbCgcApiCohortFileManifestFileDetail"
           },
           "type": "array"
         },
@@ -177,7 +177,7 @@
         },
         "filters": {
           "items": {
-            "$ref": "#/definitions/#/definitions/Api3CohortEndpointHelpersFilterDetails"
+            "$ref": "#/definitions/Api3CohortEndpointHelpersFilterDetails"
           },
           "type": "array"
         },
@@ -226,7 +226,7 @@
         },
         "items": {
           "items": {
-            "$ref": "#/definitions/#/definitions/Api3IsbCgcApiCohortGetListHelperCohortListDetails"
+            "$ref": "#/definitions/Api3IsbCgcApiCohortGetListHelperCohortListDetails"
           },
           "type": "array"
         }
@@ -247,7 +247,7 @@
         },
         "filters": {
           "items": {
-            "$ref": "#/definitions/#/definitions/Api3CohortEndpointHelpersFilterDetails"
+            "$ref": "#/definitions/Api3CohortEndpointHelpersFilterDetails"
           },
           "type": "array"
         },
