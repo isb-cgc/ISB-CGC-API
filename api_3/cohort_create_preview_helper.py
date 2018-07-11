@@ -126,7 +126,7 @@ class CohortsCreatePreviewAPI(remote.Service):
             common_query_dict = {}
 
             if fields:
-                common_query_dict = self.build_query_dictionaries(fields)
+                common_query_dict, _, _ = self.build_query_dictionaries(fields)
 
             # Our return values
             ret_query_dict = {}
@@ -150,6 +150,9 @@ class CohortsCreatePreviewAPI(remote.Service):
 
                 if fields:
                     query_dict, gte_query_dict, lte_query_dict = self.build_query_dictionaries(fields)
+
+                logger.info("query_dict: {}".format(str(query_dict)))
+                logger.info("common_query_dict: {}".format(str(common_query_dict)))
                     
                 query_dict.update(common_query_dict)
 

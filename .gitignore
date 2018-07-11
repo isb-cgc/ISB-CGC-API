@@ -73,6 +73,10 @@ target/
 .sass-cache
 #*
 *.json
+!isb_cgc_apiv3openapi.json
+!isb_cgc_ccle_apiv3openapi.json
+!isb_cgc_target_apiv3openapi.json
+!isb_cgc_tcga_apiv3openapi.json
 *.patch
 .env
 *.env

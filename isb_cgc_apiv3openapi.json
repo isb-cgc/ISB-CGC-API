@@ -1,0 +1,500 @@
+{
+  "basePath": "/_ah/api",
+  "consumes": [
+    "application/json"
+  ],
+  "definitions": {
+    "Api3CloudstoragefilepathsHelperGCSFilePathList": {
+      "properties": {
+        "cloud_storage_file_paths": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "count": {
+          "format": "int32",
+          "type": "integer"
+        }
+      },
+      "type": "object"
+    },
+    "Api3CohortEndpointHelpersFilterDetails": {
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "Api3IsbCgcApiCohortFileManifestFileDetail": {
+      "properties": {
+        "access": {
+          "type": "string"
+        },
+        "case_barcode": {
+          "type": "string"
+        },
+        "case_gdc_uuid": {
+          "type": "string"
+        },
+        "data_category": {
+          "type": "string"
+        },
+        "data_format": {
+          "type": "string"
+        },
+        "data_type": {
+          "type": "string"
+        },
+        "disease_code": {
+          "type": "string"
+        },
+        "experimental_strategy": {
+          "type": "string"
+        },
+        "file_gdc_uuid": {
+          "type": "string"
+        },
+        "file_path": {
+          "type": "string"
+        },
+        "platform": {
+          "type": "string"
+        },
+        "program": {
+          "type": "string"
+        },
+        "project_short_name": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "case_barcode",
+        "disease_code",
+        "file_path",
+        "program"
+      ],
+      "type": "object"
+    },
+    "Api3IsbCgcApiCohortFileManifestFileManifest": {
+      "properties": {
+        "files": {
+          "items": {
+            "$ref": "#/definitions/Api3IsbCgcApiCohortFileManifestFileDetail"
+          },
+          "type": "array"
+        },
+        "files_retrieved": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "total_file_count": {
+          "format": "int32",
+          "type": "integer"
+        }
+      },
+      "type": "object"
+    },
+    "Api3IsbCgcApiCohortGetListHelperCohortDetails": {
+      "properties": {
+        "case_count": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "cases": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "comments": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string"
+        },
+        "filters": {
+          "items": {
+            "$ref": "#/definitions/Api3CohortEndpointHelpersFilterDetails"
+          },
+          "type": "array"
+        },
+        "id": {
+          "type": "string"
+        },
+        "last_date_saved": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "parent_id": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "permission": {
+          "type": "string"
+        },
+        "sample_count": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "samples": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "source_notes": {
+          "type": "string"
+        },
+        "source_type": {
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "Api3IsbCgcApiCohortGetListHelperCohortDetailsList": {
+      "properties": {
+        "count": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "items": {
+          "items": {
+            "$ref": "#/definitions/Api3IsbCgcApiCohortGetListHelperCohortListDetails"
+          },
+          "type": "array"
+        }
+      },
+      "type": "object"
+    },
+    "Api3IsbCgcApiCohortGetListHelperCohortListDetails": {
+      "properties": {
+        "case_count": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "comments": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string"
+        },
+        "filters": {
+          "items": {
+            "$ref": "#/definitions/Api3CohortEndpointHelpersFilterDetails"
+          },
+          "type": "array"
+        },
+        "id": {
+          "type": "string"
+        },
+        "last_date_saved": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "parent_id": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "permission": {
+          "type": "string"
+        },
+        "sample_count": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "source_notes": {
+          "type": "string"
+        },
+        "source_type": {
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "Api3IsbCgcApiCohortsDeleteReturnJSON": {
+      "properties": {
+        "message": {
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "Api3IsbCgcApiFilesGetFilePathsFilePaths": {
+      "properties": {
+        "paths": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "type": "object"
+    }
+  },
+  "host": "api-dot-isb-cgc.appspot.com",
+  "info": {
+    "description": "Get information about cohorts for ISB-CGC. List, get, delete cohorts, and retrieve or export their file manifests.",
+    "title": "isb_cgc_api",
+    "version": "v3"
+  },
+  "paths": {
+    "/isb_cgc_api/v3/cohorts": {
+      "get": {
+        "operationId": "CohortsListAPI_list",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "A successful response",
+            "schema": {
+              "$ref": "#/definitions/Api3IsbCgcApiCohortGetListHelperCohortDetailsList"
+            }
+          }
+        }
+      }
+    },
+    "/isb_cgc_api/v3/cohorts/{cohort_id}": {
+      "delete": {
+        "operationId": "CohortsDeleteAPI_delete",
+        "parameters": [
+          {
+            "format": "int64",
+            "in": "path",
+            "name": "cohort_id",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A successful response",
+            "schema": {
+              "$ref": "#/definitions/Api3IsbCgcApiCohortsDeleteReturnJSON"
+            }
+          }
+        }
+      },
+      "get": {
+        "operationId": "CohortsGetAPI_get",
+        "parameters": [
+          {
+            "format": "int64",
+            "in": "path",
+            "name": "cohort_id",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A successful response",
+            "schema": {
+              "$ref": "#/definitions/Api3IsbCgcApiCohortGetListHelperCohortDetails"
+            }
+          }
+        }
+      }
+    },
+    "/isb_cgc_api/v3/cohorts/{cohort_id}/cloud_storage_file_paths": {
+      "get": {
+        "operationId": "CohortsCloudStorageFilePathsAPI_cloudStorageFilePaths",
+        "parameters": [
+          {
+            "format": "int64",
+            "in": "path",
+            "name": "cohort_id",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "format": "int64",
+            "in": "query",
+            "name": "limit",
+            "type": "string"
+          },
+          {
+            "in": "query",
+            "name": "data_type",
+            "type": "string"
+          },
+          {
+            "in": "query",
+            "name": "data_category",
+            "type": "string"
+          },
+          {
+            "in": "query",
+            "name": "experimental_strategy",
+            "type": "string"
+          },
+          {
+            "in": "query",
+            "name": "data_format",
+            "type": "string"
+          },
+          {
+            "in": "query",
+            "name": "platform",
+            "type": "string"
+          },
+          {
+            "in": "query",
+            "name": "genomic_build",
+            "type": "string"
+          },
+          {
+            "in": "query",
+            "name": "analysis_workflow_type",
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A successful response",
+            "schema": {
+              "$ref": "#/definitions/Api3CloudstoragefilepathsHelperGCSFilePathList"
+            }
+          }
+        }
+      }
+    },
+    "/isb_cgc_api/v3/cohorts/{cohort_id}/file_manifest": {
+      "get": {
+        "operationId": "CohortFileManifestAPI_fileManifest",
+        "parameters": [
+          {
+            "format": "int64",
+            "in": "path",
+            "name": "cohort_id",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "format": "int64",
+            "in": "query",
+            "name": "fetch_count",
+            "type": "string"
+          },
+          {
+            "format": "int64",
+            "in": "query",
+            "name": "offset",
+            "type": "string"
+          },
+          {
+            "in": "query",
+            "name": "genomic_build",
+            "type": "string"
+          },
+          {
+            "in": "query",
+            "name": "do_filter_count",
+            "type": "boolean"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A successful response",
+            "schema": {
+              "$ref": "#/definitions/Api3IsbCgcApiCohortFileManifestFileManifest"
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "CohortFileManifestAPI_fileManifestFiltered",
+        "parameters": [
+          {
+            "format": "int64",
+            "in": "path",
+            "name": "cohort_id",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "format": "int64",
+            "in": "query",
+            "name": "fetch_count",
+            "type": "string"
+          },
+          {
+            "format": "int64",
+            "in": "query",
+            "name": "offset",
+            "type": "string"
+          },
+          {
+            "in": "query",
+            "name": "genomic_build",
+            "type": "string"
+          },
+          {
+            "in": "query",
+            "name": "do_filter_count",
+            "type": "boolean"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A successful response",
+            "schema": {
+              "$ref": "#/definitions/Api3IsbCgcApiCohortFileManifestFileManifest"
+            }
+          }
+        }
+      }
+    },
+    "/isb_cgc_api/v3/file_paths": {
+      "get": {
+        "operationId": "FilesGetPath_get",
+        "parameters": [
+          {
+            "collectionFormat": "multi",
+            "in": "query",
+            "items": {
+              "type": "string"
+            },
+            "name": "file_uuids",
+            "type": "array"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A successful response",
+            "schema": {
+              "$ref": "#/definitions/Api3IsbCgcApiFilesGetFilePathsFilePaths"
+            }
+          }
+        }
+      }
+    }
+  },
+  "produces": [
+    "application/json"
+  ],
+  "schemes": [
+    "https"
+  ],
+  "securityDefinitions": {
+    "google_id_token": {
+      "authorizationUrl": "",
+      "flow": "implicit",
+      "type": "oauth2",
+      "x-google-issuer": "https://accounts.google.com",
+      "x-google-jwks_uri": "https://www.googleapis.com/oauth2/v3/certs"
+    }
+  },
+  "swagger": "2.0"
+}
