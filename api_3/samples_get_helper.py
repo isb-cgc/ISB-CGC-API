@@ -21,6 +21,7 @@ import endpoints
 import logging
 import MySQLdb
 from protorpc import remote, messages
+from api_3.isb_cgc_api_TCGA.message_classes import BiospecimenMetadataItem
 
 from api_3.api_helpers import sql_connection
 from api_3.cohort_endpoint_helpers import build_constructor_dict_for_message
@@ -28,7 +29,7 @@ from api_3.cohort_endpoint_helpers import build_constructor_dict_for_message
 logger = logging.getLogger(__name__)
 
 class SamplesGetQueryBuilder(object):
-    def build_aliquot_query(self, program, param_list):
+    def build_aliquot_query(self, program, param_list, count=1):
         if 'CCLE' == program:
             genomic_builds = ['HG19']
         else:
@@ -36,26 +37,33 @@ class SamplesGetQueryBuilder(object):
             
         aliquot_query_str = ''
         for genomic_build in genomic_builds:
-            part_aliquot_query_str = 'select aliquot_barcode, aliquot_gdc_id ' \
+            part_aliquot_query_str = 'select sample_barcode, case_barcode, aliquot_barcode, aliquot_gdc_id ' \
                              'from {}_metadata_data_{} ' \
                              'where file_name_key is not null and file_name_key !="" '.format(program, genomic_build)
             for column in param_list:
-                part_aliquot_query_str += ' and {}=%s '.format(column)
+                if column == 'sample_barcode' and count>1:
+                    part_aliquot_query_str += ' and {} IN ({}) '.format(column, ','.join(["%s"]*count))
+                else:
+                    part_aliquot_query_str += ' and {}=%s '.format(column)
             if 0 < len(aliquot_query_str):
                 aliquot_query_str += ' union '
             aliquot_query_str += part_aliquot_query_str
 
         return aliquot_query_str
 
-    def build_biospecimen_query(self, program):
+    def build_biospecimen_query(self, program, count=1):
 
         biospecimen_query_str = 'select * ' \
                                 'from {}_metadata_biospecimen ' \
                                 'where sample_barcode=%s'.format(program)
+        if count>1:
+            biospecimen_query_str = 'select * ' \
+                                    'from {}_metadata_biospecimen ' \
+                                    'where sample_barcode in ({})'.format(program, ','.join(["%s"] * count))
 
         return biospecimen_query_str
 
-    def build_data_query(self, program, datadict_class, param_list):
+    def build_data_query(self, program, datadict_class, param_list, count=1):
         if 'CCLE' == program:
             genomic_builds = ['HG19']
         else:
@@ -67,21 +75,31 @@ class SamplesGetQueryBuilder(object):
                              'from {1}_metadata_data_{2} ' \
                              'where file_name_key is not null and file_name_key !="" '.format(', '.join(field.name for field in datadict_class.all_fields()), program, genomic_build)
             for column in param_list:
-                part_data_query_str += ' and {}=%s '.format(column)
+                if column == 'sample_barcode' and count > 1:
+                    part_data_query_str += ' and {} IN ({}) '.format(column, ','.join(["%s"]*count))
+                else:
+                    part_data_query_str += ' and {}=%s '.format(column)
             if 0 < len(data_query_str):
                 data_query_str += ' union '
             data_query_str += part_data_query_str
 
         return data_query_str
 
-    def build_case_query(self, program):
+    def build_case_query(self, program, count=1):
 
         case_query_str = 'select case_barcode, case_gdc_id ' \
                             'from {}_metadata_biospecimen ' \
                             'where sample_barcode=%s ' \
                             'group by case_barcode, case_gdc_id'.format(program)
 
+        if count>1:
+            case_query_str = 'select case_barcode, case_gdc_id ' \
+                             'from {}_metadata_biospecimen ' \
+                             'where sample_barcode in ({}) ' \
+                             'group by case_barcode, case_gdc_id'.format(program, ','.join(["%s"] * count))
+
         return case_query_str
+
 
 class DataDetails(messages.Message):
     file_gdc_id = messages.StringField(1)
@@ -104,6 +122,32 @@ class DataDetails(messages.Message):
     analysis_workflow_type = messages.StringField(19)
     index_file_name = messages.StringField(20)
 
+
+class SampleGetListFilters(messages.Message):
+    sample_barcodes = messages.StringField(1, repeated=True)
+    disease_code = messages.StringField(2, repeated=True)
+    experimental_strategy = messages.StringField(3, repeated=True)
+    platform = messages.StringField(4, repeated=True)
+    data_category = messages.StringField(5, repeated=True)
+    data_type = messages.StringField(6, repeated=True)
+    data_format = messages.StringField(7, repeated=True)
+    project_short_name = messages.StringField(8, repeated=True)
+    analysis_workflow_type = messages.StringField(9, repeated=True)
+
+
+class SampleDetails(messages.Message):
+    biospecimen_data = messages.MessageField(BiospecimenMetadataItem, 1)
+    aliquots = messages.StringField(2, repeated=True)
+    case_barcode = messages.StringField(3)
+    case_gdc_id = messages.StringField(4)
+    data_details = messages.MessageField(DataDetails, 5, repeated=True)
+    data_details_count = messages.IntegerField(6, variant=messages.Variant.INT32)
+
+
+class SampleSetDetails(messages.Message):
+    samples = messages.MessageField(SampleDetails, 1, repeated=True)
+
+
 class SamplesGetAPI(remote.Service):
     GET_RESOURCE = endpoints.ResourceContainer(
         sample_barcode=messages.StringField(1, required=True),
@@ -114,6 +158,10 @@ class SamplesGetAPI(remote.Service):
         platform = messages.StringField(6),
         endpoint_type = messages.StringField(7),
         analysis_workflow_type = messages.StringField(8)
+    )
+
+    POST_RESOURCE = endpoints.ResourceContainer(
+        filters=messages.MessageField(SampleGetListFilters, 1)
     )
 
     def get(self, request, program, SampleDetails, MetadataItem):
@@ -192,6 +240,115 @@ class SamplesGetAPI(remote.Service):
             logger.info("Sample details for barcode {} not found. Error: {}, \nSQL: {}, \nParams: {}".format(sample_barcode, e, aliquot_query_str, extra_query_tuple))
             raise endpoints.NotFoundException(
                 "Sample details for barcode {} not found.".format(sample_barcode))
+        except MySQLdb.ProgrammingError as e:
+            logger.warn(e)
+            raise endpoints.BadRequestException("Error retrieving biospecimen, case, or other data. {}".format(e))
+        finally:
+            if cursor: cursor.close()
+            if db and db.open: db.close()
+
+    def get_list(self, request, program, SampleSetDetails, SampleDetails, MetadataItem):
+        """
+        Given a set of sample barcodes (of length 16, *eg* TCGA-B9-7268-01A, for TCGA), this endpoint returns
+        all available "biospecimen" information about these samples, the associated case barcodes,
+        a list of associated aliquots, and a list of "data_details" blocks describing each of the data files
+        associated with this sample
+        """
+        cursor = None
+        db = None
+        sample_barcodes = None
+
+        filter_obj = request.get_assigned_value('filters') if 'filters' in [k.name for k in request.all_fields()] else None
+
+        if filter_obj:
+            sample_barcodes = filter_obj.get_assigned_value('sample_barcodes') if 'sample_barcodes' in [k.name for k in filter_obj.all_fields()] else None
+
+        logger.info("sample_barcodes: {}".format(str(sample_barcodes)))
+        logger.info("Length: {}".format(str(len(sample_barcodes))))
+
+        if not sample_barcodes:
+            raise endpoints.BadRequestException("A list of sample barcodes is required.")
+
+        param_list = ['sample_barcode']
+        query_tuple = [x for x in sample_barcodes]
+        extra_query_tuple = [x for x in sample_barcodes]
+        for field in filter_obj.all_fields():
+            if 'sample_barcodes' not in field.name and filter_obj.get_assigned_value(field.name):
+                param_list += [field.name]
+                extra_query_tuple += [filter_obj.get_assigned_value(field.name)]
+
+        if 'CCLE' != program:
+            extra_query_tuple += extra_query_tuple
+
+        # need to take into account params used in the union between the genomic builds
+
+        aliquot_query_str = SamplesGetQueryBuilder().build_aliquot_query(program, param_list, len(sample_barcodes))
+        biospecimen_query_str = SamplesGetQueryBuilder().build_biospecimen_query(program, len(sample_barcodes))
+        data_query_str = SamplesGetQueryBuilder().build_data_query(program, DataDetails(), param_list, len(sample_barcodes))
+
+        samples = SampleSetDetails()
+
+        sample_data = {}
+
+        try:
+            db = sql_connection()
+            cursor = db.cursor(MySQLdb.cursors.DictCursor)
+
+            # build biospecimen data message
+            cursor.execute(biospecimen_query_str, query_tuple)
+            rows = cursor.fetchall()
+            if not len(rows):
+                cursor.close()
+                db.close()
+                error_message = "These sample barcodes were not found in the {}_metadata_biospecimen table.".format(query_tuple[0],
+                                                                                                       program)
+                raise endpoints.NotFoundException(error_message)
+
+            for row in rows:
+                sample_data[row['sample_barcode']] = {}
+                constructor_dict = build_constructor_dict_for_message(MetadataItem(), row)
+                biospecimen_data_item = MetadataItem(**constructor_dict)
+                sample_data[row['sample_barcode']]['biospecimen'] = biospecimen_data_item
+                sample_data[row['sample_barcode']]['case_barcode'] = row['case_barcode']
+                sample_data[row['sample_barcode']]['case_gdc_id'] = row['case_gdc_id']
+
+            # get list of aliquots
+            cursor.execute(aliquot_query_str, extra_query_tuple)
+            rows = cursor.fetchall()
+            for row in rows:
+                if 'aliquots' not in sample_data[row['sample_barcode']]:
+                    sample_data[row['sample_barcode']]['aliquots'] = []
+                sample_data[row['sample_barcode']]['aliquots'].append(row['aliquot_barcode'])
+
+            # prepare to build list of data details messages
+            cursor.execute(data_query_str, extra_query_tuple)
+            cursor_rows = cursor.fetchall()
+
+            # build a data details message for each row returned from metadata_data table
+            for row in cursor_rows:
+                if 'data_rows' not in sample_data[row['sample_barcode']]:
+                    sample_data[row['sample_barcode']]['data_rows'] = []
+                constructor_dict = build_constructor_dict_for_message(DataDetails(), row)
+                data_details_item = DataDetails(**constructor_dict)
+                sample_data[row['sample_barcode']]['data_rows'].append(data_details_item)
+
+            for sample in sample_data:
+                samples.samples.append(SampleDetails(aliquots=sample_data[sample]['aliquots'],
+                                 biospecimen_data=sample_data[sample]['biospecimen'],
+                                 data_details=sample_data[sample]['data_rows'],
+                                 data_details_count=len(sample_data[sample]['data_rows']),
+                                 case_barcode=sample_data[sample]['case_barcode'],
+                                 case_gdc_id=sample_data[sample]['case_gdc_id']))
+
+            return samples
+
+        except (IndexError, TypeError) as e:
+            logger.info(
+                "Sample details for these barcodes were not found. Error: {}, \nSQL: {}, \nParams: {}".format(e,
+                                                                                                     aliquot_query_str,
+                                                                                                     extra_query_tuple))
+            raise endpoints.NotFoundException(
+                "Sample details for these barcodes were not found.")
         except MySQLdb.ProgrammingError as e:
             logger.warn(e)
             raise endpoints.BadRequestException("Error retrieving biospecimen, case, or other data. {}".format(e))
