@@ -27,6 +27,9 @@ class CaseDetails(messages.Message):
     samples = messages.StringField(2, repeated=True)
     aliquots = messages.StringField(3, repeated=True)
 
+class CaseSetDetails(messages.Message):
+    cases = messages.MessageField(CaseDetails, 1)
+
 @ISB_CGC_CCLE_Endpoints.api_class(resource_name='cases')
 class CCLECasesGetAPI(CasesGetHelper):
     @endpoints.method(CasesGetHelper.GET_RESOURCE, CaseDetails, path='ccle/cases/{case_barcode}', http_method='GET')
@@ -38,3 +41,14 @@ class CCLECasesGetAPI(CasesGetHelper):
         User does not need to be authenticated.
         """
         return super(CCLECasesGetAPI, self).get(request, CaseDetails, MetadataItem, 'CCLE')
+
+
+    @endpoints.method(CasesGetHelper.POST_RESOURCE, CaseSetDetails, path='ccle/cases', http_method='POST')
+    def get_list(self, request):
+        """
+        Given a list of sample barcodes (of length 16, *eg* TCGA-B9-7268-01A), this endpoint returns
+        all available "biospecimen" information about this sample,
+        the associated case barcode, a list of associated aliquots,
+        and a list of "data_details" blocks describing each of the data files associated with this sample
+        """
+        return super(CCLECasesGetAPI, self).get_list(request, 'CCLE', CaseSetDetails, CaseDetails, MetadataItem)

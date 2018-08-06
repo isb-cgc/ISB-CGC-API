@@ -34,6 +34,7 @@ BUILTIN_ENDPOINTS_PARAMETERS = [
     'userIp'
 ]
 
+
 def are_there_bad_keys(request):
     '''
     Checks for unrecognized fields in an endpoint request
@@ -86,6 +87,7 @@ class FilterDetails(messages.Message):
     name = messages.StringField(1)
     value = messages.StringField(2)
 
+
 def build_constructor_dict_for_message(message_class, row):
     """
     Takes an instance of a message class and a dictionary of values from a database query
@@ -109,3 +111,34 @@ def build_constructor_dict_for_message(message_class, row):
             constructor_dict[name] = None
 
     return constructor_dict
+
+
+def build_constructor_dicts_for_message(message_class, rows):
+    """
+    Takes an instance of a message class and a dictionary of values from a database query
+    and first validates the values in the dictionary against the message class fields
+    and then returns a dictionary of all the validated key-value pairs in the database query.
+    This will only work if the headers in the database query have the same name as the names of
+    fields in the message class.
+    """
+    constructor_dicts = []
+    metadata_item_dict = {field.name: field for field in message_class.all_fields()}
+
+    for row in rows:
+        constructor_dict = {}
+        for name, field in metadata_item_dict.iteritems():
+            if row.get(name) is not None:
+                try:
+                    field.validate(row[name])
+                    constructor_dict[name] = row[name]
+                except messages.ValidationError, e:
+                    constructor_dict[name] = None
+                    logger.warn('{name}: {value} was not validated while constructing kwargs for {message_class}. Error: {e}'
+                                .format(name=name, value=str(row[name]), message_class=str(message_class), e=e))
+            else:
+                constructor_dict[name] = None
+
+        if len(constructor_dict):
+            constructor_dicts.append(constructor_dict)
+
+    return constructor_dicts
