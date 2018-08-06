@@ -263,11 +263,10 @@ class SamplesGetAPI(remote.Service):
         if filter_obj:
             sample_barcodes = filter_obj.get_assigned_value('sample_barcodes') if 'sample_barcodes' in [k.name for k in filter_obj.all_fields()] else None
 
-        logger.info("sample_barcodes: {}".format(str(sample_barcodes)))
-        logger.info("Length: {}".format(str(len(sample_barcodes))))
-
         if not sample_barcodes:
             raise endpoints.BadRequestException("A list of sample barcodes is required.")
+        elif len(sample_barcodes) > 500:
+            raise endpoints.BadRequestException("The limit on barcodes per request is 500.")
 
         param_list = ['sample_barcode']
         query_tuple = [x for x in sample_barcodes]
