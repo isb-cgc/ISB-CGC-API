@@ -46,9 +46,9 @@ class CCLECasesGetAPI(CasesGetHelper):
     @endpoints.method(CasesGetHelper.POST_RESOURCE, CaseSetDetails, path='ccle/cases', http_method='POST')
     def get_list(self, request):
         """
-        Given a list of sample barcodes (of length 16, *eg* TCGA-B9-7268-01A), this endpoint returns
-        all available "biospecimen" information about this sample,
-        the associated case barcode, a list of associated aliquots,
-        and a list of "data_details" blocks describing each of the data files associated with this sample
+        Given a list of case barcodes (*eg* ACC-MESO-1), returns information about them, including a
+        list of samples and aliquots derived from this case.
+        Takes a list of case barcodes (*eg* ACC-MESO-1) as a required data payload.
+        User does not need to be authenticated.
         """
         return super(CCLECasesGetAPI, self).get_list(request, 'CCLE', CaseSetDetails, CaseDetails, MetadataItem)
