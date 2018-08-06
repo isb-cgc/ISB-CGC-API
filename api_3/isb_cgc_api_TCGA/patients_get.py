@@ -42,7 +42,7 @@ class TCGACasesGetAPI(CasesGetHelper):
         """
         return super(TCGACasesGetAPI, self).get(request, CaseDetails, MetadataItem, 'TCGA')
 
-    @endpoints.method(CasesGetHelper.POST_RESOURCE, CaseSetDetails, path='tcga/samples', http_method='POST')
+    @endpoints.method(CasesGetHelper.POST_RESOURCE, CaseSetDetails, path='tcga/cases', http_method='POST')
     def get_list(self, request):
         """
         Given a list of sample barcodes (of length 16, *eg* TCGA-B9-7268-01A), this endpoint returns
