@@ -180,8 +180,9 @@ class CohortFileManifestAPI(CohortFileManifest):
     @endpoints.method(CohortFileManifest.GET_RESOURCE, FileManifest, http_method='GET', path='cohorts/{cohort_id}/file_manifest')
     def file_manifest(self, request):
         """
-        Takes a cohort id as a required parameter and returns cloud storage paths to files
-        associated with all the samples in that cohort, up to a default limit of 10,000 files.
+        Takes a cohort id as a required parameter and returns a manifest of all files associated
+        with all the samples in that cohort, as well as their metadata, up to a default limit of
+        50,000 files.
         Authentication is required. User must have READER or OWNER permissions on the cohort.
         """
         return super(CohortFileManifestAPI, self).file_manifest(request)
@@ -189,8 +190,9 @@ class CohortFileManifestAPI(CohortFileManifest):
     @endpoints.method(CohortFileManifest.POST_RESOURCE, FileManifest, http_method='POST', path='cohorts/{cohort_id}/file_manifest')
     def file_manifest_filtered(self, request):
         """
-        Takes a cohort id as a required parameter and returns cloud storage paths to files
-        associated with all the samples in that cohort, up to a default limit of 10,000 files.
+        Takes a cohort id as a required parameter and a filter set as a required data payload,
+        and returns a manifest of all files associated with all the samples in that cohort, as
+        well as their metadata, up to a default limit of 50,000 files.
         Authentication is required. User must have READER or OWNER permissions on the cohort.
         """
         return super(CohortFileManifestAPI, self).file_manifest(request)
