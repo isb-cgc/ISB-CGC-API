@@ -51,4 +51,4 @@ class TCGACasesGetAPI(CasesGetHelper):
         Takes a list of case barcodes (of length 12, *eg* TCGA-B9-7268) as a required data payload.
         User does not need to be authenticated.
         """
-        return super(TCGACasesGetAPI, self).get_list(request, 'TCGA', CaseSetDetails, CaseDetails, MetadataItem)
+        return super(TCGACasesGetAPI, self).get_list(request, CaseSetDetails, MetadataItem, 'TCGA')
