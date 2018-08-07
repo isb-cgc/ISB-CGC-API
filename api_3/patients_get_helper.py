@@ -125,7 +125,7 @@ class CasesGetHelper(remote.Service):
             request_finished.send(self)
 
 
-    def get_list(self, request, CaseSetDetails, MetadataItem, program):
+    def get_list(self, request, CaseSetDetails, CaseDetails, MetadataItem, program):
         """
         Returns information about a specific case,
         including a list of samples and aliquots derived from this case.
@@ -172,13 +172,13 @@ class CasesGetHelper(remote.Service):
 
                 # get list of samples
                 cursor.execute(sample_query_str, (row['case_barcode'],))
-                sample_list = [row['sample_barcode'] for row in cursor.fetchall()]
+                sample_list = [sample_row['sample_barcode'] for sample_row in cursor.fetchall()]
 
                 # get list of aliquots
                 cursor.execute(aliquot_query_str, (row['case_barcode'],))
-                aliquot_list = [row['aliquot_barcode'] for row in cursor.fetchall()]
+                aliquot_list = [aliquot_row['aliquot_barcode'] for aliquot_row in cursor.fetchall()]
 
-                case_details.append(CaseSetDetails(clinical_data=clinical_data_item, samples=sample_list,
+                case_details.append(CaseDetails(clinical_data=clinical_data_item, samples=sample_list,
                                aliquots=aliquot_list if aliquot_list else []))
 
             return CaseSetDetails(cases=case_details)
