@@ -51,4 +51,4 @@ class TARGETCasesGetAPI(CasesGetHelper):
         Takes a list of case barcodes (of length 12, *eg* TARGET-51-PALFYG) as a required data payload.
         User does not need to be authenticated.
         """
-        return super(TARGETCasesGetAPI, self).get_list(request, 'TARGET', CaseSetDetails, CaseDetails, MetadataItem)
+        return super(TARGETCasesGetAPI, self).get_list(request, CaseSetDetails, MetadataItem, 'TARGET')

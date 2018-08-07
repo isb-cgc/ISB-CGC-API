@@ -51,4 +51,4 @@ class CCLECasesGetAPI(CasesGetHelper):
         Takes a list of case barcodes (*eg* ACC-MESO-1) as a required data payload.
         User does not need to be authenticated.
         """
-        return super(CCLECasesGetAPI, self).get_list(request, 'CCLE', CaseSetDetails, CaseDetails, MetadataItem)
+        return super(CCLECasesGetAPI, self).get_list(request, CaseSetDetails, MetadataItem, 'CCLE')
