@@ -45,9 +45,10 @@ class TCGACasesGetAPI(CasesGetHelper):
     @endpoints.method(CasesGetHelper.POST_RESOURCE, CaseSetDetails, path='tcga/cases', http_method='POST')
     def get_list(self, request):
         """
-        Given a list of sample barcodes (of length 16, *eg* TCGA-B9-7268-01A), this endpoint returns
-        all available "biospecimen" information about this sample,
-        the associated case barcode, a list of associated aliquots,
-        and a list of "data_details" blocks describing each of the data files associated with this sample
+        Given a list of case barcodes (of length 11, *eg* TCGA-B9-7268), this endpoint returns
+        all available "biospecimen" information about the cases, including a list of samples and aliquots
+        derived from them.
+        Takes a list of case barcodes (of length 12, *eg* TCGA-B9-7268) as a required data payload.
+        User does not need to be authenticated.
         """
         return super(TCGACasesGetAPI, self).get_list(request, 'TCGA', CaseSetDetails, CaseDetails, MetadataItem)
