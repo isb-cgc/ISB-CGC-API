@@ -19,7 +19,7 @@ import endpoints
 from protorpc import messages
 
 from api_3.patients_get_helper import CasesGetHelper
-from api_3.isb_cgc_api_CCLE.message_classes import MetadataItem
+from api_3.isb_cgc_api_TARGET.message_classes import ClinicalMetadataItem as MetadataItem
 from api_3.isb_cgc_api_CCLE.isb_cgc_api_helpers import ISB_CGC_CCLE_Endpoints
 
 class CaseDetails(messages.Message):
@@ -28,7 +28,7 @@ class CaseDetails(messages.Message):
     aliquots = messages.StringField(3, repeated=True)
 
 class CaseSetDetails(messages.Message):
-    cases = messages.MessageField(CaseDetails, 1)
+    cases = messages.MessageField(CaseDetails, 1, repeated=True)
 
 @ISB_CGC_CCLE_Endpoints.api_class(resource_name='cases')
 class CCLECasesGetAPI(CasesGetHelper):
@@ -51,4 +51,4 @@ class CCLECasesGetAPI(CasesGetHelper):
         Takes a list of case barcodes (*eg* ACC-MESO-1) as a required data payload.
         User does not need to be authenticated.
         """
-        return super(CCLECasesGetAPI, self).get_list(request, CaseSetDetails, MetadataItem, 'CCLE')
+        return super(CCLECasesGetAPI, self).get_list(request, CaseSetDetails, CaseDetails, MetadataItem, 'CCLE')
