@@ -178,8 +178,11 @@ class CasesGetHelper(remote.Service):
                 cursor.execute(aliquot_query_str, (row['case_barcode'],))
                 aliquot_list = [aliquot_row['aliquot_barcode'] for aliquot_row in cursor.fetchall()]
 
-                case_details.append(CaseDetails(clinical_data=clinical_data_item, samples=sample_list,
-                               aliquots=aliquot_list if aliquot_list else []))
+                case_details.append(
+                    CaseDetails(
+                        clinical_data=clinical_data_item, samples=sample_list,
+                        aliquots=aliquot_list if aliquot_list else [], case_barcode=row['case_barcode'])
+                )
 
             return CaseSetDetails(cases=case_details)
         except (IndexError, TypeError), e:
