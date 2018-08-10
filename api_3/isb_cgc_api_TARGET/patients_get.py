@@ -26,6 +26,7 @@ class CaseDetails(messages.Message):
     clinical_data = messages.MessageField(MetadataItem, 1)
     samples = messages.StringField(2, repeated=True)
     aliquots = messages.StringField(3, repeated=True)
+    case_barcode = messages.StringField(4)
 
 class CaseSetDetails(messages.Message):
     cases = messages.MessageField(CaseDetails, 1, repeated=True)

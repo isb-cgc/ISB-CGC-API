@@ -19,7 +19,7 @@ import endpoints
 from protorpc import messages
 
 from api_3.patients_get_helper import CasesGetHelper
-from api_3.isb_cgc_api_TARGET.message_classes import ClinicalMetadataItem as MetadataItem
+from api_3.isb_cgc_api_TCGA.message_classes import ClinicalMetadataItem as MetadataItem
 from api_3.isb_cgc_api_TCGA.isb_cgc_api_helpers import ISB_CGC_TCGA_Endpoints
 
 class CaseDetails(messages.Message):
