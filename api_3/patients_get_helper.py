@@ -58,7 +58,7 @@ class CasesGetQueryBuilder(object):
                                 'group by aliquot_barcode ' \
                                 'order by aliquot_barcode'.format(program, genomic_build, case_clause)
             if 0 < len(aliquot_query_str):
-                aliquot_query_str += ' union '
+                aliquot_query_str += ' UNION DISTINCT '
             aliquot_query_str += part_aliquot_query_str
 
         return clinical_query_str, sample_query_str, aliquot_query_str
