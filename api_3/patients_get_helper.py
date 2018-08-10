@@ -73,7 +73,7 @@ class CasesGetHelper(remote.Service):
     GET_RESOURCE = endpoints.ResourceContainer(case_barcode=messages.StringField(1, required=True))
 
     POST_RESOURCE = endpoints.ResourceContainer(
-        filters=messages.MessageField(CaseGetListFilters, 1)
+        CaseGetListFilters
     )
 
     def get(self, request, CaseDetails, MetadataItem, program):
@@ -141,12 +141,8 @@ class CasesGetHelper(remote.Service):
 
         cursor = None
         db = None
-        case_barcodes = None
 
-        filter_obj = request.get_assigned_value('filters') if 'filters' in [k.name for k in request.all_fields()] else None
-
-        if filter_obj:
-            case_barcodes = filter_obj.get_assigned_value('case_barcodes') if 'case_barcodes' in [k.name for k in filter_obj.all_fields()] else None
+        case_barcodes = request.get_assigned_value('case_barcodes') if 'case_barcodes' in [k.name for k in request.all_fields()] else None
 
         if not case_barcodes or not len(case_barcodes):
             raise endpoints.BadRequestException("A list of case barcodes is required.")

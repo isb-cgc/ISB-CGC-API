@@ -78,12 +78,12 @@ class CohortFileManifest(remote.Service):
     )
 
     POST_RESOURCE = endpoints.ResourceContainer(
+        FileManifestFilters,
         cohort_id=messages.IntegerField(1, required=True),
         fetch_count=messages.IntegerField(2),
         offset=messages.IntegerField(3),
         genomic_build=messages.StringField(4),
-        do_filter_count=messages.BooleanField(6),
-        filters=messages.MessageField(FileManifestFilters, 5)
+        do_filter_count=messages.BooleanField(6)
     )
 
     def validate_user(self, cohort_id):
