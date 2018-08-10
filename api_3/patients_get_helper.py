@@ -87,7 +87,11 @@ class CasesGetHelper(remote.Service):
 
         case_barcode = request.get_assigned_value('case_barcode')
         query_tuple = (str(case_barcode),)
-        clinical_query_str, sample_query_str, aliquot_query_str = CasesGetQueryBuilder().build_queries(program, ['HG19'])
+        genomic_builds = ['HG19']
+        if program != 'CCLE':
+            genomic_builds.append('HG38')
+
+        clinical_query_str, sample_query_str, aliquot_query_str = CasesGetQueryBuilder().build_queries(program, genomic_builds)
 
         try:
             db = sql_connection()
@@ -148,8 +152,11 @@ class CasesGetHelper(remote.Service):
             raise endpoints.BadRequestException("The limit on barcodes per request is 500.")
 
         query_tuple = [x for x in case_barcodes]
+        genomic_builds = ['HG19']
+        if program != 'CCLE':
+            genomic_builds.append('HG38')
 
-        clinical_query_str, sample_query_str, aliquot_query_str = CasesGetQueryBuilder().build_queries(program, ['HG19'], len(case_barcodes))
+        clinical_query_str, sample_query_str, aliquot_query_str = CasesGetQueryBuilder().build_queries(program, genomic_builds, len(case_barcodes))
 
         try:
             db = sql_connection()
