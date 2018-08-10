@@ -142,6 +142,7 @@ class SampleDetails(messages.Message):
     case_gdc_id = messages.StringField(4)
     data_details = messages.MessageField(DataDetails, 5, repeated=True)
     data_details_count = messages.IntegerField(6, variant=messages.Variant.INT32)
+    sample_barcode = messages.StringField(7)
 
 
 class SampleSetDetails(messages.Message):
@@ -161,7 +162,7 @@ class SamplesGetAPI(remote.Service):
     )
 
     POST_RESOURCE = endpoints.ResourceContainer(
-        filters=messages.MessageField(SampleGetListFilters, 1)
+        SampleGetListFilters
     )
 
     def get(self, request, program, SampleDetails, MetadataItem):
@@ -256,25 +257,21 @@ class SamplesGetAPI(remote.Service):
         """
         cursor = None
         db = None
-        sample_barcodes = None
-
-        filter_obj = request.get_assigned_value('filters') if 'filters' in [k.name for k in request.all_fields()] else None
-
-        if filter_obj:
-            sample_barcodes = filter_obj.get_assigned_value('sample_barcodes') if 'sample_barcodes' in [k.name for k in filter_obj.all_fields()] else None
+        sample_barcodes = request.get_assigned_value('sample_barcodes') if 'sample_barcodes' in [k.name for k in
+            request.all_fields()] else None
 
         if not sample_barcodes:
             raise endpoints.BadRequestException("A list of sample barcodes is required.")
         elif len(sample_barcodes) > 500:
-            raise endpoints.BadRequestException("The limit on barcodes per request is 500.")
+            raise endpoints.BadRequestException("There is a 500 barcode limit per quest.")
 
         param_list = ['sample_barcode']
         query_tuple = [x for x in sample_barcodes]
         extra_query_tuple = [x for x in sample_barcodes]
-        for field in filter_obj.all_fields():
-            if 'sample_barcodes' not in field.name and filter_obj.get_assigned_value(field.name):
+        for field in request.all_fields():
+            if 'sample_barcodes' not in field.name and request.get_assigned_value(field.name):
                 param_list += [field.name]
-                extra_query_tuple += [filter_obj.get_assigned_value(field.name)]
+                extra_query_tuple += [request.get_assigned_value(field.name)]
 
         if 'CCLE' != program:
             extra_query_tuple += extra_query_tuple
@@ -337,20 +334,22 @@ class SamplesGetAPI(remote.Service):
                                  data_details=sample_data[sample]['data_rows'],
                                  data_details_count=len(sample_data[sample]['data_rows']),
                                  case_barcode=sample_data[sample]['case_barcode'],
-                                 case_gdc_id=sample_data[sample]['case_gdc_id']))
+                                 case_gdc_id=sample_data[sample]['case_gdc_id'], sample_barcode=sample))
 
             return samples
 
         except (IndexError, TypeError) as e:
-            logger.info(
-                "Sample details for these barcodes were not found. Error: {}, \nSQL: {}, \nParams: {}".format(e,
-                                                                                                     aliquot_query_str,
-                                                                                                     extra_query_tuple))
+            logger.exception(e)
+            logger.error("Error: {}, \nSQL: {}, \nParams: {}".format(e,aliquot_query_str,extra_query_tuple))
             raise endpoints.NotFoundException(
-                "Sample details for these barcodes were not found.")
+                "There was an error while processing your request--please contact us at feedback@isb-cgc.org"
+            )
         except MySQLdb.ProgrammingError as e:
             logger.warn(e)
             raise endpoints.BadRequestException("Error retrieving biospecimen, case, or other data. {}".format(e))
+        except Exception as e:
+            logger.error("[ERROR] While processing samples.get_list: ")
+            logger.exception(e)
         finally:
             if cursor: cursor.close()
             if db and db.open: db.close()
