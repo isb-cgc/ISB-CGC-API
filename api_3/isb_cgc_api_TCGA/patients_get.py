@@ -19,16 +19,20 @@ import endpoints
 from protorpc import messages
 
 from api_3.patients_get_helper import CasesGetHelper
-from api_3.isb_cgc_api_TCGA.message_classes import MetadataItem
+from api_3.isb_cgc_api_TCGA.message_classes import ClinicalMetadataItem as MetadataItem
 from api_3.isb_cgc_api_TCGA.isb_cgc_api_helpers import ISB_CGC_TCGA_Endpoints
 
 class CaseDetails(messages.Message):
     clinical_data = messages.MessageField(MetadataItem, 1)
     samples = messages.StringField(2, repeated=True)
     aliquots = messages.StringField(3, repeated=True)
+    case_barcode = messages.StringField(4)
+
+class CaseSetDetails(messages.Message):
+    cases = messages.MessageField(CaseDetails, 1, repeated=True)
 
 @ISB_CGC_TCGA_Endpoints.api_class(resource_name='cases')
-class TCGA_CasesGetAPI(CasesGetHelper):
+class TCGACasesGetAPI(CasesGetHelper):
     @endpoints.method(CasesGetHelper.GET_RESOURCE, CaseDetails, path='tcga/cases/{case_barcode}', http_method='GET')
     def get(self, request):
         """
@@ -37,4 +41,15 @@ class TCGA_CasesGetAPI(CasesGetHelper):
         Takes a case barcode (of length 12, *eg* TCGA-B9-7268) as a required parameter.
         User does not need to be authenticated.
         """
-        return super(TCGA_CasesGetAPI, self).get(request, CaseDetails, MetadataItem, 'TCGA')
+        return super(TCGACasesGetAPI, self).get(request, CaseDetails, MetadataItem, 'TCGA')
+
+    @endpoints.method(CasesGetHelper.POST_RESOURCE, CaseSetDetails, path='tcga/cases', http_method='POST')
+    def get_list(self, request):
+        """
+        Given a list of case barcodes (of length 11, *eg* TCGA-B9-7268), this endpoint returns
+        all available "biospecimen" information about the cases, including a list of samples and aliquots
+        derived from them.
+        Takes a list of case barcodes (of length 12, *eg* TCGA-B9-7268) as a required data payload.
+        User does not need to be authenticated.
+        """
+        return super(TCGACasesGetAPI, self).get_list(request, CaseSetDetails, CaseDetails, MetadataItem, 'TCGA')

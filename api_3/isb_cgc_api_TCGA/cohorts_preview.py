@@ -15,15 +15,16 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 import endpoints
+from protorpc import messages
 
 from api_3.cohort_create_preview_helper import CohortsPreviewHelper
 from api_3.isb_cgc_api_TCGA.isb_cgc_api_helpers import ISB_CGC_TCGA_Endpoints
 from message_classes import MetadataRangesItem
 
 @ISB_CGC_TCGA_Endpoints.api_class(resource_name='cohorts')
-class TCGA_CohortsPreviewAPI(CohortsPreviewHelper):
+class TCGACohortsPreviewAPI(CohortsPreviewHelper):
 
-    POST_RESOURCE = endpoints.ResourceContainer(MetadataRangesItem)
+    POST_RESOURCE = endpoints.ResourceContainer(MetadataRangesItem, fields=messages.StringField(3))
 
     @endpoints.method(POST_RESOURCE, CohortsPreviewHelper.CohortCasesSamplesList, path='tcga/cohorts/preview', http_method='POST')
     def preview(self, request):
@@ -34,4 +35,4 @@ class TCGA_CohortsPreviewAPI(CohortsPreviewHelper):
         Authentication is not required.
         """
         self.program = 'TCGA'
-        return super(TCGA_CohortsPreviewAPI, self).preview(request)
+        return super(TCGACohortsPreviewAPI, self).preview(request)
