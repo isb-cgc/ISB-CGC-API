@@ -19,13 +19,14 @@ import endpoints
 from protorpc import messages
 
 from api_3.patients_get_helper import CasesGetHelper
-from api_3.isb_cgc_api_TARGET.message_classes import ClinicalMetadataItem as MetadataItem
+from api_3.isb_cgc_api_CCLE.message_classes import ClinicalMetadataItem as MetadataItem
 from api_3.isb_cgc_api_CCLE.isb_cgc_api_helpers import ISB_CGC_CCLE_Endpoints
 
 class CaseDetails(messages.Message):
     clinical_data = messages.MessageField(MetadataItem, 1)
     samples = messages.StringField(2, repeated=True)
     aliquots = messages.StringField(3, repeated=True)
+    case_barcode = messages.StringField(4)
 
 class CaseSetDetails(messages.Message):
     cases = messages.MessageField(CaseDetails, 1, repeated=True)
