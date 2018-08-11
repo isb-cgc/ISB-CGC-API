@@ -115,7 +115,7 @@ class CasesGetHelper(remote.Service):
             sample_list = [row['sample_barcode'] for row in cursor.fetchall()]
 
             # get list of aliquots
-            cursor.execute(aliquot_query_str, query_tuple)
+            cursor.execute(aliquot_query_str, (query_tuple * len(genomic_builds)))
             aliquot_list = [row['aliquot_barcode'] for row in cursor.fetchall()]
 
             return CaseDetails(clinical_data=clinical_data_item, samples=sample_list, aliquots=aliquot_list if aliquot_list else [])
