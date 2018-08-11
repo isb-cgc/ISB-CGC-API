@@ -55,13 +55,15 @@ class CasesGetQueryBuilder(object):
             part_aliquot_query_str = 'select aliquot_barcode ' \
                                 'from {}_metadata_data_{} ' \
                                 'where {} and aliquot_barcode is not null ' \
-                                'group by aliquot_barcode ' \
-                                'order by aliquot_barcode'.format(program, genomic_build, case_clause)
+                                'group by aliquot_barcode '.format(program, genomic_build, case_clause)
             if 0 < len(aliquot_query_str):
-                aliquot_query_str += ' union '
+                aliquot_query_str += ' UNION DISTINCT '
             aliquot_query_str += part_aliquot_query_str
 
+        aliquot_query_str += 'order by aliquot_barcode'
+
         return clinical_query_str, sample_query_str, aliquot_query_str
+
 
 class CaseGetListFilters(messages.Message):
     case_barcodes = messages.StringField(1, repeated=True)
@@ -71,7 +73,7 @@ class CasesGetHelper(remote.Service):
     GET_RESOURCE = endpoints.ResourceContainer(case_barcode=messages.StringField(1, required=True))
 
     POST_RESOURCE = endpoints.ResourceContainer(
-        filters=messages.MessageField(CaseGetListFilters, 1)
+        CaseGetListFilters
     )
 
     def get(self, request, CaseDetails, MetadataItem, program):
@@ -87,7 +89,11 @@ class CasesGetHelper(remote.Service):
 
         case_barcode = request.get_assigned_value('case_barcode')
         query_tuple = (str(case_barcode),)
-        clinical_query_str, sample_query_str, aliquot_query_str = CasesGetQueryBuilder().build_queries(program, ['HG19'])
+        genomic_builds = ['HG19']
+        if program != 'CCLE':
+            genomic_builds.append('HG38')
+
+        clinical_query_str, sample_query_str, aliquot_query_str = CasesGetQueryBuilder().build_queries(program, genomic_builds)
 
         try:
             db = sql_connection()
@@ -109,7 +115,7 @@ class CasesGetHelper(remote.Service):
             sample_list = [row['sample_barcode'] for row in cursor.fetchall()]
 
             # get list of aliquots
-            cursor.execute(aliquot_query_str, query_tuple)
+            cursor.execute(aliquot_query_str, (query_tuple * len(genomic_builds)))
             aliquot_list = [row['aliquot_barcode'] for row in cursor.fetchall()]
 
             return CaseDetails(clinical_data=clinical_data_item, samples=sample_list, aliquots=aliquot_list if aliquot_list else [])
@@ -135,12 +141,8 @@ class CasesGetHelper(remote.Service):
 
         cursor = None
         db = None
-        case_barcodes = None
 
-        filter_obj = request.get_assigned_value('filters') if 'filters' in [k.name for k in request.all_fields()] else None
-
-        if filter_obj:
-            case_barcodes = filter_obj.get_assigned_value('case_barcodes') if 'case_barcodes' in [k.name for k in filter_obj.all_fields()] else None
+        case_barcodes = request.get_assigned_value('case_barcodes') if 'case_barcodes' in [k.name for k in request.all_fields()] else None
 
         if not case_barcodes or not len(case_barcodes):
             raise endpoints.BadRequestException("A list of case barcodes is required.")
@@ -148,8 +150,11 @@ class CasesGetHelper(remote.Service):
             raise endpoints.BadRequestException("The limit on barcodes per request is 500.")
 
         query_tuple = [x for x in case_barcodes]
+        genomic_builds = ['HG19']
+        if program != 'CCLE':
+            genomic_builds.append('HG38')
 
-        clinical_query_str, sample_query_str, aliquot_query_str = CasesGetQueryBuilder().build_queries(program, ['HG19'], len(case_barcodes))
+        clinical_query_str, sample_query_str, aliquot_query_str = CasesGetQueryBuilder().build_queries(program, genomic_builds, len(case_barcodes))
 
         try:
             db = sql_connection()
@@ -175,7 +180,7 @@ class CasesGetHelper(remote.Service):
                 sample_list = [sample_row['sample_barcode'] for sample_row in cursor.fetchall()]
 
                 # get list of aliquots
-                cursor.execute(aliquot_query_str, (row['case_barcode'],))
+                cursor.execute(aliquot_query_str, ((row['case_barcode'],) * len(genomic_builds)))
                 aliquot_list = [aliquot_row['aliquot_barcode'] for aliquot_row in cursor.fetchall()]
 
                 case_details.append(
@@ -186,6 +191,7 @@ class CasesGetHelper(remote.Service):
 
             return CaseSetDetails(cases=case_details)
         except (IndexError, TypeError), e:
+            logger.exception(e)
             logger.info("The cases supplied were not found. Error: {}".format(e))
             raise endpoints.NotFoundException("The cases provided were not found not found.")
         except MySQLdb.ProgrammingError as e:
