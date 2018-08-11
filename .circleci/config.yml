@@ -91,4 +91,4 @@ workflows:
             - build_job
           filters:
             branches:
-              only: master
+              only: isb-cgc-prod
