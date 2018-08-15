@@ -20,7 +20,21 @@ from protorpc import messages
 
 from api_3.isb_cgc_api_CCLE.isb_cgc_api_helpers import ISB_CGC_CCLE_Endpoints
 from api_3.isb_cgc_api_CCLE.message_classes import MetadataItem
-from api_3.samples_get_helper import SamplesGetAPI, SampleDetails, SampleSetDetails
+from api_3.samples_get_helper import SamplesGetAPI, DataDetails
+
+
+class SampleDetails(messages.Message):
+    biospecimen_data = messages.MessageField(MetadataItem, 1)
+    aliquots = messages.StringField(2, repeated=True)
+    case_barcode = messages.StringField(3)
+    case_gdc_id = messages.StringField(4)
+    data_details = messages.MessageField(DataDetails, 5, repeated=True)
+    data_details_count = messages.IntegerField(6, variant=messages.Variant.INT32)
+    sample_barcode = messages.StringField(7)
+
+
+class SampleSetDetails(messages.Message):
+    samples = messages.MessageField(SampleDetails, 1, repeated=True)
 
 
 @ISB_CGC_CCLE_Endpoints.api_class(resource_name='samples')
@@ -42,4 +56,4 @@ class CCLESamplesGetAPI(SamplesGetAPI):
         the associated case barcode, a list of associated aliquots,
         and a list of "data_details" blocks describing each of the data files associated with this sample
         """
-        return super(CCLESamplesGetAPI, self).get_list(request, 'CCLE', SampleSetDetails, SampleDetails, None)
+        return super(CCLESamplesGetAPI, self).get_list(request, 'CCLE', SampleSetDetails, SampleDetails, MetadataItem)

@@ -135,20 +135,6 @@ class SampleGetListFilters(messages.Message):
     analysis_workflow_type = messages.StringField(9, repeated=True)
 
 
-class SampleDetails(messages.Message):
-    biospecimen_data = messages.MessageField(BiospecimenMetadataItem, 1)
-    aliquots = messages.StringField(2, repeated=True)
-    case_barcode = messages.StringField(3)
-    case_gdc_id = messages.StringField(4)
-    data_details = messages.MessageField(DataDetails, 5, repeated=True)
-    data_details_count = messages.IntegerField(6, variant=messages.Variant.INT32)
-    sample_barcode = messages.StringField(7)
-
-
-class SampleSetDetails(messages.Message):
-    samples = messages.MessageField(SampleDetails, 1, repeated=True)
-
-
 class SamplesGetAPI(remote.Service):
     GET_RESOURCE = endpoints.ResourceContainer(
         sample_barcode=messages.StringField(1, required=True),
@@ -296,8 +282,7 @@ class SamplesGetAPI(remote.Service):
             if not len(rows):
                 cursor.close()
                 db.close()
-                error_message = "These sample barcodes were not found in the {}_metadata_biospecimen table.".format(query_tuple[0],
-                                                                                                       program)
+                error_message = "These sample barcodes were not found in the {}_metadata_biospecimen table.".format(program,)
                 raise endpoints.NotFoundException(error_message)
 
             for row in rows:
@@ -329,12 +314,17 @@ class SamplesGetAPI(remote.Service):
                 sample_data[row['sample_barcode']]['data_rows'].append(data_details_item)
 
             for sample in sample_data:
-                samples.samples.append(SampleDetails(aliquots=sample_data[sample]['aliquots'],
-                                 biospecimen_data=sample_data[sample]['biospecimen'],
-                                 data_details=sample_data[sample]['data_rows'],
-                                 data_details_count=len(sample_data[sample]['data_rows']),
-                                 case_barcode=sample_data[sample]['case_barcode'],
-                                 case_gdc_id=sample_data[sample]['case_gdc_id'], sample_barcode=sample))
+                samples.samples.append(
+                    SampleDetails(
+                        aliquots=sample_data[sample]['aliquots'] if 'aliquots' in sample_data[sample] else [],
+                         biospecimen_data=sample_data[sample]['biospecimen'],
+                         data_details=sample_data[sample]['data_rows'] if 'data_rows' in sample_data[sample] else [],
+                         data_details_count=len(sample_data[sample]['data_rows']) if 'data_rows' in sample_data[sample] else 0,
+                         case_barcode=sample_data[sample]['case_barcode'],
+                         case_gdc_id=sample_data[sample]['case_gdc_id'],
+                         sample_barcode=sample
+                    )
+                )
 
             return samples
 
