@@ -19,8 +19,22 @@ import endpoints
 from protorpc import messages
 
 from api_3.isb_cgc_api_TCGA.isb_cgc_api_helpers import ISB_CGC_TCGA_Endpoints
-from api_3.samples_get_helper import SamplesGetAPI, SampleDetails, SampleSetDetails
+from api_3.samples_get_helper import SamplesGetAPI, DataDetails
 from api_3.isb_cgc_api_TCGA.message_classes import BiospecimenMetadataItem
+
+
+class SampleDetails(messages.Message):
+    biospecimen_data = messages.MessageField(BiospecimenMetadataItem, 1)
+    aliquots = messages.StringField(2, repeated=True)
+    case_barcode = messages.StringField(3)
+    case_gdc_id = messages.StringField(4)
+    data_details = messages.MessageField(DataDetails, 5, repeated=True)
+    data_details_count = messages.IntegerField(6, variant=messages.Variant.INT32)
+    sample_barcode = messages.StringField(7)
+
+
+class SampleSetDetails(messages.Message):
+    samples = messages.MessageField(SampleDetails, 1, repeated=True)
 
 
 @ISB_CGC_TCGA_Endpoints.api_class(resource_name='samples')
