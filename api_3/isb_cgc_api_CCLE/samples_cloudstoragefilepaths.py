@@ -21,7 +21,7 @@ from api_3.isb_cgc_api_CCLE.isb_cgc_api_helpers import ISB_CGC_CCLE_Endpoints
 from api_3.cloudstoragefilepaths_helper import GCSFilePathList, SamplesCloudStorageFilePathsHelper
 
 @ISB_CGC_CCLE_Endpoints.api_class(resource_name='samples')
-class CCLE_SamplesCloudStorageFilePathsAPI(SamplesCloudStorageFilePathsHelper):
+class CCLESamplesCloudStorageFilePathsAPI(SamplesCloudStorageFilePathsHelper):
 
     @endpoints.method(SamplesCloudStorageFilePathsHelper.GET_RESOURCE, GCSFilePathList,
                       path='ccle/samples/{sample_barcode}/cloud_storage_file_paths', http_method='GET')
@@ -30,4 +30,4 @@ class CCLE_SamplesCloudStorageFilePathsAPI(SamplesCloudStorageFilePathsHelper):
         Takes a sample barcode as a required parameter and
         returns cloud storage paths to files associated with that sample.
         """
-        return super(CCLE_SamplesCloudStorageFilePathsAPI, self).cloud_storage_file_paths(request, 'CCLE')
+        return super(CCLESamplesCloudStorageFilePathsAPI, self).cloud_storage_file_paths(request, 'CCLE')

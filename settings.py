@@ -35,6 +35,13 @@ MANAGERS = ADMINS
 
 PROJECT_ID = os.environ.get('PROJECT_ID')
 BQ_PROJECT_ID = os.environ.get('BQ_PROJECT_ID')
+MAX_BQ_INSERT = int(os.environ.get('MAX_BQ_INSERT', '500'))
+BQ_MAX_ATTEMPTS = int(os.environ.get('MAX_BQ_ATTEMPTS', '10'))
+
+USER_DATA_ON = bool(os.environ.get('USER_DATA_ON', 'False') == 'True')
+
+MAX_FILE_LIST_REQUEST = int(os.environ.get('MAX_FILE_LIST_REQUEST', '50000'))
+MAX_FILES_IGV = int(os.environ.get('MAX_FILES_IGV', '5'))
 
 BASE_URL = os.environ.get('CLOUD_BASE_URL')
 BASE_API_URL = os.environ.get('CLOUD_API_URL')
@@ -359,17 +366,18 @@ INSTALLED_APP_CLIENT_ID         = os.environ.get('INSTALLED_APP_CLIENT_ID')
 #   For NIH/eRA Commons login   #
 #################################
 
-LOGIN_EXPIRATION_HOURS = 24
-OPEN_ACL_GOOGLE_GROUP               = os.environ.get('OPEN_ACL_GOOGLE_GROUP')
+LOGIN_EXPIRATION_MINUTES                = int(os.environ.get('LOGIN_EXPIRATION_MINUTES', 24*60))
+OPEN_ACL_GOOGLE_GROUP                   = os.environ.get('OPEN_ACL_GOOGLE_GROUP', '')
+GOOGLE_GROUP_ADMIN                      = os.environ.get('GOOGLE_GROUP_ADMIN', '')
+SUPERADMIN_FOR_REPORTS                  = os.environ.get('SUPERADMIN_FOR_REPORTS', '')
+ERA_LOGIN_URL                           = os.environ.get('ERA_LOGIN_URL', '')
+SAML_FOLDER                             = os.environ.get('SAML_FOLDER', '')
 
 ######################################
 #   For directory, reports services  #
 ######################################
 GOOGLE_GROUP_ADMIN           = os.environ.get('GOOGLE_GROUP_ADMIN', '')
 SUPERADMIN_FOR_REPORTS       = os.environ.get('SUPERADMIN_FOR_REPORTS', '')
-
-# Dataset configuration file path
-DATASET_CONFIGURATION_PATH   = os.environ.get('DATASET_CONFIGURATION_PATH', '')
 
 ##############################
 #   Start django-finalware   #
@@ -387,3 +395,60 @@ SITE_SUPERUSER_PASSWORD = os.environ.get('SU_PASS')
 ############################
 
 CONN_MAX_AGE = 0
+
+# Deployment module
+CRON_MODULE             = os.environ.get('CRON_MODULE')
+
+# TaskQueue used when users go through the ERA flow
+LOGOUT_WORKER_TASKQUEUE                  = os.environ.get('LOGOUT_WORKER_TASKQUEUE', '')
+CHECK_NIH_USER_LOGIN_TASK_URI            = os.environ.get('CHECK_NIH_USER_LOGIN_TASK_URI', '')
+
+# TaskQueue used by the sweep_nih_user_logins task
+LOGOUT_SWEEPER_FALLBACK_TASKQUEUE        = os.environ.get('LOGOUT_SWEEPER_FALLBACK_TASKQUEUE', '')
+
+# PubSub topic for ERA login notifications
+PUBSUB_TOPIC_ERA_LOGIN                   = os.environ.get('PUBSUB_TOPIC_ERA_LOGIN', '')
+
+# User project access key
+USER_GCP_ACCESS_CREDENTIALS              = os.environ.get('USER_GCP_ACCESS_CREDENTIALS', '')
+
+# Log name for ERA login views
+LOG_NAME_ERA_LOGIN_VIEW                  = os.environ.get('LOG_NAME_ERA_LOGIN_VIEW', '')
+
+# Log Names
+SERVICE_ACCOUNT_LOG_NAME = os.environ.get('SERVICE_ACCOUNT_LOG_NAME', 'local_dev_logging')
+
+# Service account blacklist file path
+SERVICE_ACCOUNT_BLACKLIST_PATH           = os.environ.get('SERVICE_ACCOUNT_BLACKLIST_PATH', '')
+
+# Google Org whitelist file path
+GOOGLE_ORG_WHITELIST_PATH                = os.environ.get('GOOGLE_ORG_WHITELIST_PATH', '')
+
+# Managed Service Account file path
+MANAGED_SERVICE_ACCOUNTS_PATH            = os.environ.get('MANAGED_SERVICE_ACCOUNTS_PATH', '')
+
+# Dataset configuration file path
+DATASET_CONFIGURATION_PATH               = os.environ.get('DATASET_CONFIGURATION_PATH', '')
+
+# SA via DCF
+SA_VIA_DCF                               = bool(os.environ.get('SA_VIA_DCF', 'False') == 'True')
+
+#################################
+#   For DCF login               #
+#################################
+
+DCF_AUTH_URL                             = os.environ.get('DCF_AUTH_URL', '')
+DCF_TOKEN_URL                            = os.environ.get('DCF_TOKEN_URL', '')
+DCF_USER_URL                             = os.environ.get('DCF_USER_URL', '')
+DCF_KEY_URL                              = os.environ.get('DCF_KEY_URL', '')
+DCF_GOOGLE_URL                           = os.environ.get('DCF_GOOGLE_URL', '')
+DCF_REVOKE_URL                           = os.environ.get('DCF_REVOKE_URL', '')
+DCF_LOGOUT_URL                           = os.environ.get('DCF_LOGOUT_URL', '')
+DCF_URL_URL                              = os.environ.get('DCF_URL_URL', '')
+DCF_CLIENT_SECRETS                       = os.environ.get('DCF_CLIENT_SECRETS', '')
+DCF_GOOGLE_SA_REGISTER_URL               = os.environ.get('DCF_GOOGLE_SA_REGISTER_URL', '')
+DCF_GOOGLE_SA_VERIFY_URL                 = os.environ.get('DCF_GOOGLE_SA_VERIFY_URL', '')
+DCF_GOOGLE_SA_MONITOR_URL                = os.environ.get('DCF_GOOGLE_SA_MONITOR_URL', '')
+DCF_GOOGLE_SA_URL                        = os.environ.get('DCF_GOOGLE_SA_URL', '')
+DCF_TOKEN_REFRESH_WINDOW_SECONDS         = int(os.environ.get('DCF_TOKEN_REFRESH_WINDOW_SECONDS', 86400))
+DCF_LOGIN_EXPIRATION_SECONDS             = int(os.environ.get('DCF_LOGIN_EXPIRATION_SECONDS', 86400))

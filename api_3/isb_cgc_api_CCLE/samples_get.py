@@ -20,7 +20,8 @@ from protorpc import messages
 
 from api_3.isb_cgc_api_CCLE.isb_cgc_api_helpers import ISB_CGC_CCLE_Endpoints
 from api_3.isb_cgc_api_CCLE.message_classes import MetadataItem
-from api_3.samples_get_helper import DataDetails, SamplesGetAPI
+from api_3.samples_get_helper import SamplesGetAPI, DataDetails
+
 
 class SampleDetails(messages.Message):
     biospecimen_data = messages.MessageField(MetadataItem, 1)
@@ -29,15 +30,30 @@ class SampleDetails(messages.Message):
     case_gdc_id = messages.StringField(4)
     data_details = messages.MessageField(DataDetails, 5, repeated=True)
     data_details_count = messages.IntegerField(6, variant=messages.Variant.INT32)
+    sample_barcode = messages.StringField(7)
+
+
+class SampleSetDetails(messages.Message):
+    samples = messages.MessageField(SampleDetails, 1, repeated=True)
+
 
 @ISB_CGC_CCLE_Endpoints.api_class(resource_name='samples')
-class CCLE_SamplesGetAPI(SamplesGetAPI):
+class CCLESamplesGetAPI(SamplesGetAPI):
     @endpoints.method(SamplesGetAPI.GET_RESOURCE, SampleDetails, path='ccle/samples/{sample_barcode}', http_method='GET')
     def get(self, request):
         """
         Given a sample barcode (*eg* CCLE-ACC-MESO-1), this endpoint returns
-        all available "biospecimen" information about this sample,
         the associated case barcode, a list of associated aliquots,
         and a list of "data_details" blocks describing each of the data files associated with this sample
         """
-        return super(CCLE_SamplesGetAPI, self).get(request, 'CCLE', SampleDetails, MetadataItem)
+        return super(CCLESamplesGetAPI, self).get(request, 'CCLE', SampleDetails, MetadataItem)
+
+
+    @endpoints.method(SamplesGetAPI.POST_RESOURCE, SampleSetDetails, path='ccle/samples', http_method='POST')
+    def get_list(self, request):
+        """
+        Given a list of sample barcodes (of length 16, *eg* CCLE-ACC-MESO-1), this endpoint returns
+        the associated case barcode, a list of associated aliquots,
+        and a list of "data_details" blocks describing each of the data files associated with this sample
+        """
+        return super(CCLESamplesGetAPI, self).get_list(request, 'CCLE', SampleSetDetails, SampleDetails, MetadataItem)

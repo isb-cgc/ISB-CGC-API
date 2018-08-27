@@ -21,7 +21,7 @@ from api_3.isb_cgc_api_CCLE.isb_cgc_api_helpers import ISB_CGC_CCLE_Endpoints
 from message_classes import MetadataRangesItem
 
 @ISB_CGC_CCLE_Endpoints.api_class(resource_name='cohorts')
-class CCLE_CohortsPreviewAPI(CohortsPreviewHelper):
+class CCLECohortsPreviewAPI(CohortsPreviewHelper):
 
     POST_RESOURCE = endpoints.ResourceContainer(MetadataRangesItem)
 
@@ -34,4 +34,4 @@ class CCLE_CohortsPreviewAPI(CohortsPreviewHelper):
         Authentication is not required.
         """
         self.program = 'CCLE'
-        return super(CCLE_CohortsPreviewAPI, self).preview(request)
+        return super(CCLECohortsPreviewAPI, self).preview(request)
