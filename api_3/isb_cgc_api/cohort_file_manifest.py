@@ -128,18 +128,21 @@ class CohortFileManifest(remote.Service):
             else:
                 params['limit'] = settings.MAX_FILE_LIST_REQUEST
 
+            if request.get_assigned_value('genomic_build'):
+                params['build'] = request.get_assigned_value('genomic_build').upper()
+            else:
+                params['build'] = 'HG19'
+
             if request.get_assigned_value('do_filter_count'):
                 params['do_filter_count'] = request.get_assigned_value('do_filter_count')
 
             params['access'] = has_access
 
-            filter_obj = request.get_assigned_value('filters') if 'filters' in [k.name for k in request.all_fields()] else None
-
             inc_filters = {
-                filter.name: filter_obj.get_assigned_value(filter.name)
-                           for filter in filter_obj.all_fields()
-                           if filter_obj.get_assigned_value(filter.name)
-                } if filter_obj else {}
+                filter.name: request.get_assigned_value(filter.name)
+                   for filter in request.all_fields()
+                   if request.get_assigned_value(filter.name) and filter.name not in ['cohort_id','fetch_count','offset','genomic_build','do_filter_count']
+                }
 
             response = cohort_files(cohort_id, user=user, inc_filters=inc_filters, **params)
 
