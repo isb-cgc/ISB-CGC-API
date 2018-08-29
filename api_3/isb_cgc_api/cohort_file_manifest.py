@@ -133,15 +133,12 @@ class CohortFileManifest(remote.Service):
             else:
                 params['build'] = 'HG19'
 
-            if request.get_assigned_value('do_filter_count'):
-                params['do_filter_count'] = request.get_assigned_value('do_filter_count')
-
             params['access'] = has_access
 
             inc_filters = {
                 filter.name: request.get_assigned_value(filter.name)
                    for filter in request.all_fields()
-                   if request.get_assigned_value(filter.name) and filter.name not in ['cohort_id','fetch_count','offset','genomic_build','do_filter_count']
+                   if request.get_assigned_value(filter.name) and filter.name not in ['cohort_id','fetch_count','offset','genomic_build']
                 }
 
             response = cohort_files(cohort_id, user=user, inc_filters=inc_filters, **params)
