@@ -10,13 +10,6 @@ mkdir ./txt
 ./google-cloud-sdk/bin/gsutil cp "gs://${DEV_GCLOUD_BUCKET}/${MANAGED_SERVICE_ACCOUNTS_JSON_FILE}" ./
 ./google-cloud-sdk/bin/gsutil cp "gs://${DEV_GCLOUD_BUCKET}/${DEV_DATASET_JSON_FILE}" ./
 
-if [ -n "${DEV_NIH_AUTH_ON}" ]; then
-  ./google-cloud-sdk/bin/gsutil cp "gs://${DEV_GCLOUD_BUCKET}/saml/advanced_settings.json" ./saml/advanced_settings.json
-  ./google-cloud-sdk/bin/gsutil cp "gs://${DEV_GCLOUD_BUCKET}/saml/settings.json" ./saml/settings.json
-  ./google-cloud-sdk/bin/gsutil cp "gs://${DEV_GCLOUD_BUCKET}/saml/certs/cert.pem" ./saml/certs/cert.pem
-  ./google-cloud-sdk/bin/gsutil cp "gs://${DEV_GCLOUD_BUCKET}/saml/certs/key.pem" ./saml/certs/key.pem
-  ./google-cloud-sdk/bin/gsutil cp "gs://${DEV_GCLOUD_BUCKET}/NIH_FTP.txt" ./NIH_FTP.txt
-fi
 
 # Pack staged files for caching
 cp --verbose *.json ./json
