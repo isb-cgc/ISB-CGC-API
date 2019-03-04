@@ -1,6 +1,6 @@
 """
 
-Copyright 2017, Institute for Systems Biology
+Copyright 2019, Institute for Systems Biology
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -16,60 +16,36 @@ limitations under the License.
 
 """
 
-import base64
-import json
 import logging
 
 from flask import Flask, jsonify, request
 from flask_cors import cross_origin
+import cohorts.views
 
 app = Flask(__name__)
 
 
-def _base64_decode(encoded_str):
-    # Add paddings manually if necessary.
-    num_missed_paddings = 4 - len(encoded_str) % 4
-    if num_missed_paddings != 4:
-        encoded_str += b'=' * num_missed_paddings
-    return base64.b64decode(encoded_str).decode('utf-8')
+@app.route('/', methods['GET', 'POST'])
+def base():
+    """Base response"""
+
+    response = jsonify({
+        'code': 200,
+        'message': 'Welcome to the ISB-CGC API, Version 4.'
+    })
+    response.status_code = 200
+    return response
 
 
-
-# [START endpoints_auth_info_backend]
-def auth_info():
-    """Retrieves the authenication information from Google Cloud Endpoints."""
-    encoded_info = request.headers.get('X-Endpoint-API-UserInfo', None)
-
-    if encoded_info:
-        info_json = _base64_decode(encoded_info)
-        user_info = json.loads(info_json)
-    else:
-        user_info = {'id': 'anonymous'}
-
-    return jsonify(user_info)
-# [START endpoints_auth_info_backend]
-
-
-@app.route('/auth/info/googlejwt', methods=['GET'])
-def auth_info_google_jwt():
-    """Auth info with Google signed JWT."""
-    return auth_info()
-
-
-@app.route('/auth/info/googleidtoken', methods=['GET'])
-def auth_info_google_id_token():
-    """Auth info with Google ID token."""
-    return auth_info()
-
-
-@app.errorhandler(http_client.INTERNAL_SERVER_ERROR)
+# Error handlers
+@app.errorhandler(500)
 def unexpected_error(e):
     """Handle exceptions by returning swagger-compliant json."""
     logging.exception('An error occured while processing the request.')
     response = jsonify({
-        'code': http_client.INTERNAL_SERVER_ERROR,
+        'code': 500,
         'message': 'Exception: {}'.format(e)})
-    response.status_code = http_client.INTERNAL_SERVER_ERROR
+    response.status_code = 500
     return response
 
 
