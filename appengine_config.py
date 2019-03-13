@@ -2,19 +2,8 @@ import os
 import sys
 from google.appengine.ext import vendor
 
-# Per https://github.com/GoogleCloudPlatform/google-cloud-python/issues/1705#issuecomment-209721632 we have to unload
-# some GAE-installed libs to make sure our newer versions are used
-def unload_module(module_name):
-    target_modules = [m for m in sys.modules if m.startswith(module_name)]
-    for m in target_modules:
-        if m in sys.modules:
-            del sys.modules[m]
-
 # Add any libraries installed in the "lib" folder.
 vendor.add('lib')
-
-# The default endpoints/GAE oauth2 is way too old.
-unload_module('oauth2client')
 
 BASE_DIR                = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir)) + os.sep
 
