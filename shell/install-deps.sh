@@ -35,10 +35,10 @@ apt-get update -qq
 # Install apt-get dependencies
 echo "Installing Dependencies..."
 if [ -n "$CI" ]; then
-    apt-get install -qq -y --force-yes unzip libffi-dev libssl-dev libmysqlclient-dev python2.7-dev git ruby g++ dos2unix curl
-    apt-get install -y mysql-client
+apt-get install -y --force-yes unzip libffi-dev libssl-dev libmysqlclient-dev python3-mysqldb python3-dev libpython3-dev git ruby g++ curl dos2unix python3.5
+apt-get install -y --force-yes mysql-client
 else
-    apt-get install -qq -y --force-yes unzip libffi-dev libssl-dev libmysqlclient-dev mysql-client-5.7 python2.7 python-dev git ruby g++ dos2unix curl
+    apt-get install -qq -y --force-yes unzip libffi-dev libssl-dev libmysqlclient-dev python3-mysqldb python3-dev libpython3-dev git ruby g++ curl dos2unix python3.5 mysql-client-5.7
 fi
 echo "Dependencies Installed"
 
