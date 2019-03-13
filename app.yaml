@@ -15,10 +15,16 @@ endpoints_api_service:
  # [END configuration]
 
 skip_files:
-- ^google_appengine/.*$
+- python-su.sh
+- ^(.*/)?#.*#$
+- ^(.*/)?.*~$
+- ^(.*/)?.*\.py[co]$
+- ^(.*/)?.*/RCS/.*$
+- ^(.*/)?\.(?!env).*$
 - ^google-cloud-sdk/.*$
 - ^google_appengine\.zip$
 - ^(.*/)?.*\.sql$
+- ^venv/.*$
 
 beta_settings:
     cloud_sql_instances: isb-cgc:us-central1:dev-v3
