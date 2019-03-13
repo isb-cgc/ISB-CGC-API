@@ -3,6 +3,10 @@ if [ -n "$CI" ]; then
     export HOMEROOT=/home/circleci/${CIRCLE_PROJECT_REPONAME}
     # Clone dependencies
     git clone -b master https://github.com/isb-cgc/ISB-CGC-Common.git
+
+    # Remove .pyc files; these can sometimes stick around and if a
+    # model has changed names it will cause various load failures
+    find . -type f -name '*.pyc' -delete
 else
     export $(cat /home/vagrant/API/.env | grep -v ^# | xargs) 2> /dev/null
     export HOME=/home/vagrant
@@ -14,16 +18,28 @@ export DEBIAN_FRONTEND=noninteractive
 # Install and update apt-get info
 echo "Preparing System..."
 apt-get -y install software-properties-common
-wget https://dev.mysql.com/get/mysql-apt-config_0.8.9-1_all.deb
-apt-get install -y lsb-release
-dpkg -i mysql-apt-config_0.8.9-1_all.deb
+
+if [ -n "$CI" ]; then
+    # Use these next 4 lines to update mysql public build key
+    echo 'download mysql public build key'
+    wget -O - -q 'https://keyserver.ubuntu.com/pks/lookup?op=get&search=0x8C718D3B5072E1F5' | grep -v '>' | grep -v '<' | grep -v '{' > mysql_pubkey.asc
+    apt-key add mysql_pubkey.asc || exit 1
+    echo 'mysql build key update done.'
+    wget https://dev.mysql.com/get/mysql-apt-config_0.8.9-1_all.deb
+    apt-get install -y lsb-release
+    dpkg -i mysql-apt-config_0.8.9-1_all.deb
+fi
 
 apt-get update -qq
 
 # Install apt-get dependencies
 echo "Installing Dependencies..."
-apt-get install -y --force-yes unzip libffi-dev libssl-dev libmysqlclient-dev python3-mysqldb python3-dev libpython3-dev git ruby g++ curl dos2unix python3.5
-apt-get install -y --force-yes mysql-client
+if [ -n "$CI" ]; then
+    apt-get install -qq -y --force-yes unzip libffi-dev libssl-dev libmysqlclient-dev python2.7-dev git ruby g++ dos2unix curl
+    apt-get install -y mysql-client
+else
+    apt-get install -qq -y --force-yes unzip libffi-dev libssl-dev libmysqlclient-dev mysql-client-5.7 python2.7 python-dev git ruby g++ dos2unix curl
+fi
 echo "Dependencies Installed"
 
 # If this is local development, clean out lib for a re-structuring

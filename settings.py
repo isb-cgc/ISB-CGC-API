@@ -1,9 +1,12 @@
 """
-Copyright 2017, Institute for Systems Biology
+Copyright 2019, Institute for Systems Biology
+
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
+
    http://www.apache.org/licenses/LICENSE-2.0
+
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -12,68 +15,97 @@ limitations under the License.
 """
 
 import os
+from os.path import join, dirname
 import sys
+import dotenv
+from socket import gethostname, gethostbyname
 
-BASE_DIR = os.path.abspath(os.path.dirname(__file__))
-SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY')
-DEBUG = os.environ.get('DEBUG')
-TEMPLATE_DEBUG = DEBUG
+env_path = '../'
+if os.environ.get('SECURE_LOCAL_PATH', None):
+    env_path += os.environ.get('SECURE_LOCAL_PATH')
 
-ALLOWED_HOSTS = [
-    os.environ.get('ALLOWED_HOST')
-]
+dotenv.read_dotenv(join(dirname(__file__), env_path+'.env'))
 
-### Check what we're running in
 APP_ENGINE_FLEX = 'aef-'
 APP_ENGINE = 'Google App Engine/'
-IS_DEV = (os.environ.get('IS_DEV', 'False') == 'True')
-IS_APP_ENGINE_FLEX = os.getenv('GAE_INSTANCE', '').startswith(APP_ENGINE_FLEX)
-IS_APP_ENGINE = os.getenv('SERVER_SOFTWARE', '').startswith(APP_ENGINE)
-IS_DEV = bool(os.environ.get('IS_DEV', False))
 
-ADMINS = ()
-MANAGERS = ADMINS
+BASE_DIR                = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir)) + os.sep
 
-PROJECT_ID = os.environ.get('PROJECT_ID')
-BQ_PROJECT_ID = os.environ.get('BQ_PROJECT_ID')
-MAX_BQ_INSERT = int(os.environ.get('MAX_BQ_INSERT', '500'))
-BQ_MAX_ATTEMPTS = int(os.environ.get('MAX_BQ_ATTEMPTS', '10'))
+SHARED_SOURCE_DIRECTORIES = [
+    'ISB-CGC-Common',
+]
 
-USER_DATA_ON = bool(os.environ.get('USER_DATA_ON', 'False') == 'True')
+# Add the shared Django application subdirectory to the Python module search path
+for directory_name in SHARED_SOURCE_DIRECTORIES:
+    sys.path.append(os.path.join(BASE_DIR, directory_name))
 
-MAX_FILE_LIST_REQUEST = int(os.environ.get('MAX_FILE_LIST_REQUEST', '50000'))
-MAX_FILES_IGV = int(os.environ.get('MAX_FILES_IGV', '5'))
+DEBUG                   = (os.environ.get('DEBUG', 'False') == 'True')
 
-BASE_URL = os.environ.get('CLOUD_BASE_URL')
-BASE_API_URL = os.environ.get('CLOUD_API_URL')
+print >> sys.stdout, "[STATUS] DEBUG mode is "+str(DEBUG)
 
-# Compute services
-PAIRWISE_SERVICE_URL = os.environ.get('PAIRWISE_SERVICE_URL')
+ALLOWED_HOSTS = list(set(os.environ.get('ALLOWED_HOST', 'localhost').split(',') + ['localhost', '127.0.0.1', '[::1]', gethostname(), gethostbyname(gethostname()),]))
+# Testing health checks problem
+# ALLOWED_HOSTS = ['*']
+
+SSL_DIR = os.path.abspath(os.path.dirname(__file__))+os.sep
+
+ADMINS                  = ()
+MANAGERS                = ADMINS
+
+GCLOUD_PROJECT_ID              = os.environ.get('GCLOUD_PROJECT_ID', '')
+GCLOUD_PROJECT_NUMBER          = os.environ.get('GCLOUD_PROJECT_NUMBER', '')
+BIGQUERY_PROJECT_ID           = os.environ.get('BIGQUERY_PROJECT_ID', GCLOUD_PROJECT_ID)
+BIGQUERY_DATASET_V1         = os.environ.get('BIGQUERY_DATASET_V1', '')
+BIGQUERY_DATA_PROJECT_ID  = os.environ.get('BIGQUERY_DATA_PROJECT_ID', GCLOUD_PROJECT_ID)
+
+# Deployment module
+CRON_MODULE             = os.environ.get('CRON_MODULE')
+
+# Log Names
+SERVICE_ACCOUNT_LOG_NAME = os.environ.get('SERVICE_ACCOUNT_LOG_NAME', 'local_dev_logging')
+WEBAPP_LOGIN_LOG_NAME = os.environ.get('WEBAPP_LOGIN_LOG_NAME', 'local_dev_logging')
+GCP_ACTIVITY_LOG_NAME = os.environ.get('GCP_ACTIVITY_LOG_NAME', 'local_dev_logging')
+
+BASE_URL                = os.environ.get('BASE_URL', 'https://isb-cgc.appspot.com')
+BASE_API_URL            = os.environ.get('BASE_API_URL', 'https://api-dot-isb-cgc.appspot.com')
+
+# Compute services - Should not be necessary in webapp
+PAIRWISE_SERVICE_URL    = os.environ.get('PAIRWISE_SERVICE_URL', None)
 
 # Data Buckets
-OPEN_DATA_BUCKET = os.environ.get('OPEN_DATA_BUCKET')
-DCC_CONTROLLED_DATA_BUCKET = os.environ.get('DCC_CONTROLLED_DATA_BUCKET')
-CGHUB_CONTROLLED_DATA_BUCKET = os.environ.get('CGHUB_CONTROLLED_DATA_BUCKET')
-
-GCLOUD_BUCKET = os.environ.get('GCLOUD_BUCKET')
+OPEN_DATA_BUCKET        = os.environ.get('OPEN_DATA_BUCKET', '')
+DCC_CONTROLLED_DATA_BUCKET = os.environ.get('DCC_CONTROLLED_DATA_BUCKET', '')
+CGHUB_CONTROLLED_DATA_BUCKET = os.environ.get('CGHUB_CONTROLLED_DATA_BUCKET', '')
+GCLOUD_BUCKET           = os.environ.get('GOOGLE_STORAGE_BUCKET')
 
 # BigQuery cohort storage settings
-COHORT_DATASET_ID = os.environ.get('COHORT_DATASET_ID')
-DEVELOPER_COHORT_TABLE_ID = os.environ.get('DEVELOPER_COHORT_TABLE_ID')
+BIGQUERY_COHORT_DATASET_ID           = os.environ.get('BIGQUERY_COHORT_DATASET_ID', 'cohort_dataset')
+BIGQUERY_COHORT_TABLE_ID    = os.environ.get('BIGQUERY_COHORT_TABLE_ID', 'developer_cohorts')
+BIGQUERY_COSMIC_DATASET_ID    = os.environ.get('BIGQUERY_COSMIC_DATASET_ID', '')
+BIGQUERY_CGC_TABLE_ID    = os.environ.get('BIGQUERY_CGC_TABLE_ID', '')
+MAX_BQ_INSERT               = int(os.environ.get('MAX_BQ_INSERT', '500'))
 
-NIH_AUTH_ON = os.environ.get('NIH_AUTH_ON', False)
+USER_DATA_ON            = bool(os.environ.get('USER_DATA_ON', False))
 
 DATABASES = {
     'default': {
         'ENGINE': os.environ.get('DATABASE_ENGINE', 'django.db.backends.mysql'),
         'HOST': os.environ.get('DATABASE_HOST', '127.0.0.1'),
-        'NAME': os.environ.get('DATABASE_NAME', 'test'),
+        'NAME': os.environ.get('DATABASE_NAME', ''),
         'USER': os.environ.get('DATABASE_USER'),
         'PASSWORD': os.environ.get('DATABASE_PASSWORD')
     }
 }
 
-if os.environ.has_key('DB_SSL_CERT'):
+DB_SOCKET = DATABASES['default']['HOST'] if 'cloudsql' in DATABASES['default']['HOST'] else None
+
+IS_DEV = (os.environ.get('IS_DEV', 'False') == 'True')
+IS_APP_ENGINE_FLEX = os.getenv('GAE_INSTANCE', '').startswith(APP_ENGINE_FLEX)
+IS_APP_ENGINE = os.getenv('SERVER_SOFTWARE', '').startswith(APP_ENGINE)
+
+# If this is a GAE deployment, we don't need to specify SSL; the proxy will take
+# care of that for us
+if os.environ.has_key('DB_SSL_CERT') and not (IS_APP_ENGINE_FLEX or IS_APP_ENGINE):
     DATABASES['default']['OPTIONS'] = {
         'ssl': {
             'ca': os.environ.get('DB_SSL_CA'),
@@ -82,8 +114,6 @@ if os.environ.has_key('DB_SSL_CERT'):
         }
     }
 
-DB_SOCKET = DATABASES['default']['HOST'] if 'cloudsql' in DATABASES['default']['HOST'] else None
-
 # Default to localhost for the site ID
 SITE_ID = 3
 
@@ -91,37 +121,48 @@ if IS_APP_ENGINE_FLEX or IS_APP_ENGINE:
     print >> sys.stdout, "[STATUS] AppEngine detected."
     SITE_ID = 4
 
-# For running local unit tests for models
-if 'test' in sys.argv:
-    DATABASES = os.environ.get('TEST_DATABASE')
-
 def get_project_identifier():
-    return BQ_PROJECT_ID
-
-BIGQUERY_DATASET = os.environ.get('BIGQUERY_DATASET')
-
-def get_bigquery_dataset():
-    return BIGQUERY_DATASET
-
-PROJECT_NAME = os.environ.get('PROJECT_NAME')
-BIGQUERY_PROJECT_NAME = os.environ.get('BIGQUERY_PROJECT_NAME')
-
-def get_bigquery_project_name():
-    return BIGQUERY_PROJECT_NAME
+    return BIGQUERY_PROJECT_ID
 
 # Set cohort table here
-if DEVELOPER_COHORT_TABLE_ID is None:
+if BIGQUERY_COHORT_TABLE_ID is None:
     raise Exception("Developer-specific cohort table ID is not set.")
 
+BQ_MAX_ATTEMPTS             = int(os.environ.get('BQ_MAX_ATTEMPTS', '10'))
+
+
+# TODO Remove duplicate class.
+#
+# This class is retained here, as it is required by bq_data_access/v1.
+# bq_data_access/v2 uses the class from the bq_data_access/bigquery_cohorts module.
 class BigQueryCohortStorageSettings(object):
     def __init__(self, dataset_id, table_id):
         self.dataset_id = dataset_id
         self.table_id = table_id
 
-def GET_BQ_COHORT_SETTINGS():
-    return BigQueryCohortStorageSettings(COHORT_DATASET_ID, DEVELOPER_COHORT_TABLE_ID)
 
-USE_CLOUD_STORAGE = os.environ.get('USE_CLOUD_STORAGE')
+def GET_BQ_COHORT_SETTINGS():
+    return BigQueryCohortStorageSettings(BIGQUERY_COHORT_DATASET_ID, BIGQUERY_COHORT_TABLE_ID)
+
+USE_CLOUD_STORAGE           = os.environ.get('USE_CLOUD_STORAGE', False)
+
+PROCESSING_ENABLED          = os.environ.get('PROCESSING_ENABLED', False)
+PROCESSING_JENKINS_URL      = os.environ.get('PROCESSING_JENKINS_URL', 'http://localhost/jenkins')
+PROCESSING_JENKINS_PROJECT  = os.environ.get('PROCESSING_JENKINS_PROJECT', 'cgc-processing')
+PROCESSING_JENKINS_USER     = os.environ.get('PROCESSING_JENKINS_USER', 'user')
+PROCESSING_JENKINS_PASSWORD = os.environ.get('PROCESSING_JENKINS_PASSWORD', '')
+
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
+CSRF_COOKIE_SECURE = bool(os.environ.get('CSRF_COOKIE_SECURE', False))
+SESSION_COOKIE_SECURE = bool(os.environ.get('SESSION_COOKIE_SECURE', False))
+SECURE_SSL_REDIRECT = bool(os.environ.get('SECURE_SSL_REDIRECT', False))
+
+SECURE_REDIRECT_EXEMPT = []
+
+if SECURE_SSL_REDIRECT:
+    # Exempt the health check so it can go through
+    SECURE_REDIRECT_EXEMPT = [r'^_ah/(vm_)?health$', ]
 
 # Local time zone for this installation. Choices can be found here:
 # http://en.wikipedia.org/wiki/List_of_tz_zones_by_name
@@ -147,6 +188,17 @@ USE_L10N = True
 # If you set this to False, Django will not use timezone-aware datetimes.
 USE_TZ = True
 
+# Absolute filesystem path to the directory that will hold user-uploaded files.
+# Example: "/home/media/media.lawrence.com/media/"
+MEDIA_FOLDER = os.environ.get('MEDIA_FOLDER', 'uploads/')
+MEDIA_ROOT = os.path.join(os.path.dirname(__file__), '..', '..', MEDIA_FOLDER)
+MEDIA_ROOT = os.path.normpath(MEDIA_ROOT)
+
+# URL that handles the media served from MEDIA_ROOT. Make sure to use a
+# trailing slash.
+# Examples: "http://media.lawrence.com/media/", "http://example.com/media/"
+MEDIA_URL = ''
+
 # Absolute path to the directory static files should be collected to.
 # Don't put anything in this directory yourself; store your static files
 # in apps' "static/" subdirectories and in STATICFILES_DIRS.
@@ -156,6 +208,8 @@ STATIC_ROOT = ''
 # URL prefix for static files.
 # Example: "http://media.lawrence.com/static/"
 STATIC_URL = os.environ.get('STATIC_URL', '/static/')
+
+GCS_STORAGE_URI = os.environ.get('GCS_STORAGE_URI', 'https://storage.googleapis.com/')
 
 # Additional locations of static files
 STATICFILES_DIRS = (
@@ -173,22 +227,24 @@ STATICFILES_FINDERS = (
 )
 
 # Make this unique, and don't share it with anybody.
-# SECRET_KEY = os.environ.get('SECRET_KEY')
+SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', '')
 
-MIDDLEWARE_CLASSES = (
-    # For using NDB with Django
-    # documentation: https://cloud.google.com/appengine/docs/python/ndb/#integration
-    'google.appengine.ext.ndb.django_middleware.NdbDjangoMiddleware',
-    'google.appengine.ext.appstats.recording.AppStatsDjangoMiddleware',
+SECURE_HSTS_INCLUDE_SUBDOMAINS = (os.environ.get('SECURE_HSTS_INCLUDE_SUBDOMAINS','True') == 'True')
+SECURE_HSTS_PRELOAD = (os.environ.get('SECURE_HSTS_PRELOAD','True') == 'True')
+SECURE_HSTS_SECONDS = int(os.environ.get('SECURE_HSTS_SECONDS','3600'))
+
+MIDDLEWARE = [
+    'django.middleware.security.SecurityMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'GenespotRE.checkreqsize_middleware.CheckReqSize',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'adminrestrict.middleware.AdminPagesRestrictMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     # Uncomment the next line for simple clickjacking protection:
-    'django.middleware.clickjacking.XFrameOptionsMiddleware',
-
-)
+    'django.middleware.clickjacking.XFrameOptionsMiddleware'
+]
 
 ROOT_URLCONF = 'GenespotRE.urls'
 
@@ -202,18 +258,10 @@ INSTALLED_APPS = (
     'django.contrib.sites',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    # 'django.contrib.admin',
-    # 'django.contrib.admindocs',
-    # 'GenespotRE',
-    # 'visualizations',
-    # 'seqpeek',
     'sharing',
     'cohorts',
     'projects',
-    # 'genes',
-    # 'variables',
-    # 'workbooks',
-    'data_upload'
+    'data_upload',
 )
 
 #############################
@@ -221,13 +269,13 @@ INSTALLED_APPS = (
 #############################
 
 # testing "session security works at the moment" commit
-# INSTALLED_APPS += ('session_security',)
-# SESSION_SECURITY_WARN_AFTER = 540
-# SESSION_SECURITY_EXPIRE_AFTER = 600
+INSTALLED_APPS += ('session_security',)
+SESSION_SECURITY_WARN_AFTER = 540
+SESSION_SECURITY_EXPIRE_AFTER = 600
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
-MIDDLEWARE_CLASSES += (
+MIDDLEWARE.append(
     # for django-session-security -- must go *after* AuthenticationMiddleware
-    # 'session_security.middleware.SessionSecurityMiddleware',
+    'session_security.middleware.SessionSecurityMiddleware',
 )
 
 ###############################
@@ -290,14 +338,29 @@ LOGGING = {
             'level': 'DEBUG',
             'propagate': True,
         },
-    }
+        'allauth': {
+            'handlers': ['console_dev', 'console_prod'],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
+        'google_helpers': {
+            'handlers': ['console_dev', 'console_prod'],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
+        'data_upload': {
+            'handlers': ['console_dev', 'console_prod'],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
+    },
 }
 
 ##########################
 #  Start django-allauth  #
 ##########################
 
-LOGIN_REDIRECT_URL = '/dashboard/'
+LOGIN_REDIRECT_URL = '/extended_login/'
 
 INSTALLED_APPS += (
     'accounts',
@@ -319,7 +382,6 @@ TEMPLATES = [
         'OPTIONS': {
             # add any context processors here
             'context_processors': (
-                'allauth.socialaccount.context_processors.socialaccount',
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
@@ -352,16 +414,23 @@ SOCIALACCOUNT_PROVIDERS = \
         }
     }
 
+# Trying to force allauth to only use https
+ACCOUNT_DEFAULT_HTTP_PROTOCOL = 'https'
+# ...but not if this is a local dev build
+if IS_DEV:
+    ACCOUNT_DEFAULT_HTTP_PROTOCOL = 'http'
+
 
 ##########################
 #   End django-allauth   #
 ##########################
 
-GOOGLE_APPLICATION_CREDENTIALS  = os.environ.get('GOOGLE_APPLICATION_CREDENTIALS')
-CLIENT_SECRETS                  = os.environ.get('CLIENT_SECRETS')
-CLIENT_EMAIL                    = os.environ.get('CLIENT_EMAIL')
-WEB_CLIENT_ID                   = os.environ.get('WEB_CLIENT_ID')
-INSTALLED_APP_CLIENT_ID         = os.environ.get('INSTALLED_APP_CLIENT_ID')
+GOOGLE_APPLICATION_CREDENTIALS  = os.path.join(os.path.dirname(os.path.dirname(__file__)), os.environ.get('GOOGLE_APPLICATION_CREDENTIALS')) if os.environ.get('GOOGLE_APPLICATION_CREDENTIALS') else '' # Path to privatekey.json
+CLIENT_SECRETS                  = os.path.join(os.path.dirname(os.path.dirname(__file__)), os.environ.get('CLIENT_SECRETS')) if os.environ.get('CLIENT_SECRETS') else ''
+WEB_CLIENT_ID                   = os.environ.get('WEB_CLIENT_ID', '') # Client ID from client_secrets.json
+IGV_WEB_CLIENT_ID               = os.environ.get('IGV_WEB_CLIENT_ID', WEB_CLIENT_ID)
+INSTALLED_APP_CLIENT_ID         = os.environ.get('INSTALLED_APP_CLIENT_ID', '') # Native Client ID
+GCP_REG_CLIENT_EMAIL            = os.environ.get('CLIENT_EMAIL','')
 
 #################################
 #   For NIH/eRA Commons login   #
@@ -371,34 +440,6 @@ LOGIN_EXPIRATION_MINUTES                = int(os.environ.get('LOGIN_EXPIRATION_M
 OPEN_ACL_GOOGLE_GROUP                   = os.environ.get('OPEN_ACL_GOOGLE_GROUP', '')
 GOOGLE_GROUP_ADMIN                      = os.environ.get('GOOGLE_GROUP_ADMIN', '')
 SUPERADMIN_FOR_REPORTS                  = os.environ.get('SUPERADMIN_FOR_REPORTS', '')
-ERA_LOGIN_URL                           = os.environ.get('ERA_LOGIN_URL', '')
-SAML_FOLDER                             = os.environ.get('SAML_FOLDER', '')
-
-######################################
-#   For directory, reports services  #
-######################################
-GOOGLE_GROUP_ADMIN           = os.environ.get('GOOGLE_GROUP_ADMIN', '')
-SUPERADMIN_FOR_REPORTS       = os.environ.get('SUPERADMIN_FOR_REPORTS', '')
-
-##############################
-#   Start django-finalware   #
-##############################
-
-INSTALLED_APPS += (
-    'finalware',)
-
-SITE_SUPERUSER_USERNAME = os.environ.get('SU_USER')
-SITE_SUPERUSER_EMAIL = ''
-SITE_SUPERUSER_PASSWORD = os.environ.get('SU_PASS')
-
-############################
-#   End django-finalware   #
-############################
-
-CONN_MAX_AGE = 0
-
-# Deployment module
-CRON_MODULE             = os.environ.get('CRON_MODULE')
 
 # TaskQueue used when users go through the ERA flow
 LOGOUT_WORKER_TASKQUEUE                  = os.environ.get('LOGOUT_WORKER_TASKQUEUE', '')
@@ -416,9 +457,6 @@ USER_GCP_ACCESS_CREDENTIALS              = os.environ.get('USER_GCP_ACCESS_CREDE
 # Log name for ERA login views
 LOG_NAME_ERA_LOGIN_VIEW                  = os.environ.get('LOG_NAME_ERA_LOGIN_VIEW', '')
 
-# Log Names
-SERVICE_ACCOUNT_LOG_NAME = os.environ.get('SERVICE_ACCOUNT_LOG_NAME', 'local_dev_logging')
-
 # Service account blacklist file path
 SERVICE_ACCOUNT_BLACKLIST_PATH           = os.environ.get('SERVICE_ACCOUNT_BLACKLIST_PATH', '')
 
@@ -431,8 +469,14 @@ MANAGED_SERVICE_ACCOUNTS_PATH            = os.environ.get('MANAGED_SERVICE_ACCOU
 # Dataset configuration file path
 DATASET_CONFIGURATION_PATH               = os.environ.get('DATASET_CONFIGURATION_PATH', '')
 
+# DCF Phase I enable flag
+DCF_TEST                                 = bool(os.environ.get('DCF_TEST', 'False') == 'True')
+
 # SA via DCF
 SA_VIA_DCF                               = bool(os.environ.get('SA_VIA_DCF', 'False') == 'True')
+
+# DCF Monitoring SA
+DCF_MONITORING_SA                        = os.environ.get('DCF_MONITORING_SA', '')
 
 #################################
 #   For DCF login               #
@@ -453,3 +497,46 @@ DCF_GOOGLE_SA_MONITOR_URL                = os.environ.get('DCF_GOOGLE_SA_MONITOR
 DCF_GOOGLE_SA_URL                        = os.environ.get('DCF_GOOGLE_SA_URL', '')
 DCF_TOKEN_REFRESH_WINDOW_SECONDS         = int(os.environ.get('DCF_TOKEN_REFRESH_WINDOW_SECONDS', 86400))
 DCF_LOGIN_EXPIRATION_SECONDS             = int(os.environ.get('DCF_LOGIN_EXPIRATION_SECONDS', 86400))
+
+##############################
+#   Start django-finalware   #
+##############################
+
+INSTALLED_APPS += (
+    'finalware',)
+
+SITE_SUPERUSER_USERNAME = os.environ.get('SUPERUSER_USERNAME', '')
+SITE_SUPERUSER_EMAIL = ''
+SITE_SUPERUSER_PASSWORD = os.environ.get('SUPERUSER_PASSWORD', '')
+
+############################
+#   End django-finalware   #
+############################
+
+CONN_MAX_AGE = 60
+
+##############################################################
+#   MAXes to prevent size-limited events from causing errors
+##############################################################
+
+# Google App Engine has a response size limit of 32M. ~65k entries from the cohort_filelist view will
+# equal just under the 32M limit. If each individual listing is ever lengthened or shortened this
+# number should be adjusted
+MAX_FILE_LIST_REQUEST = 65000
+
+# IGV limit to prevent users from trying ot open dozens of files
+MAX_FILES_IGV = 5
+
+# Rough max file size to allow for eg. barcode list upload, to revent triggering RequestDataTooBig
+FILE_SIZE_UPLOAD_MAX = 1950000
+
+##############################################################
+#   MailGun Email Settings
+##############################################################
+
+EMAIL_SERVICE_API_URL = os.environ.get('EMAIL_SERVICE_API_URL', '')
+EMAIL_SERVICE_API_KEY = os.environ.get('EMAIL_SERVICE_API_KEY', '')
+NOTIFICATION_EMAIL_FROM_ADDRESS = os.environ.get('NOTIFICATOON_EMAIL_FROM_ADDRESS', '')
+
+# Explicitly check for known items
+BLACKLIST_RE = ur'((?i)<script>|(?i)</script>|!\[\]|!!\[\]|\[\]\[\".*\"\]|(?i)<iframe>|(?i)</iframe>)'
