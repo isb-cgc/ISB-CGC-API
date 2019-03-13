@@ -51,7 +51,6 @@ jobs:
             - ./bq_data_access
             - ./shell
             - ./ISB-CGC-Common
-            - ./saml
             - ./lib
             - ./appengine_config.py
             - ./cgc_api.py
@@ -65,9 +64,9 @@ jobs:
   deploy_job:
     environment:
       TZ: "/usr/share/zoneinfo/America/Los_Angeles"
-    name: Deploy to AppEngine Standard
+    name: Deploy to AppEngine Flex
     docker:
-      - image: circleci/python:2.7.14
+      - image: circleci/python:2.7.15-stretch
     working_directory: ~/ISB-CGC-API
     steps:
       - restore_cache:
@@ -91,4 +90,4 @@ workflows:
             - build_job
           filters:
             branches:
-              only: master
+              only: api-v4
