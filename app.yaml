@@ -1,0 +1,27 @@
+runtime: python
+service: api-v4
+env: flex
+entrypoint: gunicorn -b :$PORT main:app
+
+runtime_config:
+  python_version: 3
+
+# [START configuration]
+endpoints_api_service:
+  # The following values are to be replaced by information from the output of
+  # 'gcloud endpoints services deploy openapi-appengine.yaml' command.
+  name: api-v4-dot-isb-cgc.appspot.com
+  rollout_strategy: managed
+ # [END configuration]
+
+skip_files:
+- ^google_appengine/.*$
+- ^google-cloud-sdk/.*$
+- ^google_appengine\.zip$
+- ^(.*/)?.*\.sql$
+
+beta_settings:
+    cloud_sql_instances: isb-cgc:us-central1:dev-v3
+
+network:
+  instance_tag: isb-cgc-api-v4
