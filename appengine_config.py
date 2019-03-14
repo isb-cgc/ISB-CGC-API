@@ -15,6 +15,7 @@ SHARED_SOURCE_DIRECTORIES = [
 for path in SHARED_SOURCE_DIRECTORIES:
     sys.path.append(path)
 
-# Initialize Django (when running ISB-CGC-API as standalone using dev_appserver.py)
+print("Checking dir listing in appengine_config:")
+os.listdir()
 import django
 django.setup()

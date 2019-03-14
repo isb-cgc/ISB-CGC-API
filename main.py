@@ -25,7 +25,7 @@ from flask_cors import cross_origin
 app = Flask(__name__)
 
 
-@app.route('/', methods['GET', 'POST'])
+@app.route('/', methods=['GET', 'POST'])
 def base():
     """Base response"""
 
