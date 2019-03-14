@@ -14,6 +14,9 @@ endpoints_api_service:
   rollout_strategy: managed
  # [END configuration]
 
+env_variables:
+  DJANGO_SETTINGS_MODULE: 'GenespotRE.settings'
+
 skip_files:
 - python-su.sh
 - ^(.*/)?#.*#$
