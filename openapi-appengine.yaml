@@ -24,6 +24,16 @@ paths:
           description: "Basic Response"
           schema:
             $ref: "#/definitions/responseMessage"
+    get:
+      description: "Basic Response."
+      operationId: "root"
+      produces:
+      - "application/json"
+      responses:
+        200:
+          description: "Basic Response"
+          schema:
+            $ref: "#/definitions/responseMessage"
 
 definitions:
   responseMessage:

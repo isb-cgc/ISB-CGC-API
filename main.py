@@ -17,6 +17,7 @@ limitations under the License.
 """
 
 import logging
+import os
 
 from flask import Flask, jsonify, request
 from flask_cors import cross_origin
@@ -28,7 +29,7 @@ app = Flask(__name__)
 @app.route('/', methods=['GET', 'POST'])
 def base():
     """Base response"""
-
+    os.listdir('./')
     response = jsonify({
         'code': 200,
         'message': 'Welcome to the ISB-CGC API, Version 4.'
