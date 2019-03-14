@@ -52,8 +52,6 @@ ALLOWED_HOSTS = list(set(os.environ.get('ALLOWED_HOST', 'localhost').split(',') 
 # Testing health checks problem
 # ALLOWED_HOSTS = ['*']
 
-SSL_DIR = os.path.abspath(os.path.dirname(__file__))+os.sep
-
 ADMINS                  = ()
 MANAGERS                = ADMINS
 

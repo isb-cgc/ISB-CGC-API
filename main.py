@@ -32,6 +32,14 @@ cloud_logger.addHandler(handler)
 cloud_logger.info("[INFO] Directory listing: ")
 cloud_logger.info(os.listdir('./'))
 
+SHARED_SOURCE_DIRECTORIES = [
+   os.path.abspath('./ISB-CGC-Common')
+]
+
+# Add the shared Django application subdirectory to the Python module search path
+for path in SHARED_SOURCE_DIRECTORIES:
+    sys.path.append(path)
+
 import django
 django.setup()
 
