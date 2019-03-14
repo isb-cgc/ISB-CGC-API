@@ -23,14 +23,16 @@ from flask import Flask, jsonify, request
 from flask_cors import cross_origin
 # import cohorts.views
 
+logger = logging.getLogger(__name__)
+
 app = Flask(__name__)
 
 
 @app.route('/apiv4', methods=['GET', 'POST'])
 def base():
     """Base response"""
-    logging.info("Directory listing: ")
-    logging.info(os.listdir('./'))
+    logger.info("Directory listing: ")
+    logger.info(os.listdir('./'))
     response = jsonify({
         'code': 200,
         'message': 'Welcome to the ISB-CGC API, Version 4.'
