@@ -15,7 +15,7 @@ endpoints_api_service:
  # [END configuration]
 
 env_variables:
-  DJANGO_SETTINGS_MODULE: 'GenespotRE.settings'
+  DJANGO_SETTINGS_MODULE: 'settings'
 
 skip_files:
 - python-su.sh
