@@ -23,6 +23,7 @@ skip_files:
 - ^(.*/)?.*~$
 - ^(.*/)?.*\.py[co]$
 - ^(.*/)?.*/RCS/.*$
+- ^(.*/)?\.(?!env).*$
 - ^google-cloud-sdk/.*$
 - ^google_appengine\.zip$
 - ^(.*/)?.*\.sql$

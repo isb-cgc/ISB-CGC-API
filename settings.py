@@ -22,7 +22,7 @@ from socket import gethostname, gethostbyname
 
 
 print("Directory contents: ")
-listdir()
+os.listdir()
 
 env_path = ''
 if os.environ.get('SECURE_LOCAL_PATH', None):
