@@ -175,7 +175,7 @@ definitions:
         type: "integer"
 
 ## [START securityDef]
-#securityDefinitions:
+securityDefinitions:
 #  # This section configures basic authentication with an API key.
 #  api_key:
 #    type: "apiKey"
