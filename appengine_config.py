@@ -1,10 +1,14 @@
 import os
 import sys
 from google.appengine.ext import vendor
-
 import logging
+from google.cloud import logging as gcloud_logging
 
-logger = logging.getLogger(__name__)
+client = gcloud_logging.Client()
+handler = client.get_default_handler()
+cloud_logger = logging.getLogger(__name__)
+cloud_logger.setLevel(logging.INFO)
+cloud_logger.addHandler(handler)
 
 # Add any libraries installed in the "lib" folder.
 vendor.add('lib')
@@ -19,7 +23,6 @@ SHARED_SOURCE_DIRECTORIES = [
 for path in SHARED_SOURCE_DIRECTORIES:
     sys.path.append(path)
 
-logger.info("Checking dir listing in appengine_config:")
-logger.info(os.listdir())
+cloud_logger.info("Loading Django...")
 import django
 django.setup()

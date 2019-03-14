@@ -17,18 +17,22 @@ limitations under the License.
 """
 
 import logging
-from google.cloud import logging
+from google.cloud import logging as gcloud_logging
 import os
 
 from flask import Flask, jsonify, request
 from flask_cors import cross_origin
-import cohorts.views
 
-client = logging.Client()
+client = gcloud_logging.Client()
 handler = client.get_default_handler()
 cloud_logger = logging.getLogger(__name__)
 cloud_logger.setLevel(logging.INFO)
 cloud_logger.addHandler(handler)
+
+import django
+django.setup()
+
+import cohorts.views
 
 app = Flask(__name__)
 
@@ -36,10 +40,10 @@ app = Flask(__name__)
 @app.route('/apiv4', methods=['GET', 'POST'])
 def base():
     """Base response"""
-    logger.error("[ERROR] Directory listing: ")
-    logger.error(os.listdir('./'))
-    logger.info("[INFO] Directory listing: ")
-    logger.info(os.listdir('./'))
+    cloud_logger.error("[ERROR] Directory listing: ")
+    cloud_logger.error(os.listdir('./'))
+    cloud_logger.info("[INFO] Directory listing: ")
+    cloud_logger.info(os.listdir('./'))
     response = jsonify({
         'code': 200,
         'message': 'Welcome to the ISB-CGC API, Version 4.'
