@@ -18,7 +18,7 @@ env_variables:
   DJANGO_SETTINGS_MODULE: 'settings'
 
 skip_files:
-- python-su.sh
+- ^shell/.*$
 - ^(.*/)?#.*#$
 - ^(.*/)?.*~$
 - ^(.*/)?.*\.py[co]$
