@@ -258,20 +258,6 @@ INSTALLED_APPS = (
     'data_upload',
 )
 
-#############################
-#  django-session-security  #
-#############################
-
-# testing "session security works at the moment" commit
-INSTALLED_APPS += ('session_security',)
-SESSION_SECURITY_WARN_AFTER = 540
-SESSION_SECURITY_EXPIRE_AFTER = 600
-SESSION_EXPIRE_AT_BROWSER_CLOSE = True
-MIDDLEWARE.append(
-    # for django-session-security -- must go *after* AuthenticationMiddleware
-    'session_security.middleware.SessionSecurityMiddleware',
-)
-
 ###############################
 # End django-session-security #
 ###############################

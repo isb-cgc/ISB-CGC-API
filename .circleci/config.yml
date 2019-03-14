@@ -50,7 +50,6 @@ jobs:
             - ./shell
             - ./ISB-CGC-Common
             - ./lib
-            - ./appengine_config.py
             - ./main.py
             - ./app.yaml
             - ./openapi-appengine.yaml
