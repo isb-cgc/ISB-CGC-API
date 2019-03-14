@@ -16,7 +16,7 @@ paths:
   "/":
     post:
       description: "Basic Response."
-      operationId: "root"
+      operationId: "root-post"
       produces:
       - "application/json"
       responses:
@@ -26,7 +26,7 @@ paths:
             $ref: "#/definitions/responseMessage"
     get:
       description: "Basic Response."
-      operationId: "root"
+      operationId: "root-get"
       produces:
       - "application/json"
       responses:
