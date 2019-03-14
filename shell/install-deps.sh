@@ -2,7 +2,7 @@ if [ -n "$CI" ]; then
     export HOME=/home/circleci/${CIRCLE_PROJECT_REPONAME}
     export HOMEROOT=/home/circleci/${CIRCLE_PROJECT_REPONAME}
     # Clone dependencies
-    git clone -b master https://github.com/isb-cgc/ISB-CGC-Common.git
+    git clone -b py-3-testing https://github.com/isb-cgc/ISB-CGC-Common.git
 
     # Remove .pyc files; these can sometimes stick around and if a
     # model has changed names it will cause various load failures
