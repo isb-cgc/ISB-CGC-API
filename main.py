@@ -22,8 +22,9 @@ import os
 
 from flask import Flask, jsonify, request
 from flask_cors import cross_origin
-# import cohorts.views
+import cohorts.views
 
+client = logging.Client()
 handler = client.get_default_handler()
 cloud_logger = logging.getLogger(__name__)
 cloud_logger.setLevel(logging.INFO)

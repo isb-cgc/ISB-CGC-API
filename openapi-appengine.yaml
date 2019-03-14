@@ -35,12 +35,33 @@ paths:
           schema:
             $ref: "#/definitions/responseMessage"
 
+  /cohorts:
+    get:
+        destription: "Get a list of the user's cohorts."
+        operationId: "getCohorts"
+        produces:
+        - "application/json"
+        responses:
+          200:
+            description: "A list of the user's cohorts."
+            schema:
+              $ref: "#/definitions/cohortListResponse"
+        security:
+          - google_id_token: []
+
+
 definitions:
   responseMessage:
     type: "object"
     properties:
       message:
         type: "string"
+      code:
+        type: "integer"
+    cohortListResponse:
+      type: "object"
+      properties:
+        data: "string"
       code:
         type: "integer"
 ## [START securityDef]
@@ -93,11 +114,11 @@ definitions:
 #  # This section configures authentication using Google OAuth2 ID Tokens.
 #  # ID Tokens can be obtained using OAuth2 clients, and can be used to access
 #  # your API on behalf of a particular user.
-#  google_id_token:
-#    authorizationUrl: ""
-#    flow: "implicit"
-#    type: "oauth2"
-#    x-google-issuer: "https://accounts.google.com"
-#    x-google-jwks_uri: "https://www.googleapis.com/oauth2/v3/certs"
-#    # Your OAuth2 client's Client ID must be added here. You can add multiple client IDs to accept tokens form multiple clients.
-#    x-google-audiences: "YOUR-CLIENT-ID"
+  google_id_token:
+    authorizationUrl: ""
+    flow: "implicit"
+    type: "oauth2"
+    x-google-issuer: "https://accounts.google.com"
+    x-google-jwks_uri: "https://www.googleapis.com/oauth2/v3/certs"
+    # Your OAuth2 client's Client ID must be added here. You can add multiple client IDs to accept tokens form multiple clients.
+    x-google-audiences: "907668440978-ej0l2i5e9qqb5lt0tge1klh1ht0ci6ea.apps.googleusercontent.com"
