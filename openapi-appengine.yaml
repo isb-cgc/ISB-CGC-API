@@ -37,7 +37,7 @@ paths:
 
   /cohorts:
     get:
-        destription: "Get a list of the user's cohorts."
+        description: "Get a list of the user's cohorts."
         operationId: "getCohorts"
         produces:
         - "application/json"
