@@ -19,6 +19,7 @@ limitations under the License.
 import logging
 from google.cloud import logging as gcloud_logging
 import os
+import sys
 
 from flask import Flask, jsonify, request
 from flask_cors import cross_origin
