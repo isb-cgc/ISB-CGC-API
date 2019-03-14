@@ -13,7 +13,7 @@ produces:
 schemes:
 - "https"
 paths:
-  "/":
+  /apiv4:
     post:
       description: "Basic Response."
       operationId: "root-post"
