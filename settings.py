@@ -118,7 +118,7 @@ if os.environ.has_key('DB_SSL_CERT') and not (IS_APP_ENGINE_FLEX or IS_APP_ENGIN
 SITE_ID = 3
 
 if IS_APP_ENGINE_FLEX or IS_APP_ENGINE:
-    print >> sys.stdout, "[STATUS] AppEngine detected."
+    print("[STATUS] AppEngine detected.")
     SITE_ID = 4
 
 def get_project_identifier():
