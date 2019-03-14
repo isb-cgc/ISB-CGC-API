@@ -20,7 +20,7 @@ import logging
 
 from flask import Flask, jsonify, request
 from flask_cors import cross_origin
-import cohorts.views
+# import cohorts.views
 
 app = Flask(__name__)
 
