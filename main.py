@@ -33,6 +33,7 @@ def base():
     """Base response"""
     logger.info("Directory listing: ")
     logger.info(os.listdir('./'))
+    logger.error("Testing logger")
     response = jsonify({
         'code': 200,
         'message': 'Welcome to the ISB-CGC API, Version 4.'

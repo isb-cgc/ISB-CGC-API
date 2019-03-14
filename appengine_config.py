@@ -2,6 +2,10 @@ import os
 import sys
 from google.appengine.ext import vendor
 
+import logging
+
+logger = logging.getLogger(__name__)
+
 # Add any libraries installed in the "lib" folder.
 vendor.add('lib')
 
@@ -15,7 +19,7 @@ SHARED_SOURCE_DIRECTORIES = [
 for path in SHARED_SOURCE_DIRECTORIES:
     sys.path.append(path)
 
-print("Checking dir listing in appengine_config:")
-os.listdir()
+logger.info("Checking dir listing in appengine_config:")
+logger.info(os.listdir())
 import django
 django.setup()
