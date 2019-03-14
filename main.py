@@ -29,6 +29,9 @@ cloud_logger = logging.getLogger(__name__)
 cloud_logger.setLevel(logging.INFO)
 cloud_logger.addHandler(handler)
 
+cloud_logger.info("[INFO] Directory listing: ")
+cloud_logger.info(os.listdir('./'))
+
 import django
 django.setup()
 
@@ -42,8 +45,6 @@ def base():
     """Base response"""
     cloud_logger.error("[ERROR] Directory listing: ")
     cloud_logger.error(os.listdir('./'))
-    cloud_logger.info("[INFO] Directory listing: ")
-    cloud_logger.info(os.listdir('./'))
     response = jsonify({
         'code': 200,
         'message': 'Welcome to the ISB-CGC API, Version 4.'
