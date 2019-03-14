@@ -20,7 +20,7 @@ import sys
 import dotenv
 from socket import gethostname, gethostbyname
 
-env_path = './'
+env_path = ''
 if os.environ.get('SECURE_LOCAL_PATH', None):
     env_path += os.environ.get('SECURE_LOCAL_PATH')
 
