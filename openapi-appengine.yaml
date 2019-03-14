@@ -24,6 +24,10 @@ paths:
           description: "Basic Response"
           schema:
             $ref: "#/definitions/responseMessage"
+        500:
+          description: "Server error message"
+          schema:
+            $ref: "#/definitions/errorMessage"
     get:
       description: "Basic Response."
       operationId: "root-get"
@@ -34,21 +38,104 @@ paths:
           description: "Basic Response"
           schema:
             $ref: "#/definitions/responseMessage"
+        500:
+          description: "Server error message"
+          schema:
+            $ref: "#/definitions/errorMessage"
 
   /cohorts:
     get:
-        description: "Get a list of the user's cohorts."
-        operationId: "getCohorts"
-        produces:
-        - "application/json"
-        responses:
-          200:
-            description: "A list of the user's cohorts."
-            schema:
-              $ref: "#/definitions/cohortListResponse"
-        security:
-          - google_id_token: []
+      description: "Get a list of the user's cohorts."
+      operationId: "getCohorts"
+      produces:
+      - "application/json"
+      responses:
+        200:
+          description: "A list of the user's cohorts."
+          schema:
+            $ref: "#/definitions/cohortListResponse"
+        500:
+          description: "Server error message"
+          schema:
+            $ref: "#/definitions/errorMessage"
+      security:
+        - google_id_token: []
 
+  /cohorts/{cohort_id}:
+    get:
+      description: "Get information for the specified cohort."
+      operationId: "getCohort"
+      produces:
+      - "application/json"
+      responses:
+        200:
+          description: "Information about the specified cohort"
+          schema:
+            $ref: "#/definitions/cohortResponse"
+        500:
+          description: "Server error message"
+          schema:
+            $ref: "#/definitions/errorMessage"
+      security:
+        - google_id_token: []
+
+  /cohorts/{cohort_id}/file_manifest:
+    get:
+      description: "Retrieve a cohort's file manifest."
+      operationId: "getCohortFileManifest"
+      produces:
+        - "application/json"
+      parameters:
+        - name: cohort_id
+          in: path
+          description: "Numeric ISB-CGC Cohort ID"
+          type: integer
+          required: true
+      responses:
+        200:
+          description: "File manifest for the specified cohort."
+          schema:
+            $ref: "#/definitions/cohortFileManifestResponse"
+        500:
+          description: "Server error message"
+          schema:
+            $ref: "#/definitions/errorMessage"
+      security:
+        - google_id_token: []
+    post:
+      description: "Retrieve a cohort's file manifest based on filters provided."
+      operationId: "postCohortFileManifest"
+      produces:
+        - "application/json"
+      parameters:
+        - name: cohort_id
+          in: path
+          description: "Numeric ISB-CGC Cohort ID"
+          type: integer
+          required: true
+        - name: "filters"
+          in: body
+          description: "Filters to apply to the file manifest."
+          schema:
+            type: object
+            properties:
+              program:
+                type: string
+              disease_code:
+                type: string
+              project:
+                type: string
+      responses:
+        200:
+          description: "File manifest for the specified cohort."
+          schema:
+            $ref: "#/definitions/cohortFileManifestResponse"
+        500:
+          description: "Server error message"
+          schema:
+            $ref: "#/definitions/errorMessage"
+      security:
+        - google_id_token: []
 
 definitions:
   responseMessage:
@@ -58,12 +145,35 @@ definitions:
         type: "string"
       code:
         type: "integer"
-    cohortListResponse:
-      type: "object"
-      properties:
-        data: "string"
+  cohortListResponse:
+    type: "object"
+    properties:
+      data:
+        type: "string"
       code:
         type: "integer"
+  cohortResponse:
+    type: "object"
+    properties:
+      data:
+        type: "string"
+      code:
+        type: "integer"
+  cohortFileManifestResponse:
+    type: "object"
+    properties:
+      data:
+        type: "string"
+      code:
+        type: "integer"
+  errorMessage:
+    type: "object"
+    properties:
+      message:
+        type: "string"
+      code:
+        type: "integer"
+
 ## [START securityDef]
 #securityDefinitions:
 #  # This section configures basic authentication with an API key.
