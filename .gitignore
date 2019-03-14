@@ -84,6 +84,7 @@ target/
 *.patch
 .env
 *.env
+openapi-appengine.yaml
 scripts/metadata_featdef_tables.sql
 
 # dummy datasets
