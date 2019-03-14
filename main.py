@@ -25,6 +25,8 @@ from flask_cors import cross_origin
 
 logger = logging.getLogger(__name__)
 
+logger.setLevel(logging.INFO)
+
 app = Flask(__name__)
 
 
