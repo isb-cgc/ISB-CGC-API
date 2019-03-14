@@ -53,6 +53,7 @@ jobs:
             - ./appengine_config.py
             - ./main.py
             - ./app.yaml
+            - ./openapi-appengine.yaml
             - ./settings.py
             - ./txt
             - ./json
@@ -76,6 +77,7 @@ jobs:
           command: |
             sudo -E /bin/bash ./shell/gcloud_authenticate.sh
             sudo -E /bin/bash ./shell/unpack_for_deployment.sh
+            sudo -E ./google-cloud-sdk/bin/gcloud endpoints services deploy openapi-appengine.yaml
             sudo -E ./google-cloud-sdk/bin/gcloud app deploy --verbosity=debug ./app.yaml --quiet
 workflows:
   version: 2
