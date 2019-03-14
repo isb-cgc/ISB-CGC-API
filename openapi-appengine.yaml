@@ -32,7 +32,7 @@ definitions:
       message:
         type: "string"
       code:
-        type: "int"
+        type: "integer"
 ## [START securityDef]
 #securityDefinitions:
 #  # This section configures basic authentication with an API key.
