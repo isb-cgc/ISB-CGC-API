@@ -22,7 +22,8 @@ from socket import gethostname, gethostbyname
 
 
 print("Directory contents: ")
-os.listdir()
+os.listdir('./')
+os.listdir('/home/vmagent/app/')
 
 env_path = ''
 if os.environ.get('SECURE_LOCAL_PATH', None):
