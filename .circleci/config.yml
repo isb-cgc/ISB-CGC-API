@@ -49,6 +49,7 @@ jobs:
             - ./cohorts
             - ./shell
             - ./ISB-CGC-Common
+            - ./Dockerfile
             - ./main.py
             - ./app.yaml
             - ./openapi-appengine.yaml
