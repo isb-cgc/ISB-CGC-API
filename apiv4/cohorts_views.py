@@ -31,7 +31,7 @@ from cohorts.models import Cohort_Perms, Cohort, Filters
 from accounts.sa_utils import auth_dataset_whitelists_for_user
 from cohorts.file_helpers import cohort_files
 
-from ..api_auth.auth import auth_info
+from .auth import auth_info
 
 
 logger = logging.getLogger('main_logger')

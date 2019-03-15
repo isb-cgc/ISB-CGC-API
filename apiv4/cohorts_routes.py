@@ -20,9 +20,9 @@ import logging
 import json
 from flask import jsonify, request
 
-from .. import app
+from . import app
 
-from . import views
+from .cohorts_views import get_cohort_info, get_cohorts, get_file_manifest
 
 
 @app.route('/cohorts/<int:cohort_id>', methods=['GET'])
