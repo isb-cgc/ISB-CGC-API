@@ -20,7 +20,7 @@ import logging
 import json
 from flask import jsonify, request
 
-from . import app
+from apiv4 import app
 
 from .cohorts_views import get_cohort_info, get_cohorts, get_file_manifest
 
