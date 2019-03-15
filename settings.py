@@ -29,6 +29,8 @@ dotenv.read_dotenv(join(dirname(__file__), env_path+'.env'))
 APP_ENGINE_FLEX = 'aef-'
 APP_ENGINE = 'Google App Engine/'
 
+BASE_DIR                = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir)) + os.sep
+
 SHARED_SOURCE_DIRECTORIES = [
     os.path.abspath('./ISB-CGC-Common'),
     os.path.abspath('./google_appengine')
