@@ -37,7 +37,7 @@ for path in SHARED_SOURCE_DIRECTORIES:
 import django
 django.setup()
 
-import api_cohort.views
+from .api_cohort import views
 
 app = Flask(__name__)
 
