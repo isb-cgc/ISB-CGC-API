@@ -25,13 +25,12 @@ from flask_cors import cross_origin
 
 logger = logging.getLogger('main_logger')
 
+app = Flask(__name__)
+
 import django
 django.setup()
 
 from cohorts_routes import *
-
-app = Flask(__name__)
-
 
 @app.route('/apiv4', methods=['GET', 'POST'])
 def base():
