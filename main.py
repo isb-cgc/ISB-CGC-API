@@ -17,7 +17,7 @@ limitations under the License.
 """
 
 import logging
-from google.cloud import logging as gcloud_logging
+import google.cloud.logging as gcloud_logging
 import os
 import sys
 
