@@ -59,6 +59,7 @@ ADD . /app
 
 # We need to recompile some of the items because of differences in compiler versions
 RUN pip3 install -r /app/requirements.txt -t /app/lib/ --upgrade
+RUN pip3 install gunicorn==19.9.0
 
 ENV PYTHONPATH=/app:/app/lib:/app/ISB-CGC-Common:/app/google_appengine:/app/google_appengine/lib/protorpc-1.0
 
