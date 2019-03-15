@@ -28,7 +28,7 @@ logger = logging.getLogger('main_logger')
 import django
 django.setup()
 
-import api_cohort.routes
+from .cohorts_routes import *
 
 app = Flask(__name__)
 
