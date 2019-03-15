@@ -29,16 +29,14 @@ dotenv.read_dotenv(join(dirname(__file__), env_path+'.env'))
 APP_ENGINE_FLEX = 'aef-'
 APP_ENGINE = 'Google App Engine/'
 
-BASE_DIR                = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir)) + os.sep
-
 SHARED_SOURCE_DIRECTORIES = [
-    'ISB-CGC-Common',
-    'google_appengine'
+    os.path.abspath('./ISB-CGC-Common'),
+    os.path.abspath('./google_appengine')
 ]
 
 # Add the shared Django application subdirectory to the Python module search path
-for directory_name in SHARED_SOURCE_DIRECTORIES:
-    sys.path.append(os.path.join(BASE_DIR, directory_name))
+for path in SHARED_SOURCE_DIRECTORIES:
+    sys.path.append(path)
 
 DEBUG                   = (os.environ.get('DEBUG', 'False') == 'True')
 
