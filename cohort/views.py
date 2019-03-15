@@ -27,15 +27,6 @@ from django.contrib.auth.models import User as Django_User
 from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 from django.conf import settings
 
-SHARED_SOURCE_DIRECTORIES = [
-    os.path.abspath('./ISB-CGC-Common'),
-    os.path.abspath('./google_appengine')
-]
-
-# Add the shared Django application subdirectory to the Python module search path
-for path in SHARED_SOURCE_DIRECTORIES:
-    sys.path.append(path)
-
 from cohorts.models import Cohort_Perms, Cohort, Filters
 from accounts.sa_utils import auth_dataset_whitelists_for_user
 from cohorts.file_helpers import cohort_files
