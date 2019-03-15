@@ -20,6 +20,8 @@ import logging
 import json
 from flask import jsonify, request
 
+from ..main import app
+
 from . import views
 
 
