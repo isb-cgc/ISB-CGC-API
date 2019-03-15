@@ -39,6 +39,9 @@ SHARED_SOURCE_DIRECTORIES = [
 for path in SHARED_SOURCE_DIRECTORIES:
     sys.path.append(path)
 
+print(os.listdir())
+print(os.listdir('./google_appengine/'))
+
 import django
 django.setup()
 
