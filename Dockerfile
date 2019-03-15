@@ -77,4 +77,4 @@ ENV PYTHONPATH=/app:/app/lib:/app/ISB-CGC-Common:/app/google_appengine:/app/goog
 # ISB
 # RUN python /app/manage.py migrate --noinput
 
-CMD gunicorn -b :$PORT main:app -w 3 -t 130
+CMD gunicorn -b :$PORT apiv4:app -w 3 -t 130

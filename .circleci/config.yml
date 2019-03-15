@@ -46,12 +46,10 @@ jobs:
       - save_cache:
           key: isb-cgc-api-{{ epoch }}
           paths:
-            - ./api_cohort
-            - ./api_auth
+            - ./apiv4
             - ./shell
             - ./ISB-CGC-Common
             - ./Dockerfile
-            - ./main.py
             - ./app.yaml
             - ./openapi-appengine.yaml
             - ./settings.py
