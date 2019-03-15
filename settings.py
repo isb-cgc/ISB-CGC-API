@@ -20,11 +20,6 @@ import sys
 import dotenv
 from socket import gethostname, gethostbyname
 
-
-print("Directory contents: ")
-os.listdir('./')
-os.listdir('/home/vmagent/app/')
-
 env_path = ''
 if os.environ.get('SECURE_LOCAL_PATH', None):
     env_path += os.environ.get('SECURE_LOCAL_PATH')
@@ -38,6 +33,7 @@ BASE_DIR                = os.path.abspath(os.path.join(os.path.dirname(__file__)
 
 SHARED_SOURCE_DIRECTORIES = [
     'ISB-CGC-Common',
+    'google_appengine'
 ]
 
 # Add the shared Django application subdirectory to the Python module search path

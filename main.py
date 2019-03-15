@@ -30,17 +30,20 @@ cloud_logger = logging.getLogger(__name__)
 cloud_logger.setLevel(logging.INFO)
 cloud_logger.addHandler(handler)
 
-cloud_logger.info("[INFO] Directory listing: ")
-cloud_logger.info(os.listdir('./'))
+print("[PRINT] Directory listing: ")
+print(os.listdir('./'))
+
+BASE_DIR                = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir)) + os.sep
 
 SHARED_SOURCE_DIRECTORIES = [
-    os.path.abspath('./ISB-CGC-Common'),
-    os.path.abspath('./google_appengine')
+    'ISB-CGC-Common',
+    'google_appengine'
 ]
 
 # Add the shared Django application subdirectory to the Python module search path
-for path in SHARED_SOURCE_DIRECTORIES:
-    sys.path.append(path)
+for directory_name in SHARED_SOURCE_DIRECTORIES:
+    sys.path.append(os.path.join(BASE_DIR, directory_name))
+
 
 import django
 django.setup()
