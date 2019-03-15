@@ -35,8 +35,6 @@ from cohorts_routes import *
 @app.route('/apiv4', methods=['GET', 'POST'])
 def base():
     """Base response"""
-    cloud_logger.error("[ERROR] Directory listing: ")
-    cloud_logger.error(os.listdir('./'))
     response = jsonify({
         'code': 200,
         'message': 'Welcome to the ISB-CGC API, Version 4.'
