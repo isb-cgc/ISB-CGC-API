@@ -1,9 +1,8 @@
-runtime: python
+runtime: custom
 service: api-v4
 env: flex
-
-runtime_config:
-  python_version: 3
+api_version: 1
+threadsafe: true
 
 # [START configuration]
 endpoints_api_service:
