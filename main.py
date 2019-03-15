@@ -17,18 +17,13 @@ limitations under the License.
 """
 
 import logging
-import google.cloud.logging as gcloud_logging
 import os
 import sys
 
 from flask import Flask, jsonify, request
 from flask_cors import cross_origin
 
-client = gcloud_logging.Client()
-handler = client.get_default_handler()
-cloud_logger = logging.getLogger(__name__)
-cloud_logger.setLevel(logging.INFO)
-cloud_logger.addHandler(handler)
+logger = logging.getLogger('main_logger')
 
 SHARED_SOURCE_DIRECTORIES = [
     os.path.abspath('./ISB-CGC-Common'),

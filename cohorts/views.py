@@ -34,7 +34,7 @@ from cohorts.file_helpers import cohort_files
 from .. import auth
 
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger('main_logger')
 
 
 def validate_user(user_email, cohort_id):
