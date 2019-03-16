@@ -42,6 +42,7 @@ def auth_info():
         info_json = _base64_decode(encoded_info)
         user_info = json.loads(info_json)
     else:
+        logger.info("[STATUS] No user encoded info found.")
         user_info = {'id': 'anonymous'}
 
     return jsonify(user_info)
