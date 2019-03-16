@@ -26,7 +26,7 @@ from cohorts_views import get_cohort_info, get_cohorts, get_file_manifest
 
 
 @app.route('/apiv4/cohorts/<int:cohort_id>', methods=['GET'])
-def cohort():
+def cohort(cohort_id):
     """Retrieve extended information for a specific cohort"""
     user_info = auth_info()
     user = validate_user(user_info['email'], cohort_id)
@@ -84,7 +84,7 @@ def cohorts():
 
 
 @app.route('/apiv4/cohorts/<int:cohort_id>/file_manifest', methods=['POST', 'GET'])
-def cohort_file_manifest():
+def cohort_file_manifest(cohort_id):
     """Retrieve a cohort's file manifest"""
     user_info = auth_info()
     user = validate_user(user_info['email'], cohort_id)
