@@ -37,7 +37,7 @@ def cohort(cohort_id):
     if not user:
         response = jsonify({
             'code': 403,
-            'message': "User {} does not have access to cohort ID {}".format(user_info['email'],str(cohort_id))})
+            'message': "User {} does not have access to cohort ID {}".format(user_info['email'] if 'email' in user_info else 'Anonymous',str(cohort_id))})
         response.status_code = 403
 
     else:
