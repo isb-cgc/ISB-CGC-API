@@ -22,8 +22,6 @@ from flask import jsonify, request
 
 from apiv4 import app
 
-from auth import auth_info
-
 from cohorts_views import get_cohort_info, get_cohorts, get_file_manifest
 
 

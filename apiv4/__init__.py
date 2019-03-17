@@ -23,6 +23,8 @@ import sys
 from flask import Flask, jsonify, request
 from flask_cors import cross_origin
 
+from auth import auth_info
+
 logger = logging.getLogger('main_logger')
 
 app = Flask(__name__)
@@ -31,6 +33,7 @@ import django
 django.setup()
 
 from cohorts_routes import *
+
 
 @app.route('/apiv4', methods=['GET', 'POST'])
 def base():
