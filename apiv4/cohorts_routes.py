@@ -23,6 +23,7 @@ from flask import jsonify, request
 from apiv4 import app
 
 from cohorts_views import get_cohort_info, get_cohorts, get_file_manifest
+from auth import auth_info
 
 
 @app.route('/apiv4/cohorts/<int:cohort_id>', methods=['GET'])
