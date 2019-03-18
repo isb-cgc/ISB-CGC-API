@@ -41,10 +41,7 @@ def validate_user(user_email, cohort_id):
         user = Django_User.objects.get(email=user_email)
         Cohort_Perms.objects.get(cohort_id=cohort_id, user_id=user.id)
     except ObjectDoesNotExist as e:
-        err_msg = "Error retrieving cohort {} for user {}: {}".format(cohort_id, user_email, e)
-        if 'Cohort_Perms' in e.message:
-            err_msg = "User {} does not have permissions on cohort {}.".format(user_email, cohort_id)
-        logger.warn(err_msg)
+        logger.warn("Error retrieving cohort {} for user {}: {}".format(cohort_id, user_email, e))
     except Exception as e:
         logger.exception(e)
 

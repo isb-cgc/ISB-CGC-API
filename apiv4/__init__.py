@@ -35,17 +35,6 @@ django.setup()
 from cohorts_routes import *
 
 
-@app.route('/apiv4', methods=['GET', 'POST'])
-def base():
-    """Base response"""
-    response = jsonify({
-        'code': 200,
-        'message': 'Welcome to the ISB-CGC API, Version 4.'
-    })
-    response.status_code = 200
-    return response
-
-
 # Error handlers
 @app.errorhandler(500)
 def unexpected_error(e):
@@ -59,4 +48,4 @@ def unexpected_error(e):
 
 
 if __name__ == '__main__':
-    app.run(host='127.0.0.1', port=8080, debug=True)
+    app.run(host='127.0.0.1', port=8090, debug=True)
