@@ -43,6 +43,8 @@ ALLOWED_HOSTS = list(set(os.environ.get('ALLOWED_HOST', 'localhost').split(',') 
 ADMINS                  = ()
 MANAGERS                = ADMINS
 
+LOGGER_NAME = os.environ.get('API_LOGGER_NAME', 'main_logger')
+
 GCLOUD_PROJECT_ID              = os.environ.get('GCLOUD_PROJECT_ID', '')
 GCLOUD_PROJECT_NUMBER          = os.environ.get('GCLOUD_PROJECT_NUMBER', '')
 BIGQUERY_PROJECT_ID           = os.environ.get('BIGQUERY_PROJECT_ID', GCLOUD_PROJECT_ID)

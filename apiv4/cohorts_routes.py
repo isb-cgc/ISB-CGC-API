@@ -19,11 +19,12 @@ limitations under the License.
 import logging
 import json
 from flask import jsonify, request
-
 from apiv4 import app
-
 from cohorts_views import get_cohort_info, get_cohorts, get_file_manifest, validate_user
 from auth import auth_info
+from django.conf import settings
+
+logger = logging.getLogger(setting.LOGGER_NAME)
 
 
 @app.route('/apiv4', methods=['GET', 'POST'])
@@ -41,6 +42,7 @@ def base():
 def cohort(cohort_id):
     """Retrieve extended information for a specific cohort"""
     user_info = auth_info()
+    logger.info("[STATUS] User info: {}".format(str(user_info)))
     user = validate_user(user_info['email'], cohort_id)
 
     response = None

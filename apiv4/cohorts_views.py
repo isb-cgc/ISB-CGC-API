@@ -31,7 +31,7 @@ from cohorts.models import Cohort_Perms, Cohort, Filters
 from accounts.sa_utils import auth_dataset_whitelists_for_user
 from cohorts.file_helpers import cohort_files
 
-logger = logging.getLogger('main_logger')
+logger = logging.getLogger(setting.LOGGER_NAME)
 
 
 def validate_user(user_email, cohort_id):

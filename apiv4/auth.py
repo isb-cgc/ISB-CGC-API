@@ -20,10 +20,10 @@ import logging
 import base64
 import json
 import requests
-
 from flask import request, jsonify
+from django.conf import settings
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger(setting.LOGGER_NAME)
 
 
 # BEGIN METHODS
