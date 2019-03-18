@@ -44,7 +44,7 @@ def auth_info():
         user_info = json.loads(info_json)
     else:
         logger.info("[STATUS] No user encoded info found.")
-        user_info = {'id': 'anonymous'}
+        user_info = {'id': 'anonymous', 'email': 'Anonymous'}
 
     return user_info
 # END METHODS
