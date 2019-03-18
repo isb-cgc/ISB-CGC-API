@@ -46,5 +46,5 @@ def auth_info():
         logger.info("[STATUS] No user encoded info found.")
         user_info = {'id': 'anonymous'}
 
-    return jsonify(user_info)
+    return user_info
 # END METHODS
