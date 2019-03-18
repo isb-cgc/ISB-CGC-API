@@ -27,17 +27,6 @@ from django.conf import settings
 logger = logging.getLogger(settings.LOGGER_NAME)
 
 
-@app.route('/apiv4', methods=['GET', 'POST'])
-def base():
-    """Base response"""
-    response = jsonify({
-        'code': 200,
-        'message': 'Welcome to the ISB-CGC API, Version 4.'
-    })
-    response.status_code = 200
-    return response
-
-
 @app.route('/apiv4/cohorts/<int:cohort_id>', methods=['GET'])
 def cohort(cohort_id):
     """Retrieve extended information for a specific cohort"""

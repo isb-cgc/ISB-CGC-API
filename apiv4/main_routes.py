@@ -34,14 +34,3 @@ def apiv4():
     })
     response.status_code = 200
     return response
-
-
-@app.route('/apiv4/programs', methods=['GET'])
-def programs():
-    """List the programs currently available on this API"""
-    response = jsonify({
-        'code': 200,
-        'message': 'TCGA (HG19, HG38); TARGET (HG19, HG38), CCLE (HG19)'
-    })
-    response.status_code = 200
-    return response
