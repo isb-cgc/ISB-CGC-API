@@ -21,18 +21,18 @@ import os
 import sys
 from flask import Flask, jsonify, request
 from flask_cors import cross_origin
-from auth import auth_info
-from django.conf import settings
-
-logger = logging.getLogger(settings.LOGGER_NAME)
 
 app = Flask(__name__)
 
 import django
 django.setup()
+from django.conf import settings
 
+from auth import auth_info
 from main_routes import *
 from cohorts_routes import *
+
+logger = logging.getLogger(settings.LOGGER_NAME)
 
 
 # Error handlers

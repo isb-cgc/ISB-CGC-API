@@ -19,8 +19,10 @@ limitations under the License.
 import logging
 import json
 from flask import jsonify, request
-
+from django.conf import settings
 from apiv4 import app
+
+logger = logging.getLogger(settings.LOGGER_NAME)
 
 
 @app.route('/apiv4', methods=['GET', 'POST'])

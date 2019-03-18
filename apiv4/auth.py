@@ -23,7 +23,7 @@ import requests
 from flask import request, jsonify
 from django.conf import settings
 
-logger = logging.getLogger(setting.LOGGER_NAME)
+logger = logging.getLogger(settings.LOGGER_NAME)
 
 
 # BEGIN METHODS

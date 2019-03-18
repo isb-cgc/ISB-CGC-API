@@ -24,7 +24,7 @@ from cohorts_views import get_cohort_info, get_cohorts, get_file_manifest, valid
 from auth import auth_info
 from django.conf import settings
 
-logger = logging.getLogger(setting.LOGGER_NAME)
+logger = logging.getLogger(settings.LOGGER_NAME)
 
 
 @app.route('/apiv4', methods=['GET', 'POST'])
