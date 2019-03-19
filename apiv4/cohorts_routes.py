@@ -75,13 +75,11 @@ def cohorts():
         response.status_code = 404
 
     else:
-        cohort_info = get_cohort_info(cohort_id)
-        if cohort_info:
-            response = jsonify({
-                'code': 200,
-                'data': jsonify(cohort_info)
-            })
-            response.status_code = 200
+        response = jsonify({
+            'code': 200,
+            'data': jsonify(cohort_list)
+        })
+        response.status_code = 200
 
     return response
 
