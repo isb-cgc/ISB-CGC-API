@@ -47,7 +47,7 @@ def cohort(cohort_id):
         if cohort_info:
             response = jsonify({
                 'code': 200,
-                'data': jsonify(cohort_info)
+                'data': cohort_info
             })
             response.status_code = 200
         else:
@@ -77,7 +77,7 @@ def cohorts():
     else:
         response = jsonify({
             'code': 200,
-            'data': jsonify(cohort_list)
+            'data': cohort_list
         })
         response.status_code = 200
 
