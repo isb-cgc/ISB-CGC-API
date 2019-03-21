@@ -27,7 +27,7 @@ from django.conf import settings
 logger = logging.getLogger(settings.LOGGER_NAME)
 
 
-@app.route('/apiv4/cohorts/<int:cohort_id>', methods=['GET'])
+@app.route('/apiv4/cohorts/<int:cohort_id>/', methods=['GET'])
 def cohort(cohort_id):
     """Retrieve extended information for a specific cohort"""
     user_info = auth_info()
@@ -59,7 +59,7 @@ def cohort(cohort_id):
     return response
 
 
-@app.route('/apiv4/cohorts', methods=['GET'])
+@app.route('/apiv4/cohorts/', methods=['GET'])
 def cohorts():
     """Retrieve a user's list of cohorts"""
     user_info = auth_info()
@@ -84,7 +84,7 @@ def cohorts():
     return response
 
 
-@app.route('/apiv4/cohorts/<int:cohort_id>/file_manifest', methods=['POST', 'GET'])
+@app.route('/apiv4/cohorts/<int:cohort_id>/file_manifest/', methods=['POST', 'GET'])
 def cohort_file_manifest(cohort_id):
     """Retrieve a cohort's file manifest"""
     user_info = auth_info()

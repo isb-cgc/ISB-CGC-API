@@ -19,21 +19,31 @@ limitations under the License.
 import logging
 import json
 from flask import jsonify, request
-from django.conf import settings
 from apiv4 import app
+from django.conf import settings
+from program_views import get_programs
 
 logger = logging.getLogger(settings.LOGGER_NAME)
 
 
-@app.route('/apiv4/', methods=['GET', 'POST'])
-def apiv4():
-    """Base response"""
-    response = jsonify({
-        'code': 200,
-        'message': 'Welcome to the ISB-CGC API, Version 4.',
-        'documentation': 'Documentation for this API is available at https://isb-cancer-genomics-cloud.readthedocs.io/en/latest/sections/progapi/Programmatic-API.html'
-    })
-    response.status_code = 200
+@app.route('/apiv4/programs/', methods=['GET'])
+def programs():
+    """Retrieve the list of programs and builds currently available for cohort creation."""
+    response = None
+    
+    program_info = get_programs()
+    
+    if program_info:   
+        response = jsonify({
+            'code': 200,
+            'data': program_info
+        })
+        response.status_code = 200
+    else:
+        response = jsonify({
+            'code': 500,
+            'message': 'Encountered an error while retrieving the program list.'
+        })
+        response.status_code =500
+
     return response
-
-
