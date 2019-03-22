@@ -25,7 +25,7 @@ from apiv4 import app
 logger = logging.getLogger(settings.LOGGER_NAME)
 
 
-@app.route('/apiv4/', methods=['GET', 'POST'])
+@app.route('/apiv4/', methods=['GET', 'POST'], strict_slashes=False)
 def apiv4():
     """Base response"""
     response = jsonify({

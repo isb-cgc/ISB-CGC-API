@@ -98,7 +98,6 @@ def get_cohort_info(cohort_id):
             'name': cohort_obj.name,
             'case_count': cohort_obj.case_size(),
             'sample_count': cohort_obj.sample_size(),
-            'creation_filters': cohort_obj.get_current_filters(),
             'programs': cohort_obj.get_program_names()
         }
     except ObjectDoesNotExist as e:

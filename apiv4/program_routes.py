@@ -26,7 +26,7 @@ from program_views import get_programs
 logger = logging.getLogger(settings.LOGGER_NAME)
 
 
-@app.route('/apiv4/programs/', methods=['GET'])
+@app.route('/apiv4/programs/', methods=['GET'], strict_slashes=False)
 def programs():
     """Retrieve the list of programs and builds currently available for cohort creation."""
     response = None
@@ -44,6 +44,6 @@ def programs():
             'code': 500,
             'message': 'Encountered an error while retrieving the program list.'
         })
-        response.status_code =500
+        response.status_code = 500
 
     return response
