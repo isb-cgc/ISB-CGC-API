@@ -92,7 +92,7 @@ def get_file_manifest(cohort_id, user):
 def get_cohort_info(cohort_id):
     cohort = None
     try:
-        cohort_obj = Cohorts.objects.get(id=cohort_id)
+        cohort_obj = Cohort.objects.get(id=cohort_id)
         cohort = {
             'id': cohort_obj.id,
             'name': cohort_obj.name,
