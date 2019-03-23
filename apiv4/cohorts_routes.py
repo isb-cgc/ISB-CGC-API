@@ -20,7 +20,7 @@ import logging
 import json
 from flask import jsonify, request
 from apiv4 import app
-from cohorts_views import get_cohort_info, get_cohorts, get_file_manifest, validate_user
+from cohorts_views import get_cohort_info, get_cohorts, get_file_manifest, get_cohort_counts, validate_user
 from auth import auth_info
 from django.conf import settings
 
@@ -109,7 +109,32 @@ def cohort_file_manifest(cohort_id):
         else:
             response = jsonify({
                 'code': 500,
-                'message': "Error while attempting to retrieve file manifest for cohort {}.".format(str(cohort_id))})
+                'message': "Error while attempting to retrieve file manifest for cohort {}.".format(str(cohort_id))
+            })
             response.status_code = 500
+
+    return response
+
+
+@app.route('/apiv4/cohorts/preview/', methods=['POST', 'GET'], strict_slashes=False)
+def cohort_preview():
+    """List the samples, cases, and counts a given set of cohort filters would produce"""
+
+    response = None
+
+    cohort_counts = get_cohort_counts()
+    
+    if cohort_counts:
+        response = jsonify({
+            'code': 200,
+            'data': cohort_counts
+        })
+        response.status_code = 200
+    else:
+        response = jsonify({
+            'code': 500,
+            'message': "Error while attempting to retrieve case and sample counts for these filters."
+        })
+        response.status_code = 500
 
     return response
