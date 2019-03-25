@@ -30,7 +30,7 @@ from django.conf import settings
 from cohorts.models import Cohort_Perms, Cohort, Filters
 from accounts.sa_utils import auth_dataset_whitelists_for_user
 from cohorts.file_helpers import cohort_files
-from cohorts.metadata_counting import public_metadata_counts
+from cohorts.metadata_helpers import get_sample_case_list
 from projects.models import Program
 
 logger = logging.getLogger(settings.LOGGER_NAME)
@@ -143,7 +143,7 @@ def get_cohort_counts():
                 this_program = Program.objects.get(name=prog_name.upper(), is_public=1, active=1)
                 if request_data['filters'][prog_name]:
                     prog_filters = request_data['filters'][prog_name]
-                prog_counts = public_metadata_counts(prog_filters, 0, None, this_program.id)
+                prog_counts = get_sample_case_list(None, prog_filters, None, this_program.id)
                 if prog_counts:
                     if not cohort_counts:
                         cohort_counts = {}
