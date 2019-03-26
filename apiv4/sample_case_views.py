@@ -23,13 +23,13 @@ import django
 from flask import request
 
 from django.conf import settings
-from cohorts.metadata_helpers import get_sample_metadata
+from cohorts.metadata_helpers import get_sample_case_metadata
 
 logger = logging.getLogger(settings.LOGGER_NAME)
 
 
 def get_full_sample_metadata(sample_barcode):
-    metadata = get_sample_metadata(sample_barcode, False, True)
+    metadata = get_sample_case_metadata([sample_barcode], False)
 
     if len(metadata.keys()):
         return metadata
@@ -38,7 +38,7 @@ def get_full_sample_metadata(sample_barcode):
 
 
 def get_case_metadata(case_barcode):
-    metadata = get_sample_metadata(case_barcode, True, True)
+    metadata = get_sample_case_metadata([case_barcode], True)
 
     if len(metadata.keys()):
         return metadata

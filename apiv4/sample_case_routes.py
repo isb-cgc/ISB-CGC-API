@@ -49,8 +49,52 @@ def sample_metadata(sample_barcode):
 
 
 @app.route('/apiv4/cases/<case_barcode>/', methods=['GET'], strict_slashes=False)
-def sample_metadata(case_metadata):
+def case_metadata(case_barcode):
     response = None
+
+    case_metadata = get_case_metadata(case_barcode)
+
+    if case_metadata:
+        response = jsonify({
+            'code': 200,
+            'data': case_metadata
+        })
+        response.status_code = 200
+    else:
+        response = jsonify({
+            'code': 404,
+            'message': "Case barcode {} was not found.".format(case_barcode)})
+        response.status_code = 404
+
+    return response
+
+
+@app.route('/apiv4/samples/', methods=['POST'], strict_slashes=False)
+def sample_metadata_list():
+    response = None
+
+    sample_metadata = get_full_sample_metadata(sample_barcode)
+
+    if sample_metadata:
+        response = jsonify({
+            'code': 200,
+            'data': sample_metadata
+        })
+        response.status_code = 200
+    else:
+        response = jsonify({
+            'code': 404,
+            'message': "Sample barcode {} was not found.".format(sample_barcode)})
+        response.status_code = 404
+
+    return response
+
+
+@app.route('/apiv4/cases/', methods=['POST'], strict_slashes=False)
+def case_metadata_list():
+    response = None
+    
+    request_data = request.get_json()
 
     case_metadata = get_case_metadata(case_barcode)
 
@@ -67,4 +111,3 @@ def sample_metadata(case_metadata):
         response.status_code = 404
 
     return response
-
