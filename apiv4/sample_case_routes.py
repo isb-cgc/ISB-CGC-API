@@ -31,12 +31,12 @@ def sample_metadata(sample_barcode):
     
     response = None
 
-    sample_metadata = get_full_sample_metadata(sample_barcode)
+    metadata = get_full_sample_metadata([sample_barcode])
     
     if sample_metadata:
         response = jsonify({
             'code': 200,
-            'data': sample_metadata
+            'data': metadata
         })
         response.status_code = 200
     else:
@@ -52,12 +52,12 @@ def sample_metadata(sample_barcode):
 def case_metadata(case_barcode):
     response = None
 
-    case_metadata = get_case_metadata(case_barcode)
+    metadata = get_case_metadata([case_barcode])
 
-    if case_metadata:
+    if metadata:
         response = jsonify({
             'code': 200,
-            'data': case_metadata
+            'data': metadata
         })
         response.status_code = 200
     else:
@@ -73,12 +73,14 @@ def case_metadata(case_barcode):
 def sample_metadata_list():
     response = None
 
-    sample_metadata = get_full_sample_metadata(sample_barcode)
+    request_data = request.get_json()
+
+    metadata = get_full_sample_metadata(request_data['sample_barcodes'])
 
     if sample_metadata:
         response = jsonify({
             'code': 200,
-            'data': sample_metadata
+            'data': metadata
         })
         response.status_code = 200
     else:
@@ -96,12 +98,12 @@ def case_metadata_list():
     
     request_data = request.get_json()
 
-    case_metadata = get_case_metadata(case_barcode)
+    metadata = get_case_metadata(request_data['case_barcodes'])
 
     if case_metadata:
         response = jsonify({
             'code': 200,
-            'data': case_metadata
+            'data': metadata
         })
         response.status_code = 200
     else:

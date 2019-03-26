@@ -28,19 +28,19 @@ from cohorts.metadata_helpers import get_sample_case_metadata
 logger = logging.getLogger(settings.LOGGER_NAME)
 
 
-def get_full_sample_metadata(sample_barcode):
-    metadata = get_sample_case_metadata([sample_barcode], False)
+def get_sample_metadata(sample_barcodes):
+    metadata = get_sample_case_metadata(sample_barcodes, False)
 
-    if len(metadata.keys()):
+    if metadata['total_found']:
         return metadata
     else:
         return None
 
 
-def get_case_metadata(case_barcode):
-    metadata = get_sample_case_metadata([case_barcode], True)
+def get_case_metadata(case_barcodes):
+    metadata = get_sample_case_metadata(case_barcodes, True)
 
-    if len(metadata.keys()):
+    if metadata['total_found']:
         return metadata
     else:
         return None
