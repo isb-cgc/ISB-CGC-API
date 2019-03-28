@@ -21,7 +21,7 @@ import json
 from flask import jsonify, request
 from apiv4 import app
 from django.conf import settings
-from sample_case_views import get_full_sample_metadata, get_case_metadata
+from sample_case_views import get_full_sample_metadata, get_full_case_metadata
 
 logger = logging.getLogger(settings.LOGGER_NAME)
 
@@ -36,7 +36,7 @@ def sample_metadata(sample_barcode):
     if sample_metadata:
         response = jsonify({
             'code': 200,
-            'data': metadata
+            'data': metadata['samples'][0]
         })
         response.status_code = 200
     else:
@@ -52,12 +52,12 @@ def sample_metadata(sample_barcode):
 def case_metadata(case_barcode):
     response = None
 
-    metadata = get_case_metadata([case_barcode])
+    metadata = get_full_case_metadata([case_barcode])
 
     if metadata:
         response = jsonify({
             'code': 200,
-            'data': metadata
+            'data': metadata['cases'][0]
         })
         response.status_code = 200
     else:
@@ -98,7 +98,7 @@ def case_metadata_list():
     
     request_data = request.get_json()
 
-    metadata = get_case_metadata(request_data['case_barcodes'])
+    metadata = get_full_case_metadata(request_data['case_barcodes'])
 
     if case_metadata:
         response = jsonify({
