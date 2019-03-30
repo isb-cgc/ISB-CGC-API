@@ -30,7 +30,7 @@ from django.conf import settings
 from cohorts.models import Cohort_Perms, Cohort, Filters
 from accounts.sa_utils import auth_dataset_whitelists_for_user
 from cohorts.file_helpers import cohort_files
-from cohorts.metadata_helpers import get_sample_case_list
+from cohorts.metadata_helpers import get_sample_case_list_bq
 from projects.models import Program
 
 logger = logging.getLogger(settings.LOGGER_NAME)
@@ -136,27 +136,7 @@ def get_cohort_counts():
 
     try:
         request_data = request.get_json()
-        print("Data: " + str(request_data))
-        for prog_name in request_data['filters']:
-            try:
-                prog_filters = None
-                this_program = Program.objects.get(name=prog_name.upper(), is_public=1, active=1)
-                if request_data['filters'][prog_name]:
-                    prog_filters = request_data['filters'][prog_name]
-                prog_counts = get_sample_case_list(None, prog_filters, None, this_program.id)
-                if prog_counts:
-                    if not cohort_counts:
-                        cohort_counts = {}
-                    cohort_counts[prog_name] = prog_counts
-                else:
-                    logger.warn("Could not obtain program counts for {} - skipping.".format(
-                        prog_name
-                    ))
-            except ObjectDoesNotExist as e:
-                logger.error("Program {} was not found as an active, public program - skipping.".format(
-                    prog_name
-                ))
-                continue
+        cohort_counts = get_sample_case_list_bq(None, request_data['filters'])
     except Exception as e:
         logger.exception(e)
 
