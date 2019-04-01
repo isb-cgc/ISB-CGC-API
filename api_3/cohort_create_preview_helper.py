@@ -134,8 +134,8 @@ class CohortsCreatePreviewAPI(remote.Service):
             ret_gte_query_dict = {}
             ret_rows = None
 
-            for table in ('Clinical', 'Biospecimen', 'Data_HG19', 'Data_HG38'):
-                if 'CCLE' == self.program and 'Data_HG38' == table:
+            for table in ('Clinical', 'Biospecimen', 'data_HG19_r14', 'data_HG38_r14'):
+                if 'CCLE' == self.program and 'data_HG38_r14' == table:
                     continue
 
                 fields = request.get_assigned_value(table)

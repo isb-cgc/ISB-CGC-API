@@ -53,7 +53,7 @@ class CasesGetQueryBuilder(object):
         aliquot_query_str = ''
         for genomic_build in genomic_builds:
             part_aliquot_query_str = 'select aliquot_barcode ' \
-                                'from {}_metadata_data_{} ' \
+                                'from {}_metadata_data_{}_r14 ' \
                                 'where {} and aliquot_barcode is not null ' \
                                 'group by aliquot_barcode '.format(program, genomic_build, case_clause)
             if 0 < len(aliquot_query_str):
