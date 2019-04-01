@@ -139,6 +139,6 @@ def get_cohort_counts():
         cohort_counts = get_sample_case_list_bq(None, request_data['filters'])
     except Exception as e:
         logger.exception(e)
-
+        
     return cohort_counts
 

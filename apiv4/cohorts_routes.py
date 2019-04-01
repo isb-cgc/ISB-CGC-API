@@ -125,11 +125,20 @@ def cohort_preview():
     cohort_counts = get_cohort_counts()
     
     if cohort_counts:
-        response = jsonify({
-            'code': 200,
-            'data': cohort_counts
-        })
-        response.status_code = 200
+        # Presence of a message means something went wrong with the filters we received
+        if 'msg' in cohort_counts:
+            response = jsonify({
+                'code': 400,
+                'data': cohort_counts
+            })
+            response.status_code = 200
+        else:
+            response = jsonify({
+                'code': 200,
+                'data': cohort_counts
+            })
+            response.status_code = 200
+    # Lack of a valid object means something went wrong on the server
     else:
         response = jsonify({
             'code': 500,
