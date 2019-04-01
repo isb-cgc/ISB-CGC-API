@@ -38,7 +38,7 @@ class SamplesGetQueryBuilder(object):
         aliquot_query_str = ''
         for genomic_build in genomic_builds:
             part_aliquot_query_str = 'select sample_barcode, case_barcode, aliquot_barcode, aliquot_gdc_id ' \
-                             'from {}_metadata_data_{} ' \
+                             'from {}_metadata_data_{}_r14 ' \
                              'where file_name_key is not null and file_name_key !="" '.format(program, genomic_build)
             for column in param_list:
                 if column == 'sample_barcode' and count>1:
@@ -72,7 +72,7 @@ class SamplesGetQueryBuilder(object):
         data_query_str = ''
         for genomic_build in genomic_builds:
             part_data_query_str = 'select {0} ' \
-                             'from {1}_metadata_data_{2} ' \
+                             'from {1}_metadata_data_{2}_r14 ' \
                              'where file_name_key is not null and file_name_key !="" '.format(', '.join(field.name for field in datadict_class.all_fields()), program, genomic_build)
             for column in param_list:
                 if column == 'sample_barcode' and count > 1:
