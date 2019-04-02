@@ -33,8 +33,10 @@ from cohorts.file_helpers import cohort_files
 from cohorts.metadata_helpers import get_sample_case_list_bq
 from projects.models import Program
 
-logger = logging.getLogger(settings.LOGGER_NAME)
+from jsonschema import validate as schema_validate, ValidationError
+from schemas.cohort_filter_schema import COHORT_FILTER_SCHEMA
 
+logger = logging.getLogger(settings.LOGGER_NAME)
 
 def validate_user(user_email, cohort_id):
     user = None
@@ -136,9 +138,14 @@ def get_cohort_counts():
 
     try:
         request_data = request.get_json()
+        schema_validate(request_data, COHORT_FILTER_SCHEMA)
         cohort_counts = get_sample_case_list_bq(None, request_data['filters'])
+    except ValidationError as e:
+        logger.warn("Filters rejected for improper formatting: {}".format(e))
+        cohort_counts = {
+            'msg': "Filters were improperly formatted."
+        }
     except Exception as e:
         logger.exception(e)
-        
     return cohort_counts
 
