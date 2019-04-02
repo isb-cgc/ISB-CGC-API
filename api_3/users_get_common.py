@@ -24,7 +24,6 @@ from django.contrib.auth.models import User
 from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 
 from accounts.models import AuthorizedDataset, NIH_User, UserAuthorizedDatasets
-from dataset_utils.dataset_access_support_factory import DatasetAccessSupportFactory
 
 logger = logging.getLogger(__name__)
 
