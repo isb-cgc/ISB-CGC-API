@@ -140,6 +140,11 @@ def get_cohort_counts():
         request_data = request.get_json()
         schema_validate(request_data, COHORT_FILTER_SCHEMA)
         cohort_counts = get_sample_case_list_bq(None, request_data['filters'])
+
+        for prog in cohort_counts:
+            if cohort_counts[prog]['case_count'] <= 0:
+                cohort_counts[prog]['msg'] = "No cases or samples found which meet the filter criteria for this program."
+            cohort_counts[prog]['provided_filters'] = request_data['filters'][prog]
     except ValidationError as e:
         logger.warn("Filters rejected for improper formatting: {}".format(e))
         cohort_counts = {
