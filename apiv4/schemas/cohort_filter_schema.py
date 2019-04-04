@@ -1237,10 +1237,13 @@ COHORT_FILTER_SCHEMA = {
                     },
                 },
                 "additionalProperties": False
+            },
+            'name': {
+                'type': 'string'
+            },
+            'desc': {
+                'type': 'string'
             }
         },
-        'required': [
-            'filters'
-        ],
         "additionalProperties": False
     }

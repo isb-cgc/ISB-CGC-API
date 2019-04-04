@@ -20,7 +20,7 @@ import logging
 import json
 from flask import jsonify, request
 from apiv4 import app
-from cohorts_views import get_cohort_info, get_cohorts, get_file_manifest, get_cohort_counts, validate_user
+from cohorts_views import get_cohort_info, get_cohorts, get_file_manifest, get_cohort_counts, validate_user, create_cohort
 from auth import auth_info
 from django.conf import settings
 
@@ -44,6 +44,37 @@ def cohort(cohort_id):
 
     else:
         cohort_info = get_cohort_info(cohort_id)
+        if cohort_info:
+            response = jsonify({
+                'code': 200,
+                'data': cohort_info
+            })
+            response.status_code = 200
+        else:
+            response = jsonify({
+                'code': 404,
+                'message': "Cohort ID {} was not found.".format(str(cohort_id))})
+            response.status_code = 404
+
+    return response
+
+
+@app.route('/apiv4/cohorts/<int:cohort_id>/', methods=['PATCH'], strict_slashes=False)
+def cohort(cohort_id):
+    """Edit an extent cohort's filters, name, or description"""
+    user_info = auth_info()
+    user = validate_user(user_info['email'], cohort_id)
+
+    response = None
+
+    if not user:
+        response = jsonify({
+            'code': 403,
+            'message': "User {} does not have access to cohort ID {}".format(user_info['email'] if 'email' in user_info else 'Anonymous',str(cohort_id))})
+        response.status_code = 403
+
+    else:
+        cohort_info = edit_cohort(cohort_id)
         if cohort_info:
             response = jsonify({
                 'code': 200,
@@ -116,7 +147,7 @@ def cohort_file_manifest(cohort_id):
     return response
 
 
-@app.route('/apiv4/cohorts/preview/', methods=['POST', 'GET'], strict_slashes=False)
+@app.route('/apiv4/cohorts/preview/', methods=['POST'], strict_slashes=False)
 def cohort_preview():
     """List the samples, cases, and counts a given set of cohort filters would produce"""
 
@@ -131,7 +162,7 @@ def cohort_preview():
                 'code': 400,
                 'data': cohort_counts
             })
-            response.status_code = 200
+            response.status_code = 400
         else:
             response = jsonify({
                 'code': 200,
@@ -147,3 +178,49 @@ def cohort_preview():
         response.status_code = 500
 
     return response
+
+
+@app.route('/apiv4/cohorts/', methods=['POST'], strict_slashes=False)
+def cohort_create():
+    """Create a cohort based on a set of supplied filters"""
+
+    response = None
+
+    user_info = auth_info()
+    user = validate_user(user_info['email'], cohort_id)
+
+    response = None
+
+    if not user:
+        response = jsonify({
+            'code': 403,
+            'message': "User not found - please register on the ISB-CGC WebApp first!"
+        })
+        response.status_code = 403
+    else:
+        cohort_info = create_cohort(user)
+
+        if cohort_info:
+            if 'msg' in cohort_info:
+                # Presence of a message means something was wrong.
+                response = jsonify({
+                    'code': 400,
+                    'data': cohort_info
+                })
+                response.status_code = 400
+            else:
+                response = jsonify({
+                    'code': 200,
+                    'data': cohort_counts
+                })
+                response.status_code = 200
+            # Lack of a valid object means something went wrong on the server
+        else:
+            response = jsonify({
+                'code': 500,
+                'message': "Error while attempting to create this cohort."
+            })
+            response.status_code = 500
+
+    return response
+
