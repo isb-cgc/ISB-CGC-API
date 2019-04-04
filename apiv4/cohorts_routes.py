@@ -20,7 +20,7 @@ import logging
 import json
 from flask import jsonify, request
 from apiv4 import app
-from cohorts_views import get_cohort_info, get_cohorts, get_file_manifest, get_cohort_counts, validate_user, create_cohort
+from cohorts_views import get_cohort_info, get_cohorts, get_file_manifest, get_cohort_counts, validate_user, create_cohort, edit_cohort
 from auth import auth_info
 from django.conf import settings
 
@@ -36,12 +36,18 @@ def cohort(cohort_id):
 
     response = None
 
-    if not user:
+    if 'msg' in user:
         response = jsonify({
             'code': 403,
-            'message': "User {} does not have access to cohort ID {}".format(user_info['email'] if 'email' in user_info else 'Anonymous',str(cohort_id))})
+            'message': user['msg']
+        })
         response.status_code = 403
-
+    elif not user:
+        response = jsonify({
+            'code': 500,
+            'message': 'Encountered an error while attempting to identify this user.'
+        })
+        response.status_code = 500
     else:
         cohort_info = get_cohort_info(cohort_id)
         if cohort_info:
@@ -60,7 +66,7 @@ def cohort(cohort_id):
 
 
 @app.route('/apiv4/cohorts/<int:cohort_id>/', methods=['PATCH'], strict_slashes=False)
-def cohort(cohort_id):
+def cohort_edit(cohort_id):
     """Edit an extent cohort's filters, name, or description"""
     user_info = auth_info()
     user = validate_user(user_info['email'], cohort_id)
@@ -123,12 +129,18 @@ def cohort_file_manifest(cohort_id):
 
     response = None
 
-    if not user:
+    if 'msg' in user:
         response = jsonify({
             'code': 403,
-            'message': "User {} does not have access to cohort ID {}".format(user_info['email'],str(cohort_id))})
+            'message': user['msg']
+        })
         response.status_code = 403
-
+    elif not user:
+        response = jsonify({
+            'code': 500,
+            'message': 'Encountered an error while attempting to identify this user.'
+        })
+        response.status_code = 500
     else:
         file_manifest = get_file_manifest(cohort_id, user)
         if file_manifest:
@@ -187,16 +199,22 @@ def cohort_create():
     response = None
 
     user_info = auth_info()
-    user = validate_user(user_info['email'], cohort_id)
+    user = validate_user(user_info['email'])
 
     response = None
 
-    if not user:
+    if 'msg' in user:
         response = jsonify({
             'code': 403,
-            'message': "User not found - please register on the ISB-CGC WebApp first!"
+            'message': user['msg']
         })
         response.status_code = 403
+    elif not user:
+        response = jsonify({
+            'code': 500,
+            'message': 'Encountered an error while attempting to identify this user.'
+        })
+        response.status_code = 500
     else:
         cohort_info = create_cohort(user)
 

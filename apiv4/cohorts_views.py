@@ -42,17 +42,28 @@ BLACKLIST_RE = settings.BLACKLIST_RE
 
 logger = logging.getLogger(settings.LOGGER_NAME)
 
-def validate_user(user_email, cohort_id):
+
+def validate_user(user_email, cohort_id=None):
     user = None
+    
     django.setup()
     try:
-        user = Django_User.objects.get(email=user_email)
-        Cohort_Perms.objects.get(cohort_id=cohort_id, user_id=user.id)
-    except ObjectDoesNotExist as e:
-        logger.warn("Error retrieving cohort {} for user {}: {}".format(cohort_id, user_email, e))
+        try:
+            user = Django_User.objects.get(email=user_email)
+        except ObjectDoesNotExist as e:
+            logger.warn("User {} does not exist in our system.".format(user_email))
+            return { 'msg': "User {} does not exist in our system. Please register with our Web Application first: <https://isb-cgc.appspot.com>".format(user_email) }
+       
+        try:
+            if cohort_id:
+                Cohort_Perms.objects.get(cohort_id=cohort_id, user_id=user.id)
+        except ObjectDoesNotExist as e:
+            logger.warn("Error retrieving cohort {} for user {}: {}".format(cohort_id, user_email, e))
+            return {'msg': "User {} does not have access to cohort {}".format(user_email, cohort_id)}
+        
     except Exception as e:
         logger.exception(e)
-
+        
     return user
 
 
@@ -200,7 +211,12 @@ def create_cohort(user):
             if 'description' in request_data:
                 desc = request_data['description']
 
-            cohort_info = make_cohort(user, filters, name, desc)
+            result = make_cohort(user, filters, name, desc)
+
+            if 'msg' in result:
+                cohort_infp = result
+            else:
+                cohort_info = get_cohort_info(cohort_info['cohort_id'])
 
     except ValidationError as e:
         logger.warn("Filters rejected for improper formatting: {}".format(e))
