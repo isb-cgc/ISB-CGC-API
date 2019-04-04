@@ -52,7 +52,10 @@ def validate_user(user_email, cohort_id=None):
             user = Django_User.objects.get(email=user_email)
         except ObjectDoesNotExist as e:
             logger.warn("User {} does not exist in our system.".format(user_email))
-            return { 'msg': "User {} does not exist in our system. Please register with our Web Application first: <https://isb-cgc.appspot.com>".format(user_email) }
+            return {
+                'msg': "User {} does not exist in our system.".format(user_email) +
+                " Please register with our Web Application first: <https://isb-cgc.appspot.com>"
+            }
        
         try:
             if cohort_id:
@@ -167,9 +170,9 @@ def get_cohort_counts():
                     cohort_counts[prog]['msg'] = "No cases or samples found which meet the filter criteria for this program."
                 cohort_counts[prog]['provided_filters'] = request_data['filters'][prog]
     except ValidationError as e:
-        logger.warn("Filters rejected for improper formatting: {}".format(e))
+        logger.warn('Filters rejected for improper formatting: {}'.format(e))
         cohort_counts = {
-            'msg': "Filters were improperly formatted."
+            'msg': 'Filters were improperly formatted.'
         }
     except Exception as e:
         logger.exception(e)
@@ -191,7 +194,8 @@ def create_cohort(user):
 
         if 'filters' not in request_data:
             cohort_info = {
-                'msg': 'Filters were not provided; at least one filter must be provided for a cohort to be valid. Cohort was not made.'
+                'msg': 'Filters were not provided; at least one filter must be provided for a cohort to be valid.' +
+                       ' Cohort was not made.'
             }
             return cohort_info
 
@@ -204,7 +208,8 @@ def create_cohort(user):
             # XSS risk, log and fail this cohort save
             match = blacklist.findall(str(name))
             cohort_info = {
-                'msg': "Your cohort's name contains invalid characters; please choose another name. [Saw {}]".format(str(match))
+                'msg': 'Your cohort\'s name contains invalid characters; please choose another name. ' +
+                    '[Saw {}]'.format(str(match))
             }
         else:
             desc = None
@@ -221,7 +226,7 @@ def create_cohort(user):
     except ValidationError as e:
         logger.warn("Filters rejected for improper formatting: {}".format(e))
         cohort_info = {
-            'msg': "Filters were improperly formatted - cohort not created."
+            'msg': 'Filters were improperly formatted - cohort not created.'
         }
 
     return cohort_info
@@ -241,15 +246,15 @@ def edit_cohort(cohort_id):
             # XSS risk, log and fail this cohort save
             match = blacklist.findall(str(name))
             cohort_info = {
-                'msg': "Your cohort's name contains invalid characters; please choose another name. [Saw {}]".format(str(match))
+                'msg': 'Your cohort\'s name contains invalid characters; please choose another name.' +
+                    ' [Saw {}]'.format(str(match))
             }
         else:
             logger.warn("Make cohort")
     except ValidationError as e:
         logger.warn("Filters rejected for improper formatting: {}".format(e))
         cohort_info = {
-            'msg': "Filters were improperly formatted - cohort not created."
+            'msg': 'Filters were improperly formatted - cohort not created.'
         }
 
     return cohort_info
-
