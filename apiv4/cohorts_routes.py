@@ -96,27 +96,54 @@ def cohort_edit(cohort_id):
     return response
 
 
-@app.route('/apiv4/cohorts/', methods=['GET'], strict_slashes=False)
+@app.route('/apiv4/cohorts/', methods=['GET', 'POST'], strict_slashes=False)
 def cohorts():
     """Retrieve a user's list of cohorts"""
     user_info = auth_info()
-
-    cohort_list = get_cohorts(user_info['email'])
+    user = validate_user(user_info['email'])
 
     response = None
+    info = None
 
-    if not cohort_list:
+    if 'msg' in user:
         response = jsonify({
-            'code': 404,
-            'message': "No cohorts were found for user {}".format(user_info['email'])})
-        response.status_code = 404
-
-    else:
-        response = jsonify({
-            'code': 200,
-            'data': cohort_list
+            'code': 403,
+            'message': user['msg']
         })
-        response.status_code = 200
+        response.status_code = 403
+    elif not user:
+        response = jsonify({
+            'code': 500,
+            'message': 'Encountered an error while attempting to identify this user.'
+        })
+        response.status_code = 500
+    else:
+        if request.method == 'GET':
+            info = get_cohorts(user_info['email'])
+        else:
+            info = create_cohort(user)
+
+        if info:
+            if 'msg' in info:
+                # Presence of a message means something was wrong.
+                response = jsonify({
+                    'code': 400,
+                    'data': info
+                })
+                response.status_code = 400
+            else:
+                response = jsonify({
+                    'code': 200,
+                    'data': info
+                })
+                response.status_code = 200
+            # Lack of a valid object means something went wrong on the server
+        else:
+            response = jsonify({
+                'code': 500,
+                'message': "Error while attempting to create this cohort."
+            })
+            response.status_code = 500
 
     return response
 
@@ -190,55 +217,3 @@ def cohort_preview():
         response.status_code = 500
 
     return response
-
-
-@app.route('/apiv4/cohorts/', methods=['POST'], strict_slashes=False)
-def cohort_create():
-    """Create a cohort based on a set of supplied filters"""
-
-    response = None
-
-    user_info = auth_info()
-    user = validate_user(user_info['email'])
-
-    response = None
-
-    if 'msg' in user:
-        response = jsonify({
-            'code': 403,
-            'message': user['msg']
-        })
-        response.status_code = 403
-    elif not user:
-        response = jsonify({
-            'code': 500,
-            'message': 'Encountered an error while attempting to identify this user.'
-        })
-        response.status_code = 500
-    else:
-        cohort_info = create_cohort(user)
-
-        if cohort_info:
-            if 'msg' in cohort_info:
-                # Presence of a message means something was wrong.
-                response = jsonify({
-                    'code': 400,
-                    'data': cohort_info
-                })
-                response.status_code = 400
-            else:
-                response = jsonify({
-                    'code': 200,
-                    'data': cohort_counts
-                })
-                response.status_code = 200
-            # Lack of a valid object means something went wrong on the server
-        else:
-            response = jsonify({
-                'code': 500,
-                'message': "Error while attempting to create this cohort."
-            })
-            response.status_code = 500
-
-    return response
-
