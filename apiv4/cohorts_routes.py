@@ -27,11 +27,14 @@ from django.conf import settings
 logger = logging.getLogger(settings.LOGGER_NAME)
 
 
-@app.route('/apiv4/cohorts/<int:cohort_id>/', methods=['GET'], strict_slashes=False)
+@app.route('/apiv4/cohorts/<int:cohort_id>/', methods=['GET', 'PATCH'], strict_slashes=False)
 def cohort(cohort_id):
-    """Retrieve extended information for a specific cohort"""
+    """
+    GET: Retrieve extended information for a specific cohort
+    PATCH: Edit an extent cohort
+    """
+
     user_info = auth_info()
-    logger.info("[STATUS] User info: {}".format(str(user_info)))
     user = validate_user(user_info['email'], cohort_id)
 
     response = None
@@ -49,38 +52,11 @@ def cohort(cohort_id):
         })
         response.status_code = 500
     else:
-        cohort_info = get_cohort_info(cohort_id)
-        if cohort_info:
-            response = jsonify({
-                'code': 200,
-                'data': cohort_info
-            })
-            response.status_code = 200
+        if request.method == 'GET':
+            cohort_info = get_cohort_info(cohort_id)
         else:
-            response = jsonify({
-                'code': 404,
-                'message': "Cohort ID {} was not found.".format(str(cohort_id))})
-            response.status_code = 404
+            cohort_info = edit_cohort(cohort_id)
 
-    return response
-
-
-@app.route('/apiv4/cohorts/<int:cohort_id>/', methods=['PATCH'], strict_slashes=False)
-def cohort_edit(cohort_id):
-    """Edit an extent cohort's filters, name, or description"""
-    user_info = auth_info()
-    user = validate_user(user_info['email'], cohort_id)
-
-    response = None
-
-    if not user:
-        response = jsonify({
-            'code': 403,
-            'message': "User {} does not have access to cohort ID {}".format(user_info['email'] if 'email' in user_info else 'Anonymous',str(cohort_id))})
-        response.status_code = 403
-
-    else:
-        cohort_info = edit_cohort(cohort_id)
         if cohort_info:
             response = jsonify({
                 'code': 200,
@@ -98,7 +74,10 @@ def cohort_edit(cohort_id):
 
 @app.route('/apiv4/cohorts/', methods=['GET', 'POST'], strict_slashes=False)
 def cohorts():
-    """Retrieve a user's list of cohorts"""
+    """
+    GET: Retrieve a user's list of cohorts
+    POST: Add a new cohort
+    """
     user_info = auth_info()
     user = validate_user(user_info['email'])
 
@@ -150,7 +129,10 @@ def cohorts():
 
 @app.route('/apiv4/cohorts/<int:cohort_id>/file_manifest/', methods=['POST', 'GET'], strict_slashes=False)
 def cohort_file_manifest(cohort_id):
-    """Retrieve a cohort's file manifest"""
+    """
+    GET: Retrieve a cohort's file manifest
+    POST: Retrieve a cohort's file manifest with applied filters
+    """
     user_info = auth_info()
     user = validate_user(user_info['email'], cohort_id)
 
