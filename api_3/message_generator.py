@@ -214,8 +214,6 @@ def main(args):
                 create_metadata_file(cursor, program[0], 'Data_HG38', path_template % (program[0]), column_filter, True, False if program[1] else True, write_file)
                 table_list += ['data_HG38_r14']
             create_nesting_class(table_list, path_template % (program[0]), write_file)
-            if program[1]:
-                create_metadata_file(cursor, program[0], 'Annotation', path_template % (program[0]), column_filter, True, True, write_file)
             print datetime.now(), 'finished program {}'.format(program)
     finally:
         if cursor:

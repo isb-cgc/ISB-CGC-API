@@ -57,11 +57,8 @@ APPLICATION = endpoints.api_server([
     TCGACohortsPreviewAPI,
     TCGACohortsCreateAPI,
     TCGACasesGetAPI,
-    TCGACasesAnnotationAPI,
     TCGASamplesGetAPI,
     TCGASamplesCloudStorageFilePathsAPI,
-    TCGASamplesAnnotationAPI,
-    TCGAAliquotsAnnotationAPI,
     TCGAUserGetAPI,
          
     TARGETCohortsPreviewAPI,
