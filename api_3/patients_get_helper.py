@@ -115,8 +115,9 @@ class CasesGetHelper(remote.Service):
             sample_list = [row['sample_barcode'] for row in cursor.fetchall()]
 
             # get list of aliquots
-            cursor.execute(aliquot_query_str, (query_tuple * len(genomic_builds)))
-            aliquot_list = [row['aliquot_barcode'] for row in cursor.fetchall()]
+            # cursor.execute(aliquot_query_str, (query_tuple * len(genomic_builds)))
+            # aliquot_list = [row['aliquot_barcode'] for row in cursor.fetchall()]
+            aliquot_list = None
 
             return CaseDetails(clinical_data=clinical_data_item, samples=sample_list, aliquots=aliquot_list if aliquot_list else [])
         except (IndexError, TypeError), e:
@@ -180,8 +181,9 @@ class CasesGetHelper(remote.Service):
                 sample_list = [sample_row['sample_barcode'] for sample_row in cursor.fetchall()]
 
                 # get list of aliquots
-                cursor.execute(aliquot_query_str, ((row['case_barcode'],) * len(genomic_builds)))
-                aliquot_list = [aliquot_row['aliquot_barcode'] for aliquot_row in cursor.fetchall()]
+                # cursor.execute(aliquot_query_str, ((row['case_barcode'],) * len(genomic_builds)))
+                # aliquot_list = [aliquot_row['aliquot_barcode'] for aliquot_row in cursor.fetchall()]
+                aliquot_list = None
 
                 case_details.append(
                     CaseDetails(
