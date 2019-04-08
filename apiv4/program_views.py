@@ -38,7 +38,7 @@ def get_programs():
             {
                 'name': x.name,
                 'description': x.description,
-                'projects': [{'name': y.name, 'description': y.description } for y in Project.objects.filter(program=x,active=1)]
+                'projects': [{'name': y.name, 'description': y.description} for y in Project.objects.filter(program=x,active=1)]
             }
             for x in Program.get_public_programs()
         ]
