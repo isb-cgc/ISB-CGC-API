@@ -72,6 +72,7 @@ def cohort(cohort_id):
         response.status_code = 403
 
     except Exception as e:
+        logger.exception(e)
         response = jsonify({
             'code': 500,
             'message': 'Encountered an error while attempting to identify this user.'
@@ -138,6 +139,7 @@ def cohorts():
         response.status_code = 403
 
     except Exception as e:
+        logger.exception(e)
         response = jsonify({
             'code': 500,
             'message': 'Encountered an error while attempting to identify this user.'
@@ -190,6 +192,7 @@ def cohort_file_manifest(cohort_id):
         response.status_code = 403
 
     except Exception as e:
+        logger.exception(e)
         response = jsonify({
             'code': 500,
             'message': 'Encountered an error while attempting to identify this user.'
