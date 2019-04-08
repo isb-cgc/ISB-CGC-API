@@ -75,7 +75,7 @@ def cohort(cohort_id):
         logger.exception(e)
         response = jsonify({
             'code': 500,
-            'message': 'Encountered an error while attempting to identify this user.'
+            'message': 'Encountered an error while attempting to retrieve this cohort\'s information.'
         })
         response.status_code = 500
 
@@ -103,7 +103,6 @@ def cohorts():
             })
             response.status_code = 500
         else:
-            user = user['user']
             if request.method == 'GET':
                 info = get_cohorts(user_info['email'])
             else:
@@ -142,7 +141,9 @@ def cohorts():
         logger.exception(e)
         response = jsonify({
             'code': 500,
-            'message': 'Encountered an error while attempting to identify this user.'
+            'message': 'Encountered an error while attempting to {}.'.format(
+                "retrieve a list of cohorts" if request.method == 'GET' else "create this cohort."
+            )
         })
         response.status_code = 500
 
@@ -169,7 +170,6 @@ def cohort_file_manifest(cohort_id):
             })
             response.status_code = 500
         else:
-            user = user['user']
             file_manifest = get_file_manifest(cohort_id, user)
             if file_manifest:
                 response = jsonify({
