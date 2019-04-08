@@ -103,7 +103,6 @@ class SamplesGetQueryBuilder(object):
 
 class DataDetails(messages.Message):
     file_gdc_id = messages.StringField(1)
-    file_name = messages.StringField(2)
     file_name_key = messages.StringField(3)
     file_size = messages.IntegerField(4, variant=messages.Variant.INT64)
     sample_gdc_id = messages.StringField(5)
@@ -118,9 +117,7 @@ class DataDetails(messages.Message):
     data_format = messages.StringField(15)
     access = messages.StringField(16)
     platform = messages.StringField(17)
-    endpoint_type = messages.StringField(18)
-    analysis_workflow_type = messages.StringField(19)
-    index_file_name = messages.StringField(20)
+    index_file_name_key = messages.StringField(20)
 
 
 class SampleGetListFilters(messages.Message):
