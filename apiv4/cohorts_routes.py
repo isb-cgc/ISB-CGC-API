@@ -97,6 +97,7 @@ def cohorts():
         })
         response.status_code = 500
     else:
+        user = user['user']
         if request.method == 'GET':
             info = get_cohorts(user_info['email'])
         else:
@@ -151,6 +152,7 @@ def cohort_file_manifest(cohort_id):
         })
         response.status_code = 500
     else:
+        user = user['user']
         file_manifest = get_file_manifest(cohort_id, user)
         if file_manifest:
             response = jsonify({

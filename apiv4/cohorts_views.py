@@ -67,7 +67,7 @@ def validate_user(user_email, cohort_id=None):
     except Exception as e:
         logger.exception(e)
         
-    return user
+    return {'user': user}
 
 
 def get_file_manifest(cohort_id, user):
