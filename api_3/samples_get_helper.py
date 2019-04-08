@@ -196,8 +196,8 @@ class SamplesGetAPI(remote.Service):
             biospecimen_data_item = MetadataItem(**constructor_dict)
 
             # get list of aliquots
-            cursor.execute(aliquot_query_str, extra_query_tuple)
-            aliquot_list = [row['aliquot_barcode'] for row in cursor.fetchall()]
+            # cursor.execute(aliquot_query_str, extra_query_tuple)
+            # aliquot_list = [row['aliquot_barcode'] for row in cursor.fetchall()]
 
             # get case barcode (superfluous?)
             cursor.execute(case_query_str, query_tuple)
@@ -294,12 +294,12 @@ class SamplesGetAPI(remote.Service):
                 sample_data[row['sample_barcode']]['case_gdc_id'] = row['case_gdc_id']
 
             # get list of aliquots
-            cursor.execute(aliquot_query_str, extra_query_tuple)
-            rows = cursor.fetchall()
-            for row in rows:
-                if 'aliquots' not in sample_data[row['sample_barcode']]:
-                    sample_data[row['sample_barcode']]['aliquots'] = []
-                sample_data[row['sample_barcode']]['aliquots'].append(row['aliquot_barcode'])
+            # cursor.execute(aliquot_query_str, extra_query_tuple)
+            # rows = cursor.fetchall()
+            # for row in rows:
+            #     if 'aliquots' not in sample_data[row['sample_barcode']]:
+            #         sample_data[row['sample_barcode']]['aliquots'] = []
+            #     sample_data[row['sample_barcode']]['aliquots'].append(row['aliquot_barcode'])
 
             # prepare to build list of data details messages
             cursor.execute(data_query_str, extra_query_tuple)
