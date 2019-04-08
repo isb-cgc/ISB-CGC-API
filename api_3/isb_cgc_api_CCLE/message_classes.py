@@ -62,7 +62,6 @@ class Data_HG19MetadataRangesItem(messages.Message):
     platform                                                          = messages.StringField(18, repeated=True)
     sample_barcode                                                    = messages.StringField(19, repeated=True)
     sample_gdc_id                                                     = messages.StringField(20, repeated=True)
-    sample_type                                                       = messages.StringField(21, repeated=True)
     
 class Data_HG19MetadataItem(messages.Message):
     access                                                            = messages.StringField(1)
@@ -80,7 +79,6 @@ class Data_HG19MetadataItem(messages.Message):
     platform                                                          = messages.StringField(18)
     sample_barcode                                                    = messages.StringField(19)
     sample_gdc_id                                                     = messages.StringField(20)
-    sample_type                                                       = messages.StringField(21)
     
 class MetadataRangesItem(messages.Message):
     Common = messages.MessageField(CommonMetadataRangesItem, 1)

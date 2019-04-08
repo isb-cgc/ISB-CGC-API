@@ -107,7 +107,6 @@ class DataDetails(messages.Message):
     file_size = messages.IntegerField(4, variant=messages.Variant.INT64)
     sample_gdc_id = messages.StringField(5)
     sample_barcode = messages.StringField(6)
-    sample_type = messages.StringField(7)
     project_short_name = messages.StringField(8)
     disease_code = messages.StringField(9)
     program_name = messages.StringField(11)
@@ -129,7 +128,6 @@ class SampleGetListFilters(messages.Message):
     data_type = messages.StringField(6, repeated=True)
     data_format = messages.StringField(7, repeated=True)
     project_short_name = messages.StringField(8, repeated=True)
-    analysis_workflow_type = messages.StringField(9, repeated=True)
 
 
 class SamplesGetAPI(remote.Service):

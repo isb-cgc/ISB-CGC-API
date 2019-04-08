@@ -395,7 +395,6 @@ class Data_HG19MetadataRangesItem(messages.Message):
     platform                                                          = messages.StringField(20, repeated=True)
     sample_barcode                                                    = messages.StringField(21, repeated=True)
     sample_gdc_id                                                     = messages.StringField(22, repeated=True)
-    sample_type                                                       = messages.StringField(23, repeated=True)
     
 class Data_HG19MetadataItem(messages.Message):
     access                                                            = messages.StringField(1)
@@ -410,7 +409,6 @@ class Data_HG19MetadataItem(messages.Message):
     platform                                                          = messages.StringField(20)
     sample_barcode                                                    = messages.StringField(21)
     sample_gdc_id                                                     = messages.StringField(22)
-    sample_type                                                       = messages.StringField(23)
     
 class Data_HG38MetadataRangesItem(messages.Message):
     access                                                            = messages.StringField(1, repeated=True)
@@ -425,7 +423,6 @@ class Data_HG38MetadataRangesItem(messages.Message):
     platform                                                          = messages.StringField(20, repeated=True)
     sample_barcode                                                    = messages.StringField(21, repeated=True)
     sample_gdc_id                                                     = messages.StringField(22, repeated=True)
-    sample_type                                                       = messages.StringField(23, repeated=True)
     
 class Data_HG38MetadataItem(messages.Message):
     access                                                            = messages.StringField(1)
@@ -440,7 +437,6 @@ class Data_HG38MetadataItem(messages.Message):
     platform                                                          = messages.StringField(20)
     sample_barcode                                                    = messages.StringField(21)
     sample_gdc_id                                                     = messages.StringField(22)
-    sample_type                                                       = messages.StringField(23)
     
 class MetadataRangesItem(messages.Message):
     Common = messages.MessageField(CommonMetadataRangesItem, 1)
@@ -455,4 +451,3 @@ class MetadataItem(messages.Message):
     Biospecimen = messages.MessageField(BiospecimenMetadataItem, 3)
     Data_HG19 = messages.MessageField(Data_HG19MetadataItem, 4)
     Data_HG38 = messages.MessageField(Data_HG38MetadataItem, 5)
-    
