@@ -34,40 +34,49 @@ def cohort(cohort_id):
     PATCH: Edit an extent cohort
     """
 
-    user_info = auth_info()
-    user = validate_user(user_info['email'], cohort_id)
+    try:
+        user_info = auth_info()
+        user = validate_user(user_info['email'], cohort_id)
 
-    response = None
+        response = None
 
-    if 'msg' in user:
+        if not user:
+            response = jsonify({
+                'code': 500,
+                'message': 'Encountered an error while attempting to identify this user.'
+            })
+            response.status_code = 500
+        else:
+            if request.method == 'GET':
+                cohort_info = get_cohort_info(cohort_id)
+            else:
+                cohort_info = edit_cohort(cohort_id)
+
+            if cohort_info:
+                response = jsonify({
+                    'code': 200,
+                    'data': cohort_info
+                })
+                response.status_code = 200
+            else:
+                response = jsonify({
+                    'code': 404,
+                    'message': "Cohort ID {} was not found.".format(str(cohort_id))})
+                response.status_code = 404
+
+    except UserValidationException as e:
         response = jsonify({
             'code': 403,
-            'message': user['msg']
+            'message': str(e)
         })
         response.status_code = 403
-    elif not user:
+
+    except Exception as e:
         response = jsonify({
             'code': 500,
             'message': 'Encountered an error while attempting to identify this user.'
         })
         response.status_code = 500
-    else:
-        if request.method == 'GET':
-            cohort_info = get_cohort_info(cohort_id)
-        else:
-            cohort_info = edit_cohort(cohort_id)
-
-        if cohort_info:
-            response = jsonify({
-                'code': 200,
-                'data': cohort_info
-            })
-            response.status_code = 200
-        else:
-            response = jsonify({
-                'code': 404,
-                'message': "Cohort ID {} was not found.".format(str(cohort_id))})
-            response.status_code = 404
 
     return response
 
@@ -78,52 +87,62 @@ def cohorts():
     GET: Retrieve a user's list of cohorts
     POST: Add a new cohort
     """
-    user_info = auth_info()
-    user = validate_user(user_info['email'])
 
-    response = None
-    info = None
+    try:
+        user_info = auth_info()
+        user = validate_user(user_info['email'])
 
-    if 'msg' in user:
+        response = None
+        info = None
+
+        if not user:
+            response = jsonify({
+                'code': 500,
+                'message': 'Encountered an error while attempting to identify this user.'
+            })
+            response.status_code = 500
+        else:
+            user = user['user']
+            if request.method == 'GET':
+                info = get_cohorts(user_info['email'])
+            else:
+                info = create_cohort(user)
+
+            if info:
+                if 'msg' in info:
+                    # Presence of a message means something was wrong.
+                    response = jsonify({
+                        'code': 400,
+                        'data': info
+                    })
+                    response.status_code = 400
+                else:
+                    response = jsonify({
+                        'code': 200,
+                        'data': info
+                    })
+                    response.status_code = 200
+                # Lack of a valid object means something went wrong on the server
+            else:
+                response = jsonify({
+                    'code': 500,
+                    'message': "Error while attempting to create this cohort."
+                })
+                response.status_code = 500
+
+    except UserValidationException as e:
         response = jsonify({
             'code': 403,
-            'message': user['msg']
+            'message': str(e)
         })
         response.status_code = 403
-    elif not user:
+
+    except Exception as e:
         response = jsonify({
             'code': 500,
             'message': 'Encountered an error while attempting to identify this user.'
         })
         response.status_code = 500
-    else:
-        user = user['user']
-        if request.method == 'GET':
-            info = get_cohorts(user_info['email'])
-        else:
-            info = create_cohort(user)
-
-        if info:
-            if 'msg' in info:
-                # Presence of a message means something was wrong.
-                response = jsonify({
-                    'code': 400,
-                    'data': info
-                })
-                response.status_code = 400
-            else:
-                response = jsonify({
-                    'code': 200,
-                    'data': info
-                })
-                response.status_code = 200
-            # Lack of a valid object means something went wrong on the server
-        else:
-            response = jsonify({
-                'code': 500,
-                'message': "Error while attempting to create this cohort."
-            })
-            response.status_code = 500
 
     return response
 
@@ -134,38 +153,48 @@ def cohort_file_manifest(cohort_id):
     GET: Retrieve a cohort's file manifest
     POST: Retrieve a cohort's file manifest with applied filters
     """
-    user_info = auth_info()
-    user = validate_user(user_info['email'], cohort_id)
 
-    response = None
+    try:
+        user_info = auth_info()
+        user = validate_user(user_info['email'], cohort_id)
 
-    if 'msg' in user:
+        response = None
+
+        if not user:
+            response = jsonify({
+                'code': 500,
+                'message': 'Encountered an error while attempting to identify this user.'
+            })
+            response.status_code = 500
+        else:
+            user = user['user']
+            file_manifest = get_file_manifest(cohort_id, user)
+            if file_manifest:
+                response = jsonify({
+                    'code': 200,
+                    'data': file_manifest
+                })
+                response.status_code = 200
+            else:
+                response = jsonify({
+                    'code': 500,
+                    'message': "Error while attempting to retrieve file manifest for cohort {}.".format(str(cohort_id))
+                })
+                response.status_code = 500
+
+    except UserValidationException as e:
         response = jsonify({
             'code': 403,
-            'message': user['msg']
+            'message': str(e)
         })
         response.status_code = 403
-    elif not user:
+
+    except Exception as e:
         response = jsonify({
             'code': 500,
             'message': 'Encountered an error while attempting to identify this user.'
         })
         response.status_code = 500
-    else:
-        user = user['user']
-        file_manifest = get_file_manifest(cohort_id, user)
-        if file_manifest:
-            response = jsonify({
-                'code': 200,
-                'data': file_manifest
-            })
-            response.status_code = 200
-        else:
-            response = jsonify({
-                'code': 500,
-                'message': "Error while attempting to retrieve file manifest for cohort {}.".format(str(cohort_id))
-            })
-            response.status_code = 500
 
     return response
 
