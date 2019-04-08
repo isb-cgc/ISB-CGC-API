@@ -117,7 +117,7 @@ class DataDetails(messages.Message):
     data_format = messages.StringField(15)
     access = messages.StringField(16)
     platform = messages.StringField(17)
-    index_file_name = messages.StringField(20)
+    index_file_name_key = messages.StringField(20)
 
 
 class SampleGetListFilters(messages.Message):
