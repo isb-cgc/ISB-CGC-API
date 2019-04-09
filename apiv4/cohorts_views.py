@@ -222,9 +222,9 @@ def create_cohort(user):
             result = make_cohort(user, filters, name, desc)
 
             if 'msg' in result:
-                cohort_infp = result
+                cohort_info = result
             else:
-                cohort_info = get_cohort_info(cohort_info['cohort_id'])
+                cohort_info = get_cohort_info(result['cohort_id'])
 
     except ValidationError as e:
         logger.warn("Filters rejected for improper formatting: {}".format(e))
