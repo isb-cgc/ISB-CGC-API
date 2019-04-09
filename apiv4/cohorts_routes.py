@@ -142,7 +142,7 @@ def cohorts():
         response = jsonify({
             'code': 500,
             'message': 'Encountered an error while attempting to {}.'.format(
-                "retrieve a list of cohorts" if request.method == 'GET' else "create this cohort."
+                "retrieve a list of cohorts" if request.method == 'GET' else "create this cohort"
             )
         })
         response.status_code = 500
