@@ -167,9 +167,10 @@ class SamplesGetAPI(remote.Service):
             biospecimen_data_item = MetadataItem(**constructor_dict)
 
             # get list of aliquots
-            cursor.execute(aliquot_query_str, extra_query_tuple)
-            aliquot_list = [row['AliquotBarcode'] for row in cursor.fetchall()]
-
+            # cursor.execute(aliquot_query_str, extra_query_tuple)
+            # aliquot_list = [row['AliquotBarcode'] for row in cursor.fetchall()]
+            aliquot_list = []
+            
             # get patient barcode (superfluous?)
             cursor.execute(patient_query_str, query_tuple)
             row = cursor.fetchone()

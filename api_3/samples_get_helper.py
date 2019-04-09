@@ -193,6 +193,7 @@ class SamplesGetAPI(remote.Service):
             # get list of aliquots
             # cursor.execute(aliquot_query_str, extra_query_tuple)
             # aliquot_list = [row['aliquot_barcode'] for row in cursor.fetchall()]
+            aliquot_list = []
 
             # get case barcode (superfluous?)
             cursor.execute(case_query_str, query_tuple)
