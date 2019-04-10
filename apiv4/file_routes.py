@@ -27,7 +27,7 @@ from file_views import get_file_paths, get_signed_uris
 logger = logging.getLogger(settings.LOGGER_NAME)
 
 
-@app.route('/apiv4/files/signed_uri/<file_uuid>', methods=['GET'], strict_slashes=False)
+@app.route('/apiv4/files/signed_uris/<file_uuid>/', methods=['GET'], strict_slashes=False)
 def signed_uri():
     response = None
 
@@ -118,7 +118,7 @@ def signed_uris():
     return response
 
 
-@app.route('/apiv4/files/path/<file_uuid>', methods=['GET'], strict_slashes=False)
+@app.route('/apiv4/files/paths/<file_uuid>/', methods=['GET'], strict_slashes=False)
 def file_path():
     response = None
 
