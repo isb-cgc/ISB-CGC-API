@@ -28,7 +28,7 @@ logger = logging.getLogger(settings.LOGGER_NAME)
 
 
 @app.route('/apiv4/files/signed_uris/<file_uuid>/', methods=['GET'], strict_slashes=False)
-def signed_uri():
+def signed_uri(file_uuid):
     response = None
 
     request_data = request.get_json()
@@ -69,7 +69,7 @@ def signed_uri():
 
 
 @app.route('/apiv4/files/signed_uris/', methods=['POST'], strict_slashes=False)
-def signed_uris():
+def signed_uri_list():
 
     response = None
 
@@ -119,13 +119,13 @@ def signed_uris():
 
 
 @app.route('/apiv4/files/paths/<file_uuid>/', methods=['GET'], strict_slashes=False)
-def file_path():
+def file_path(file_uuid):
     response = None
 
     request_data = request.get_json()
 
     try:
-        file_paths = get_file_paths(file_uuid)
+        file_paths = get_file_paths([file_uuid])
 
         if file_paths:
             response = jsonify({
@@ -152,7 +152,7 @@ def file_path():
 
 
 @app.route('/apiv4/files/paths/', methods=['POST'], strict_slashes=False)
-def file_paths():
+def file_path_list():
 
     response = None
 
@@ -167,8 +167,7 @@ def file_paths():
             })
             response.status_code = 400
         else:
-            user = validate_user()
-            file_paths = get_file_paths(user, request_data['uuids'])
+            file_paths = get_file_paths(request_data['uuids'])
 
             if file_paths:
                 response = jsonify({

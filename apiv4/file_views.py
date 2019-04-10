@@ -24,6 +24,7 @@ from flask import request
 
 from django.core.signals import request_finished
 from django.conf import settings
+from cohorts.metadata_helpers import get_paths_by_uuid
 
 from auth import UserValidationException
 
@@ -33,8 +34,10 @@ logger = logging.getLogger(settings.LOGGER_NAME)
 def get_file_paths(file_uuids):
     if not file_uuids or not len(file_uuids):
         raise Exception("While attempting to obtain file paths, encountered an error: no file UUIDs were provided.")
-    
-    return []
+
+    paths = get_paths_by_uuid(file_uuids)
+
+    return paths
 
 
 def get_signed_uris(user, file_uuids):
