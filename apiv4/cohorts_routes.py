@@ -20,8 +20,8 @@ import logging
 import json
 from flask import jsonify, request
 from apiv4 import app
-from cohorts_views import get_cohort_info, get_cohorts, get_file_manifest, get_cohort_counts, validate_user, create_cohort, edit_cohort, UserValidationException
-from auth import auth_info
+from cohorts_views import get_cohort_info, get_cohorts, get_file_manifest, get_cohort_counts, create_cohort, edit_cohort
+from auth import auth_info, UserValidationException, validate_user
 from django.conf import settings
 
 logger = logging.getLogger(settings.LOGGER_NAME)

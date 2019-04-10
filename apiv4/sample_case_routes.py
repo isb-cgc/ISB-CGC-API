@@ -22,6 +22,7 @@ from flask import jsonify, request
 from apiv4 import app
 from django.conf import settings
 from sample_case_views import get_full_sample_metadata, get_full_case_metadata
+from auth import validate_user, UserValidationException
 
 logger = logging.getLogger(settings.LOGGER_NAME)
 
@@ -86,7 +87,7 @@ def sample_metadata_list():
     else:
         response = jsonify({
             'code': 404,
-            'message': "Sample barcode {} was not found.".format(sample_barcode)})
+            'message': "Unable to retrieve case metadata for these barcodes: {}".format(str(sample_barcodes))})
         response.status_code = 404
 
     return response
@@ -109,7 +110,7 @@ def case_metadata_list():
     else:
         response = jsonify({
             'code': 404,
-            'message': "Sample barcode {} was not found.".format(case_barcode)})
+            'message': "Unable to retrieve case metadata for these barcodes: {}".format(str(case_barcodes))})
         response.status_code = 404
 
     return response

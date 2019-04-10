@@ -43,36 +43,6 @@ BLACKLIST_RE = settings.BLACKLIST_RE
 logger = logging.getLogger(settings.LOGGER_NAME)
 
 
-class UserValidationException(Exception):
-    pass
-
-
-def validate_user(user_email, cohort_id=None):
-    user = None
-    
-    django.setup()
-    try:
-        user = Django_User.objects.get(email=user_email)
-    except ObjectDoesNotExist as e:
-        logger.warn("User {} does not exist in our system.".format(user_email))
-        raise UserValidationException(
-            "User {} wasn't found in our system.".format(user_email) +
-            " Please register with our Web Application first: <https://isb-cgc.appspot.com>"
-        )
-   
-    try:
-        if cohort_id:
-            Cohort_Perms.objects.get(cohort_id=cohort_id, user_id=user.id)
-    except ObjectDoesNotExist as e:
-        logger.warn("Error retrieving cohort {} for user {}: {}".format(cohort_id, user_email, e))
-        raise UserValidationException(
-            "User {} does not have access to cohort {}.".format(user_email, cohort_id) +
-            " Please contact this cohort owner to obtain permission."
-        )
-        
-    return user
-
-
 def get_file_manifest(cohort_id, user):
     file_manifest = None
     inc_filters = {}
