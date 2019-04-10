@@ -28,7 +28,7 @@ logger = logging.getLogger(settings.LOGGER_NAME)
 
 
 @app.route('/apiv4/files/signed_uri/<file_uuid>', methods=['GET'], strict_slashes=False)
-def sample_metadata_list():
+def signed_uri():
     response = None
 
     request_data = request.get_json()
@@ -69,7 +69,7 @@ def sample_metadata_list():
 
 
 @app.route('/apiv4/files/signed_uris/', methods=['POST'], strict_slashes=False)
-def sample_metadata_list():
+def signed_uris():
 
     response = None
 
@@ -119,7 +119,7 @@ def sample_metadata_list():
 
 
 @app.route('/apiv4/files/path/<file_uuid>', methods=['GET'], strict_slashes=False)
-def sample_metadata_list():
+def file_path():
     response = None
 
     request_data = request.get_json()
@@ -152,7 +152,7 @@ def sample_metadata_list():
 
 
 @app.route('/apiv4/files/paths/', methods=['POST'], strict_slashes=False)
-def sample_metadata_list():
+def file_paths():
 
     response = None
 
