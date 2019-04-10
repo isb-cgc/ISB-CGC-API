@@ -95,22 +95,23 @@ def validate_user(user_email=None, cohort_id=None, uuids=None):
         if not user_acls:
             try:
                 err_msg, expr_str = refresh_at_dcf(user.id)
+                exception_msg = None
                 if err_msg:
                     logger.warn(err_msg)
-                    raise UserValidationException("User {} not currently logged in via DCF and failed to refresh.".format(user_email) +
-                        " Please visit the web application at <https://isb-cgc.appspot.com> and attempt a login to DCF from" +
-                        " your Account Settings page.")
+                    exception_msg = "User {} not currently logged in via DCF and failed to refresh.".format(user_email) + \
+                        " Please visit the web application at <https://isb-cgc.appspot.com> and attempt a login to DCF from" + \
+                        " your Account Settings page."
                 else:
                     user_acls = auth_dataset_whitelists_for_user(user)
                     if not user_acls:
-                        raise UserValidationException(
-                            "Couldn't verify user controlled dasa access for user {} to provided UUID(s).".format(user_email) +
-                            " Please visit the web application at <https://isb-cgc.appspot.com> and attempt a login to DCF from" +
+                        exception_msg = "Couldn't verify user controlled dasa access for user {} to provided UUID(s).".format(user_email) + \
+                            " Please visit the web application at <https://isb-cgc.appspot.com> and attempt a login to DCF from" + \
                             " your Account Settings page, then verify your controlled dataset access."
-                        )
+
+                if exception_msg:
+                    raise UserValidationException(exception_msg)
                         
             except (TokenFailure, InternalTokenError, DCFCommFailure, RefreshTokenExpired) as e:
-                msg = ""
                 if type(e) is RefreshTokenExpired:
                     raise UserValidationException("Unable to refresh your 24 hour access to controlled data. Please log in to Web " 
                         + "Application at <https://isb-cgc.appspot.com> and visit your Account Details page to refresh " 
@@ -121,7 +122,9 @@ def validate_user(user_email=None, cohort_id=None, uuids=None):
                     else:
                         msg = "There is an internal inconsistency with user tokens for user {}".format(user_email)
                     raise Exception(msg)
-                    
+
+        logger.info("User ACLs: {}".format(str(user_acls)))
+        logger.info("ACLs needed: {}".format(str(acls_needed)))
         inaccessible = []
 
         for acl in acls_needed:
