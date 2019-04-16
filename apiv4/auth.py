@@ -59,13 +59,12 @@ def auth_info():
     return user_info
 
 
-def validate_user(user_email=None, cohort_id=None, uuids=None):
-    
+def get_user(user_email=None):
     # Assume this is for the user information in the request header if none is
     # provided (it could be for someone else on a project, etc.)
     if not user_email:
         user_email = auth_info()['email']
-        
+
     user = None
 
     django.setup()
@@ -77,6 +76,14 @@ def validate_user(user_email=None, cohort_id=None, uuids=None):
             "User {} wasn't found in our system.".format(user_email) +
             " Please register with our Web Application first: <https://isb-cgc.appspot.com>"
         )
+    
+    return user
+
+
+def validate_user(user=None, cohort_id=None, uuids=None):
+    
+    if not user:
+        user = get_user()
 
     try:
         if cohort_id:
@@ -90,38 +97,7 @@ def validate_user(user_email=None, cohort_id=None, uuids=None):
 
     if uuids:
         acls_needed = get_acls_by_uuid(uuids)
-        user_acls = auth_dataset_whitelists_for_user(user)
-
-        if not user_acls:
-            try:
-                err_msg, expr_str = refresh_at_dcf(user.id)
-                exception_msg = None
-                if err_msg:
-                    logger.warn(err_msg)
-                    exception_msg = "User {} not currently logged in via DCF and failed to refresh.".format(user_email) + \
-                        " Please visit the web application at <https://isb-cgc.appspot.com> and attempt a login to DCF from" + \
-                        " your Account Settings page."
-                else:
-                    user_acls = auth_dataset_whitelists_for_user(user)
-                    if not user_acls:
-                        exception_msg = "Couldn't verify user controlled dasa access for user {} to provided UUID(s).".format(user_email) + \
-                            " Please visit the web application at <https://isb-cgc.appspot.com> and attempt a login to DCF from" + \
-                            " your Account Settings page, then verify your controlled dataset access."
-
-                if exception_msg:
-                    raise UserValidationException(exception_msg)
-                        
-            except (TokenFailure, InternalTokenError, DCFCommFailure, RefreshTokenExpired) as e:
-                if type(e) is RefreshTokenExpired:
-                    raise UserValidationException("Unable to refresh your 24 hour access to controlled data. Please log in to Web " 
-                        + "Application at <https://isb-cgc.appspot.com> and visit your Account Details page to refresh " 
-                        + "your controlled dataset access.")
-                else:
-                    if type(e) is DCFCommFailure:
-                        msg = "Unable to communicate with DCF while attempting to refresh user access for {}.".format(user_email)
-                    else:
-                        msg = "There is an internal inconsistency with user tokens for user {}".format(user_email)
-                    raise Exception(msg)
+        user_acls = get_user_acls(user)
 
         logger.info("User ACLs: {}".format(str(user_acls)))
         logger.info("ACLs needed: {}".format(str(acls_needed)))
@@ -140,4 +116,45 @@ def validate_user(user_email=None, cohort_id=None, uuids=None):
             )
 
     return user
+
+
+def get_user_acls(user):
+    user_acls = auth_dataset_whitelists_for_user(user)
+
+    if not user_acls:
+        try:
+            err_msg, expr_str = refresh_at_dcf(user.id)
+            exception_msg = None
+            if err_msg:
+                logger.warn(err_msg)
+                exception_msg = "User {} not currently logged in via DCF and failed to refresh.".format(user_email) + \
+                                " Please visit the web application at <https://isb-cgc.appspot.com> and attempt a login to DCF from" + \
+                                " your Account Settings page."
+            else:
+                user_acls = auth_dataset_whitelists_for_user(user)
+                if not user_acls:
+                    exception_msg = "Couldn't verify user controlled dasa access for user {} to provided UUID(s).".format(
+                        user_email) + \
+                                    " Please visit the web application at <https://isb-cgc.appspot.com> and attempt a login to DCF from" + \
+                                    " your Account Settings page, then verify your controlled dataset access."
+
+            if exception_msg:
+                raise UserValidationException(exception_msg)
+
+        except (TokenFailure, InternalTokenError, DCFCommFailure, RefreshTokenExpired) as e:
+            if type(e) is RefreshTokenExpired:
+                raise UserValidationException(
+                    "Unable to refresh your 24 hour access to controlled data. Please log in to Web "
+                    + "Application at <https://isb-cgc.appspot.com> and visit your Account Details page to refresh "
+                    + "your controlled dataset access.")
+            else:
+                if type(e) is DCFCommFailure:
+                    msg = "Unable to communicate with DCF while attempting to refresh user access for {}.".format(
+                        user_email)
+                else:
+                    msg = "There is an internal inconsistency with user tokens for user {}".format(user_email)
+                raise Exception(msg)
+
+
+
 # END METHODS
