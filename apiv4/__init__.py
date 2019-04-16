@@ -36,6 +36,7 @@ from cohorts_routes import *
 from program_routes import *
 from sample_case_routes import *
 from file_routes import *
+from user_routes import *
 
 logger = logging.getLogger(settings.LOGGER_NAME)
 
