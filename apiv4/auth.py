@@ -20,6 +20,7 @@ import logging
 import base64
 import json
 import requests
+import django
 from flask import request, jsonify
 from django.conf import settings
 from cohorts.metadata_helpers import get_acls_by_uuid
