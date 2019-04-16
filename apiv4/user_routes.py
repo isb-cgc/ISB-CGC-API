@@ -21,6 +21,7 @@ import json
 from flask import jsonify, request
 from apiv4 import app
 from auth import auth_info, UserValidationException, validate_user, get_user
+from user_views import get_user_acls, get_account_details, verify_gcp_for_reg, register_or_refresh_gcp
 from django.conf import settings
 
 logger = logging.getLogger(settings.LOGGER_NAME)
