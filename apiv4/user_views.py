@@ -51,6 +51,7 @@ def get_account_details(user):
             accounts_details = {'dataset_access': whitelists}
         
     except UserValidationException as u:
+        logger.warn(u)
         accounts_details = {'message': str(u)}
 
     except Exception as e:

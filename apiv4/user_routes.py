@@ -47,13 +47,19 @@ def account_details():
             response.status_code = 500
         else:
 
-            account_info = get_account_details(user)
+            account_info = get_account_details(user)             
 
             if account_info:
-                response = jsonify({
-                    'code': 200,
-                    'data': account_info
-                })
+                response_obj = {}
+                code = None
+
+                if 'message' in account_info:
+                    code = 400
+                else:
+                    code = 200
+                response_obj['data'] = account_info
+                response_obj['code'] = code
+                response = jsonify(response_obj)
                 response.status_code = 200
             else:
                 response = jsonify({
