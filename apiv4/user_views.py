@@ -46,6 +46,8 @@ def get_account_details(user):
 
     try:
         whitelists = get_user_acls(user)
+        
+        logger.debug("Whitelists: "+str(whitelists))
     
         if whitelists:
             accounts_details = {'dataset_access': whitelists}
