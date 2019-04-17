@@ -122,6 +122,8 @@ def validate_user(user=None, cohort_id=None, uuids=None):
 def get_user_acls(user):
     user_acls = auth_dataset_whitelists_for_user(user)
 
+    logger.info("Checking user ACLs: {}".format(str(user_acls)))
+
     if not user_acls:
         try:
             err_msg, expr_str = refresh_at_dcf(user.id)
