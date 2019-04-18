@@ -158,13 +158,13 @@ class MetadataRangesItem(messages.Message):
     Common = messages.MessageField(CommonMetadataRangesItem, 1)
     Clinical = messages.MessageField(ClinicalMetadataRangesItem, 2)
     Biospecimen = messages.MessageField(BiospecimenMetadataRangesItem, 3)
-    Data_HG19 = messages.MessageField(Data_HG19MetadataRangesItem, 4)
-    Data_HG38 = messages.MessageField(Data_HG38MetadataRangesItem, 5)
+    data_HG19_r14 = messages.MessageField(Data_HG19MetadataRangesItem, 4)
+    data_HG38_r14 = messages.MessageField(Data_HG38MetadataRangesItem, 5)
 
 class MetadataItem(messages.Message):
     Common = messages.MessageField(CommonMetadataItem, 1)
     Clinical = messages.MessageField(ClinicalMetadataItem, 2)
     Biospecimen = messages.MessageField(BiospecimenMetadataItem, 3)
-    Data_HG19 = messages.MessageField(Data_HG19MetadataItem, 4)
-    Data_HG38 = messages.MessageField(Data_HG38MetadataItem, 5)
+    data_HG19_r14 = messages.MessageField(Data_HG19MetadataItem, 4)
+    data_HG38_r14 = messages.MessageField(Data_HG38MetadataItem, 5)
 
