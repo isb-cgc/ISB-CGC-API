@@ -120,7 +120,7 @@ def validate_user(user=None, cohort_id=None, uuids=None):
 
 
 def get_user_acls(user):
-    user_acls = auth_dataset_whitelists_for_user(user)
+    user_acls = auth_dataset_whitelists_for_user(user.id)
 
     if not user_acls:
         try:
@@ -132,9 +132,10 @@ def get_user_acls(user):
                     " Please visit the web application at <https://isb-cgc.appspot.com> and attempt a login to DCF from" + \
                     " your Account Settings page."
             else:
-                user_acls = auth_dataset_whitelists_for_user(user)
+                user_acls = auth_dataset_whitelists_for_user(user.id)
+
                 if not user_acls:
-                    exception_msg = "Couldn't verify user controlled dasa access for user {} to provided UUID(s).".format(user.email) + \
+                    exception_msg = "Couldn't verify user controlled data access for user {}.".format(user.email) + \
                         " Please visit the web application at <https://isb-cgc.appspot.com> and attempt a login to DCF from" + \
                         " your Account Settings page, then verify your controlled dataset access."
 
