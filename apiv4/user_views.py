@@ -60,7 +60,7 @@ def get_account_details(user):
     except Exception as e:
         logger.error("[ERROR] Encountered an error while retrieving user account details:")
         logger.exception(e)
-        accounts_details = {'message': "Encountered an error while retrieving account details for {}.".format(user.email_address)}
+        accounts_details = {'message': "Encountered an error while retrieving account details for {}.".format(user.email)}
 
     return accounts_details
 

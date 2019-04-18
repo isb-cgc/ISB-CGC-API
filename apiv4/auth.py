@@ -124,20 +124,19 @@ def get_user_acls(user):
 
     if not user_acls:
         try:
-            err_msg, expr_str = refresh_at_dcf(user.id)
+            err_msg, expr_str, _ = refresh_at_dcf(user.id)
             exception_msg = None
             if err_msg:
                 logger.warn(err_msg)
-                exception_msg = "User {} not currently logged in via DCF and failed to refresh.".format(user_email) + \
-                                " Please visit the web application at <https://isb-cgc.appspot.com> and attempt a login to DCF from" + \
-                                " your Account Settings page."
+                exception_msg = "User {} not currently logged in via DCF and failed to refresh.".format(user.email) + \
+                    " Please visit the web application at <https://isb-cgc.appspot.com> and attempt a login to DCF from" + \
+                    " your Account Settings page."
             else:
                 user_acls = auth_dataset_whitelists_for_user(user)
                 if not user_acls:
-                    exception_msg = "Couldn't verify user controlled dasa access for user {} to provided UUID(s).".format(
-                        user_email) + \
-                                    " Please visit the web application at <https://isb-cgc.appspot.com> and attempt a login to DCF from" + \
-                                    " your Account Settings page, then verify your controlled dataset access."
+                    exception_msg = "Couldn't verify user controlled dasa access for user {} to provided UUID(s).".format(user.email) + \
+                        " Please visit the web application at <https://isb-cgc.appspot.com> and attempt a login to DCF from" + \
+                        " your Account Settings page, then verify your controlled dataset access."
 
             if exception_msg:
                 raise UserValidationException(exception_msg)
@@ -150,10 +149,9 @@ def get_user_acls(user):
                     + "your controlled dataset access.")
             else:
                 if type(e) is DCFCommFailure:
-                    msg = "Unable to communicate with DCF while attempting to refresh user access for {}.".format(
-                        user_email)
+                    msg = "Unable to communicate with DCF while attempting to refresh user access for {}.".format(user.email)
                 else:
-                    msg = "There is an internal inconsistency with user tokens for user {}".format(user_email)
+                    msg = "There is an internal inconsistency with user tokens for user {}".format(user.email)
                 raise Exception(msg)
 
     return user_acls
