@@ -122,8 +122,6 @@ def validate_user(user=None, cohort_id=None, uuids=None):
 def get_user_acls(user):
     user_acls = auth_dataset_whitelists_for_user(user)
 
-    logger.info("Checking user ACLs: {}".format(str(user_acls)))
-
     if not user_acls:
         try:
             err_msg, expr_str = refresh_at_dcf(user.id)
@@ -158,6 +156,6 @@ def get_user_acls(user):
                     msg = "There is an internal inconsistency with user tokens for user {}".format(user_email)
                 raise Exception(msg)
 
-
+    return user_acls
 
 # END METHODS

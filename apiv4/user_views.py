@@ -31,6 +31,7 @@ from django.conf import settings
 from accounts.sa_utils import auth_dataset_whitelists_for_user
 from accounts.utils import register_or_refresh_gcp, verify_gcp_for_reg
 from accounts.sa_utils import auth_dataset_whitelists_for_user
+from accounts.models import AuthorizedDataset
 from projects.models import Program
 from auth import get_user_acls, UserValidationException
 
@@ -47,10 +48,10 @@ def get_account_details(user):
     try:
         whitelists = get_user_acls(user)
 
-        logger.debug("Whitelists: {}".format(str(whitelists)))
-    
         if whitelists:
+            uads = AuthorizedDataset.objects.filter()
             accounts_details = {'dataset_access': whitelists}
+
         
     except UserValidationException as u:
         logger.warn(u)
