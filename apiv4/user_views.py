@@ -49,10 +49,9 @@ def get_account_details(user):
         whitelists = get_user_acls(user)
 
         if whitelists:
-            uads = AuthorizedDataset.objects.filter()
-            accounts_details = {'dataset_access': whitelists}
+            uads = AuthorizedDataset.objects.filter(whitelist_id__in=whitelists)
+            accounts_details = {'dataset_access': [{uad.name: uad.whitelist_id for uad in uads}]}
 
-        
     except UserValidationException as u:
         logger.warn(u)
         accounts_details = {'message': str(u)}
@@ -65,7 +64,7 @@ def get_account_details(user):
     return accounts_details
 
 
-def gcp_validation(gcp_id, user):
+def gcp_validation(user, gcp_id):
     validation = None
 
     try:
@@ -91,7 +90,7 @@ def gcp_validation(gcp_id, user):
     return validation
 
 
-def gcp_registration(gcp_id, user, refresh):
+def gcp_registration(user, gcp_id, refresh):
 
     registration = None
     success = False
