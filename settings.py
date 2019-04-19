@@ -100,7 +100,7 @@ IS_APP_ENGINE = os.getenv('SERVER_SOFTWARE', '').startswith(APP_ENGINE)
 SITE_ID = 3
 
 if IS_APP_ENGINE_FLEX or IS_APP_ENGINE:
-    print("[STATUS] AppEngine detected.")
+    print("[STATUS] AppEngine detected - swapping in live site ID.")
     SITE_ID = 4
 
 
@@ -395,8 +395,7 @@ if IS_DEV:
 #   End django-allauth   #
 ##########################
 
-GOOGLE_APPLICATION_CREDENTIALS  = os.path.join(os.path.dirname(__file__), os.environ.get('GOOGLE_APPLICATION_CREDENTIALS')) if os.environ.get('GOOGLE_APPLICATION_CREDENTIALS') else '' # Path to privatekey.json
-print("Google App Creds location: "+GOOGLE_APPLICATION_CREDENTIALS)
+GOOGLE_APPLICATION_CREDENTIALS  = os.path.join(os.path.dirname(__file__), os.environ.get('GOOGLE_APPLICATION_CREDENTIALS')) if os.environ.get('GOOGLE_APPLICATION_CREDENTIALS') else ''
 CLIENT_SECRETS                  = os.path.join(os.path.dirname(__file__), os.environ.get('CLIENT_SECRETS')) if os.environ.get('CLIENT_SECRETS') else ''
 WEB_CLIENT_ID                   = os.environ.get('WEB_CLIENT_ID', '') # Client ID from client_secrets.json
 IGV_WEB_CLIENT_ID               = os.environ.get('IGV_WEB_CLIENT_ID', WEB_CLIENT_ID)
@@ -511,6 +510,3 @@ NOTIFICATION_EMAIL_FROM_ADDRESS = os.environ.get('NOTIFICATOON_EMAIL_FROM_ADDRES
 
 # Explicitly check for known items
 BLACKLIST_RE = r'((?i)<script>|(?i)</script>|!\[\]|!!\[\]|\[\]\[\".*\"\]|(?i)<iframe>|(?i)</iframe>)'
-
-print("Done with settings.py")
-
