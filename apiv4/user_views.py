@@ -69,7 +69,7 @@ def gcp_validation(gcp_id, user):
     validation = None
 
     try:
-        validation = verify_gcp_for_reg(user, gcp_id)
+        validation, status = verify_gcp_for_reg(user, gcp_id)
 
         if validation:
             if 'roles' in validation:
