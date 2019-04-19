@@ -50,7 +50,7 @@ def get_account_details(user):
 
         if whitelists:
             uads = AuthorizedDataset.objects.filter(whitelist_id__in=whitelists)
-            accounts_details = {'dataset_access': [{uad.name: uad.whitelist_id for uad in uads}]}
+            accounts_details = {'dataset_access': [{'name': uad.name, 'whitelist_id': uad.whitelist_id} for uad in uads]}
 
     except UserValidationException as u:
         logger.warn(u)
