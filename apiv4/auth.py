@@ -81,10 +81,11 @@ def get_user(user_email=None):
     return user
 
 
-def validate_user(user=None, cohort_id=None, uuids=None):
-    
-    if not user:
-        user = get_user()
+def validate_user(user_email=None, cohort_id=None, uuids=None):
+    user = get_user()
+
+    if not user_email:
+        user_email = user.email
 
     try:
         if cohort_id:
