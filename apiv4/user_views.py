@@ -64,11 +64,11 @@ def get_account_details(user):
     return accounts_details
 
 
-def gcp_validation(user, gcp_id):
+def gcp_validation(user, gcp_id, refresh=False):
     validation = None
 
     try:
-        validation, status = verify_gcp_for_reg(user, gcp_id)
+        validation, status = verify_gcp_for_reg(user, gcp_id, refresh)
 
         if validation:
             if 'roles' in validation:
@@ -95,7 +95,7 @@ def gcp_registration(user, gcp_id, refresh):
     registration = None
     success = False
     try:
-        validation, validation_status = verify_gcp_for_reg(user, gcp_id, refresh)
+        validation = gcp_validation(user, gcp_id, refresh)
 
         if validation:
             if 'roles' in validation:
@@ -118,6 +118,8 @@ def gcp_registration(user, gcp_id, refresh):
                         
                     if 'message' not in registration:
                         registration['message'] = "Google Cloud Platform project ID {} was successfully {}.".format(gcp_id, 'refreshed' if refresh else 'registered')
+        else:
+            logger.warn("[WARNING] Validation was unsuccessful!")
     
     except Exception as e:
         logger.error("[ERROR] While registering a GCP:")
