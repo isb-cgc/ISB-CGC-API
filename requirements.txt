@@ -8,7 +8,7 @@ pyasn1==0.4.1
 requests-oauthlib==0.7.0
 rsa==3.2
 simplejson==3.8.1
-six==1.11.0
+six==1.12.0
 uritemplate==3.0.0
 GoogleAppEngineCloudStorageClient==1.9.22.1
 django-dotenv==1.4.2
