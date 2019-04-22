@@ -95,7 +95,7 @@ def gcp_registration(user, gcp_id, refresh):
     registration = None
     success = False
     try:
-        validation = verify_gcp_for_reg(user, gcp_id, refresh)
+        validation, validation_status = verify_gcp_for_reg(user, gcp_id, refresh)
 
         if validation:
             if 'roles' in validation:
@@ -120,6 +120,7 @@ def gcp_registration(user, gcp_id, refresh):
                         registration['message'] = "Google Cloud Platform project ID {} was successfully {}.".format(gcp_id, 'refreshed' if refresh else 'registered')
     
     except Exception as e:
+        logger.error("[ERROR] While registering a GCP:")
         logger.exception(e)
 
     return registration, success
