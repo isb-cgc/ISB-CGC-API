@@ -104,6 +104,8 @@ def gcp_registration(user, gcp_id, refresh):
 
                 registration, status = register_or_refresh_gcp(user, gcp_id, registered_users, refresh)
 
+                logger.info("Registration: {}".format(str(registration)))
+
                 if status == 200:
                     success = True
                     unregs = [x for x in validation['roles'] if not validation['roles'][x]['registered_user']]
