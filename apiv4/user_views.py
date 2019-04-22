@@ -72,7 +72,7 @@ def gcp_validation(user, gcp_id):
 
         if validation:
             if 'roles' in validation:
-                unregs = [x for x in validation['roles'] if not validation['roles'][x]['registered']]
+                unregs = [x for x in validation['roles'] if not validation['roles'][x]['registered_user']]
 
                 if len(unregs):
                     validation['notes'] = "The following users are not registered in our system. Please note that if GCP {} ".format(gcp_id) + \
@@ -106,7 +106,7 @@ def gcp_registration(user, gcp_id, refresh):
 
                 if status == 200:
                     success = True
-                    unregs = [x for x in validation['roles'] if not validation['roles'][x]['registered']]
+                    unregs = [x for x in validation['roles'] if not validation['roles'][x]['registered_user']]
                     if len(unregs):
                         registration['notes'] = "The following users are not registered in our system. Please note that if GCP {} ".format(gcp_id) + \
                            "is intended for use with controlled access data, all users must log in to the ISB-CGC " + \
