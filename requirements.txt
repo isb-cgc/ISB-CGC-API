@@ -16,4 +16,4 @@ django-finalware==1.0.0
 django-allauth==0.35.0
 jsonschema==2.6.0
 enum34==1.1.6
-google-endpoints==4.0.0
+google-endpoints==4.8.0
