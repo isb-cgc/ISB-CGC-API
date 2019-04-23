@@ -83,6 +83,8 @@ def gcp_validation(user, gcp_id, refresh=False):
 
                 if 'message' not in validation:
                     validation['message'] = "Google Cloud Platform project ID {} was successfully validated for registration.".format(gcp_id)
+        else:
+            logger.warn("[WARNING] Validation was unsuccessful!")
 
     except Exception as e:
         logger.exception(e)
@@ -101,21 +103,13 @@ def gcp_registration(user, gcp_id, refresh):
             if 'roles' in validation:
 
                 registered_users = [x for x, y in validation['roles'].items() if y['registered_user']]
-
                 registration, status = register_or_refresh_gcp(user, gcp_id, registered_users, refresh)
-
                 logger.info("Registration: {}".format(str(registration)))
 
                 if status == 200:
                     success = True
-                    unregs = [x for x in validation['roles'] if not validation['roles'][x]['registered_user']]
-                    if len(unregs):
-                        registration['notes'] = "The following users are not registered in our system. Please note that if GCP {} ".format(gcp_id) + \
-                           "is intended for use with controlled access data, all users must log in to the ISB-CGC " + \
-                           "web application at <https://isb-cgc.appspot.com> and link their Google Account to their eRA " + \
-                           "Commons ID. The link to do so is found in Account Settings. Unregistered users: " + \
-                           "{}".format("; ".join(unregs))
-                        
+                    if 'notes' in validation:
+                        registration['notes'] = validation['notes']
                     if 'message' not in registration:
                         registration['message'] = "Google Cloud Platform project ID {} was successfully {}.".format(gcp_id, 'refreshed' if refresh else 'registered')
         else:
