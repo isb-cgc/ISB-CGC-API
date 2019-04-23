@@ -178,16 +178,16 @@ def register_gcp(gcp_id):
                 response_obj = {}
                 code = None
 
-                if 'message' in validation:
-                    response_obj['message'] = validation['message']
-                if 'notes' in validation:
-                    response_obj['notes'] = validation['notes']
+                if 'message' in registration:
+                    response_obj['message'] = registration['message']
+                if 'notes' in registration:
+                    response_obj['notes'] = registration['notes']
 
                 if not success:
                     code = 400
                 else:
                     code = 200
-                    response_obj['gcp_project_id'] = validation['gcp_id']
+                    response_obj['gcp_project_id'] = registration['gcp_id']
 
                 response_obj['code'] = code
                 response = jsonify(response_obj)
