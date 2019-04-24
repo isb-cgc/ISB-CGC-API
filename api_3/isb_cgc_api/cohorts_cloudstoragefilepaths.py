@@ -25,7 +25,7 @@ class CohortsCloudStorageFilePathsAPI(CohortsCloudStorageFilePathsHelper):
 
     def build_program_query(self, final_query_str, query_tuple, program, param_map, build):
         query_str = 'SELECT md.file_name_key, md.access '\
-        'FROM {}_metadata_data_{} md '.format(program, build)
+        'FROM {}_metadata_data_{}_r14 md '.format(program, build)
         query_str += 'JOIN cohorts_samples cs ON md.sample_barcode=cs.sample_barcode WHERE cs.cohort_id=%s '
         query_tuple += [param_map['cohort_id']]
         query_str += 'AND file_name_key != "" AND file_name_key is not null '

@@ -38,7 +38,7 @@ class SamplesGetQueryBuilder(object):
         aliquot_query_str = ''
         for genomic_build in genomic_builds:
             part_aliquot_query_str = 'select sample_barcode, case_barcode, aliquot_barcode, aliquot_gdc_id ' \
-                             'from {}_metadata_data_{} ' \
+                             'from {}_metadata_data_{}_r14 ' \
                              'where file_name_key is not null and file_name_key !="" '.format(program, genomic_build)
             for column in param_list:
                 if column == 'sample_barcode' and count>1:
@@ -72,7 +72,7 @@ class SamplesGetQueryBuilder(object):
         data_query_str = ''
         for genomic_build in genomic_builds:
             part_data_query_str = 'select {0} ' \
-                             'from {1}_metadata_data_{2} ' \
+                             'from {1}_metadata_data_{2}_r14 ' \
                              'where file_name_key is not null and file_name_key !="" '.format(', '.join(field.name for field in datadict_class.all_fields()), program, genomic_build)
             for column in param_list:
                 if column == 'sample_barcode' and count > 1:
@@ -103,12 +103,10 @@ class SamplesGetQueryBuilder(object):
 
 class DataDetails(messages.Message):
     file_gdc_id = messages.StringField(1)
-    file_name = messages.StringField(2)
     file_name_key = messages.StringField(3)
     file_size = messages.IntegerField(4, variant=messages.Variant.INT64)
     sample_gdc_id = messages.StringField(5)
     sample_barcode = messages.StringField(6)
-    sample_type = messages.StringField(7)
     project_short_name = messages.StringField(8)
     disease_code = messages.StringField(9)
     program_name = messages.StringField(11)
@@ -118,9 +116,7 @@ class DataDetails(messages.Message):
     data_format = messages.StringField(15)
     access = messages.StringField(16)
     platform = messages.StringField(17)
-    endpoint_type = messages.StringField(18)
-    analysis_workflow_type = messages.StringField(19)
-    index_file_name = messages.StringField(20)
+    index_file_name_key = messages.StringField(20)
 
 
 class SampleGetListFilters(messages.Message):
@@ -132,7 +128,6 @@ class SampleGetListFilters(messages.Message):
     data_type = messages.StringField(6, repeated=True)
     data_format = messages.StringField(7, repeated=True)
     project_short_name = messages.StringField(8, repeated=True)
-    analysis_workflow_type = messages.StringField(9, repeated=True)
 
 
 class SamplesGetAPI(remote.Service):
@@ -196,8 +191,9 @@ class SamplesGetAPI(remote.Service):
             biospecimen_data_item = MetadataItem(**constructor_dict)
 
             # get list of aliquots
-            cursor.execute(aliquot_query_str, extra_query_tuple)
-            aliquot_list = [row['aliquot_barcode'] for row in cursor.fetchall()]
+            # cursor.execute(aliquot_query_str, extra_query_tuple)
+            # aliquot_list = [row['aliquot_barcode'] for row in cursor.fetchall()]
+            aliquot_list = []
 
             # get case barcode (superfluous?)
             cursor.execute(case_query_str, query_tuple)
@@ -294,12 +290,12 @@ class SamplesGetAPI(remote.Service):
                 sample_data[row['sample_barcode']]['case_gdc_id'] = row['case_gdc_id']
 
             # get list of aliquots
-            cursor.execute(aliquot_query_str, extra_query_tuple)
-            rows = cursor.fetchall()
-            for row in rows:
-                if 'aliquots' not in sample_data[row['sample_barcode']]:
-                    sample_data[row['sample_barcode']]['aliquots'] = []
-                sample_data[row['sample_barcode']]['aliquots'].append(row['aliquot_barcode'])
+            # cursor.execute(aliquot_query_str, extra_query_tuple)
+            # rows = cursor.fetchall()
+            # for row in rows:
+            #     if 'aliquots' not in sample_data[row['sample_barcode']]:
+            #         sample_data[row['sample_barcode']]['aliquots'] = []
+            #     sample_data[row['sample_barcode']]['aliquots'].append(row['aliquot_barcode'])
 
             # prepare to build list of data details messages
             cursor.execute(data_query_str, extra_query_tuple)

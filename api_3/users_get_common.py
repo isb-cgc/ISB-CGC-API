@@ -24,7 +24,6 @@ from django.contrib.auth.models import User
 from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 
 from accounts.models import AuthorizedDataset, NIH_User, UserAuthorizedDatasets
-from dataset_utils.dataset_access_support_factory import DatasetAccessSupportFactory
 
 logger = logging.getLogger(__name__)
 
@@ -68,21 +67,6 @@ class UserGetAPICommon(remote.Service):
                     if program in dataset.name:
                         authorized = True
                         allowed = True
-                if not allowed:
-                    das = DatasetAccessSupportFactory.from_webapp_django_settings()
-                    authorized_datasets = das.get_datasets_for_era_login(nih_user.NIH_username)
-                    for dataset in authorized_datasets:
-                        try:
-                            ad = AuthorizedDataset.objects.get(whitelist_id=dataset.dataset_id)
-                            if program in ad.name:
-                                allowed = True
-                        except (ObjectDoesNotExist) as e:
-                            logger.exception('didn\'t find an expected authorized dataset for {}: {}'.format(dataset, e))
-                            raise
-                        except (MultipleObjectsReturned) as e:
-                            authdatasets = AuthorizedDataset.objects.filter(whitelist_id=dataset.dataset_id).values_list('name',flat=True)
-                            logger.exception('found more than one expected authorized dataset for {} named {}: {}'.format(dataset, ", ".join(authdatasets), e))
-                            raise
 
         if not allowed:
             return UserGetAPIReturnJSON(message="{} is not on the controlled-access google group.".format(user_email),

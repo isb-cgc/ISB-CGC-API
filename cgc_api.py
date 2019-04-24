@@ -27,11 +27,8 @@ from api_3.isb_cgc_api.cohort_file_manifest import CohortFileManifestAPI
 from api_3.isb_cgc_api_TCGA.cohorts_preview import TCGACohortsPreviewAPI
 from api_3.isb_cgc_api_TCGA.cohorts_create import TCGACohortsCreateAPI
 from api_3.isb_cgc_api_TCGA.patients_get import TCGACasesGetAPI
-from api_3.isb_cgc_api_TCGA.patients_annotations import TCGACasesAnnotationAPI
 from api_3.isb_cgc_api_TCGA.samples_get import TCGASamplesGetAPI
 from api_3.isb_cgc_api_TCGA.samples_cloudstoragefilepaths import TCGASamplesCloudStorageFilePathsAPI
-from api_3.isb_cgc_api_TCGA.samples_annotations import TCGASamplesAnnotationAPI
-from api_3.isb_cgc_api_TCGA.aliquots_annotations import TCGAAliquotsAnnotationAPI
 from api_3.isb_cgc_api_TCGA.users_get import TCGAUserGetAPI
  
 from api_3.isb_cgc_api_TARGET.cohorts_preview import TARGETCohortsPreviewAPI
@@ -60,11 +57,8 @@ APPLICATION = endpoints.api_server([
     TCGACohortsPreviewAPI,
     TCGACohortsCreateAPI,
     TCGACasesGetAPI,
-    TCGACasesAnnotationAPI,
     TCGASamplesGetAPI,
     TCGASamplesCloudStorageFilePathsAPI,
-    TCGASamplesAnnotationAPI,
-    TCGAAliquotsAnnotationAPI,
     TCGAUserGetAPI,
          
     TARGETCohortsPreviewAPI,

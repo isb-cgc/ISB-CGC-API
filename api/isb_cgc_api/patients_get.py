@@ -97,8 +97,9 @@ class PatientsGetAPI(remote.Service):
             sample_list = [row['sample_barcode'] for row in cursor.fetchall()]
 
             # get list of aliquots
-            cursor.execute(aliquot_query_str, query_tuple)
-            aliquot_list = [row['AliquotBarcode'] for row in cursor.fetchall()]
+            # cursor.execute(aliquot_query_str, query_tuple)
+            # aliquot_list = [row['AliquotBarcode'] for row in cursor.fetchall()]
+            aliquot_list = []
 
             return PatientDetails(clinical_data=clinical_data_item, samples=sample_list, aliquots=aliquot_list)
 
