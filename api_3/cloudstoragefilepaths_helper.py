@@ -122,7 +122,7 @@ class SamplesCloudStorageFilePathsHelper(CloudStorageFilePathsAPI):
         query_tuple = []
         for build in builds:
             query_str = 'SELECT md.file_name_key, md.access ' \
-                        'FROM {}_metadata_data_{} md '.format(program, build)
+                        'FROM {}_metadata_data_{}_r14 md '.format(program, build)
     
             query_str += 'WHERE sample_barcode=%s '
             query_tuple += [param_map['sample_barcode']]

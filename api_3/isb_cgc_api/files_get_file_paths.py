@@ -44,7 +44,7 @@ class FilesGetPath(remote.Service):
         in_clause = in_clause[:-2]
         
         uuid2paths = {}
-        sql = 'select file_gdc_id, file_name_key from {}_metadata_data_{} where file_gdc_id in ({}) order by 1, 2'
+        sql = 'select file_gdc_id, file_name_key from {}_metadata_data_{}_r14 where file_gdc_id in ({}) order by 1, 2'
         programs = ['CCLE', 'TARGET', 'TCGA']
         db = sql_connection()
         for program in programs:
