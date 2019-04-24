@@ -29,7 +29,7 @@ from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 from django.conf import settings
 
 from accounts.sa_utils import auth_dataset_whitelists_for_user
-from accounts.utils import register_or_refresh_gcp, verify_gcp_for_reg
+from accounts.utils import register_or_refresh_gcp, verify_gcp_for_reg, unreg_gcp
 from accounts.sa_utils import auth_dataset_whitelists_for_user
 from accounts.models import AuthorizedDataset
 from projects.models import Program
@@ -84,9 +84,10 @@ def gcp_validation(user, gcp_id, refresh=False):
                 if 'message' not in validation:
                     validation['message'] = "Google Cloud Platform project ID {} was successfully validated for registration.".format(gcp_id)
         else:
-            logger.warn("[WARNING] Validation was unsuccessful!")
+            logger.warn("[WARNING] Validation of {} by user {} was unsuccessful!".format(gcp_id, user.email))
 
     except Exception as e:
+        logger.error("[ERROR] While attempting to validate a project for registration:")
         logger.exception(e)
 
     return validation
@@ -113,10 +114,31 @@ def gcp_registration(user, gcp_id, refresh):
                     if 'message' not in registration:
                         registration['message'] = "Google Cloud Platform project ID {} was successfully {}.".format(gcp_id, 'refreshed' if refresh else 'registered')
         else:
-            logger.warn("[WARNING] Validation was unsuccessful!")
+            logger.warn("[WARNING] Validation of {} by user {} was unsuccessful!".format(gcp_id, user.email))
     
     except Exception as e:
         logger.error("[ERROR] While registering a GCP:")
         logger.exception(e)
 
     return registration, success
+
+
+def gcp_unregistration(user, gcp_id):
+    unreg = None
+    success = False
+    try:
+
+        unreg, status = unreg_gcp(user, gcp_id)
+
+        if status == 200:
+            success = True
+            if 'message' not in unreg:
+                unreg['message'] = "Google Cloud Platform project ID {} was successfully unregistered.".format(gcp_id)
+        else:
+            logger.warn("[WARNING] Unregistration of {} by user {} was unsuccessful!".format(gcp_id, user.email))
+
+    except Exception as e:
+        logger.error("[ERROR] While unregistering a GCP:")
+        logger.exception(e)
+
+    return unreg, success
