@@ -6,7 +6,7 @@ jobs:
     name: Building Deployment Container
     working_directory: ~/ISB-CGC-API
     docker:
-      - image: circleci/python:2.7.14
+      - image:  circleci/python:3.6.4
       - image: circleci/mysql:5.7
         environment:
           MYSQL_ROOT_HOST: "%"
@@ -46,17 +46,12 @@ jobs:
       - save_cache:
           key: isb-cgc-api-{{ epoch }}
           paths:
-            - ./api
-            - ./api_3
-            - ./bq_data_access
+            - ./apiv4
             - ./shell
             - ./ISB-CGC-Common
-            - ./saml
-            - ./lib
-            - ./appengine_config.py
-            - ./cgc_api.py
+            - ./Dockerfile
             - ./app.yaml
-            - ./manage.py
+            - ./openapi-appengine.yaml
             - ./settings.py
             - ./txt
             - ./json
@@ -65,9 +60,9 @@ jobs:
   deploy_job:
     environment:
       TZ: "/usr/share/zoneinfo/America/Los_Angeles"
-    name: Deploy to AppEngine Standard
+    name: Deploy to AppEngine Flex
     docker:
-      - image: circleci/python:2.7.14
+      - image:  circleci/python:3.6.4
     working_directory: ~/ISB-CGC-API
     steps:
       - restore_cache:
@@ -80,6 +75,7 @@ jobs:
           command: |
             sudo -E /bin/bash ./shell/gcloud_authenticate.sh
             sudo -E /bin/bash ./shell/unpack_for_deployment.sh
+            sudo -E ./google-cloud-sdk/bin/gcloud endpoints services deploy openapi-appengine.yaml
             sudo -E ./google-cloud-sdk/bin/gcloud app deploy --verbosity=debug ./app.yaml --quiet
 workflows:
   version: 2

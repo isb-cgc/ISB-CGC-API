@@ -1,0 +1,34 @@
+runtime: custom
+service: api-v4
+env: flex
+api_version: 1
+threadsafe: true
+
+# [START configuration]
+endpoints_api_service:
+  # The following values are to be replaced by information from the output of
+  # 'gcloud endpoints services deploy openapi-appengine.yaml' command.
+  name: api-v4-dot-isb-cgc.appspot.com
+  rollout_strategy: managed
+ # [END configuration]
+
+env_variables:
+  DJANGO_SETTINGS_MODULE: 'settings'
+
+skip_files:
+- ^shell/.*$
+- ^(.*/)?#.*#$
+- ^(.*/)?.*~$
+- ^(.*/)?.*\.py[co]$
+- ^(.*/)?.*/RCS/.*$
+- ^(.*/)?\.(?!env).*$
+- ^google-cloud-sdk/.*$
+- ^google_appengine\.zip$
+- ^(.*/)?.*\.sql$
+- ^venv/.*$
+
+beta_settings:
+    cloud_sql_instances: isb-cgc:us-central1:dev-v3
+
+network:
+  instance_tag: isb-cgc-api-v4
