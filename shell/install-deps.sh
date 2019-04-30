@@ -71,7 +71,7 @@ if [ -z "${CI}" ] || [ ! -d "google_appengine" ]; then
     export PATH=$PATH:${HOME}/google_appengine/
     echo "Google App Engine Installed"
 else
-    echo "Using restored cache for Google App Engine."
+    echo "Using restored cache for Google App Engine. "
 fi
 
 # Install Google Cloud SDK
