@@ -1,5 +1,5 @@
 runtime: custom
-service: mvm
+service: mvm-api
 env: flex
 api_version: 1
 threadsafe: true
