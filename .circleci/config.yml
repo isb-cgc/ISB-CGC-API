@@ -87,4 +87,4 @@ workflows:
             - build_job
           filters:
             branches:
-              only: api-v4
+              only: master
