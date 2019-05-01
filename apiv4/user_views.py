@@ -30,7 +30,6 @@ from django.conf import settings
 
 from accounts.sa_utils import auth_dataset_whitelists_for_user
 from accounts.utils import register_or_refresh_gcp, verify_gcp_for_reg, unreg_gcp
-from accounts.sa_utils import auth_dataset_whitelists_for_user
 from accounts.models import AuthorizedDataset
 from projects.models import Program
 from auth import get_user_acls, UserValidationException
