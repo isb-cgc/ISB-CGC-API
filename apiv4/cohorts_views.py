@@ -133,19 +133,19 @@ def get_cohort_counts():
 
         if 'filters' not in request_data:
             cohort_counts = {
-                'msg': 'No filters were provided; ensure that the request body contains a \'filters\' property.'
+                'message': 'No filters were provided; ensure that the request body contains a \'filters\' property.'
             }
         else:
             cohort_counts = get_sample_case_list_bq(None, request_data['filters'])
 
             for prog in cohort_counts:
                 if cohort_counts[prog]['case_count'] <= 0:
-                    cohort_counts[prog]['msg'] = "No cases or samples found which meet the filter criteria for this program."
+                    cohort_counts[prog]['message'] = "No cases or samples found which meet the filter criteria for this program."
                 cohort_counts[prog]['provided_filters'] = request_data['filters'][prog]
     except ValidationError as e:
         logger.warn('Filters rejected for improper formatting: {}'.format(e))
         cohort_counts = {
-            'msg': 'Filters were improperly formatted.'
+            'message': 'Filters were improperly formatted.'
         }
     except Exception as e:
         logger.exception(e)
@@ -161,73 +161,80 @@ def create_cohort(user):
 
         if 'name' not in request_data:
             cohort_info = {
-                'msg': 'A name was not provided for this cohort. Cohort was not made.'
+                'message': 'A name was not provided for this cohort. The cohort was not made.',
+                'code': 400
             }
             return cohort_info
 
         if 'filters' not in request_data:
             cohort_info = {
-                'msg': 'Filters were not provided; at least one filter must be provided for a cohort to be valid.' +
-                       ' Cohort was not made.'
+                'message': 'Filters were not provided; at least one filter must be provided for a cohort to be valid.' +
+                       ' The cohort was not made.',
+                'code': 400
             }
             return cohort_info
 
-        name = request_data['name']
-        filters = request_data['filters']
-
         blacklist = re.compile(BLACKLIST_RE, re.UNICODE)
-        match = blacklist.search(str(name))
+        match = blacklist.search(str(request_data['name']))
+
+        if not match and 'desc' in request_data:
+            match = blacklist.search(str(request_data['desc']))
+
         if match:
-            # XSS risk, log and fail this cohort save
-            match = blacklist.findall(str(name))
             cohort_info = {
-                'msg': 'Your cohort\'s name contains invalid characters; please choose another name. ' +
-                    '[Saw {}]'.format(str(match))
+                'message': 'Your cohort\'s name or description contains invalid characters; please edit them and resubmit. ' +
+                    '[Saw {}]'.format(str(match)),
+                'code': 400
             }
+
         else:
-            desc = None
-            if 'description' in request_data:
-                desc = request_data['description']
+            result = make_cohort(user, **request_data)
 
-            result = make_cohort(user, filters, name, desc)
-
-            if 'msg' in result:
+            if 'message' in result:
                 cohort_info = result
             else:
                 cohort_info = get_cohort_info(result['cohort_id'])
 
     except ValidationError as e:
-        logger.warn("Filters rejected for improper formatting: {}".format(e))
+        logger.warn("[WARNING] Cohort information rejected for improper formatting: {}".format(e))
         cohort_info = {
-            'msg': 'Filters were improperly formatted - cohort not created.'
+            'message': 'Cohort information was improperly formatted - cohort not edited.',
+            'code': 400
         }
 
     return cohort_info
 
 
 def edit_cohort(cohort_id):
-    cohort_info = None
+    result = None
+    match = None
 
     try:
         request_data = request.get_json()
-        schema_validate(request_data, COHORT_FILTER_SCHEMA)
+        if len(request_data.keys()):
+            schema_validate(request_data, COHORT_FILTER_SCHEMA)
 
-        name = request_data['name']
-        blacklist = re.compile(BLACKLIST_RE, re.UNICODE)
-        match = blacklist.search(str(name))
+        if 'name' in request_data:
+            blacklist = re.compile(BLACKLIST_RE, re.UNICODE)
+            match = blacklist.search(str(request_data['name']))
+
+        if not match and 'desc' in request_data:
+            match = blacklist.search(str(request_data['desc']))
+
         if match:
-            # XSS risk, log and fail this cohort save
-            match = blacklist.findall(str(name))
-            cohort_info = {
-                'msg': 'Your cohort\'s name contains invalid characters; please choose another name.' +
-                    ' [Saw {}]'.format(str(match))
+            result = {
+                'message': 'Your cohort\'s name or description contains invalid characters; please edit them and resubmit. ' +
+                           '[Saw {}]'.format(str(match)),
+                'code': 400
             }
         else:
-            logger.warn("Make cohort")
+            result = make_cohort(user, source_id=cohort_id, **request_data)
+
     except ValidationError as e:
-        logger.warn("Filters rejected for improper formatting: {}".format(e))
-        cohort_info = {
-            'msg': 'Filters were improperly formatted - cohort not created.'
+        logger.warn("[WARNING] Cohort information rejected for improper formatting: {}".format(e))
+        result = {
+            'message': 'Cohort information was improperly formatted - cohort not edited.',
+            'code': 400
         }
 
-    return cohort_info
+    return result

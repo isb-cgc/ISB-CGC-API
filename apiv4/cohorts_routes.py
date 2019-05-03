@@ -39,6 +39,7 @@ def cohort(cohort_id):
         user = validate_user(user_info['email'], cohort_id)
 
         response = None
+        code = None
 
         if not user:
             response = jsonify({
@@ -53,11 +54,16 @@ def cohort(cohort_id):
                 cohort_info = edit_cohort(cohort_id)
 
             if cohort_info:
-                response = jsonify({
-                    'code': 200,
-                    'data': cohort_info
-                })
-                response.status_code = 200
+                if 'message' in cohort_info:
+                    code = 400
+                else:
+                    code = 200
+                    
+                response_obj['data'] = cohort_info
+                response_obj['code'] = code
+                response = jsonify(response_obj)
+                response.status_code = code
+                
             else:
                 response = jsonify({
                     'code': 404,
@@ -88,13 +94,14 @@ def cohorts():
     GET: Retrieve a user's list of cohorts
     POST: Add a new cohort
     """
+    
+    response = None
+    info = None
+    code = None
 
     try:
         user_info = auth_info()
         user = validate_user(user_info['email'])
-
-        response = None
-        info = None
 
         if not user:
             response = jsonify({
@@ -109,24 +116,23 @@ def cohorts():
                 info = create_cohort(user)
 
             if info:
-                if 'msg' in info:
-                    # Presence of a message means something was wrong.
-                    response = jsonify({
-                        'code': 400,
-                        'data': info
-                    })
-                    response.status_code = 400
+                if 'message' in info:
+                    code = 400
                 else:
-                    response = jsonify({
-                        'code': 200,
-                        'data': info
-                    })
-                    response.status_code = 200
-                # Lack of a valid object means something went wrong on the server
+                    code = 200
+
+                response_obj['data'] = info
+                response_obj['code'] = code
+                response = jsonify(response_obj)
+                response.status_code = code
+
+            # Lack of a valid object means something went wrong on the server
             else:
                 response = jsonify({
                     'code': 500,
-                    'message': "Error while attempting to create this cohort."
+                    'message': "Error while attempting to {}.".format(
+                        'retrieve the cohort list' if request.method == 'GET' else 'create this cohort'
+                    )
                 })
                 response.status_code = 500
 
@@ -157,11 +163,12 @@ def cohort_file_manifest(cohort_id):
     POST: Retrieve a cohort's file manifest with applied filters
     """
 
+    response = None
+    code = None
+
     try:
         user_info = auth_info()
         user = validate_user(user_info['email'], cohort_id)
-
-        response = None
 
         if not user:
             response = jsonify({
@@ -172,11 +179,16 @@ def cohort_file_manifest(cohort_id):
         else:
             file_manifest = get_file_manifest(cohort_id, user)
             if file_manifest:
-                response = jsonify({
-                    'code': 200,
-                    'data': file_manifest
-                })
-                response.status_code = 200
+                # Presence of a message means something went wrong with our request
+                if 'message' in file_manifest:
+                    code = 400
+                else:
+                    code = 200
+
+                response_obj['data'] = file_manifest
+                response_obj['code'] = code
+                response = jsonify(response_obj)
+                response.status_code = code
             else:
                 response = jsonify({
                     'code': 500,
@@ -207,28 +219,36 @@ def cohort_preview():
     """List the samples, cases, and counts a given set of cohort filters would produce"""
 
     response = None
+    code = None
 
-    cohort_counts = get_cohort_counts()
+    try:
+        cohort_counts = get_cohort_counts()
+        
+        if cohort_counts:
+            # Presence of a message means something went wrong with the filters we received
+            if 'message' in cohort_counts:
+                code = 400
+            else:
+                code = 200
     
-    if cohort_counts:
-        # Presence of a message means something went wrong with the filters we received
-        if 'msg' in cohort_counts:
-            response = jsonify({
-                'code': 400,
-                'data': cohort_counts
-            })
-            response.status_code = 400
+            response_obj['data'] = cohort_counts
+            response_obj['code'] = code
+            response = jsonify(response_obj)
+            response.status_code = code
+                
+        # Lack of a valid object means something went wrong on the server
         else:
             response = jsonify({
-                'code': 200,
-                'data': cohort_counts
+                'code': 500,
+                'message': "Error while attempting to retrieve case and sample counts for these filters."
             })
-            response.status_code = 200
-    # Lack of a valid object means something went wrong on the server
-    else:
+            response.status_code = 500
+            
+    except Exception as e:
+        logger.exception(e)
         response = jsonify({
             'code': 500,
-            'message': "Error while attempting to retrieve case and sample counts for these filters."
+            'message': 'Encountered an error while attempting to build this cohort preview.'
         })
         response.status_code = 500
 

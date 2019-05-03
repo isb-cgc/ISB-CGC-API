@@ -60,7 +60,7 @@ def account_details():
                 response_obj['data'] = account_info
                 response_obj['code'] = code
                 response = jsonify(response_obj)
-                response.status_code = 200
+                response.status_code = code
             else:
                 response = jsonify({
                     'code': 404,
