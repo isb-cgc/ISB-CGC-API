@@ -43,7 +43,7 @@ logger = logging.getLogger(settings.LOGGER_NAME)
 
 @app.context_processor
 def static_uri():
-    return dict(static_uri=settings.STATIC_URL)
+    return dict(static_uri=(settings.STATIC_URL.replace('/static', '')))
 
 
 # Swagger UI
