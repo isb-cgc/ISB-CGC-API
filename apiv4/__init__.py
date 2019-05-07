@@ -23,14 +23,14 @@ from flask import Flask, jsonify, request, render_template
 from flask_cors import cross_origin
 from flask_talisman import Talisman
 
-app = Flask(__name__, static_folder='api_static', content_security_policy={
+app = Flask(__name__, static_folder='api_static')
+Talisman(app, strict_transport_security_max_age=300, content_security_policy={
     'default-src': [
         '\'self\'',
         '*.googleapis.com',
         'unsafe-inline'
     ]
 })
-Talisman(app, strict_transport_security_max_age=300)
 
 import django
 django.setup()
