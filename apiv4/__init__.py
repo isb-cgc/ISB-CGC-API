@@ -19,16 +19,16 @@ limitations under the License.
 import logging
 import os
 import sys
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, render_template, url_for as flask_url_for
 from flask_cors import cross_origin
 from flask_talisman import Talisman
+
+app = Flask(__name__, static_folder='api_static')
+Talisman(app, strict_transport_security_max_age=300)
 
 import django
 django.setup()
 from django.conf import settings
-
-app = Flask(__name__, static_url_path=settings.STATIC_URL, static_folder='api_static')
-Talisman(app, strict_transport_security_max_age=300)
 
 from auth import auth_info
 from main_routes import *
@@ -39,6 +39,20 @@ from file_routes import *
 from user_routes import *
 
 logger = logging.getLogger(settings.LOGGER_NAME)
+
+
+def url_for(path, **kwargs):
+    url = flask_url_for(path, **kwargs)
+    if url.startswith("/static"):
+        url = url.replace("/static", "", 1)
+        return settings.STATIC_URL + url
+    return url
+
+
+# Swagger UI
+@app.route('/apiv4/swagger/', methods=['GET'], strict_slashes=False)
+def swagger():
+    return render_template('swagger/index.html')
 
 
 # Error handlers

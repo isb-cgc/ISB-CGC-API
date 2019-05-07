@@ -3,15 +3,15 @@ if [ -n "$CI" ]; then
     export HOMEROOT=/home/circleci/${CIRCLE_PROJECT_REPONAME}
     # Clone dependencies
     git clone -b master https://github.com/isb-cgc/ISB-CGC-Common.git
-
-    # Remove .pyc files; these can sometimes stick around and if a
-    # model has changed names it will cause various load failures
-    find . -type f -name '*.pyc' -delete
 else
     export $(cat /home/vagrant/API/.env | grep -v ^# | xargs) 2> /dev/null
     export HOME=/home/vagrant
     export HOMEROOT=/home/vagrant/API
 fi
+
+# Remove .pyc files; these can sometimes stick around and if a
+# model has changed names it will cause various load failures
+find . -type f -name '*.pyc' -delete
 
 export DEBIAN_FRONTEND=noninteractive
 
