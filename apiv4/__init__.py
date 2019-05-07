@@ -19,7 +19,7 @@ limitations under the License.
 import logging
 import os
 import sys
-from flask import Flask, jsonify, request, render_template, url_for as flask_url_for
+from flask import Flask, jsonify, request, render_template
 from flask_cors import cross_origin
 from flask_talisman import Talisman
 
@@ -41,12 +41,9 @@ from user_routes import *
 logger = logging.getLogger(settings.LOGGER_NAME)
 
 
-def url_for(path, **kwargs):
-    url = flask_url_for(path, **kwargs)
-    if url.startswith("/static"):
-        url = url.replace("/static", "", 1)
-        return settings.STATIC_URL + url
-    return url
+@app.context_processor
+def static_uri():
+    return dict(static_uri=settings.STATIC_URL)
 
 
 # Swagger UI
@@ -59,10 +56,12 @@ def swagger():
 @app.errorhandler(500)
 def unexpected_error(e):
     """Handle exceptions by returning swagger-compliant json."""
-    logging.exception('An error occured while processing the request.')
+    logging.error('[ERROR] An error occurred while processing the request:')
+    logger.exeception(e)
     response = jsonify({
         'code': 500,
-        'message': 'Exception: {}'.format(e)})
+        'message': 'Exception: {}'.format(e)
+    })
     response.status_code = 500
     return response
 
