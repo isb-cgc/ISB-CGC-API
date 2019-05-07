@@ -23,12 +23,12 @@ from flask import Flask, jsonify, request
 from flask_cors import cross_origin
 from flask_talisman import Talisman
 
-app = Flask(__name__)
-Talisman(app, strict_transport_security_max_age=300)
-
 import django
 django.setup()
 from django.conf import settings
+
+app = Flask(__name__, static_url_path=settings.STATIC_URL, static_folder='api_static')
+Talisman(app, strict_transport_security_max_age=300)
 
 from auth import auth_info
 from main_routes import *
