@@ -52,7 +52,7 @@ def url_for(path, **kwargs):
 # Swagger UI
 @app.route('/apiv4/swagger/', methods=['GET'], strict_slashes=False)
 def swagger():
-    render_template()
+    render_template('swagger/index.html')
 
 # Error handlers
 @app.errorhandler(500)
