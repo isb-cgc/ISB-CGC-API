@@ -18,7 +18,7 @@ limitations under the License.
 
 import logging
 import json
-from flask import jsonify, request
+from flask import jsonify, request, render_template
 from django.conf import settings
 from apiv4 import app
 
@@ -35,3 +35,9 @@ def apiv4():
     })
     response.status_code = 200
     return response
+
+
+# Swagger UI
+@app.route('/apiv4/swagger/', methods=['GET'], strict_slashes=False)
+def swagger():
+    return render_template('swagger/index.html')
