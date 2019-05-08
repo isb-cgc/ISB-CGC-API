@@ -60,6 +60,7 @@ def utilities():
             with open(os.path.abspath(join(dirname(__file__), 'api.yaml'))) as fpi:
                 data = yaml.load(fpi)
                 json_spec = json.dumps(data)
+                json_spec.replace("'", "\'")
         except Exception as e:
             logger.error("[ERROR] While reading YAML spec:")
             logger.exception(e)
