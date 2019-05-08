@@ -85,7 +85,7 @@ def swagger():
 def unexpected_error(e):
     """Handle exceptions by returning swagger-compliant json."""
     logging.error('[ERROR] An error occurred while processing the request:')
-    logger.exeception(e)
+    logger.exception(e)
     response = jsonify({
         'code': 500,
         'message': 'Exception: {}'.format(e)
