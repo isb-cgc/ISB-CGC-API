@@ -31,7 +31,8 @@ def apiv4():
     response = jsonify({
         'code': 200,
         'message': 'Welcome to the ISB-CGC API, Version 4.',
-        'documentation': 'Documentation for this API is available at https://isb-cancer-genomics-cloud.readthedocs.io/en/latest/sections/progapi/Programmatic-API.html'
+        'documentation': 'SwaggerUI interface available at <{}/swagger/>.'.format(settings.BASE_API_URL) +
+             'Documentation available at <https://isb-cancer-genomics-cloud.readthedocs.io/en/latest/sections/progapi/Programmatic-API.html>'
     })
     response.status_code = 200
     return response
