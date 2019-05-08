@@ -18,10 +18,11 @@ limitations under the License.
 
 import logging
 import os
+from os.path import join, dirname
 import sys
 import ruamel.yaml
 import json
-from flask import Flask, jsonify, request, render_template
+from flask import Flask, jsonify, request
 from flask_cors import cross_origin
 from flask_talisman import Talisman
 
@@ -56,24 +57,18 @@ def utilities():
         json_spec = ""
         try:
             yaml = ruamel.yaml.YAML(typ='safe')
-            with open('../../api.yaml') as fpi:
+            with open(os.path.abspath(join(dirname(__file__), 'api.yaml'))) as fpi:
                 data = yaml.load(fpi)
                 json_spec = json.dumps(data)
         except Exception as e:
             logger.error("[ERROR] While reading YAML spec:")
             logger.exception(e)
         return json_spec
-    
+
     return dict(
         load_spec=load_spec,
         static_uri=(settings.STATIC_URL.replace('/static/', ''))
     )
-
-
-# Swagger UI
-@app.route('/apiv4/swagger/', methods=['GET'], strict_slashes=False)
-def swagger():
-    return render_template('swagger/index.html')
 
 
 # Error handlers
