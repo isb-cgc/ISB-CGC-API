@@ -34,7 +34,7 @@ def sample_metadata(sample_barcode):
 
     metadata = get_full_sample_metadata([sample_barcode])
     
-    if sample_metadata:
+    if sample_metadata and len(metadata['samples']):
         response = jsonify({
             'code': 200,
             'data': metadata['samples'][0]
@@ -55,7 +55,7 @@ def case_metadata(case_barcode):
 
     metadata = get_full_case_metadata([case_barcode])
 
-    if metadata:
+    if metadata and len(metadata['cases']):
         response = jsonify({
             'code': 200,
             'data': metadata['cases'][0]
