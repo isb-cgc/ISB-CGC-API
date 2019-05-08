@@ -37,6 +37,9 @@ def get_file_paths(file_uuids):
 
     paths = get_paths_by_uuid(file_uuids)
 
+    if not len(paths):
+        paths = None
+
     return paths
 
 
