@@ -28,7 +28,7 @@ Talisman(app, strict_transport_security_max_age=300, content_security_policy={
     'default-src': [
         '\'self\'',
         '*.googleapis.com',
-        'unsafe-inline'
+        '\'unsafe-inline\''
     ]
 })
 
@@ -49,7 +49,7 @@ logger = logging.getLogger(settings.LOGGER_NAME)
 
 @app.context_processor
 def static_uri():
-    return dict(static_uri=(settings.STATIC_URL.replace('/static', '')))
+    return dict(static_uri=(settings.STATIC_URL.replace('/static/', '')))
 
 
 # Swagger UI
