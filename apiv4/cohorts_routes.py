@@ -225,6 +225,7 @@ def cohort_preview():
         cohort_counts = get_cohort_counts()
         
         if cohort_counts:
+            response_obj = {}
             # Presence of a message means something went wrong with the filters we received
             if 'message' in cohort_counts:
                 code = 400
