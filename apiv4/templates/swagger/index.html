@@ -35,11 +35,14 @@
 
     <script src="{{ static_uri }}{{ url_for('static', filename = 'swagger-ui-bundle.js') }}"> </script>
     <script src="{{ static_uri }}{{ url_for('static', filename = 'swagger-ui-standalone-preset.js') }}"> </script>
+    <script src="{{ static_uri }}{{ url_for('static', filename = 'esprima.js' }}"></script>
+    <script src="{{ static_uri }}{{ url_for('static', filename = 'js-yaml.min.js' }}"></script>
     <script>
     window.onload = function() {
+      var js_spec = JSON.parse("{{ load_spec() }}");
       // Begin Swagger UI call region
       const ui = SwaggerUIBundle({
-        url: "../../api.yaml",
+        spec: js_spec,
         dom_id: '#swagger-ui',
         deepLinking: true,
         presets: [
