@@ -28,6 +28,7 @@ Talisman(app, strict_transport_security_max_age=300, content_security_policy={
     'default-src': [
         '\'self\'',
         '*.googleapis.com',
+        '*.swagger.io',
         '\'unsafe-inline\''
     ]
 })
