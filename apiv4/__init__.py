@@ -51,12 +51,7 @@ logger = logging.getLogger(settings.LOGGER_NAME)
 
 
 @app.context_processor
-def inject_static_uri():
-    return dict(static_uri=(settings.STATIC_URL.replace('/static/', '')))
-
-
-@app.context_processor
-def enable_load_spec():
+def utilities():
     def load_spec():
         json_spec = ""
         try:
@@ -70,7 +65,8 @@ def enable_load_spec():
         return json_spec
     
     return dict(
-        load_spec=load_spec
+        load_spec=load_spec,
+        static_uri=(settings.STATIC_URL.replace('/static/', ''))
     )
 
 
