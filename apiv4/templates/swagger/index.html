@@ -37,7 +37,7 @@
     <script src="{{ static_uri }}{{ url_for('static', filename = 'swagger-ui-standalone-preset.js') }}"> </script>
     <script>
     window.onload = function() {
-      var js_spec = JSON.parse("{{ load_spec() }}");
+      var js_spec = JSON.parse("{{ load_spec()|safe }}");
       // Begin Swagger UI call region
       const ui = SwaggerUIBundle({
         spec: js_spec,
