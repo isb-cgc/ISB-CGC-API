@@ -59,6 +59,7 @@ def utilities():
             yaml = ruamel.yaml.YAML(typ='safe')
             with open(os.path.abspath(join(dirname(__file__), 'api.yaml'))) as fpi:
                 data = yaml.load(fpi)
+                del data['paths']['/apiv4/swagger']
                 json_spec = json.dumps(data).replace("'", "\\'")
         except Exception as e:
             logger.error("[ERROR] While reading YAML spec:")
