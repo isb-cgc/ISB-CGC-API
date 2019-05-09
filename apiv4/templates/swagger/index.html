@@ -52,24 +52,28 @@
         ],
         layout: "StandaloneLayout",
         oauth2RedirectUrl: "{{ api_base_uri }}/{{ ouath2_callback_path }}",
+        // From https://stackoverflow.com/a/54537174/2117919:
+        // This lets us snag the ID token (NOT the access token!!) out of the response and drop it into
+        // localStorage...
         responseInterceptor:
           function (response) {
               if (response.obj.id_token) {
-                  console.log(response.obj.id_token)
                   const token = response.obj.id_token;
                   localStorage.setItem("token", token)
               }
 
               return response;
           },
-          requestInterceptor:
-              function (request) {
-                  console.log('[Swagger] intercept try-it-out request');
-                  request.headers.Authorization = "Bearer " + localStorage.getItem("token");
-                  return request;
+        // ...and this pulls that same ID token out of localStorage and drops it into Auth: Bearer
+        requestInterceptor:
+          function (request) {
+              request.headers.Authorization = "Bearer " + localStorage.getItem("token");
+              return request;
           }
       });
 
+      // Set up our OAuth; because we're using implicit flow and don't need the access token,
+      // we don't need the client secret
       ui.initOAuth({
         clientId: "{{ api_client_id }}",
         appName: "ISB-CGC API v4",

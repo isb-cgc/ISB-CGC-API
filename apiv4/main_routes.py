@@ -46,7 +46,7 @@ def swagger():
     return render_template('swagger/index.html')
 
 
-@app.route('/oauth2callback/', strict_slashes=False)
+@app.route('/apiv4/oauth2callback/', strict_slashes=False)
 def oauth2callback():
     return render_template('swagger/oauth2-redirect.html')
 
