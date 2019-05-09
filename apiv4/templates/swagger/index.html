@@ -73,7 +73,10 @@
       ui.initOAuth({
         clientId: "{{ api_client_id }}",
         appName: "ISB-CGC API v4",
-        scopeSeparator: " "
+        scopeSeparator: " ",
+        additionalQueryStringParams: {
+          'response_type': 'token'
+        }
       });
 
       // End Swagger UI call region
