@@ -36,6 +36,15 @@
     <script src="{{ static_uri }}{{ url_for('static', filename = 'swagger-ui-bundle.js') }}"> </script>
     <script src="{{ static_uri }}{{ url_for('static', filename = 'swagger-ui-standalone-preset.js') }}"> </script>
     <script>
+
+    // From https://stackoverflow.com/a/2117523/2117919
+    function uuidv4() {
+      return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+        var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+        return v.toString(16);
+      });
+    }
+
     window.onload = function() {
       var js_spec = JSON.parse('{{ load_spec()|safe }}');
       // Begin Swagger UI call region
@@ -70,7 +79,8 @@
         appName: "ISB-CGC API v4",
         scopeSeparator: " ",
         additionalQueryStringParams: {
-          'response_type': 'id_token'
+          'response_type': 'id_token',
+          'nonce': uuidv4()
         }
 
       });
