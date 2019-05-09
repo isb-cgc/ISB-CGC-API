@@ -24,6 +24,8 @@ from apiv4 import app
 
 logger = logging.getLogger(settings.LOGGER_NAME)
 
+SCOPE = 'https://www.googleapis.com/auth/userinfo.email'
+
 
 @app.route('/apiv4/', methods=['GET'], strict_slashes=False)
 def apiv4():
@@ -42,3 +44,10 @@ def apiv4():
 @app.route('/apiv4/swagger/', methods=['GET'], strict_slashes=False)
 def swagger():
     return render_template('swagger/index.html')
+
+
+@app.route('/oauth2callback', strict_slashes=False)
+def oauth2callback():
+    return render_template('swagger/oauth2-redirect.html')
+
+
