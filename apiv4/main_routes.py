@@ -24,6 +24,8 @@ from apiv4 import app
 
 logger = logging.getLogger(settings.LOGGER_NAME)
 
+SCOPE = 'https://www.googleapis.com/auth/userinfo.email'
+
 
 @app.route('/apiv4/', methods=['GET'], strict_slashes=False)
 def apiv4():
@@ -42,3 +44,25 @@ def apiv4():
 @app.route('/apiv4/swagger/', methods=['GET'], strict_slashes=False)
 def swagger():
     return render_template('swagger/index.html')
+
+
+@app.route('/oauth2callback')
+def oauth2callback():
+    redirect_uri = settings.BASE_API_URL+"/oauth2callback"
+    if 'code' not in flask.request.args:
+        auth_uri = ('https://accounts.google.com/o/oauth2/v2/auth?response_type=code'
+                '&client_id={}&redirect_uri={}&scope={}').format(settings.API_CLIENT_ID, redirect_uri, SCOPE)
+        return flask.redirect(auth_uri)
+    else:
+        auth_code = flask.request.args.get('code')
+        data = {'code': auth_code,
+            'client_id': API_CLIENT_ID,
+            'client_secret': API_CLIENT_SECRET,
+            'redirect_uri': redirect_uri,
+            'grant_type': 'authorization_code'}
+        r = requests.post('https://www.googleapis.com/oauth2/v4/token', data=data)
+        flask.session['credentials'] = r.text
+
+    return flask.redirect(flask.url_for('swagger'))
+
+
