@@ -60,16 +60,7 @@
           SwaggerUIBundle.plugins.DownloadUrl
         ],
         layout: "StandaloneLayout",
-        oauth2RedirectUrl: "{{ api_base_uri }}/{{ ouath2_callback_path }}",
-        // From https://stackoverflow.com/a/54537174/2117919:
-        // Use this to drop our stored ID token into the Auth header
-        requestInterceptor:
-          function (request) {
-            if (localStorage.getItem("token")) {
-              request.headers.Authorization = "Bearer " + localStorage.getItem("token");
-            }
-            return request;
-          }
+        oauth2RedirectUrl: "{{ api_base_uri }}/{{ ouath2_callback_path }}"
       });
 
       // Set up our OAuth; because we're using implicit flow and don't need the access token,
@@ -79,11 +70,25 @@
         appName: "ISB-CGC API v4",
         scopeSeparator: " ",
         additionalQueryStringParams: {
-          'response_type': 'id_token',
           'nonce': uuidv4()
         }
 
       });
+
+      // Per https://github.com/swagger-api/swagger-ui/issues/3906#issuecomment-368544203 until OIDC is officially supported
+      // we have to edit the URI before it's called to ask for an id_token
+      if (!window.isOpenReplaced) {
+        window.open = function (open) {
+          return function (url) {
+            url = url
+              // Swagger UI does not support custom response_type parameters. Azure Active Directory requires an 'id_token' value to
+              // be passed instead of 'token' (See https://github.com/swagger-api/swagger-ui/issues/1974).
+              .replace('response_type=token', 'response_type=id_token');
+            return open.call(window, url);
+          };
+        }(window.open);
+        window.isOpenReplaced = true;
+      }
 
       // End Swagger UI call region
 
