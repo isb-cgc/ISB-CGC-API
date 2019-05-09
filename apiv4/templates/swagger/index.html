@@ -53,22 +53,13 @@
         layout: "StandaloneLayout",
         oauth2RedirectUrl: "{{ api_base_uri }}/{{ ouath2_callback_path }}",
         // From https://stackoverflow.com/a/54537174/2117919:
-        // This lets us snag the ID token (NOT the access token!!) out of the response and drop it into
-        // localStorage...
-        responseInterceptor:
-          function (response) {
-              if (response.obj.id_token) {
-                  const token = response.obj.id_token;
-                  localStorage.setItem("token", token)
-              }
-
-              return response;
-          },
-        // ...and this pulls that same ID token out of localStorage and drops it into Auth: Bearer
+        // Use this to drop our stored ID token into the Auth header
         requestInterceptor:
           function (request) {
+            if (localStorage.getItem("token")) {
               request.headers.Authorization = "Bearer " + localStorage.getItem("token");
-              return request;
+            }
+            return request;
           }
       });
 
@@ -77,7 +68,11 @@
       ui.initOAuth({
         clientId: "{{ api_client_id }}",
         appName: "ISB-CGC API v4",
-        scopeSeparator: " "
+        scopeSeparator: " ",
+        additionalQueryStringParams: {
+          'response_type': 'id_token'
+        }
+
       });
 
       // End Swagger UI call region
