@@ -116,6 +116,8 @@ def cohorts():
                 info = create_cohort(user)
 
             if info:
+                response_obj = {}
+                
                 if 'message' in info:
                     code = 400
                 else:

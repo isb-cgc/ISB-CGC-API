@@ -68,7 +68,8 @@ def utilities():
                     'authorizationUrl': "https://accounts.google.com/o/oauth2/v2/auth",
                     'tokenUrl': 'https://www.googleapis.com/oauth2/v4/token',
                     'flow': 'implicit',
-                    'scopes': {"https://www.googleapis.com/auth/userinfo.email": "User email address"}
+                    'scopes': {"https://www.googleapis.com/auth/userinfo.email": "User email address", "openid": "For OIDC"},
+                    'x-tokenName': 'id_token'
                 }
                 # Escape the ' or the JS will be sad
                 json_spec = json.dumps(data).replace("'", "\\'")
