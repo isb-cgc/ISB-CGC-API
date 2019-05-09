@@ -60,6 +60,7 @@
                 });
             }
         } else {
+            localStorage.setItem('token', qp['id_token']);
             oauth2.callback({auth: oauth2.auth, token: qp, isValid: isValid, redirectUrl: redirectUrl});
         }
         window.close();
