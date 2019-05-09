@@ -398,6 +398,7 @@ if IS_DEV:
 GOOGLE_APPLICATION_CREDENTIALS  = os.path.join(os.path.dirname(__file__), os.environ.get('GOOGLE_APPLICATION_CREDENTIALS')) if os.environ.get('GOOGLE_APPLICATION_CREDENTIALS') else ''
 CLIENT_SECRETS                  = os.path.join(os.path.dirname(__file__), os.environ.get('CLIENT_SECRETS')) if os.environ.get('CLIENT_SECRETS') else ''
 WEB_CLIENT_ID                   = os.environ.get('WEB_CLIENT_ID', '') # Client ID from client_secrets.json
+API_CLIENT_ID                   = os.environ.get('API_CLIENT_ID', '') # Client ID for the API
 IGV_WEB_CLIENT_ID               = os.environ.get('IGV_WEB_CLIENT_ID', WEB_CLIENT_ID)
 INSTALLED_APP_CLIENT_ID         = os.environ.get('INSTALLED_APP_CLIENT_ID', '') # Native Client ID
 GCP_REG_CLIENT_EMAIL            = os.environ.get('CLIENT_EMAIL','')
