@@ -61,11 +61,13 @@ def utilities():
             with open(os.path.abspath(join(dirname(__file__), 'api.yaml'))) as fpi:
                 data = yaml.load(fpi)
                 del data['paths']['/apiv4/swagger']
+                del data['paths']['/apiv4/oauth2callback']
                 # We need to adjust the security definition for use with Swagger UI itself (as opposed to the deployed API)
                 data['securityDefinitions']['google_id_token'] = {
+                    'type': 'oauth2',
                     'authorizationUrl': "https://accounts.google.com/o/oauth2/v2/auth",
                     'tokenUrl': 'https://www.googleapis.com/oauth2/v4/token',
-                    'flow': 'accessCode',
+                    'flow': 'implicit',
                     'scopes': {"https://www.googleapis.com/auth/userinfo.email": "User email address"}
                 }
                 # Escape the ' or the JS will be sad
