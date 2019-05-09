@@ -58,6 +58,7 @@
         responseInterceptor:
           function (response) {
               if (response.obj.id_token) {
+                  console.debug("Response object: ", response);
                   const token = response.obj.id_token;
                   localStorage.setItem("token", token)
               }
@@ -67,8 +68,10 @@
         // ...and this pulls that same ID token out of localStorage and drops it into Auth: Bearer
         requestInterceptor:
           function (request) {
+            if (localStorage.getItem("token")) {
               request.headers.Authorization = "Bearer " + localStorage.getItem("token");
-              return request;
+            }
+            return request;
           }
       });
 
