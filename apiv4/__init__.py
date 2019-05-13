@@ -58,7 +58,8 @@ def utilities():
         json_spec = ""
         try:
             yaml = ruamel.yaml.YAML(typ='safe')
-            with open(os.path.abspath(join(dirname(__file__), 'api.yaml'))) as fpi:
+            logger.debug(os.path.split(os.path.abspath(dirname(__file__)))[0] + '/openapi-appengine.yaml')
+            with open(os.path.split(os.path.abspath(dirname(__file__)))[0] + '/openapi-appengine.yaml') as fpi:
                 data = yaml.load(fpi)
                 del data['paths']['/apiv4/swagger']
                 del data['paths']['/apiv4/oauth2callback']
