@@ -62,9 +62,6 @@ GCP_ACTIVITY_LOG_NAME = os.environ.get('GCP_ACTIVITY_LOG_NAME', 'local_dev_loggi
 BASE_URL                = os.environ.get('BASE_URL', 'https://isb-cgc.appspot.com')
 BASE_API_URL            = os.environ.get('BASE_API_URL', 'https://api-dot-isb-cgc.appspot.com')
 
-# Compute services - Should not be necessary in webapp
-PAIRWISE_SERVICE_URL    = os.environ.get('PAIRWISE_SERVICE_URL', None)
-
 # Data Buckets
 OPEN_DATA_BUCKET        = os.environ.get('OPEN_DATA_BUCKET', '')
 DCC_CONTROLLED_DATA_BUCKET = os.environ.get('DCC_CONTROLLED_DATA_BUCKET', '')
@@ -91,6 +88,8 @@ DATABASES = {
 }
 
 DB_SOCKET = DATABASES['default']['HOST'] if 'cloudsql' in DATABASES['default']['HOST'] else None
+
+CONN_MAX_AGE = 60
 
 IS_DEV = (os.environ.get('IS_DEV', 'False') == 'True')
 IS_APP_ENGINE_FLEX = os.getenv('GAE_INSTANCE', '').startswith(APP_ENGINE_FLEX)
