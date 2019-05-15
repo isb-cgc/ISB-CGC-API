@@ -49,7 +49,7 @@ def cohort(cohort_id):
             response.status_code = 500
         else:
             if request.method == 'GET':
-                include_barcodes = (request.args.get('include_barcodes', default="False", type=str) == "True")
+                include_barcodes = (request.args.get('include_barcodes', default="false", type=str).lower() == "true")
                 cohort_info = get_cohort_info(cohort_id, include_barcodes)
             else:
                 cohort_info = edit_cohort(cohort_id)
