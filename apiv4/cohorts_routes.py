@@ -54,6 +54,8 @@ def cohort(cohort_id):
                 cohort_info = edit_cohort(cohort_id)
 
             if cohort_info:
+                response_obj = {}
+
                 if 'message' in cohort_info:
                     code = 400
                 else:
