@@ -184,6 +184,7 @@ def cohort_file_manifest(cohort_id):
         else:
             file_manifest = get_file_manifest(cohort_id, user)
             if file_manifest:
+                response_obj = {}
                 # Presence of a message means something went wrong with our request
                 if 'message' in file_manifest:
                     code = 400

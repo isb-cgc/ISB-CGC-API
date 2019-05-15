@@ -59,14 +59,16 @@ def get_file_manifest(cohort_id, user):
         request_data = request.get_json()
 
         if request_data:
-            if request_data['offset']:
-                params['offset'] = request.get_assigned_value('offset')
+            params['offset'] = request_data['offset'] if 'offset' in request_data['offset'] else request.args.get('offset', default=0, type=int) 
 
             if request_data['fetch_count']:
-                params['limit'] = request.get_assigned_value('fetch_count')
+                params['limit'] = request_data['fetch_count'] if 'fetch_count' in request_data['fetch_count'] else request.args.get('fetch_count', default=5000, type=int)
+
+            if request_data['page']:
+                params['page'] = request_data['page'] if 'page' in request_data['page'] else request.args.get('page', default=1, type=int)
 
             if request_data['genomic_build']:
-                params['build'] = request.get_assigned_value('genomic_build').upper()
+                params['build'] = request_data['genomic_build'] if 'genomic_build' in request_data['genomic_build'] else request.args.get('genomic_build', default="HG19", type=str)
 
             inc_filters = {
                 filter: request_data[filter]
