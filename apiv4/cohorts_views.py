@@ -84,7 +84,7 @@ def get_file_manifest(cohort_id, user):
     return file_manifest
 
 
-def get_cohort_info(cohort_id):
+def get_cohort_info(cohort_id, get_barcodes=False):
     cohort = None
     try:
         cohort_obj = Cohort.objects.get(id=cohort_id)
@@ -95,6 +95,10 @@ def get_cohort_info(cohort_id):
             'sample_count': cohort_obj.sample_size(),
             'programs': cohort_obj.get_program_names()
         }
+
+        if get_barcodes:
+            cohort['barcodes'] = get_sample_case_list_bq(cohort_id)
+
     except ObjectDoesNotExist as e:
         logger.warn("Cohort with ID {} was not found!".format(str(cohort_id)))
     except Exception as e:
