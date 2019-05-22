@@ -211,31 +211,47 @@ def create_cohort(user):
     return cohort_info
 
 
-def edit_cohort(cohort_id):
+def edit_cohort(cohort_id, delete_cohort=False):
     result = None
     match = None
 
     try:
-        request_data = request.get_json()
-        if len(request_data.keys()):
-            schema_validate(request_data, COHORT_FILTER_SCHEMA)
-
-        if 'name' in request_data:
-            blacklist = re.compile(BLACKLIST_RE, re.UNICODE)
-            match = blacklist.search(str(request_data['name']))
-
-        if not match and 'desc' in request_data:
-            match = blacklist.search(str(request_data['desc']))
-
-        if match:
+        if delete_cohort:
+            cohort = Cohort.objects.get(id=cohort_id)
+            cohort.update(active=False)
             result = {
-                'message': 'Your cohort\'s name or description contains invalid characters; please edit them and resubmit. ' +
-                           '[Saw {}]'.format(str(match)),
-                'code': 400
+                'message': 'Cohort {} (\'{}\') has been deleted.'.format(cohort_id, cohort.name),
+                'data': {'filters': cohort.get_filters_as_json()},
+                'code': 200
             }
         else:
-            result = make_cohort(user, source_id=cohort_id, **request_data)
+            request_data = request.get_json()
+            if len(request_data.keys()):
+                schema_validate(request_data, COHORT_FILTER_SCHEMA)
 
+            if 'name' in request_data:
+                blacklist = re.compile(BLACKLIST_RE, re.UNICODE)
+                match = blacklist.search(str(request_data['name']))
+
+            if not match and 'desc' in request_data:
+                match = blacklist.search(str(request_data['desc']))
+
+            if match:
+                result = {
+                    'message': 'Your cohort\'s name or description contains invalid characters; please edit them and resubmit. ' +
+                               '[Saw {}]'.format(str(match)),
+                    'code': 400
+                }
+            else:
+                result = make_cohort(user, source_id=cohort_id, **request_data)
+
+    except ObjectDoesNotExist as e:
+        logger.error("[ERROR] During {} for cohort ID {}:".format(request.method,str(cohort_id)))
+        logger.error("Couldn't find a cohort with that ID!")
+        result = {
+            'message': 'Cohort with ID {} not found.'.format(str(cohort_id)),
+            'code': 404
+        }
     except ValidationError as e:
         logger.warn("[WARNING] Cohort information rejected for improper formatting: {}".format(e))
         result = {
