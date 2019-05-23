@@ -211,12 +211,12 @@ def create_cohort(user):
     return cohort_info
 
 
-def edit_cohort(cohort_id, delete_cohort=False):
+def edit_cohort(cohort_id, delete=False):
     result = None
     match = None
 
     try:
-        if delete_cohort:
+        if delete:
             cohort = Cohort.objects.get(id=cohort_id)
             cohort.update(active=False)
             result = {
