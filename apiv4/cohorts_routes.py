@@ -52,7 +52,7 @@ def cohort(cohort_id):
                 include_barcodes = (request.args.get('include_barcodes', default="false", type=str).lower() == "true")
                 cohort_info = get_cohort_info(cohort_id, include_barcodes)
             else:
-                cohort_info = edit_cohort(cohort_id, delete=(request.method == 'DELETE)'))
+                cohort_info = edit_cohort(cohort_id, delete=(request.method == 'DELETE'))
 
             if cohort_info:
                 response_obj = {}
