@@ -27,7 +27,7 @@ from django.conf import settings
 logger = logging.getLogger(settings.LOGGER_NAME)
 
 
-@app.route('/apiv4/cohorts/<int:cohort_id>/', methods=['GET', 'PATCH'], strict_slashes=False)
+@app.route('/apiv4/cohorts/<int:cohort_id>/', methods=['GET', 'PATCH', 'DELETE'], strict_slashes=False)
 def cohort(cohort_id):
     """
     GET: Retrieve extended information for a specific cohort
@@ -52,7 +52,7 @@ def cohort(cohort_id):
                 include_barcodes = (request.args.get('include_barcodes', default="false", type=str).lower() == "true")
                 cohort_info = get_cohort_info(cohort_id, include_barcodes)
             else:
-                cohort_info = edit_cohort(cohort_id)
+                cohort_info = edit_cohort(cohort_id, delete=(request.method == 'DELETE)'))
 
             if cohort_info:
                 response_obj = {}
