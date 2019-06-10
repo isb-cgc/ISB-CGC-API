@@ -1,27 +1,25 @@
-"""
-
-Copyright 2019, Institute for Systems Biology
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-   http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-
-"""
+# 
+# Copyright 2019, Institute for Systems Biology
+# 
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+# 
+#    http://www.apache.org/licenses/LICENSE-2.0
+# 
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
 
 import logging
 import json
 from flask import jsonify, request
 from apiv4 import app
 from auth import auth_info, UserValidationException, validate_user, get_user
-from user_views import get_user_acls, get_account_details, gcp_validation, gcp_registration
+from user_views import get_user_acls, get_account_details, gcp_validation, gcp_registration, gcp_info
 from django.conf import settings
 
 logger = logging.getLogger(settings.LOGGER_NAME)
@@ -151,17 +149,17 @@ def validate_gcp(gcp_id):
     return response
 
 
-@app.route('/apiv4/users/gcp/register/<gcp_id>/', methods=['POST'], strict_slashes=False)
-def register_gcp(gcp_id):
+@app.route('/apiv4/users/gcp/', methods=['GET'], strict_slashers=False)
+def get_user_gcps():
     """
-    POST: Register a Google Cloud Project with ISB-CGC
+    GET: Fetch the list of all Google Cloud Projects of which this user is a member
     """
+
+    response = None
 
     try:
         user_info = auth_info()
         user = validate_user(user_info['email'])
-
-        response = None
 
         if not user:
             response = jsonify({
@@ -170,36 +168,32 @@ def register_gcp(gcp_id):
             })
             response.status_code = 500
         else:
-            request_data = request.get_json()
-            
-            registration, success = gcp_registration(user, gcp_id, False)
+            response_obj = {}
+            code = None
 
-            if registration:
-                response_obj = {}
-                code = None
+            result, success = get_gcps(user)
 
-                if 'message' in registration:
-                    response_obj['message'] = registration['message']
-                if 'notes' in registration:
-                    response_obj['notes'] = registration['notes']
+            if not success:
+                code = 400
+            else:
+                code = 200
 
-                if not success:
-                    code = 400
-                else:
-                    code = 200
-                    response_obj['gcp_project_id'] = registration['gcp_id']
+            if result:
+                response_obj['user_email'] = user.email
+                response_obj['registered_projects'] = result
 
-                response_obj['code'] = code
-                response = jsonify(response_obj)
-                response.status_code = code
-                    
             # Lack of a valid object means something went wrong on the server
             else:
-                response = jsonify({
-                    'code': 500,
-                    'message': "Encountered an error while attempting to register Google Cloud Platform project ID {}.".format(gcp_id)
-                })
-                response.status_code = 500
+                code = 500
+                response_obj = {
+                    'message': "Encountered an error while attempting to list Google Cloud Platform projects for user {}.".format(
+                        user.email
+                    )
+                }
+
+        response_obj['code'] = code
+        response = jsonify(response_obj)
+        response.status_code = code
 
     except UserValidationException as e:
         response = jsonify({
@@ -220,138 +214,83 @@ def register_gcp(gcp_id):
     return response
 
 
-@app.route('/apiv4/users/gcp/refresh/<gcp_id>/', methods=['PATCH'], strict_slashes=False)
-def refresh_gcp(gcp_id):
+@app.route('/apiv4/users/gcp/<gcp_id>/', methods=['POST', 'DELETE', 'PATCH', 'GET'], strict_slashes=False)
+def user_gcp(gcp_id):
     """
-    PATCH: Refresh a Google Cloud Project with ISB-CGC, updating its user list
+    POST: Register a Google Cloud Project with ISB-CGC
+    PATCH: Update the Google Cloud Project's user list with ISB-CGC
+    DELETE: Unregister the Google Cloud Project with ISB-CGC
+    GET: Fetch details about the Google Cloud Project
     """
 
+    response_obj = {}
+    code = None
+    
     try:
         user_info = auth_info()
         user = validate_user(user_info['email'])
 
-        response = None
-
         if not user:
-            response = jsonify({
-                'code': 500,
+            response_obj = {
                 'message': 'Encountered an error while attempting to identify this user.'
-            })
-            response.status_code = 500
+            }
+            code = 500
         else:
-            refresh, success = gcp_registration(user, gcp_id, True)
+            action = None
+            result = None
+            success = None
+            
+            if request.method == 'POST' or request.method == 'PATCH':
+                action, success = gcp_registration(user, gcp_id, False)
+            elif request.method == 'GET':
+                result, success = gcp_info(user, gcp_id)
+            elif request.method == 'DELETE':
+                action, success = gcp_unregistration(user, gcp_id, False)
+            else:
+                raise Exception("Method not recognized: {}".format(request.method))
 
-            if refresh:
-                response_obj = {}
-                code = None
-
-                if 'message' in refresh:
-                    response_obj['message'] = refresh['message']
-                if 'notes' in validation:
-                    response_obj['notes'] = refresh['notes']
-
-                if not success:
-                    code = 400
-                else:
-                    code = 200
-                    response_obj['gcp_project_id'] = refresh['gcp_id']
-
-                response_obj['code'] = code
-                response = jsonify(response_obj)
-                response.status_code = code
-
+            if not success:
+                code = 400
+            else:
+                code = 200
+    
+            if action:
+                if 'message' in action:
+                    response_obj['message'] = action['message']
+                if 'notes' in action:
+                    response_obj['notes'] = action['notes']
+                if success:
+                    response_obj['gcp_project_id'] = action['gcp_id']
+            elif result:
+                response_obj['data'] = result
+    
             # Lack of a valid object means something went wrong on the server
             else:
-                response = jsonify({
-                    'code': 500,
-                    'message': "Encountered an error while attempting to refresh Google Cloud Platform project ID {}.".format(
-                        gcp_id)
-                })
-                response.status_code = 500
+                code = 500
+                response_obj = {
+                    'message': "Encountered an error while attempting to {} Google Cloud Platform project ID {}.".format(
+                        "register" if request.method == 'POST' else "unregister" if request.method == 'DELETE' else "refresh",
+                        gcp_id
+                    )
+                }
 
     except UserValidationException as e:
-        response = jsonify({
-            'code': 403,
+        code = 403
+        response_obj = {
             'message': str(e)
-        })
-        response.status_code = 403
+        }
 
     except Exception as e:
+        logger.error("[ERROR] For route /apiv4/users/gcp/{gcp_id} method {}:".format(request.method))
         logger.exception(e)
-        response = jsonify({
-            'code': 500,
-            'message': 'Encountered an error while attempting to refresh Google Cloud Platform project ID {}.'.format(
+        code = 500
+        response_obj = {
+            'message': 'Encountered an error while attempting to register Google Cloud Platform project ID {}.'.format(
                 gcp_id)
-        })
-        response.status_code = 500
+        }
+
+    response_obj['code'] = code
+    response = jsonify(response_obj)
+    response.status_code = code
 
     return response
-
-
-@app.route('/apiv4/users/gcp/unregister/<gcp_id>/', methods=['POST'], strict_slashes=False)
-def unregister_gcp(gcp_id):
-    """
-    POST: Unregister a Google Cloud Project with ISB-CGC
-    """
-
-    try:
-        user_info = auth_info()
-        user = validate_user(user_info['email'])
-
-        response = None
-
-        if not user:
-            response = jsonify({
-                'code': 500,
-                'message': 'Encountered an error while attempting to identify this user.'
-            })
-            response.status_code = 500
-        else:
-            unreg, success = gcp_unregistration(user, gcp_id, False)
-
-            if unreg:
-                response_obj = {}
-                code = None
-
-                if 'message' in unreg:
-                    response_obj['message'] = unreg['message']
-                if 'notes' in registration:
-                    response_obj['notes'] = unreg['notes']
-
-                if not success:
-                    code = 400
-                else:
-                    code = 200
-                    response_obj['gcp_project_id'] = unreg['gcp_id']
-
-                response_obj['code'] = code
-                response = jsonify(response_obj)
-                response.status_code = code
-
-            # Lack of a valid object means something went wrong on the server
-            else:
-                response = jsonify({
-                    'code': 500,
-                    'message': "Encountered an error while attempting to unregister Google Cloud Platform project ID {}.".format(
-                        gcp_id)
-                })
-                response.status_code = 500
-
-    except UserValidationException as e:
-        response = jsonify({
-            'code': 403,
-            'message': str(e)
-        })
-        response.status_code = 403
-
-    except Exception as e:
-        logger.exception(e)
-        response = jsonify({
-            'code': 500,
-            'message': 'Encountered an error while attempting to unregister Google Cloud Platform project ID {}.'.format(
-                gcp_id)
-        })
-        response.status_code = 500
-
-    return response
-

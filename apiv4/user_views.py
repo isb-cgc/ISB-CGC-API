@@ -1,20 +1,18 @@
-"""
-
-Copyright 2019, Institute for Systems Biology
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-   http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-
-"""
+# 
+# Copyright 2019, Institute for Systems Biology
+# 
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+# 
+#    http://www.apache.org/licenses/LICENSE-2.0
+# 
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
 
 import logging
 import json
@@ -29,7 +27,7 @@ from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 from django.conf import settings
 
 from accounts.sa_utils import auth_dataset_whitelists_for_user
-from accounts.utils import register_or_refresh_gcp, verify_gcp_for_reg, unreg_gcp
+from accounts.utils import register_or_refresh_gcp, verify_gcp_for_reg, unreg_gcp, get_user_gcps
 from accounts.models import AuthorizedDataset
 from projects.models import Program
 from auth import get_user_acls, UserValidationException
@@ -63,8 +61,25 @@ def get_account_details(user):
     return accounts_details
 
 
+def gcp_info(user, gcp_id=None):
+    gcps = None
+    success = False
+    
+    try:
+        gcps = get_user_gcps(user, gcp_id)
+        success = bool(len(gcps) > 0)
+        
+    except Exception as e:
+        logger.error("[ERROR] Encountered an error while retrieving GCP project details:")
+        logger.exception(e)
+        gcps = {'message': "Encountered an error while retrieving GCP project details for {}.".format(user.email if not gcp_id else gcp_id)}
+
+    return gcps, success
+
+
 def gcp_validation(user, gcp_id, refresh=False):
     validation = None
+    success = False
 
     try:
         validation, status = verify_gcp_for_reg(user, gcp_id, refresh)
@@ -82,6 +97,8 @@ def gcp_validation(user, gcp_id, refresh=False):
 
                 if 'message' not in validation:
                     validation['message'] = "Google Cloud Platform project ID {} was successfully validated for registration.".format(gcp_id)
+
+                success = True
         else:
             logger.warn("[WARNING] Validation of {} by user {} was unsuccessful!".format(gcp_id, user.email))
 
@@ -89,7 +106,7 @@ def gcp_validation(user, gcp_id, refresh=False):
         logger.error("[ERROR] While attempting to validate a project for registration:")
         logger.exception(e)
 
-    return validation
+    return validation, success
 
 
 def gcp_registration(user, gcp_id, refresh):
