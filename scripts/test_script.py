@@ -54,6 +54,16 @@ INFO_BY_TIER = {
 # This is for holding POST'd test cases which will then be used for deletions/searches
 COHORTS_FOR_TESTS = []
 
+# Tests which rely on results from previous tests and so must be run in a specific order
+# should be listed here
+TEST_RELIANCE = {
+    'cohorts': [
+        {'/': ['post', 'get', 'patch']},
+        {'file_manifest': ['post', 'get']},
+        {'/': ['delete']}
+    ]
+}
+
 # LEAVE THIS EMPTY
 # This is the holding dict into which the test cases will be built based of test case data
 # and the desired tier
@@ -91,25 +101,61 @@ def load_api_paths(tier):
                         API_PATHS[path][method]['test_data'] = TEST_CASES_BY_PATH[path][method]
 
 
-def run_tests_and_gather_results(tier):
-    for path in API_PATHS:
-        uri = "{}{}".format(INFO_BY_TIER[tier]['base_uri'], path)
-        for method in API_PATHS[path]:
-            test_data = None
-            if 'test_data' in API_PATHS[path][method]:
-                if API_PATHS[path][method]['test_data'] is not None:
-                    if method == 'get':
-                        uri += API_PATHS[path][method]['test_data']
+def run_tests_and_gather_results(tier, test_set):
+    for test in test_set:
+        try:
+            path = test['path']
+            uri = "{}{}".format(INFO_BY_TIER[tier]['base_uri'], path)
+            for method in API_PATHS[path]:
+                test_data = None
+                if 'test_data' in API_PATHS[path][method]:
+                    if API_PATHS[path][method]['test_data'] is not None:
+                        if method == 'get':
+                            uri += API_PATHS[path][method]['test_data']
+                        else:
+                            test_data = API_PATHS[path][method]['test_data']
                     else:
-                        test_data = API_PATHS[path][method]['test_data']
-                else:
-                    API_PATHS[path][method]['results'] = "FAILED - test case data required but not supplied"
+                        API_PATHS[path][method]['results'] = "FAILED - test case data required but not supplied"
 
-            if not API_PATHS[path][method]['results']:
-                # Requests execution
-                # Parse response
-                print("Running test {} [{}]...".format(path, method))
-                result = requests.request(method.upper(), uri, data=test_data)
+                if not API_PATHS[path][method]['results']:
+                    # Requests execution
+                    # Parse response
+                    print("Running test {} [{}]...".format(path, method))
+                    result = requests.request(method.upper(), uri, data=test_data)
+        except Exception as e:
+            print("[ERROR] During test {}:".format(test))
+            print(e)
+            print("Test may not have completed!")
+
+
+def prepare_test_set(tier):
+    reliant_tests = []
+    unreliant_tests = []
+
+    for path in API_PATHS:
+        resources = path.split('/apiv4/')[-1].split('/')
+        if resource[0] in TEST_RELIANCE:
+            resource_tests = list(TEST_RELIANCE[resource].keys())
+            
+            for path_base in resource_tests:
+                for method in resource_tests[path_base]:
+                    this_path = '{}{}{}'.format('/apiv4/', resource, path_base)
+                    uri = "{}{}{}".format(INFO_BY_TIER[tier]['base_uri'], resource, path_base)
+                    test_data = None
+                    if 'test_data' in API_PATHS[this_path][method]:
+                        if API_PATHS[this_path][method]['test_data'] is not None:
+                            if method == 'get':
+                                uri += API_PATHS[this_path][method]['test_data']
+                            else:
+                                test_data = API_PATHS[this_path][method]['test_data']
+                        else:
+                            API_PATHS[this_path][method]['results'] = "FAILED - test case data required but not supplied"
+
+                    if not API_PATHS[this_path][method]['results']:
+                        # Requests execution
+                        # Parse response
+                        print("Running test {} [{}]...".format(this_path, method))
+                        result = requests.request(method.upper(), uri, data=test_data)
 
 
 def print_test_run_results(tier):
