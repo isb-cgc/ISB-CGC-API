@@ -22,6 +22,7 @@ import datetime
 from google.cloud import storage
 from oauth2client.file import Storage
 import json
+import copy
 import ruamel.yaml
 
 from test_cases import TEST_CASES_BY_PATH
@@ -58,113 +59,199 @@ COHORTS_FOR_TESTS = []
 # should be listed here
 TEST_RELIANCE = {
     'cohorts': [
-        {'/': ['post', 'get', 'patch']},
+        {'/': ['post', 'get']},
+        {'{cohort_id}': ['get', 'patch']},
         {'file_manifest': ['post', 'get']},
-        {'/': ['delete']}
+        {'{cohort_id}': ['delete']}
     ]
 }
 
 # LEAVE THIS EMPTY
+# Test results are written out here
+TEST_RESULTS = {}
+
+
+# LEAVE THIS EMPTY
 # This is the holding dict into which the test cases will be built based of test case data
-# and the desired tier
-API_PATHS = {}
+# and the desired tier. Structure:
+
+# API_PATHS = {
+#     <tier>: {
+#         <resource> : {
+#             <subpath>: {
+#                 'path': <path>
+#                 'methods': {
+#                     <method>: {
+#                         'auth_req': <True/False>,
+#                         ['test_data': {}]
+#                     }
+#                 }
+#             }
+#         }
+#     }, [...]
+# }
+
+API_PATHS = {
+    'test': {},
+    'dev': {},
+    'prod': {}
+}
 
 
 def load_api_paths(tier):
     tier_info = INFO_BY_TIER[tier]
     client = storage.Client(project=tier_info['project'])
     bucket = client.get_bucket(tier_info['yaml_path'])
-    yaml_blob = Blob(tier_info['yaml'], bucket)
-    file_name = "{}.api.yaml".format(tier)
-    with open(file_name, "wb") as file_obj:
-        yaml_blob.download_to_file(file_obj)
+    yaml_blob = bucket.blob(tier_info['yaml'])
 
-    file_obj.close()
+    file_name = "{}.api.yaml".format(tier)
+
+    yaml_blob.download_to_filename(file_name)
 
     with open(file_name, 'r') as fpi:
+        yaml = ruamel.yaml.YAML(typ='safe')
+        
         data = yaml.load(fpi)
 
         for path in data['paths']:
-            API_PATHS[path] = {
-                'methods': {}
-            }
-            for method in data['paths'][path]:
-                API_PATHS[path][method] = {
-                    'results': None
+            path_split = path.split('/apiv4/')[-1].split('/')
+
+            resource = path_split[0]
+            if len(path_split) > 1:
+                subpath = "/".join(path_split[1:])
+            else:
+                subpath = '/'
+
+            if resource not in API_PATHS:
+                API_PATHS[resource] = {}
+
+            if subpath not in API_PATHS[resource]:
+                API_PATHS[resource][subpath] = {
+                    'methods': {},
+                    'path': path
                 }
+
+            subpath_set = API_PATHS[resource][subpath]
+
+            for method in data['paths'][path]:
+                method_set = {}
                 if method == 'post' or method == 'patch' or 'parameters' in data['paths'][path][method]:
-                    API_PATHS[path][method]['test_data'] = None
                     if path not in TEST_CASES_BY_PATH:
                         print("[WARNING] The following path cannot be tested, because no test data was found but is required: ")
                         print("path: {}\nmethod: {}".format(path, method.upper()))
                     else:
-                        API_PATHS[path][method]['test_data'] = TEST_CASES_BY_PATH[path][method]
+                        if method.upper() in TEST_CASES_BY_PATH[path]:
+                            method_set['test_data'] = {
+                                'cases': TEST_CASES_BY_PATH[path][method.upper()]
+                            }
+                            if 'parameters' in data['paths'][path][method]:
+                                method_set['test_data']['parameters'] = {}
+                                for param in data['paths'][path][method]['parameters']:
+                                    if param['in'] not in method_set['test_data']['parameters']:
+                                        method_set['test_data']['parameters'][param['in']] = []
+                                    method_set['test_data']['parameters'][param['in']].append(param['name'])
+                method_set['auth_req'] = bool('security' in data['paths'][path][method])
+                subpath_set['methods'][method.upper()] = method_set
 
 
 def run_tests_and_gather_results(tier, test_set):
+    TEST_RESULTS[tier] = []
     for test in test_set:
         try:
             path = test['path']
             uri = "{}{}".format(INFO_BY_TIER[tier]['base_uri'], path)
-            for method in API_PATHS[path]:
-                test_data = None
-                if 'test_data' in API_PATHS[path][method]:
-                    if API_PATHS[path][method]['test_data'] is not None:
-                        if method == 'get':
-                            uri += API_PATHS[path][method]['test_data']
-                        else:
-                            test_data = API_PATHS[path][method]['test_data']
-                    else:
-                        API_PATHS[path][method]['results'] = "FAILED - test case data required but not supplied"
+            method = test['method']
+            payload = None
 
-                if not API_PATHS[path][method]['results']:
-                    # Requests execution
-                    # Parse response
-                    print("Running test {} [{}]...".format(path, method))
-                    result = requests.request(method.upper(), uri, data=test_data)
+            if 'test_data' in test:
+                if test['test_data'] is not None:
+                    if 'path' in test['test_data']['parameters']:
+                        path_params = {x: test['test_data']['case'][x] for x in test['test_data']['parameters']['path']}
+                        uri.format(**path_params)
+
+                    if 'query' in test['test_data']['parameters']:
+                        query_string = '&'.join(["{}={}".format(x, test['test_data']['case'][x]) for x in test['test_data']['parameters']['query']])
+                        uri += "?{}".format(query_string)
+
+                    if 'body' in test['test_data']['parameters']:
+                        payload = {x: test['test_data']['case'][x] for x in test['test_data']['parameters']['body']}
+                else:
+                    test_result['result'] = "FAILED - test case data required but not supplied"
+
+            test_result = {
+                'path': path,
+                'uri': uri,
+                'method': method,
+                'payload': payload
+            }
+
+            headers = None
+            if test['auth_req']:
+                try:
+                    id_token = get_id_token()
+                    headers = {'Authorization: Bearer {}'.format(id_token)}
+                except Exception as e:
+                    print("[ERROR] While attempting to obtain login credentials: ")
+                    print(e)
+                    test_result['result'] = "FAILED - Authorization required but no ID token was found."
+
+            if not test_result['result']:
+                # Requests execution
+                # Parse response
+                print("Running test {} [{}]...".format(path, method))
+                test_result['result'] = requests.request(method.upper(), uri, headers=headers, data=payload)
+
+            TEST_RESULTS[tier].append(test_result)
+
         except Exception as e:
-            print("[ERROR] During test {}:".format(test))
+            print("[ERROR] During test {}:".format(str(test)))
             print(e)
             print("Test may not have completed!")
 
 
-def prepare_test_set(tier):
-    reliant_tests = []
+def prepare_test_sets(tier):
+    reliant_tests = {}
     unreliant_tests = []
+    reliant_paths = None
 
-    for path in API_PATHS:
-        resources = path.split('/apiv4/')[-1].split('/')
-        if resource[0] in TEST_RELIANCE:
-            resource_tests = list(TEST_RELIANCE[resource].keys())
-            
-            for path_base in resource_tests:
-                for method in resource_tests[path_base]:
-                    this_path = '{}{}{}'.format('/apiv4/', resource, path_base)
-                    uri = "{}{}{}".format(INFO_BY_TIER[tier]['base_uri'], resource, path_base)
-                    test_data = None
-                    if 'test_data' in API_PATHS[this_path][method]:
-                        if API_PATHS[this_path][method]['test_data'] is not None:
-                            if method == 'get':
-                                uri += API_PATHS[this_path][method]['test_data']
-                            else:
-                                test_data = API_PATHS[this_path][method]['test_data']
-                        else:
-                            API_PATHS[this_path][method]['results'] = "FAILED - test case data required but not supplied"
+    for resource in API_PATHS:
 
-                    if not API_PATHS[this_path][method]['results']:
-                        # Requests execution
-                        # Parse response
-                        print("Running test {} [{}]...".format(this_path, method))
-                        result = requests.request(method.upper(), uri, data=test_data)
+        # Check to see if this resource has any reliant subpaths
+        if resource in TEST_RELIANCE:
+            reliant_paths = set([y for x in TEST_RELIANCE[resource] for y in x])
+
+        for subpath in API_PATHS[resource]:
+            for method in API_PATHS[resource][subpath]['methods']:
+                method_data = API_PATHS[resource][subpath]['methods'][method]
+                # Build test
+                test_base = {
+                    'path': API_PATHS[resource][subpath]['path'],
+                    'auth_req': method_data['auth_req'],
+                    'method': method.upper()
+                }
+                if 'test_data' in method_data:
+                    for specific_test in method_data['test_data']['cases']:
+                        test = copy.deepcopy(test_base)
+                        test['test_data'] = {
+                            'cases': method_data['test_data']['cases'][specific_test],
+                            'parameters': method_data['test_data']['parameters'] 
+                        }
+                else:
+                    test = copy.deepcopy(test_base)
+                if reliant_paths and subpath in reliant_paths:
+                    reliant_tests["{}/{}".format(resource, subpath if subpath != '/' else '')] = test
+                else:
+                    unreliant_tests.append(test)
+
+    return reliant_tests, unreliant_tests
 
 
 def print_test_run_results(tier):
-    for path in API_PATHS:
-        for method in API_PATHS[path]:
-            print("Results of test {} [{}]\n-----------------------".format(path, method))
-            if 'test_data' in API_PATHS[path][method] and API_PATHS[path][method]['test_data']:
-                print("Test data: {}".format(str(API_PATHS[path][method]['test_data'])))
-            print("Result: {}".format(str(API_PATHS[path][method]['results'])))
+    for test in TEST_RESULTS:
+        print("Results of test {} [{}]\n-----------------------".format(test['path'], test['method']))
+        if 'test_data' in test and test['test_data']:
+            print("Test data: {}".format(str(test['test_data'])))
+        print("Result: {}".format(str(test['results'])))
 
 
 def check(assertion, msg):
@@ -204,11 +291,18 @@ def get_id_token(credentials_location=get_credentials_location()):
 
 
 def main():
-    args = sys.argv[1:]
-    check(args, 'usage: isb_curl.py <curl arguments>')
-    id_token = get_id_token()
-    curl_args = ['curl', '-H', 'Authorization: Bearer ' + id_token] + args
-    os.execvp('curl', curl_args)
+    load_api_paths('dev')
+    print("API paths loaded, result:")
+    print("{}".format(str(API_PATHS)))
+    print("-------------------------------------------------------")
+    reliant, unreliant = prepare_test_sets('dev')
+    print("Test sets prepared, result:")
+    print("-------------------------------------------------------")
+    print("RELIANT")
+    print("{}".format(str(reliant)))
+    print("-------------------------------------------------------")
+    print("UNRELIANT")
+    print("{}".format(str(unreliant)))
 
 
 # this allows us to call this from command line

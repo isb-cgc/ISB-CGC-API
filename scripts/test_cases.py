@@ -1,6 +1,8 @@
+from datetime import datetime
+
 TEST_CASES_BY_PATH = {
     '/apiv4/cohorts': {
-        'post': {
+        'POST': {
             'TCGA-disease-code': {
                 'name': 'Test cohort TCGA-disease-code for {}'.format(datetime.now()),
                 'filters': {
@@ -32,7 +34,7 @@ TEST_CASES_BY_PATH = {
                 }
             }
         },
-        'patch': {
+        'PATCH': {
             'rename': {
                 'name': 'Renamed Cohort'
             },
@@ -44,12 +46,12 @@ TEST_CASES_BY_PATH = {
         },
     },
     '/apiv4/samples/': {
-        'get': {
-            'TCGA-single-sample': 'TCGA-DX-A23U-10A',
-            'CCLE-single-sample': 'CCLE-253J',
-            'TARGET-single-sample': 'TARGET-52-PAREWI-01A'
+        'GET': {
+            'TCGA-single-sample': {'sample_barcode': 'TCGA-DX-A23U-10A'},
+            'CCLE-single-sample': {'sample_barcode': 'CCLE-253J'},
+            'TARGET-single-sample': {'sample_barcode': 'TARGET-52-PAREWI-01A'}
         },
-        'post': {
+        'POST': {
             'TCGA-multi-sample': {
                 'barcodes': ['TCGA-DX-A23U-10A', 'TCGA-WK-A8XQ-10A']
             },
@@ -62,12 +64,12 @@ TEST_CASES_BY_PATH = {
         }
     },
     '/apiv4/cases/': {
-        'get': {
-            'TCGA-single-sample': 'TCGA-DX-A23U',
-            'CCLE-single-sample': 'A-204',
-            'TARGET-single-sample': 'TARGET-52-PAREWI'
+        'GET': {
+            'TCGA-single-case': {'case_barcode': 'TCGA-DX-A23U'},
+            'CCLE-single-case': {'case_barcode': 'A-204'},
+            'TARGET-single-case': {'case_barcode': 'TARGET-52-PAREWI'}
         },
-        'post': {
+        'POST': {
             'TCGA-multi-sample': {
                 'barcodes': ['TCGA-DX-A23U', 'TCGA-WK-A8XQ']
             },
@@ -80,7 +82,7 @@ TEST_CASES_BY_PATH = {
         }
     },
     '/apiv4/cohorts/{cohort_id}/file_manifest': {
-        'post': {
+        'POST': {
             'TCGA-file-size-lte': {
                 'filters': {
                     'program_name': ['TCGA'],
