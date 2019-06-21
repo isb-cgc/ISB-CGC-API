@@ -483,8 +483,6 @@ SITE_SUPERUSER_PASSWORD = os.environ.get('SUPERUSER_PASSWORD', '')
 #   End django-finalware   #
 ############################
 
-CONN_MAX_AGE = 60
-
 ##############################################################
 #   MAXes to prevent size-limited events from causing errors
 ##############################################################

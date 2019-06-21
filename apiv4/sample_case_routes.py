@@ -19,7 +19,7 @@ import json
 from flask import jsonify, request
 from apiv4 import app
 from django.conf import settings
-from sample_case_views import get_full_sample_metadata, get_full_case_metadata
+from sample_case_views import get_sample_metadata, get_case_metadata
 from auth import validate_user, UserValidationException
 
 logger = logging.getLogger(settings.LOGGER_NAME)
@@ -30,9 +30,9 @@ def sample_metadata(sample_barcode):
     
     response = None
 
-    metadata = get_full_sample_metadata([sample_barcode])
+    metadata = get_sample_metadata([sample_barcode])
     
-    if sample_metadata and len(metadata['samples']):
+    if metadata and len(metadata['samples']):
         response = jsonify({
             'code': 200,
             'data': metadata['samples'][0]
@@ -51,7 +51,7 @@ def sample_metadata(sample_barcode):
 def case_metadata(case_barcode):
     response = None
 
-    metadata = get_full_case_metadata([case_barcode])
+    metadata = get_case_metadata([case_barcode])
 
     if metadata and len(metadata['cases']):
         response = jsonify({
@@ -74,9 +74,9 @@ def sample_metadata_list():
 
     request_data = request.get_json()
 
-    metadata = get_full_sample_metadata(request_data['sample_barcodes'])
+    metadata = get_sample_metadata(request_data['sample_barcodes'])
 
-    if sample_metadata:
+    if metadata:
         response = jsonify({
             'code': 200,
             'data': metadata
@@ -97,9 +97,9 @@ def case_metadata_list():
     
     request_data = request.get_json()
 
-    metadata = get_full_case_metadata(request_data['case_barcodes'])
+    metadata = get_case_metadata(request_data['case_barcodes'])
 
-    if case_metadata:
+    if metadata:
         response = jsonify({
             'code': 200,
             'data': metadata
