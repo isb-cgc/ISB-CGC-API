@@ -85,7 +85,7 @@ def sample_metadata_list():
     else:
         response = jsonify({
             'code': 404,
-            'message': "Unable to retrieve case metadata for these barcodes: {}".format(str(sample_barcodes))})
+            'message': "Unable to retrieve case metadata for these barcodes: {}".format(str(request_data['sample_barcodes']))})
         response.status_code = 404
 
     return response
@@ -108,7 +108,7 @@ def case_metadata_list():
     else:
         response = jsonify({
             'code': 404,
-            'message': "Unable to retrieve case metadata for these barcodes: {}".format(str(case_barcodes))})
+            'message': "Unable to retrieve case metadata for these barcodes: {}".format(str(request_data['case_barcodes']))})
         response.status_code = 404
 
     return response
