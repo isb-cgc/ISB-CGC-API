@@ -21,18 +21,24 @@ import django
 from flask import request
 
 from django.conf import settings
+from django.db import close_old_connections
 from cohorts.metadata_helpers import get_full_case_metadata, get_full_sample_metadata
 
 logger = logging.getLogger(settings.LOGGER_NAME)
 
 
 def get_sample_metadata(sample_barcodes):
-    metadata = get_full_sample_metadata(sample_barcodes)
-
-    if metadata and metadata['total_found']:
-        return metadata
-    else:
-        return None
+    
+    try:
+        metadata = get_full_sample_metadata(sample_barcodes)
+    
+        if metadata and metadata['total_found']:
+            return metadata
+        else:
+            return None
+        
+    except Exception as e:
+        logger.error("[ERROR] While fetching sample metadata: ")
 
 
 def get_case_metadata(case_barcodes):
