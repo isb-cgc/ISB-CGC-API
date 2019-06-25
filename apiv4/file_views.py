@@ -20,7 +20,6 @@ import django
 
 from flask import request
 
-from django.core.signals import request_finished
 from django.conf import settings
 from cohorts.metadata_helpers import get_paths_by_uuid
 

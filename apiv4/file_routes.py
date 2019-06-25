@@ -19,6 +19,7 @@ import json
 from flask import jsonify, request
 from apiv4 import app
 from django.conf import settings
+from django.db import close_old_connections
 from auth import validate_user, UserValidationException
 from file_views import get_file_paths, get_signed_uris
 
@@ -145,6 +146,8 @@ def file_path(file_uuid):
             'message': 'Encountered an error while attempting to retrieve the file path for file UUID {}.'.format(file_uuid)
         })
         response.status_code = 500
+    finally:
+        close_old_connections()
 
     return response
 
@@ -187,6 +190,8 @@ def file_path_list():
             'message': 'Encountered an error while attempting to retrieve file paths for these file UUIDs.'
         })
         response.status_code = 500
-
+    finally:
+        close_old_connections()
+        
     return response
 
