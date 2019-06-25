@@ -29,7 +29,7 @@ logger = logging.getLogger(settings.LOGGER_NAME)
 def get_sample_metadata(sample_barcodes):
     metadata = get_full_sample_metadata(sample_barcodes)
 
-    if metadata['total_found']:
+    if metadata and metadata['total_found']:
         return metadata
     else:
         return None
@@ -38,7 +38,7 @@ def get_sample_metadata(sample_barcodes):
 def get_case_metadata(case_barcodes):
     metadata = get_full_case_metadata(case_barcodes)
 
-    if metadata['total_found']:
+    if metadata and metadata['total_found']:
         return metadata
     else:
         return None
