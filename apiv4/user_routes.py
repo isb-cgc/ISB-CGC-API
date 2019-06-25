@@ -21,6 +21,7 @@ from apiv4 import app
 from auth import auth_info, UserValidationException, validate_user, get_user
 from user_views import get_user_acls, get_account_details, gcp_validation, gcp_registration, gcp_info
 from django.conf import settings
+from django.db import close_old_connections
 
 logger = logging.getLogger(settings.LOGGER_NAME)
 
@@ -71,7 +72,6 @@ def account_details():
             'message': str(e)
         })
         response.status_code = 403
-
     except Exception as e:
         logger.exception(e)
         response = jsonify({
@@ -79,6 +79,8 @@ def account_details():
             'message': 'Encountered an error while attempting to retrieve user information.'
         })
         response.status_code = 500
+    finally:
+        close_old_connections()
 
     return response
 
@@ -137,7 +139,6 @@ def validate_gcp(gcp_id):
             'message': str(e)
         })
         response.status_code = 403
-
     except Exception as e:
         logger.exception(e)
         response = jsonify({
@@ -145,7 +146,9 @@ def validate_gcp(gcp_id):
             'message': 'Encountered an error while attempting to validate Google Cloud Platform project ID {}.'.format(gcp_id)
         })
         response.status_code = 500
-
+    finally:
+        close_old_connections()
+        
     return response
 
 
@@ -223,7 +226,9 @@ def user_gcp(gcp_id):
             'message': 'Encountered an error while attempting to register Google Cloud Platform project ID {}.'.format(
                 gcp_id)
         }
-
+    finally:
+        close_old_connections()
+        
     response_obj['code'] = code
     response = jsonify(response_obj)
     response.status_code = code

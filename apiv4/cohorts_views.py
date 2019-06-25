@@ -21,7 +21,6 @@ import re
 
 from flask import request
 
-from django.db import close_old_connections
 from django.contrib.auth.models import User as Django_User
 from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 from django.conf import settings
@@ -79,6 +78,7 @@ def get_file_manifest(cohort_id, user):
         file_manifest = response['file_list'] if response and response['file_list'] else None
 
     except Exception as e:
+        logger.error("[ERROR] File trieving the file manifest for Cohort {}:".format(str(cohort_id)))
         logger.exception(e)
 
     return file_manifest
@@ -123,12 +123,13 @@ def get_cohorts(user_email):
             })
 
     except ObjectDoesNotExist as e:
-        logger.info("No cohorts found for user {}".format(user_email))
+        logger.info("No cohorts found for user {}!".format(user_email))
 
     return cohort_list
 
 
 def get_cohort_counts():
+
     cohort_counts = None
 
     try:
@@ -153,6 +154,7 @@ def get_cohort_counts():
         }
     except Exception as e:
         logger.exception(e)
+
     return cohort_counts
 
 

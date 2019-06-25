@@ -21,7 +21,6 @@ import re
 
 from flask import request
 
-from django.db import close_old_connections
 from django.contrib.auth.models import User as Django_User
 from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 from django.conf import settings

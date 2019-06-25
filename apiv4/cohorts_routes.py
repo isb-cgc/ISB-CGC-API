@@ -21,6 +21,7 @@ from apiv4 import app
 from cohorts_views import get_cohort_info, get_cohorts, get_file_manifest, get_cohort_counts, create_cohort, edit_cohort
 from auth import auth_info, UserValidationException, validate_user
 from django.conf import settings
+from django.db import close_old_connections
 
 logger = logging.getLogger(settings.LOGGER_NAME)
 
@@ -77,7 +78,6 @@ def cohort(cohort_id):
             'message': str(e)
         })
         response.status_code = 403
-
     except Exception as e:
         logger.exception(e)
         response = jsonify({
@@ -85,6 +85,8 @@ def cohort(cohort_id):
             'message': 'Encountered an error while attempting to retrieve this cohort\'s information.'
         })
         response.status_code = 500
+    finally:
+        close_old_connections()
 
     return response
 
@@ -145,7 +147,6 @@ def cohorts():
             'message': str(e)
         })
         response.status_code = 403
-
     except Exception as e:
         logger.exception(e)
         response = jsonify({
@@ -155,7 +156,9 @@ def cohorts():
             )
         })
         response.status_code = 500
-
+    finally:
+        close_old_connections()
+        
     return response
 
 
@@ -206,7 +209,6 @@ def cohort_file_manifest(cohort_id):
             'message': str(e)
         })
         response.status_code = 403
-
     except Exception as e:
         logger.exception(e)
         response = jsonify({
@@ -214,7 +216,9 @@ def cohort_file_manifest(cohort_id):
             'message': 'Encountered an error while attempting to identify this user.'
         })
         response.status_code = 500
-
+    finally:
+        close_old_connections()
+        
     return response
 
 
@@ -256,5 +260,7 @@ def cohort_preview():
             'message': 'Encountered an error while attempting to build this cohort preview.'
         })
         response.status_code = 500
+    finally:
+        close_old_connections()
 
     return response

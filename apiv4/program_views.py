@@ -20,7 +20,6 @@ import django
 
 from flask import request
 
-from django.db import close_old_connections
 from django.conf import settings
 
 from projects.models import Program, Project

@@ -19,6 +19,7 @@ import json
 from flask import jsonify, request
 from apiv4 import app
 from django.conf import settings
+from django.db import close_old_connections
 from program_views import get_programs
 
 logger = logging.getLogger(settings.LOGGER_NAME)
@@ -29,19 +30,31 @@ def programs():
     """Retrieve the list of programs and builds currently available for cohort creation."""
     response = None
     
-    program_info = get_programs()
+    try:
     
-    if program_info:   
-        response = jsonify({
-            'code': 200,
-            'data': program_info
-        })
-        response.status_code = 200
-    else:
+        program_info = get_programs()
+        
+        if program_info:   
+            response = jsonify({
+                'code': 200,
+                'data': program_info
+            })
+            response.status_code = 200
+        else:
+            response = jsonify({
+                'code': 500,
+                'message': 'Encountered an error while retrieving the program list.'
+            })
+            response.status_code = 500
+    except Exception as e:
+        logger.error("[ERROR] While retrieving program information:")
+        logger.exception(e)
         response = jsonify({
             'code': 500,
             'message': 'Encountered an error while retrieving the program list.'
         })
         response.status_code = 500
-
+    finally:
+        close_old_connections()
+        
     return response
