@@ -121,8 +121,6 @@ logger = logging.getLogger(settings.LOGGER_NAME)
 def file_path(file_uuid):
     response = None
 
-    request_data = request.get_json()
-
     try:
         file_paths = get_file_paths([file_uuid])
 
@@ -160,7 +158,6 @@ def file_path_list():
     request_data = request.get_json()
 
     try:
-
         if 'uuids' not in request_data:
             response = jsonify({
                 'code': 400,
