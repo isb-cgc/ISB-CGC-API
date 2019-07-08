@@ -495,10 +495,6 @@ COHORT_FILTER_SCHEMA = {
                                 'type': ['array', 'string', 'integer'],
                                 'items': {'type': ['string', 'integer']}
                             },
-                            'anatomic_neoplasm_subdivision_gte': {
-                                'type': ['array', 'string'],
-                                'items': {'type': 'string'}
-                            },
                             'batch_number_gte': {
                                 'type': ['array', 'string', 'integer'],
                                 'items': {'type': ['string', 'integer']}
@@ -563,10 +559,6 @@ COHORT_FILTER_SCHEMA = {
                                 'type': ['array', 'string', 'integer'],
                                 'items': {'type': ['string', 'integer']}
                             },
-                            'anatomic_neoplasm_subdivision_lte': {
-                                'type': ['array', 'string'],
-                                'items': {'type': 'string'}
-                            },
                             'batch_number_lte': {
                                 'type': ['array', 'string', 'integer'],
                                 'items': {'type': ['string', 'integer']}
@@ -630,10 +622,6 @@ COHORT_FILTER_SCHEMA = {
                             'age_began_smoking_in_years_btw': {
                                 'type': 'array',
                                 'items': {'type': ['string', 'integer']}
-                            },
-                            'anatomic_neoplasm_subdivision_btw': {
-                                'type': ['array', 'string'],
-                                'items': {'type': 'string'}
                             },
                             'batch_number_btw': {
                                 'type': 'array',
@@ -856,16 +844,16 @@ COHORT_FILTER_SCHEMA = {
                                 'items': { 'type': 'string' }
                             },
                             'number_of_lymphnodes_examined': {
-                                'type': ['array', 'string'],
-                                'items': { 'type': 'string' }
+                                'type': ['array', 'string', 'integer'],
+                                'items': { 'type': ['string','integer'] }
                             },
                             'number_of_lymphnodes_positive_by_he': {
-                                'type': ['array', 'string'],
-                                'items': { 'type': 'string' }
+                                'type': ['array', 'string', 'integer'],
+                                'items': { 'type': ['string','integer'] }
                             },
                             'number_pack_years_smoked': {
-                                'type': ['array', 'string'],
-                                'items': { 'type': 'string' }
+                                'type': ['array', 'string', 'integer'],
+                                'items': { 'type': ['string','integer'] }
                             },
                             'other_dx': {
                                 'type': ['array', 'string'],

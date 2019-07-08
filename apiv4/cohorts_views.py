@@ -218,7 +218,8 @@ def edit_cohort(cohort_id, delete=False):
     try:
         if delete:
             cohort = Cohort.objects.get(id=cohort_id)
-            cohort.update(active=False)
+            cohort.active = False
+            cohort.save()
             result = {
                 'message': 'Cohort {} (\'{}\') has been deleted.'.format(cohort_id, cohort.name),
                 'data': {'filters': cohort.get_filters_as_json()},
