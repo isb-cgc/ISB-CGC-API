@@ -211,7 +211,7 @@ def create_cohort(user):
     return cohort_info
 
 
-def edit_cohort(cohort_id, delete=False):
+def edit_cohort(cohort_id, user, delete=False):
     result = None
     match = None
 
