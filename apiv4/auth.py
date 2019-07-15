@@ -51,6 +51,8 @@ def auth_info():
     if encoded_info:
         info_json = _base64_decode(encoded_info)
         user_info = json.loads(info_json)
+        if 'email' not in user_info:
+            raise UserValidationException("Couldn't obtain user email - the correct scopes may not have been provided during authorization!")
     else:
         logger.info("[STATUS] No user encoded info found.")
         user_info = {'id': 'anonymous', 'email': 'Anonymous'}
