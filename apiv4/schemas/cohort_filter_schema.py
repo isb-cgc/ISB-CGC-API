@@ -1902,7 +1902,7 @@ COHORT_FILTER_SCHEMA = {
             'name': {
                 'type': 'string'
             },
-            'desc': {
+            'description': {
                 'type': 'string'
             }
         },
