@@ -25,7 +25,7 @@ logger = logging.getLogger(settings.LOGGER_NAME)
 SCOPE = 'https://www.googleapis.com/auth/userinfo.email'
 
 
-@app.route('/v4/', methods=['GET'], strict_slashes=False)
+@app.route('/v4/about/', methods=['GET'], strict_slashes=False)
 def apiv4():
     """Base response"""
     response = jsonify({
