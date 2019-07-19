@@ -59,8 +59,8 @@ def utilities():
             logger.debug(os.path.split(os.path.abspath(dirname(__file__)))[0] + '/openapi-appengine.yaml')
             with open(os.path.split(os.path.abspath(dirname(__file__)))[0] + '/openapi-appengine.yaml') as fpi:
                 data = yaml.load(fpi)
-                del data['paths']['/apiv4/swagger']
-                del data['paths']['/apiv4/oauth2callback']
+                del data['paths']['/swagger']
+                del data['paths']['/oauth2callback']
                 # We need to adjust the security definition for use with Swagger UI itself (as opposed to the deployed API)
                 data['securityDefinitions']['google_id_token'] = {
                     'type': 'oauth2',

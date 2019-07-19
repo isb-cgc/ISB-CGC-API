@@ -26,7 +26,7 @@ from file_views import get_file_paths, get_signed_uris
 logger = logging.getLogger(settings.LOGGER_NAME)
 
 
-# @app.route('/apiv4/files/signed_uris/<file_uuid>/', methods=['GET'], strict_slashes=False)
+# @app.route('/v4/files/signed_uris/<file_uuid>/', methods=['GET'], strict_slashes=False)
 # def signed_uri(file_uuid):
 #     response = None
 # 
@@ -67,7 +67,7 @@ logger = logging.getLogger(settings.LOGGER_NAME)
 #     return response
 
 
-# @app.route('/apiv4/files/signed_uris/', methods=['POST'], strict_slashes=False)
+# @app.route('/v4/files/signed_uris/', methods=['POST'], strict_slashes=False)
 # def signed_uri_list():
 # 
 #     response = None
@@ -117,7 +117,7 @@ logger = logging.getLogger(settings.LOGGER_NAME)
 #     return response
 
 
-@app.route('/apiv4/files/paths/<file_uuid>/', methods=['GET'], strict_slashes=False)
+@app.route('/v4/files/paths/<file_uuid>/', methods=['GET'], strict_slashes=False)
 def file_path(file_uuid):
     response = None
 
@@ -150,7 +150,7 @@ def file_path(file_uuid):
     return response
 
 
-@app.route('/apiv4/files/paths/', methods=['POST'], strict_slashes=False)
+@app.route('/v4/files/paths/', methods=['POST'], strict_slashes=False)
 def file_path_list():
 
     response = None

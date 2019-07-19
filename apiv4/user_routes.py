@@ -26,7 +26,7 @@ from django.db import close_old_connections
 logger = logging.getLogger(settings.LOGGER_NAME)
 
 
-@app.route('/apiv4/users/account_details/', methods=['GET'], strict_slashes=False)
+@app.route('/v4/users/account_details/', methods=['GET'], strict_slashes=False)
 def account_details():
     """
     GET: Retrieve extended information for a specific user
@@ -85,7 +85,7 @@ def account_details():
     return response
 
 
-@app.route('/apiv4/users/gcp/validate/<gcp_id>/', methods=['GET'], strict_slashes=False)
+@app.route('/v4/users/gcp/validate/<gcp_id>/', methods=['GET'], strict_slashes=False)
 def validate_gcp(gcp_id):
     """
     GET: Validate a Google Cloud Project for registration and return the results to the user
@@ -152,7 +152,7 @@ def validate_gcp(gcp_id):
     return response
 
 
-@app.route('/apiv4/users/gcp/<gcp_id>/', methods=['POST', 'DELETE', 'PATCH', 'GET'], strict_slashes=False)
+@app.route('/v4/users/gcp/<gcp_id>/', methods=['POST', 'DELETE', 'PATCH', 'GET'], strict_slashes=False)
 def user_gcp(gcp_id):
     """
     POST: Register a Google Cloud Project with ISB-CGC
@@ -219,7 +219,7 @@ def user_gcp(gcp_id):
         }
 
     except Exception as e:
-        logger.error("[ERROR] For route /apiv4/users/gcp/{gcp_id} method {}:".format(request.method))
+        logger.error("[ERROR] For route /v4/users/gcp/{gcp_id} method {}:".format(request.method))
         logger.exception(e)
         code = 500
         response_obj = {

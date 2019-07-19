@@ -26,7 +26,7 @@ from auth import validate_user, UserValidationException
 logger = logging.getLogger(settings.LOGGER_NAME)
 
 
-@app.route('/apiv4/samples/<sample_barcode>/', methods=['GET'], strict_slashes=False)
+@app.route('/v4/samples/<sample_barcode>/', methods=['GET'], strict_slashes=False)
 def sample_metadata(sample_barcode):
     
     response = None
@@ -60,7 +60,7 @@ def sample_metadata(sample_barcode):
     return response
 
 
-@app.route('/apiv4/cases/<case_barcode>/', methods=['GET'], strict_slashes=False)
+@app.route('/v4/cases/<case_barcode>/', methods=['GET'], strict_slashes=False)
 def case_metadata(case_barcode):
 
     response = None
@@ -93,7 +93,7 @@ def case_metadata(case_barcode):
     return response
 
 
-@app.route('/apiv4/samples/', methods=['POST'], strict_slashes=False)
+@app.route('/v4/samples/', methods=['POST'], strict_slashes=False)
 def sample_metadata_list():
 
     response = None
@@ -129,7 +129,7 @@ def sample_metadata_list():
     return response
 
 
-@app.route('/apiv4/cases/', methods=['POST'], strict_slashes=False)
+@app.route('/v4/cases/', methods=['POST'], strict_slashes=False)
 def case_metadata_list():
 
     response = None

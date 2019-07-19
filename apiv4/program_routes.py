@@ -25,7 +25,7 @@ from program_views import get_programs
 logger = logging.getLogger(settings.LOGGER_NAME)
 
 
-@app.route('/apiv4/programs/', methods=['GET'], strict_slashes=False)
+@app.route('/v4/programs/', methods=['GET'], strict_slashes=False)
 def programs():
     """Retrieve the list of programs and builds currently available for cohort creation."""
     response = None
