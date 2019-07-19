@@ -26,7 +26,7 @@ from django.db import close_old_connections
 logger = logging.getLogger(settings.LOGGER_NAME)
 
 
-@app.route('/apiv4/cohorts/<int:cohort_id>/', methods=['GET', 'PATCH', 'DELETE'], strict_slashes=False)
+@app.route('/v4/cohorts/<int:cohort_id>/', methods=['GET', 'PATCH', 'DELETE'], strict_slashes=False)
 def cohort(cohort_id):
     """
     GET: Retrieve extended information for a specific cohort
@@ -91,7 +91,7 @@ def cohort(cohort_id):
     return response
 
 
-@app.route('/apiv4/cohorts/', methods=['GET', 'POST'], strict_slashes=False)
+@app.route('/v4/cohorts/', methods=['GET', 'POST'], strict_slashes=False)
 def cohorts():
     """
     GET: Retrieve a user's list of cohorts
@@ -162,7 +162,7 @@ def cohorts():
     return response
 
 
-@app.route('/apiv4/cohorts/<int:cohort_id>/file_manifest/', methods=['POST', 'GET'], strict_slashes=False)
+@app.route('/v4/cohorts/<int:cohort_id>/file_manifest/', methods=['POST', 'GET'], strict_slashes=False)
 def cohort_file_manifest(cohort_id):
     """
     GET: Retrieve a cohort's file manifest
@@ -222,7 +222,7 @@ def cohort_file_manifest(cohort_id):
     return response
 
 
-@app.route('/apiv4/cohorts/preview/', methods=['POST'], strict_slashes=False)
+@app.route('/v4/cohorts/preview/', methods=['POST'], strict_slashes=False)
 def cohort_preview():
     """List the samples, cases, and counts a given set of cohort filters would produce"""
 
