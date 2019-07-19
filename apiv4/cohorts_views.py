@@ -222,7 +222,7 @@ def edit_cohort(cohort_id, user, delete=False):
             cohort.save()
             result = {
                 'message': 'Cohort {} (\'{}\') has been deleted.'.format(cohort_id, cohort.name),
-                'data': {'filters': cohort.get_current_filters(as_json=True)},
+                'data': {'filters': cohort.get_current_filters(unformatted=True)},
                 'code': 200
             }
         else:
