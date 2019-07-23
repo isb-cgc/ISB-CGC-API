@@ -17,7 +17,9 @@ commands:
             KEY=${DEPLOYMENT_KEY_ISB_CGC}
             CLIENT_EMAIL=${DEPLOYMENT_CLIENT_EMAIL_ISB_CGC}
             PROJECT_ID=${DEPLOYMENT_PROJECT_ID_ISB_CGC}
-            if [[ ${TIER} == "UAT" ]]; then
+            if [[ ${TIER} == "PROD" ]] || [[ ${TIER} == "DEV" ]]; then
+              echo "Using default project ${PROJECT_ID} and related deployment SA."
+            elif [[ ${TIER} == "UAT" ]]; then
               KEY=${DEPLOYMENT_KEY_ISB_CGC_UAT}
               CLIENT_EMAIL=${DEPLOYMENT_CLIENT_EMAIL_ISB_CGC_UAT}
               PROJECT_ID=${DEPLOYMENT_PROJECT_ID_ISB_CGC}
