@@ -1,7 +1,7 @@
 from datetime import datetime
 
 TEST_CASES_BY_PATH = {
-    '/apiv4/cohorts': {
+    '/cohorts': {
         'POST': {
             'TCGA-disease-code': {
                 'name': 'Test cohort TCGA-disease-code for {}'.format(datetime.now()),
@@ -45,7 +45,7 @@ TEST_CASES_BY_PATH = {
             }
         },
     },
-    '/apiv4/cohorts/preview': {
+    '/cohorts/preview': {
         'POST': {
             'multi-program': {
                 "filters": {
@@ -60,14 +60,14 @@ TEST_CASES_BY_PATH = {
             }
         }  
     },
-    '/apiv4/samples/{sample_barcode}': {
+    '/samples/{sample_barcode}': {
         'GET': {
             'TCGA-single-sample': {'sample_barcode': 'TCGA-DX-A23U-10A'},
             'CCLE-single-sample': {'sample_barcode': 'CCLE-253J'},
             'TARGET-single-sample': {'sample_barcode': 'TARGET-52-PAREWI-01A'}
         },
     },
-    '/apiv4/samples': {
+    '/samples': {
         'POST': {
             'TCGA-multi-sample': {
                 'sample_barcodes': ['TCGA-DX-A23U-10A', 'TCGA-WK-A8XQ-10A']
@@ -80,14 +80,14 @@ TEST_CASES_BY_PATH = {
             }
         }
     },
-    '/apiv4/cases/{case_barcode}': {
+    '/cases/{case_barcode}': {
         'GET': {
             'TCGA-single-case': {'case_barcode': 'TCGA-DX-A23U'},
             'CCLE-single-case': {'case_barcode': 'A-204'},
             'TARGET-single-case': {'case_barcode': 'TARGET-52-PAREWI'}
         },
     },
-    '/apiv4/cases': {
+    '/cases': {
         'POST': {
             'TCGA-multi-sample': {
                 'case_barcodes': ['TCGA-DX-A23U', 'TCGA-WK-A8XQ']
@@ -100,7 +100,7 @@ TEST_CASES_BY_PATH = {
             }
         }
     },
-    '/apiv4/cohorts/{cohort_id}/file_manifest': {
+    '/cohorts/{cohort_id}/file_manifest': {
         'POST': {
             'TCGA-file-size-lte': {
                 'filters': {
@@ -115,7 +115,7 @@ TEST_CASES_BY_PATH = {
             },
         }
     },
-    '/apiv4/files/paths/{file_uuid}': {
+    '/files/paths/{file_uuid}': {
         'GET': {
             'TARGET-file-uuid': {
                 'file_uuid': '20f1cdc2-2900-4f48-9bd4-66a406bf7a61'
@@ -129,7 +129,7 @@ TEST_CASES_BY_PATH = {
         }
 
     },
-    '/apiv4/files/paths': {
+    '/files/paths': {
         'POST': {
             'TARGET-file-uuids': {
                 'uuids': ['20f1cdc2-2900-4f48-9bd4-66a406bf7a61', '27e8a6c4-2ca7-4b7c-8f41-ec53fb4faa66', 'e3e6154c-ac76-4d0d-bd40-8dc213c35197']
@@ -143,4 +143,14 @@ TEST_CASES_BY_PATH = {
         }
 
     },
+    '/users/gcp/validate/{gcp_id}': {
+        'GET': {
+            'should-fail': {
+                'gcp_id': 'gibberish_nonsense_id_sfgdfgertergdvg34t'
+            },
+            'should-pass': {
+                'gcp_id': 'cgc-05-0016'
+            }
+        }
+    }
 }

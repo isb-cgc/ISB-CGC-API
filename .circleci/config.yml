@@ -1,9 +1,70 @@
-version: 2
+version: 2.1
+commands:
+  deployment_setup:
+    steps:
+      - run:
+          name: "Set the Tier"
+          command: |
+            TIER=DEV
+            if [[ ${CIRCLE_BRANCH} =~ isb-cgc-(prod|uat|test).* ]]; then
+              TIER=$(awk -F- '{print toupper($3)}' \<<< ${CIRCLE_BRANCH})
+            fi
+            echo "export TIER=${TIER}" >> $BASH_ENV
+            echo "Tier was identified as ${TIER} for branch ${CIRCLE_BRANCH}"
+      - run:
+          name: "Assign Project-level vars"
+          command: |
+            if [[ ${TIER} == "PROD" ]] || [[ ${TIER} == "DEV" ]]; then
+              KEY=${DEPLOYMENT_KEY_ISB_CGC}
+              CLIENT_EMAIL=${DEPLOYMENT_CLIENT_EMAIL_ISB_CGC}
+              PROJECT_ID=${DEV_PROJECT_ID}
+            elif [[ ${TIER} == "UAT" ]]; then
+              KEY=${DEPLOYMENT_KEY_ISB_CGC}
+              CLIENT_EMAIL=${DEPLOYMENT_CLIENT_EMAIL_ISB_CGC}
+              PROJECT_ID=${DEV_PROJECT_ID}
+            elif [[ ${TIER} == "TEST" ]]; then
+              KEY=${DEPLOYMENT_KEY_ISB_CGC}
+              CLIENT_EMAIL=${DEPLOYMENT_CLIENT_EMAIL_ISB_CGC}
+              PROJECT_ID=${DEV_PROJECT_ID}
+            else
+              echo "[ERROR] - Unrecognized tier: ${TIER} - exitng."
+              exit 1
+            fi
+
+            echo "export DEPLOYMENT_KEY=\"${KEY}\"" >> $BASH_ENV
+            echo "export DEPLOYMENT_CLIENT_EMAIL=${CLIENT_EMAIL}" >> $BASH_ENV
+            echo "export DEPLOYMENT_PROJECT_ID=${PROJECT_ID}" >> $BASH_ENV
+
+      - run:
+          name: "Set tier-specific configuration file"
+          command: |
+            CONFIG_FILE=${DEPLOYMENT_CONFIG_FILE_DEV}
+            if [[ ${TIER} == "PROD" ]]; then
+              echo "Deployment configuration set for production."
+              CONFIG_FILE=${DEPLOYMENT_CONFIG_FILE_PROD}
+            elif [[ ${TIER} == "UAT" ]]; then
+              echo "Deployment configuration set for production."
+              CONFIG_FILE=${DEPLOYMENT_CONFIG_FILE_UAT}
+            elif [[ ${TIER} == "TEST" ]]; then
+              echo "Deployment configuration set for production."
+              CONFIG_FILE=${DEPLOYMENT_CONFIG_FILE_TEST}
+            elif [[ ${TIER} == "DEV" ]]; then
+              echo "Deployment configuration set for production."
+            else
+              echo "[ERROR] - Unrecognized tier: ${TIER}"
+              CONFIG_FILE=
+            fi
+
+            if [[ -n $CONFIG_FILE ]]; then
+              echo "export DEPLOYMENT_CONFIG_FILE=${CONFIG_FILE}" >> $BASH_ENV
+            else
+              echo "[ERROR] Couldn't assign deployment configuration file - exiting.
+            fi
+
 jobs:
   build_job:
     environment:
       TZ: "/usr/share/zoneinfo/America/Los_Angeles"
-    name: Building Deployment Container
     working_directory: ~/ISB-CGC-API
     docker:
       - image:  circleci/python:3.6.4
@@ -33,6 +94,7 @@ jobs:
           key: isb-cgc-api-lib-{{ checksum "requirements.txt" }}
           paths:
             - ./lib
+      - deployment_setup
       - save_cache:
           key: isb-cgc-api-google-deps-{{ checksum "./shell/install-deps.sh" }}
           paths:
@@ -60,7 +122,6 @@ jobs:
   deploy_job:
     environment:
       TZ: "/usr/share/zoneinfo/America/Los_Angeles"
-    name: Deploy to AppEngine Flex
     docker:
       - image:  circleci/python:3.6.4
     working_directory: ~/ISB-CGC-API
@@ -87,4 +148,8 @@ workflows:
             - build_job
           filters:
             branches:
-              only: master
+              only:
+                - master
+                - isb-cgc-test
+                - isb-cgc-uat
+                - isb-cgc-prod
