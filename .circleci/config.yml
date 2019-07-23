@@ -14,7 +14,7 @@ commands:
       - run:
           name: "Assign Project-level vars"
           command: |
-            KEY=${DEPLOYMENT_KEY_ISB_CGC}
+            KEY=${DEV_DEPLOYMENT_KEY_FOR_V2}
             CLIENT_EMAIL=${DEPLOYMENT_CLIENT_EMAIL_ISB_CGC}
             PROJECT_ID=${DEPLOYMENT_PROJECT_ID_ISB_CGC}
             if [[ ${TIER} == "PROD" ]] || [[ ${TIER} == "DEV" ]]; then
