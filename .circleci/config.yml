@@ -14,18 +14,17 @@ commands:
       - run:
           name: "Assign Project-level vars"
           command: |
-            if [[ ${TIER} == "PROD" ]] || [[ ${TIER} == "DEV" ]]; then
-              KEY=${DEV_PRIVATE_KEY_FOR_V2}
-              CLIENT_EMAIL=${DEV_CLIENT_EMAIL}
-              PROJECT_ID=${GAE_PROJECT_ID}
-            elif [[ ${TIER} == "UAT" ]]; then
-              KEY=${DEPLOYMENT_KEY_ISB_CGC}
-              CLIENT_EMAIL=${DEPLOYMENT_CLIENT_EMAIL_ISB_CGC}
-              PROJECT_ID=${DEV_PROJECT_ID}
+            KEY=${DEPLOYMENT_KEY_ISB_CGC}
+            CLIENT_EMAIL=${DEPLOYMENT_CLIENT_EMAIL_ISB_CGC}
+            PROJECT_ID=${DEPLOYMENT_PROJECT_ID_ISB_CGC}
+            if [[ ${TIER} == "UAT" ]]; then
+              KEY=${DEPLOYMENT_KEY_ISB_CGC_UAT}
+              CLIENT_EMAIL=${DEPLOYMENT_CLIENT_EMAIL_ISB_CGC_UAT}
+              PROJECT_ID=${DEPLOYMENT_PROJECT_ID_ISB_CGC}
             elif [[ ${TIER} == "TEST" ]]; then
-              KEY=${DEPLOYMENT_KEY_ISB_CGC}
-              CLIENT_EMAIL=${DEPLOYMENT_CLIENT_EMAIL_ISB_CGC}
-              PROJECT_ID=${DEV_PROJECT_ID}
+              KEY=${DEPLOYMENT_KEY_ISB_CGC_TEST}
+              CLIENT_EMAIL=${DEPLOYMENT_CLIENT_EMAIL_ISB_CGC_TEST}
+              PROJECT_ID=${DEPLOYMENT_PROJECT_ID_ISB_CGC}
             else
               echo "[ERROR] - Unrecognized tier: ${TIER} - exitng."
               exit 1
