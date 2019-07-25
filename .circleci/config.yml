@@ -142,8 +142,8 @@ jobs:
             sudo apt-get update && sudo apt-get -y --allow-downgrades install google-cloud-sdk=251.0.0-0
       - deploy:
           command: |
-            sudo -E /bin/bash ./shell/gcloud_authenticate.sh
             sudo -E /bin/bash ./shell/unpack_for_deployment.sh
+            sudo -E /bin/bash ./shell/gcloud_authenticate.sh
             sudo -E gcloud endpoints services deploy openapi-appengine.yaml
             sudo -E gcloud app deploy --verbosity=debug ./app.yaml --quiet
 workflows:
