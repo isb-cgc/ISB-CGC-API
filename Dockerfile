@@ -71,6 +71,11 @@ ADD . /app
 RUN pip3 install -r /app/requirements.txt -t /app/lib/ --upgrade
 RUN pip3 install gunicorn==19.9.0
 
-ENV PYTHONPATH=/app:/app/apiv4:/app/lib:/app/ISB-CGC-Common:/app/google_appengine:/app/google_appengine/lib/protorpc-1.0
+# Install Cloud SDK
+RUN echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] http://packages.cloud.google.com/apt cloud-sdk main" | tee -a /etc/apt/sources.list.d/google-cloud-sdk.list && curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key --keyring /usr/share/keyrings/cloud.google.gpg  add - && apt-get update -y && apt-get install google-cloud-sdk -y
+# Install the Python Libraries
+RUN apt-get -y install google-cloud-sdk-app-engine-python
+
+ENV PYTHONPATH=/app:/app/apiv4:/app/lib:/app/ISB-CGC-Common:${PYTHONPATH}
 
 CMD gunicorn -b :$PORT apiv4:app -w 3 -t 130

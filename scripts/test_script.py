@@ -60,19 +60,19 @@ COHORTS_FOR_TESTS = []
 TEST_DEPENDENCIES = {
     'cohorts': [
         {'{cohort_id}': [
-            {'get': {'cohort_id': {'path': '/apiv4/cohorts/', 'method': 'post'}}},
-            {'patch': {'cohort_id': {'path': '/apiv4/cohorts/', 'method': 'post'}}},
+            {'get': {'cohort_id': {'path': '/v4/cohorts/', 'method': 'post'}}},
+            {'patch': {'cohort_id': {'path': '/v4/cohorts/', 'method': 'post'}}},
         ]},
         {'{cohort_id}/file_manifest': [
-            {'post': {'cohort_id': {'path': '/apiv4/cohorts/', 'method': 'post'}}},
-            {'get': {'cohort_id': {'path': '/apiv4/cohorts/', 'method': 'post'}}},
+            {'post': {'cohort_id': {'path': '/v4/cohorts/', 'method': 'post'}}},
+            {'get': {'cohort_id': {'path': '/v4/cohorts/', 'method': 'post'}}},
         ]}
     ],
     'users': [
         {'gcp/{gcp_id}': [
-            {'patch': {'gcp_id': {'path': '/apiv4/users/gcp/', 'method': 'post'}}},
-            {'get': {'gcp_id': {'path': '/apiv4/users/gcp/', 'method': 'post'}}},
-            {'delete': {'gcp_id': {'path': '/apiv4/users/gcp/', 'method': 'post'}}}
+            {'patch': {'gcp_id': {'path': '/v4/users/gcp/', 'method': 'post'}}},
+            {'get': {'gcp_id': {'path': '/v4/users/gcp/', 'method': 'post'}}},
+            {'delete': {'gcp_id': {'path': '/v4/users/gcp/', 'method': 'post'}}}
         ]},
     ]
 }
@@ -110,6 +110,7 @@ API_PATHS = {
 
 
 def load_api_paths(tier):
+    tier_paths = {}
     tier_info = INFO_BY_TIER[tier]
     client = storage.Client(project=tier_info['project'])
     bucket = client.get_bucket(tier_info['yaml_path'])
@@ -125,24 +126,23 @@ def load_api_paths(tier):
         data = yaml.load(fpi)
 
         for path in data['paths']:
-            path_split = path.split('/apiv4/')[-1].split('/')
-
-            resource = path_split[0]
-            if len(path_split) > 1:
-                subpath = "/".join(path_split[1:])
+            path_split = path.split('/')
+            resource = path_split[1]
+            if len(path_split) > 2:
+                subpath = "/".join(path_split[2:])
             else:
                 subpath = '/'
 
-            if resource not in API_PATHS:
-                API_PATHS[resource] = {}
+            if resource not in tier_paths:
+                tier_paths[resource] = {}
 
-            if subpath not in API_PATHS[resource]:
-                API_PATHS[resource][subpath] = {
+            if subpath not in tier_paths[resource]:
+                tier_paths[resource][subpath] = {
                     'methods': {},
                     'path': path
                 }
 
-            subpath_set = API_PATHS[resource][subpath]
+            subpath_set = tier_paths[resource][subpath]
 
             for method in data['paths'][path]:
                 method_set = {}
@@ -171,6 +171,8 @@ def load_api_paths(tier):
                             method_set['test_data']['parameters'][param['in']].append(param['name'])
                 method_set['auth_req'] = bool('security' in data['paths'][path][method])
                 subpath_set['methods'][method.upper()] = method_set
+
+    API_PATHS[tier] = tier_paths
 
 
 def run_tests_and_gather_results(tier, test_set, debug_mode=False):
@@ -242,18 +244,20 @@ def prepare_test_sets(tier):
     unreliant_tests = []
     reliant_paths = None
 
-    for resource in API_PATHS:
+    tier_paths = API_PATHS[tier]
+
+    for resource in tier_paths:
 
         # Check to see if this resource has any reliant subpaths
         if resource in TEST_DEPENDENCIES:
             reliant_paths = set([y for x in TEST_DEPENDENCIES[resource] for y in x])
 
-        for subpath in API_PATHS[resource]:
-            for method in API_PATHS[resource][subpath]['methods']:
-                method_data = API_PATHS[resource][subpath]['methods'][method]
+        for subpath in tier_paths[resource]:
+            for method in tier_paths[resource][subpath]['methods']:
+                method_data = tier_paths[resource][subpath]['methods'][method]
                 # Build test
                 test_base = {
-                    'path': API_PATHS[resource][subpath]['path'],
+                    'path': tier_paths[resource][subpath]['path'],
                     'auth_req': method_data['auth_req'],
                     'method': method.upper()
                 }
@@ -263,6 +267,7 @@ def prepare_test_sets(tier):
                     if 'dependencies' in method_data:
                         print("method_data: {}".format(str(method_data)))
                     else:
+                        print(subpath, resource)
                         for specific_test in method_data['test_data']['test_cases']:
                             test = copy.deepcopy(test_base)
                             test['test_data'] = {
@@ -332,20 +337,21 @@ def get_id_token(credentials_location=get_credentials_location()):
 def main():
     tier = 'dev'
     load_api_paths(tier)
+    print(API_PATHS)
     print("API paths loaded, ready to prepare tests")
     print("----------------------------------------")
     reliant, unreliant = prepare_test_sets(tier)
     print("Test sets prepared, ready to run tests on {} tier".format(tier))
     print("-------------------------------------------------")
 
-    print("RELIANT TESTS")
-    for test in reliant:
+    print("UNRELIANT TESTS")
+    for test in unreliant:
         print(test)
     print("-------------------------------------------------")
 
-    run_tests_and_gather_results(tier, reliant, True)
+    run_tests_and_gather_results(tier, unreliant, True)
 
-    # print_test_run_results(tier)
+    print_test_run_results(tier)
 
 
 # this allows us to call this from command line
