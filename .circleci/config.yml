@@ -68,7 +68,7 @@ jobs:
       TZ: "/usr/share/zoneinfo/America/Los_Angeles"
     working_directory: ~/ISB-CGC-API
     docker:
-      - image:  circleci/python:3.7.0
+      - image:  circleci/python:3.7.0-stretch
       - image: circleci/mysql:5.7
         environment:
           MYSQL_ROOT_HOST: "%"
@@ -124,7 +124,7 @@ jobs:
     environment:
       TZ: "/usr/share/zoneinfo/America/Los_Angeles"
     docker:
-      - image:  circleci/python:3.6.4
+      - image:  circleci/python:3.7.0-stretch
     working_directory: ~/ISB-CGC-API
     steps:
       - restore_cache:
@@ -144,8 +144,8 @@ jobs:
           command: |
             sudo -E /bin/bash ./shell/gcloud_authenticate.sh
             sudo -E /bin/bash ./shell/unpack_for_deployment.sh
-            sudo -E ./google-cloud-sdk/bin/gcloud endpoints services deploy openapi-appengine.yaml
-            sudo -E ./google-cloud-sdk/bin/gcloud app deploy --verbosity=debug ./app.yaml --quiet
+            sudo -E gcloud endpoints services deploy openapi-appengine.yaml
+            sudo -E gcloud app deploy --verbosity=debug ./app.yaml --quiet
 workflows:
   version: 2
   build_and_deploy:
