@@ -1,4 +1,4 @@
-if [ ! -f deployment.key.json ]; then
+if [ ! -f "deployment.key.json" ]; then
     echo ${DEPLOYMENT_KEY} | base64 --decode --ignore-garbage > deployment.key.json
 fi
 
