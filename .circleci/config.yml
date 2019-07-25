@@ -14,7 +14,13 @@ commands:
       - run:
           name: "Assign Project-level vars"
           command: |
-            KEY=${DEPLOYMENT_KEY_ISB_CGC}
+            if [ ! -f deployment.key.json ]; then
+              echo "Deployment JSON keyfile not found - loading from CircleCI."
+              KEY=${DEPLOYMENT_KEY_ISB_CGC}
+            else
+              echo "Deployment JSON keyfile found."
+              KEY="NA"
+            fi
             CLIENT_EMAIL=${DEPLOYMENT_CLIENT_EMAIL_ISB_CGC}
             PROJECT_ID=${DEPLOYMENT_PROJECT_ID_ISB_CGC}
             if [[ ${TIER} == "PROD" ]] || [[ ${TIER} == "DEV" ]]; then
@@ -140,6 +146,7 @@ jobs:
             echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] http://packages.cloud.google.com/apt cloud-sdk main" | sudo tee -a /etc/apt/sources.list.d/google-cloud-sdk.list
             curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key --keyring /usr/share/keyrings/cloud.google.gpg add -
             sudo apt-get update && sudo apt-get -y --allow-downgrades install google-cloud-sdk=251.0.0-0
+      - deployment_setup
       - deploy:
           command: |
             sudo -E /bin/bash ./shell/unpack_for_deployment.sh
