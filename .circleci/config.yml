@@ -104,6 +104,7 @@ jobs:
       - run:
           name: Auth and Staging
           command: |
+            sudo -E /bin/bash ./shell/unpack_for_deployment.sh
             sudo -E /bin/sh ./shell/gcloud_authenticate.sh
             sudo -E /bin/bash ./shell/gcloud-pull-staging-files.sh
       - save_cache:
