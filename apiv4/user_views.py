@@ -66,7 +66,7 @@ def gcp_info(user, gcp_id=None):
     
     try:
         gcps = get_user_gcps(user, gcp_id)
-        success = bool(len(gcps) > 0)
+        success = bool(gcps is not None) and len(gcps) > 0
         
     except Exception as e:
         logger.error("[ERROR] Encountered an error while retrieving GCP project details:")

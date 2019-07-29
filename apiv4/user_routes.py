@@ -188,7 +188,11 @@ def user_gcp(gcp_id):
                 raise Exception("Method not recognized: {}".format(request.method))
 
             if not success:
-                code = 400
+                if gcps is not None:
+                    code = 404
+                    response_obj['message'] = 'A Google Cloud Platform with ID {} was not found for user {}'.format(
+                        gcp_id, user.email
+                    )
             else:
                 code = 200
     
@@ -205,9 +209,16 @@ def user_gcp(gcp_id):
             # Lack of a valid object means something went wrong on the server
             else:
                 code = 500
+                act = "fetch"
+                if request.method == 'POST':
+                    act = "register"
+                if request.method == 'DELETE':
+                    act = "unregister"
+                if request.method == "PATCH":
+                    act = "refresh"
                 response_obj = {
                     'message': "Encountered an error while attempting to {} Google Cloud Platform project ID {}.".format(
-                        "register" if request.method == 'POST' else "unregister" if request.method == 'DELETE' else "refresh",
+                        act,
                         gcp_id
                     )
                 }
