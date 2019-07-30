@@ -188,9 +188,9 @@ def user_gcp(gcp_id):
                 raise Exception("Method not recognized: {}".format(request.method))
 
             if not success:
-                if gcps is not None:
+                if result is not None:
                     code = 404
-                    response_obj['message'] = 'A Google Cloud Platform with ID {} was not found for user {}'.format(
+                    response_obj['message'] = 'A Google Cloud Platform project with ID {} was not found for user {}'.format(
                         gcp_id, user.email
                     )
             else:
@@ -245,3 +245,101 @@ def user_gcp(gcp_id):
     response.status_code = code
 
     return response
+
+@app.route('/v4/users/gcp/', methods=['POST', 'GET'], strict_slashes=False)
+def user_gcps():
+    """
+    POST: Register a Google Cloud Project with ISB-CGC
+    PATCH: Update the Google Cloud Project's user list with ISB-CGC
+    DELETE: Unregister the Google Cloud Project with ISB-CGC
+    GET: Fetch details about the Google Cloud Project
+    """
+
+    response_obj = {}
+    code = None
+    gcp_id = None
+
+    try:
+        user_info = auth_info()
+        user = validate_user(user_info['email'])
+
+        if not user:
+            response_obj = {
+                'message': 'Encountered an error while attempting to identify this user.'
+            }
+            code = 500
+        else:
+            action = None
+            result = None
+            success = None
+
+            if request.method == 'POST':
+                gcp_id = request.args.get('project_id', default=None, type=string)
+                if gcp_id:
+                    action, success = gcp_registration(user, gcp_id, False)
+            elif request.method == 'GET':
+                result, success = gcp_info(user)
+            else:
+                raise Exception("Method not recognized: {}".format(request.method))
+
+            if not success:
+                if result is not None:
+                    code = 404
+                    response_obj['message'] = 'No Google Cloud Platform projects found for user {}'.format(
+                        gcp_id, user.email
+                    )
+            else:
+                code = 200
+
+            if action:
+                if 'message' in action:
+                    response_obj['message'] = action['message']
+                if 'notes' in action:
+                    response_obj['notes'] = action['notes']
+                if success:
+                    response_obj['gcp_project_id'] = action['gcp_id']
+            elif result:
+                response_obj['data'] = result
+
+            # Lack of a valid object means something went wrong on the server
+            else:
+                code = 500
+                act = "fetch the registered GCP project list for user {}".format(user.email)
+                if request.method == 'POST':
+                    if gcp_id:
+                        act = "register Google Cloud Platform project ID {}".format(gcp_id)
+                    else:
+                        act = "register a Google Cloud Platform project"
+                response_obj = {
+                    'message': "Encountered an error while attempting to {}".format(
+                        act
+                    )
+                }
+
+    except UserValidationException as e:
+        code = 403
+        response_obj = {
+            'message': str(e)
+        }
+
+    except Exception as e:
+        logger.error("[ERROR] For route /v4/users/gcp/{gcp_id} method {}:".format(request.method))
+        logger.exception(e)
+        code = 500
+        response_obj = {
+            'message': 'Encountered an error while attempting to register Google Cloud Platform project ID {}.'.format(
+                gcp_id)
+        }
+    finally:
+        close_old_connections()
+
+    response_obj['code'] = code
+    response = jsonify(response_obj)
+    response.status_code = code
+
+    return response
+
+
+
+
+
