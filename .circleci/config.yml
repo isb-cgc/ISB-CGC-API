@@ -49,12 +49,12 @@ commands:
       - run:
           name: "Set tier-specific configuration file"
           command: |
-            if [[ -n $CONFIG ]]; then
-              gsutil cp gs://${DEPLOYMENT_BUCKET}/deployment_config.txt ./
-              xargs -a deployment_config.txt -I{} echo "export {}" >> $BASH_ENV
-            else
-              echo "[ERROR] Couldn't obtain deployment configuration file - exiting."
+            gsutil cp gs://${DEPLOYMENT_BUCKET}/delpoyment_config.txt ./
+            if [ ! -f "delpoyment_config.txt" ]; then
+              echo "[ERROR] Couldn't assign deployment configuration file - exiting."
               exit 1
+            else
+              xargs -a config_file.txt -I{} echo "export {}" >> $BASH_ENV
             fi
 
 jobs:
