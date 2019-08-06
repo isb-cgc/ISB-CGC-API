@@ -52,8 +52,20 @@ commands:
       - run:
           name: "Set tier-specific configuration file"
           command: |
-            sudo -E /bin/bash ./shell/pull_config.sh
-            xargs -a config_file.txt -I{} echo "export {}" >> $BASH_ENV
+            if [ ! -f "deployment.key.json" ]; then
+                echo ${DEPLOYMENT_KEY} | base64 --decode --ignore-garbage > deployment.key.json
+            fi
+            gcloud auth activate-service-account --key-file deployment.key.json
+            gcloud config set account $DEPLOYMENT_CLIENT_EMAIL
+            gcloud config set project "$DEPLOYMENT_PROJECT_ID"
+
+            gsutil cp gs://${DEPLOYMENT_BUCKET}/deployment_config.txt ./
+            if [ ! -f "deployment_config.txt" ]; then
+              echo "[ERROR] Couldn't assign deployment configuration file - exiting."
+              exit 1
+            else
+              xargs -a config_file.txt -I{} echo "export {}" >> $BASH_ENV
+            fi
 
 jobs:
   build_job:
