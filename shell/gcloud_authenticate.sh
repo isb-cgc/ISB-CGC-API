@@ -1,5 +1,7 @@
 if [ ! -f "deployment.key.json" ]; then
     echo ${DEPLOYMENT_KEY} | base64 --decode --ignore-garbage > deployment.key.json
+else
+    echo "Found deployment key JSON file."
 fi
 
 gcloud auth activate-service-account --key-file deployment.key.json
