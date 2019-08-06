@@ -52,6 +52,7 @@ commands:
       - run:
           name: "Set tier-specific configuration file"
           command: |
+            sudo -E /bin/sh ./shell/gcloud_authenticate.sh
             gsutil cp gs://${DEPLOYMENT_BUCKET}/delpoyment_config.txt ./
             if [ ! -f "delpoyment_config.txt" ]; then
               echo "[ERROR] Couldn't assign deployment configuration file - exiting."
