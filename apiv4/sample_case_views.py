@@ -30,7 +30,7 @@ def get_sample_metadata(sample_barcodes):
     
     try:
         metadata = get_full_sample_metadata(sample_barcodes)
-    
+
         if metadata and metadata['total_found']:
             return metadata
         else:
