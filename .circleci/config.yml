@@ -52,14 +52,7 @@ commands:
       - run:
           name: "Set tier-specific configuration file"
           command: |
-            if [ ! -f "deployment.key.json" ]; then
-                echo ${DEPLOYMENT_KEY} | base64 --decode --ignore-garbage > deployment.key.json
-            fi
-            gcloud auth activate-service-account --key-file deployment.key.json
-            gcloud config set account $DEPLOYMENT_CLIENT_EMAIL
-            gcloud config set project "$DEPLOYMENT_PROJECT_ID"
-
-            gsutil cp gs://${DEPLOYMENT_BUCKET}/deployment_config.txt ./
+            sudo gsutil cp gs://${DEPLOYMENT_BUCKET}/deployment_config.txt ./
             if [ ! -f "deployment_config.txt" ]; then
               echo "[ERROR] Couldn't assign deployment configuration file - exiting."
               exit 1
@@ -73,7 +66,7 @@ jobs:
       TZ: "/usr/share/zoneinfo/America/Los_Angeles"
     working_directory: ~/ISB-CGC-API
     docker:
-      - image:  circleci/python:3.7.0-stretch
+      - image: circleci/python:3.7.0-stretch
       - image: circleci/mysql:5.7
         environment:
           MYSQL_ROOT_HOST: "%"
