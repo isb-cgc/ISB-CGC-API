@@ -94,14 +94,11 @@ jobs:
           paths:
             - ./lib
       - deployment_setup
-      - run:
-          name: Auth
-          command: |
-            sudo -E /bin/sh ./shell/gcloud_authenticate.sh
       - deployment_config
       - run:
-          name: Staging and Database testing
+          name: Staging
           command: |
+            sudo -E /bin/sh ./shell/gcloud_authenticate.sh
             sudo -E /bin/bash ./shell/gcloud-pull-staging-files.sh
       - save_cache:
           key: isb-cgc-api-{{ epoch }}
@@ -138,13 +135,11 @@ jobs:
             curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key --keyring /usr/share/keyrings/cloud.google.gpg add -
             sudo apt-get update && sudo apt-get -y --allow-downgrades install google-cloud-sdk=251.0.0-0
       - deployment_setup
-      - run:
-          name: Auth
-          command: |
-            sudo -E /bin/sh ./shell/gcloud_authenticate.sh
       - deployment_config
       - deploy:
+          nane: Deployment
           command: |
+            sudo -E /bin/sh ./shell/gcloud_authenticate.sh
             sudo -E /bin/bash ./shell/unpack_for_deployment.sh
             sudo -E gcloud endpoints services deploy openapi-appengine.yaml
             sudo -E gcloud app deploy --verbosity=debug ./app.yaml --quiet
