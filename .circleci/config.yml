@@ -55,6 +55,23 @@ commands:
             sudo -E /bin/bash ./shell/pull_config.sh
             xargs -a deployment_config.txt -I{} echo "export {}" >> $BASH_ENV
 
+  auth:
+    steps:
+      - run:
+          name: "Service Account Auth and Project Settings"
+          command: |
+            sudo -E /bin/bash ./shell/gcloud_authenticate.sh
+
+  install_cloud_sdk:
+    steps:
+      - run:
+          name: "Install CloudSDK"
+          command: |
+            echo "export CLOUDSDK_CORE_DISABLE_PROMPTS=1" >> $BASH_ENV
+            echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] http://packages.cloud.google.com/apt cloud-sdk main" | sudo tee -a /etc/apt/sources.list.d/google-cloud-sdk.list
+            curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key --keyring /usr/share/keyrings/cloud.google.gpg add -
+            sudo apt-get update && sudo apt-get -y --allow-downgrades install google-cloud-sdk=251.0.0-0
+
 jobs:
   build_job:
     environment:
@@ -89,10 +106,7 @@ jobs:
           paths:
             - ./lib
       - deployment_setup
-      - run:
-          name: Auth
-          command: |
-            sudo -E /bin/bash ./shell/gcloud_authenticate.sh
+      - auth
       - deployment_config
       - run:
           name: Staging
@@ -116,7 +130,7 @@ jobs:
     environment:
       TZ: "/usr/share/zoneinfo/America/Los_Angeles"
     docker:
-      - image:  circleci/python:3.7.0-stretch
+      - image: circleci/python:3.7.0-stretch
     working_directory: ~/ISB-CGC-API
     steps:
       - restore_cache:
@@ -125,19 +139,13 @@ jobs:
       - restore_cache:
           keys:
             - isb-cgc-api-google-deps-
-      - run:
-          name: Install CloudSDK
-          command: |
-            echo "export CLOUDSDK_CORE_DISABLE_PROMPTS=1" >> $BASH_ENV
-            echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] http://packages.cloud.google.com/apt cloud-sdk main" | sudo tee -a /etc/apt/sources.list.d/google-cloud-sdk.list
-            curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key --keyring /usr/share/keyrings/cloud.google.gpg add -
-            sudo apt-get update && sudo apt-get -y --allow-downgrades install google-cloud-sdk=251.0.0-0
+      - install_cloud_sdk
       - deployment_setup
+      - auth
       - deployment_config
       - deploy:
           nane: Deployment
           command: |
-            sudo -E /bin/bash ./shell/gcloud_authenticate.sh
             sudo -E /bin/bash ./shell/unpack_for_deployment.sh
             sudo -E gcloud endpoints services deploy openapi-appengine.yaml
             sudo -E gcloud app deploy --verbosity=debug ./app.yaml --quiet
