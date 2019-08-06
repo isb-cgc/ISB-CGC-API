@@ -1,4 +1,4 @@
-gsutil cp gs://${DEPLOYMENT_BUCKET}/delpoyment_config.txt ./
+gsutil cp gs://${DEPLOYMENT_BUCKET}/deployment_config.txt ./
 if [ ! -f "delpoyment_config.txt" ]; then
   echo "[ERROR] Couldn't assign deployment configuration file - exiting."
   exit 1
