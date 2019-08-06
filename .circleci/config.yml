@@ -52,13 +52,9 @@ commands:
       - run:
           name: "Set tier-specific configuration file"
           command: |
-            sudo gsutil cp gs://${DEPLOYMENT_BUCKET}/deployment_config.txt ./
-            if [ ! -f "deployment_config.txt" ]; then
-              echo "[ERROR] Couldn't assign deployment configuration file - exiting."
-              exit 1
-            else
-              xargs -a config_file.txt -I{} echo "export {}" >> $BASH_ENV
-            fi
+            sudo -E /bin/bash ./shell/gcloud_authenticate.sh
+            sudo -E /bin/bash ./shell/pull_config.sh
+            xargs -a deployment_config.txt -I{} echo "export {}" >> $BASH_ENV
 
 jobs:
   build_job:
@@ -97,7 +93,7 @@ jobs:
       - run:
           name: Auth
           command: |
-            sudo -E /bin/sh ./shell/gcloud_authenticate.sh
+            sudo -E /bin/bash ./shell/gcloud_authenticate.sh
       - deployment_config
       - run:
           name: Staging
@@ -142,7 +138,7 @@ jobs:
       - deploy:
           nane: Deployment
           command: |
-            sudo -E /bin/sh ./shell/gcloud_authenticate.sh
+            sudo -E /bin/bash ./shell/gcloud_authenticate.sh
             sudo -E /bin/bash ./shell/unpack_for_deployment.sh
             sudo -E gcloud endpoints services deploy openapi-appengine.yaml
             sudo -E gcloud app deploy --verbosity=debug ./app.yaml --quiet
