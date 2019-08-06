@@ -53,6 +53,7 @@ commands:
           name: "Set tier-specific configuration file"
           command: |
             sudo -E /bin/bash ./shell/pull_config.sh
+            xargs -a config_file.txt -I{} echo "export {}" >> $BASH_ENV
 
 jobs:
   build_job:
