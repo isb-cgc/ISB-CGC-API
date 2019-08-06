@@ -46,6 +46,9 @@ commands:
             echo "export DEPLOYMENT_CLIENT_EMAIL=${CLIENT_EMAIL}" >> $BASH_ENV
             echo "export DEPLOYMENT_PROJECT_ID=${PROJECT_ID}" >> $BASH_ENV
             echo "export DEPLOYMENT_BUCKET=${BUCKET}" >> $BASH_ENV
+
+  deployment_config:
+    steps:
       - run:
           name: "Set tier-specific configuration file"
           command: |
