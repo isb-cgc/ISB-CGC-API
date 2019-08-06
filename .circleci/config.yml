@@ -52,7 +52,6 @@ commands:
       - run:
           name: "Set tier-specific configuration file"
           command: |
-            sudo -E /bin/sh ./shell/gcloud_authenticate.sh
             sudo -E /bin/bash ./shell/pull_config.sh
 
 jobs:
@@ -89,11 +88,14 @@ jobs:
           paths:
             - ./lib
       - deployment_setup
+      - run:
+          name: Auth
+          command: |
+            sudo -E /bin/sh ./shell/gcloud_authenticate.sh
       - deployment_config
       - run:
           name: Staging
           command: |
-            sudo -E /bin/sh ./shell/gcloud_authenticate.sh
             sudo -E /bin/bash ./shell/gcloud-pull-staging-files.sh
       - save_cache:
           key: isb-cgc-api-{{ epoch }}
