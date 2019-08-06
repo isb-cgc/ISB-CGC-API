@@ -56,16 +56,16 @@ def get_file_manifest(cohort_id, user):
         request_data = request.get_json()
 
         if request_data:
-            params['offset'] = request_data['offset'] if 'offset' in request_data['offset'] else request.args.get('offset', default=0, type=int) 
+            params['offset'] = request_data['offset'] if 'offset' in request_data['offset'] else request.args.get('offset', default=0, type=int) if request.args.has_key('offset') else 0
 
             if request_data['fetch_count']:
-                params['limit'] = request_data['fetch_count'] if 'fetch_count' in request_data['fetch_count'] else request.args.get('fetch_count', default=5000, type=int)
+                params['limit'] = request_data['fetch_count'] if 'fetch_count' in request_data['fetch_count'] else request.args.get('fetch_count', default=5000, type=int) if request.args.has_key('fetch_count') else 5000
 
             if request_data['page']:
-                params['page'] = request_data['page'] if 'page' in request_data['page'] else request.args.get('page', default=1, type=int)
+                params['page'] = request_data['page'] if 'page' in request_data['page'] else request.args.get('page', default=1, type=int) if request.args.has_key('page') else 1
 
             if request_data['genomic_build']:
-                params['build'] = request_data['genomic_build'] if 'genomic_build' in request_data['genomic_build'] else request.args.get('genomic_build', default="HG19", type=str)
+                params['build'] = request_data['genomic_build'] if 'genomic_build' in request_data['genomic_build'] else request.args.get('genomic_build', default="HG19", type=str) if request.args.has_key('genomic_build') else 'HG19'
 
             inc_filters = {
                 filter: request_data[filter]

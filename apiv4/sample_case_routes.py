@@ -97,6 +97,7 @@ def case_metadata(case_barcode):
 def sample_metadata_list():
 
     response = None
+    request_data = None
 
     try:
         request_data = request.get_json()
@@ -133,6 +134,7 @@ def sample_metadata_list():
 def case_metadata_list():
 
     response = None
+    request_data = None
     
     try:
         request_data = request.get_json()
