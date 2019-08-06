@@ -23,16 +23,20 @@ commands:
             fi
             CLIENT_EMAIL=${DEPLOYMENT_CLIENT_EMAIL_ISB_CGC}
             PROJECT_ID=${DEPLOYMENT_PROJECT_ID_ISB_CGC}
+            BUCKET=${DEPLOYMENT_BUCKET_ISB_CGC}
             if [[ ${TIER} == "PROD" ]] || [[ ${TIER} == "DEV" ]]; then
-              echo "Using default project ${PROJECT_ID} and related deployment SA."
+              BUCKET="${BUCKET}/${TIER,,}"
+              echo "Using default project ${PROJECT_ID} and related deployment SA and bucket."
             elif [[ ${TIER} == "UAT" ]]; then
               KEY=${DEPLOYMENT_KEY_ISB_CGC_UAT}
               CLIENT_EMAIL=${DEPLOYMENT_CLIENT_EMAIL_ISB_CGC_UAT}
-              PROJECT_ID=${DEPLOYMENT_PROJECT_ID_ISB_CGC}
+              PROJECT_ID=${DEPLOYMENT_PROJECT_ID_ISB_CGC_UAT}
+              BUCKET=${DEPLOYMENT_BUCKET_ISB_CGC_UAT}
             elif [[ ${TIER} == "TEST" ]]; then
               KEY=${DEPLOYMENT_KEY_ISB_CGC_TEST}
               CLIENT_EMAIL=${DEPLOYMENT_CLIENT_EMAIL_ISB_CGC_TEST}
-              PROJECT_ID=${DEPLOYMENT_PROJECT_ID_ISB_CGC}
+              PROJECT_ID=${DEPLOYMENT_PROJECT_ID_ISB_CGC_TEST}
+              BUCKET=${DEPLOYMENT_BUCKET_ISB_CGC_TEST}
             else
               echo "[ERROR] - Unrecognized tier: ${TIER} - exitng."
               exit 1
@@ -41,31 +45,33 @@ commands:
             echo "export DEPLOYMENT_KEY=\"${KEY}\"" >> $BASH_ENV
             echo "export DEPLOYMENT_CLIENT_EMAIL=${CLIENT_EMAIL}" >> $BASH_ENV
             echo "export DEPLOYMENT_PROJECT_ID=${PROJECT_ID}" >> $BASH_ENV
-
+            echo "export DEPLOYMENT_BUCKET=${BUCKET}" >> $BASH_ENV
       - run:
           name: "Set tier-specific configuration file"
           command: |
-            CONFIG_FILE=${DEPLOYMENT_CONFIG_FILE_DEV}
+            CONFIG=${DEPLOYMENT_CONFIG_DEV}
             if [[ ${TIER} == "PROD" ]]; then
               echo "Deployment configuration set for production."
-              CONFIG_FILE=${DEPLOYMENT_CONFIG_FILE_PROD}
+              CONFIG=${DEPLOYMENT_CONFIG_PROD}
             elif [[ ${TIER} == "UAT" ]]; then
-              echo "Deployment configuration set for production."
-              CONFIG_FILE=${DEPLOYMENT_CONFIG_FILE_UAT}
+              echo "Deployment configuration set for UAT."
+              CONFIG=${DEPLOYMENT_CONFIG_UAT}
             elif [[ ${TIER} == "TEST" ]]; then
-              echo "Deployment configuration set for production."
-              CONFIG_FILE=${DEPLOYMENT_CONFIG_FILE_TEST}
+              echo "Deployment configuration set for test."
+              CONFIG=${DEPLOYMENT_CONFIG_TEST}
             elif [[ ${TIER} == "DEV" ]]; then
-              echo "Deployment configuration set for production."
+              echo "Deployment configuration set for mvm/dev."
             else
               echo "[ERROR] - Unrecognized tier: ${TIER}"
-              CONFIG_FILE=
+              CONFIG=
             fi
 
-            if [[ -n $CONFIG_FILE ]]; then
-              echo "export DEPLOYMENT_CONFIG_FILE=${CONFIG_FILE}" >> $BASH_ENV
+            if [[ -n $CONFIG ]]; then
+              gsutil cp gs://${DEPLOYMENT_BUCKET}/${CONFIG} config_file.txt
+              xargs -a config_file.txt -I{} echo "export {}" >> $BASH_ENV
             else
               echo "[ERROR] Couldn't assign deployment configuration file - exiting."
+              exit 1
             fi
 
 jobs:
@@ -102,15 +108,14 @@ jobs:
           paths:
             - ./lib
       - deployment_setup
-      - save_cache:
-          key: isb-cgc-api-google-deps-{{ checksum "./shell/install-deps.sh" }}
-          paths:
-            - ./google-cloud-sdk
-            - ./google_appengine
       - run:
-          name: Auth and Staging
+          name: Auth
           command: |
             sudo -E /bin/sh ./shell/gcloud_authenticate.sh
+      - deployment_config
+      - run:
+          name: Staging and Database testing
+          command: |
             sudo -E /bin/bash ./shell/gcloud-pull-staging-files.sh
       - save_cache:
           key: isb-cgc-api-{{ epoch }}
@@ -147,10 +152,14 @@ jobs:
             curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key --keyring /usr/share/keyrings/cloud.google.gpg add -
             sudo apt-get update && sudo apt-get -y --allow-downgrades install google-cloud-sdk=251.0.0-0
       - deployment_setup
+      - run:
+          name: Auth
+          command: |
+            sudo -E /bin/sh ./shell/gcloud_authenticate.sh
+      - deployment_config
       - deploy:
           command: |
             sudo -E /bin/bash ./shell/unpack_for_deployment.sh
-            sudo -E /bin/bash ./shell/gcloud_authenticate.sh
             sudo -E gcloud endpoints services deploy openapi-appengine.yaml
             sudo -E gcloud app deploy --verbosity=debug ./app.yaml --quiet
 workflows:
