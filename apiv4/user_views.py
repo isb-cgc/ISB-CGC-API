@@ -78,7 +78,6 @@ def gcp_info(user, gcp_id=None):
 
 def gcp_validation(user, gcp_id, refresh=False):
     validation = None
-    success = False
 
     try:
         validation, status = verify_gcp_for_reg(user, gcp_id, refresh)
@@ -99,7 +98,6 @@ def gcp_validation(user, gcp_id, refresh=False):
                 if 'message' not in validation:
                     validation['message'] = "Google Cloud Platform project ID {} was successfully validated for registration.".format(gcp_id)
 
-                success = True
         else:
             logger.warn("[WARNING] Validation of {} by user {} was unsuccessful!".format(gcp_id, user.email))
 
@@ -107,7 +105,7 @@ def gcp_validation(user, gcp_id, refresh=False):
         logger.error("[ERROR] While attempting to validate a project for registration:")
         logger.exception(e)
 
-    return validation, success
+    return validation
 
 
 def gcp_registration(user, gcp_id, refresh):
