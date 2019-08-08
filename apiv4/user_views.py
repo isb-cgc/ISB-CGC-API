@@ -133,6 +133,7 @@ def gcp_registration(user, gcp_id, refresh):
             else:
                 registration = validation
                 logger.warn("[WARNING] Validation of {} by user {} was unsuccessful!".format(gcp_id, user.email))
+                logger.warn("[WARNING] Reason given: {}".format(validation['message']))
         else:
             logger.warn("[WARNING] Validation of {} by user {} was unsuccessful!".format(gcp_id, user.email))
     
