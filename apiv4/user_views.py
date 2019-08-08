@@ -83,6 +83,8 @@ def gcp_validation(user, gcp_id, refresh=False):
     try:
         validation, status = verify_gcp_for_reg(user, gcp_id, refresh)
 
+        logger.info("Validation result: {}".format(str(validation)))
+
         if validation:
             if 'roles' in validation:
                 unregs = [x for x in validation['roles'] if not validation['roles'][x]['registered_user']]
