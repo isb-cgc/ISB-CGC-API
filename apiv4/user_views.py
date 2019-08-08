@@ -83,6 +83,8 @@ def gcp_validation(user, gcp_id, refresh=False):
     try:
         validation, status = verify_gcp_for_reg(user, gcp_id, refresh)
 
+        logger.info("Validation result: {}".format(str(validation)))
+
         if validation:
             if 'roles' in validation:
                 unregs = [x for x in validation['roles'] if not validation['roles'][x]['registered_user']]
@@ -128,6 +130,10 @@ def gcp_registration(user, gcp_id, refresh):
                         registration['notes'] = validation['notes']
                     if 'message' not in registration:
                         registration['message'] = "Google Cloud Platform project ID {} was successfully {}.".format(gcp_id, 'refreshed' if refresh else 'registered')
+            else:
+                registration = validation
+                logger.warn("[WARNING] Validation of {} by user {} was unsuccessful!".format(gcp_id, user.email))
+                logger.warn("[WARNING] Reason given: {}".format(validation['message']))
         else:
             logger.warn("[WARNING] Validation of {} by user {} was unsuccessful!".format(gcp_id, user.email))
     
