@@ -32,6 +32,8 @@ def get_sample_metadata(sample_barcodes):
         metadata = get_full_sample_metadata(sample_barcodes)
 
         if metadata and metadata['total_found']:
+            if 'barcodes_not_found' in metadata:
+                metadata['message'] = "Some barcodes provided were not found. See 'barcodes_not_found' for a list."
             return metadata
         else:
             return None
