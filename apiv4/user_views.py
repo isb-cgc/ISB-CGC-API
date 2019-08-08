@@ -130,6 +130,9 @@ def gcp_registration(user, gcp_id, refresh):
                         registration['notes'] = validation['notes']
                     if 'message' not in registration:
                         registration['message'] = "Google Cloud Platform project ID {} was successfully {}.".format(gcp_id, 'refreshed' if refresh else 'registered')
+            else:
+                registration = validation
+                logger.warn("[WARNING] Validation of {} by user {} was unsuccessful!".format(gcp_id, user.email))
         else:
             logger.warn("[WARNING] Validation of {} by user {} was unsuccessful!".format(gcp_id, user.email))
     
