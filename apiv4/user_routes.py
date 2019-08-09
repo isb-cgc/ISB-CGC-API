@@ -187,14 +187,7 @@ def user_gcp(gcp_id):
             else:
                 raise Exception("Method not recognized: {}".format(request.method))
 
-            if not success:
-                if result is not None:
-                    code = 404
-                    response_obj['message'] = 'A Google Cloud Platform project with ID {} was not found for user {}'.format(
-                        gcp_id, user.email
-                    )
-            else:
-                code = 200
+            code = 200
     
             if action is not None:
                 if 'message' in action:
@@ -203,8 +196,15 @@ def user_gcp(gcp_id):
                     response_obj['notes'] = action['notes']
                 if success:
                     response_obj['gcp_project_id'] = action['gcp_id']
-            elif result is not None and len(result):
+            elif result is not None:
+                # The case of an empty result set is handled above
+                if success:
                     response_obj['data'] = result
+                else:
+                    code = 404
+                    response_obj['message'] = 'A Google Cloud Platform project with ID {} was not found for user {}'.format(
+                        gcp_id, user.email
+                    )
     
             # Lack of a valid object means something went wrong on the server
             else:
