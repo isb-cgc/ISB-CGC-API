@@ -203,8 +203,7 @@ def user_gcp(gcp_id):
                     response_obj['notes'] = action['notes']
                 if success:
                     response_obj['gcp_project_id'] = action['gcp_id']
-            elif result is not None:
-                if len(result):
+            elif result is not None and len(result):
                     response_obj['data'] = result
     
             # Lack of a valid object means something went wrong on the server
