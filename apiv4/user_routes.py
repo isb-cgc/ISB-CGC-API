@@ -182,7 +182,6 @@ def user_gcp(gcp_id):
                 action, success = gcp_registration(user, gcp_id, False)
             elif request.method == 'GET':
                 result, success = gcp_info(user, gcp_id)
-                print("Get results: {}, {}".format(str(result),str(success)))
             elif request.method == 'DELETE':
                 action, success = gcp_unregistration(user, gcp_id, False)
             else:
@@ -197,15 +196,16 @@ def user_gcp(gcp_id):
             else:
                 code = 200
     
-            if action:
+            if action is not None:
                 if 'message' in action:
                     response_obj['message'] = action['message']
                 if 'notes' in action:
                     response_obj['notes'] = action['notes']
                 if success:
                     response_obj['gcp_project_id'] = action['gcp_id']
-            elif result and len(result):
-                response_obj['data'] = result
+            elif result is not None:
+                if len(result):
+                    response_obj['data'] = result
     
             # Lack of a valid object means something went wrong on the server
             else:
