@@ -195,7 +195,7 @@ def user_gcp(gcp_id):
                 if 'notes' in action:
                     response_obj['notes'] = action['notes']
                 if success:
-                    response_obj['gcp_project_id'] = action['gcp_id']
+                    response_obj['gcp_project_id'] = gcp_id
             elif result is not None:
                 # The case of an empty result set is handled above
                 if success:
