@@ -19,7 +19,7 @@ import json
 from flask import jsonify, request
 from apiv4 import app
 from auth import auth_info, UserValidationException, validate_user, get_user
-from user_views import get_user_acls, get_account_details, gcp_validation, gcp_registration, gcp_info
+from user_views import get_user_acls, get_account_details, gcp_validation, gcp_registration, gcp_unregistration, gcp_info
 from django.conf import settings
 from django.db import close_old_connections
 
@@ -179,7 +179,7 @@ def user_gcp(gcp_id):
             success = False
             
             if request.method == 'POST' or request.method == 'PATCH':
-                action, success = gcp_registration(user, gcp_id, False)
+                action, success = gcp_registration(user, gcp_id, (request.method == 'PATCH'))
             elif request.method == 'GET':
                 result, success = gcp_info(user, gcp_id)
             elif request.method == 'DELETE':
@@ -230,7 +230,7 @@ def user_gcp(gcp_id):
         }
 
     except Exception as e:
-        logger.error("[ERROR] For route /v4/users/gcp/{gcp_id} method {}:".format(request.method))
+        logger.error("[ERROR] For route /v4/users/gcp/<gcp_id> method {}:".format(request.method))
         logger.exception(e)
         code = 500
         response_obj = {
