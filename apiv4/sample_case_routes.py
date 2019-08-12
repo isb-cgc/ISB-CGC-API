@@ -102,20 +102,28 @@ def sample_metadata_list():
     try:
         request_data = request.get_json()
 
-        metadata = get_sample_metadata(request_data['sample_barcodes'])
-
-        if metadata:
+        if 'sample_barcodes' not in request_data:
             response = jsonify({
-                'code': 200,
-                'data': metadata
+                'code': 400,
+                'message': 'A list of sample barcodes was not found in this request. Please double-check the expected request JSON format.'
             })
-            response.status_code = 200
+            response.status_code = 400
         else:
-            response = jsonify({
-                'code': 404,
-                'message': "Unable to retrieve sample metadata for these barcodes: {}".format(str(request_data['sample_barcodes']))
-            })
-            response.status_code = 404
+
+            metadata = get_sample_metadata(request_data['sample_barcodes'])
+
+            if metadata:
+                response = jsonify({
+                    'code': 200,
+                    'data': metadata
+                })
+                response.status_code = 200
+            else:
+                response = jsonify({
+                    'code': 404,
+                    'message': "Unable to retrieve sample metadata for these barcodes: {}".format(str(request_data['sample_barcodes']))
+                })
+                response.status_code = 404
     except Exception as e:
         logger.error("[ERROR] While fetching sample metadata:")
         logger.exception(e)
@@ -139,19 +147,26 @@ def case_metadata_list():
     try:
         request_data = request.get_json()
 
-        metadata = get_case_metadata(request_data['case_barcodes'])
-
-        if metadata:
+        if 'case_barcodes' not in request_data:
             response = jsonify({
-                'code': 200,
-                'data': metadata
+                'code': 400,
+                'message': 'A list of case barcodes was not found in this request. Please double-check the expected request JSON format.'
             })
-            response.status_code = 200
+            response.status_code = 400
         else:
-            response = jsonify({
-                'code': 404,
-                'message': "Unable to retrieve case metadata for these barcodes: {}".format(str(request_data['case_barcodes']))})
-            response.status_code = 404
+            metadata = get_case_metadata(request_data['case_barcodes'])
+
+            if metadata:
+                response = jsonify({
+                    'code': 200,
+                    'data': metadata
+                })
+                response.status_code = 200
+            else:
+                response = jsonify({
+                    'code': 404,
+                    'message': "Unable to retrieve case metadata for these barcodes: {}".format(str(request_data['case_barcodes']))})
+                response.status_code = 404
     except Exception as e:
         logger.error("[ERROR] While fetching case metadata:")
         logger.exception(e)
