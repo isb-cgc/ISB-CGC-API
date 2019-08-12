@@ -190,12 +190,13 @@ def user_gcp(gcp_id):
             code = 200
     
             if action is not None:
+                response_obj['gcp_project_id'] = gcp_id
                 if 'message' in action:
                     response_obj['message'] = action['message']
                 if 'notes' in action:
                     response_obj['notes'] = action['notes']
-                if success:
-                    response_obj['gcp_project_id'] = gcp_id
+                if not success:
+                    code = 400
             elif result is not None:
                 # The case of an empty result set is handled above
                 if success:
