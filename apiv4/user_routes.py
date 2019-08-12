@@ -183,7 +183,7 @@ def user_gcp(gcp_id):
             elif request.method == 'GET':
                 result, success = gcp_info(user, gcp_id)
             elif request.method == 'DELETE':
-                action, success = gcp_unregistration(user, gcp_id, False)
+                action, success = gcp_unregistration(user, gcp_id)
             else:
                 raise Exception("Method not recognized: {}".format(request.method))
 
