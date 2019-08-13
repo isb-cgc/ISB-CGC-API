@@ -1901,9 +1901,6 @@ COHORT_FILTER_SCHEMA = {
             },
             'name': {
                 'type': 'string'
-            },
-            'description': {
-                'type': 'string'
             }
         },
         "additionalProperties": False
