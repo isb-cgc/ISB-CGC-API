@@ -147,7 +147,7 @@ def gcp_unregistration(user, gcp_id):
     success = False
     try:
 
-        unreg, status = unreg_gcp(user, gcp_id)
+        unreg, status = api_gcp_delete(user, gcp_id)
 
         if status == 200:
             success = True
