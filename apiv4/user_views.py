@@ -20,6 +20,7 @@ import django
 import re
 
 from flask import request
+from werkzeug.exceptions import BadRequest
 
 from django.contrib.auth.models import User as Django_User
 from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned

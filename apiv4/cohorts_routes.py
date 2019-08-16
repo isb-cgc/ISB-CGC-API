@@ -169,7 +169,7 @@ def cohort_file_manifest(cohort_id):
     POST: Retrieve a cohort's file manifest with applied filters
     """
 
-    response = None
+    response_obj = None
     code = None
 
     try:
@@ -177,47 +177,45 @@ def cohort_file_manifest(cohort_id):
         user = validate_user(user_info['email'], cohort_id)
 
         if not user:
-            response = jsonify({
-                'code': 500,
+            response_obj = {
                 'message': 'Encountered an error while attempting to identify this user.'
-            })
-            response.status_code = 500
+            }
+            code = 500
         else:
             file_manifest = get_file_manifest(cohort_id, user)
             if file_manifest:
-                response_obj = {}
                 # Presence of a message means something went wrong with our request
                 if 'message' in file_manifest:
+                    response_obj = file_manifest
                     code = 400
                 else:
                     code = 200
-
-                response_obj['data'] = file_manifest
-                response_obj['code'] = code
-                response = jsonify(response_obj)
-                response.status_code = code
+                    response_obj = {
+                        'data': file_manifest
+                    }
             else:
-                response = jsonify({
-                    'code': 500,
+                response_obj = {
                     'message': "Error while attempting to retrieve file manifest for cohort {}.".format(str(cohort_id))
-                })
-                response.status_code = 500
+                }
+                code = 500
 
     except UserValidationException as e:
-        response = jsonify({
-            'code': 403,
+        response_obj = {
             'message': str(e)
-        })
-        response.status_code = 403
+        }
+        code = 403
     except Exception as e:
         logger.exception(e)
-        response = jsonify({
-            'code': 500,
+        response_obj = {
             'message': 'Encountered an error while attempting to identify this user.'
-        })
-        response.status_code = 500
+        }
+        code = 500
     finally:
         close_old_connections()
+
+    response_obj['code'] = code
+    response = jsonify(response_obj)
+    response.status_code = code
         
     return response
 
@@ -226,41 +224,41 @@ def cohort_file_manifest(cohort_id):
 def cohort_preview():
     """List the samples, cases, and counts a given set of cohort filters would produce"""
 
-    response = None
     code = None
+    response_obj = None
 
     try:
         cohort_counts = get_cohort_counts()
         
         if cohort_counts:
-            response_obj = {}
             # Presence of a message means something went wrong with the filters we received
             if 'message' in cohort_counts:
+                response_obj = cohort_counts
                 code = 400
             else:
+                response_obj = {
+                    'data': cohort_counts
+                }
                 code = 200
-    
-            response_obj['data'] = cohort_counts
-            response_obj['code'] = code
-            response = jsonify(response_obj)
-            response.status_code = code
                 
         # Lack of a valid object means something went wrong on the server
         else:
-            response = jsonify({
-                'code': 500,
+            response_obj = {
                 'message': "Error while attempting to retrieve case and sample counts for these filters."
-            })
-            response.status_code = 500
+            }
+            code = 500
             
     except Exception as e:
         logger.exception(e)
-        response = jsonify({
-            'code': 500,
+        response_obj = {
             'message': 'Encountered an error while attempting to build this cohort preview.'
-        })
-        response.status_code = 500
+        }
+        code = 500
     finally:
         close_old_connections()
+
+    response_obj['code'] = code
+    response = jsonify(response_obj)
+    response.status_code = code
 
     return response

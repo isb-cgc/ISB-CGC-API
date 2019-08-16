@@ -19,6 +19,7 @@ import json
 import django
 
 from flask import request
+from werkzeug.exceptions import BadRequest
 
 from django.conf import settings
 from cohorts.metadata_helpers import get_full_case_metadata, get_full_sample_metadata
@@ -26,28 +27,47 @@ from cohorts.metadata_helpers import get_full_case_metadata, get_full_sample_met
 logger = logging.getLogger(settings.LOGGER_NAME)
 
 
-def get_sample_metadata(sample_barcodes):
+def get_metadata(barcode=None, type=None):
+
+    result = None
+    barcodes = None
     
     try:
-        metadata = get_full_sample_metadata(sample_barcodes)
-
-        if metadata and metadata['total_found']:
-            if 'barcodes_not_found' in metadata:
-                metadata['message'] = "Some barcodes provided were not found. See 'barcodes_not_found' for a list."
-            return metadata
+        if barcode:
+            barcodes = [barcode]
         else:
-            return None
-        
+            request_data = request.get_json()
+            if 'barcodes' in request_data:
+                barcodes = request_data['barcodes']
+
+        if not barcodes or not len(barcodes):
+            result = {
+                'message': 'A list of {} barcodes was not found in this request. Please double-check the expected request JSON format.'.format(type)
+            }
+        else:
+            if type == 'sample':
+                result = get_full_sample_metadata(barcodes)
+            else:
+                result = get_full_case_metadata(barcodes)
+            if not result or not result['total_found']:
+                if not result:
+                    result = {}
+                else:
+                    del result['total_found']
+                result['message'] = "No metadata was found for the supplied {} barcodes.".format(type)
+            else:
+                if 'not_found' in result:
+                    result['notes'] = "Some {} barcodes provided were not found. See 'not_found' for a list.".format(type)
+
+    except BadRequest as e:
+        logger.warn("[WARNING] Received bad request - couldn't load JSON.")
+        result = {
+            'message': 'The JSON provided in this request appears to be improperly formatted.',
+        }
+
     except Exception as e:
-        logger.error("[ERROR] While fetching sample metadata: ")
+        logger.error("[ERROR] While fetching {} metadata: ".format(type))
+        logger.exception(e)
 
+    return result
 
-def get_case_metadata(case_barcodes):
-    metadata = get_full_case_metadata(case_barcodes)
-
-    if metadata and metadata['total_found']:
-        if 'barcodes_not_found' in metadata:
-            metadata['message'] = "Some barcodes provided were not found. See 'barcodes_not_found' for a list."
-        return metadata
-    else:
-        return None
