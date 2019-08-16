@@ -119,33 +119,41 @@ logger = logging.getLogger(settings.LOGGER_NAME)
 
 @app.route('/v4/files/paths/<file_uuid>/', methods=['GET'], strict_slashes=False)
 def file_path(file_uuid):
-    response = None
+    resp_obj = None
+    code = None
 
     try:
-        file_paths = get_file_paths([file_uuid])
+        file_paths = get_file_paths(file_uuid)
 
         if file_paths:
-            response = jsonify({
-                'code': 200,
-                'data': file_paths,
-                'README': ''
-            })
-            response.status_code = 200
+            if 'message' in file_paths:
+                resp_obj = file_paths
+                code = 400
+                if 'not_found' in file_paths:
+                    code = 404
+            else:
+                resp_obj = {
+                    'data': file_paths
+                }
+                code = 200
         else:
-            response = jsonify({
-                'code': 404,
-                'message': "File UUID {} was not found.".format(file_uuid)})
-            response.status_code = 404
+            resp_obj = {
+                'message': 'Encountered an error while retrieving file paths.'
+            }
+            code = 500
 
     except Exception as e:
         logger.exception(e)
-        response = jsonify({
-            'code': 500,
-            'message': 'Encountered an error while attempting to retrieve the file path for file UUID {}.'.format(file_uuid)
-        })
-        response.status_code = 500
+        resp_obj = {
+            'message': 'Encountered an error while retrieving file paths.'
+        }
+        code = 500
     finally:
         close_old_connections()
+
+    resp_obj['code'] = code
+    response = jsonify(resp_obj)
+    response.status_code = code
 
     return response
 
@@ -153,42 +161,42 @@ def file_path(file_uuid):
 @app.route('/v4/files/paths/', methods=['POST'], strict_slashes=False)
 def file_path_list():
 
-    response = None
-
-    request_data = request.get_json()
+    response_obj = None
 
     try:
-        if 'uuids' not in request_data:
-            response = jsonify({
-                'code': 400,
-                'message': "File UUIDs not provided in data payload."
-            })
-            response.status_code = 400
-        else:
-            file_paths = get_file_paths(request_data['uuids'])
+        file_paths = get_file_paths()
 
-            if file_paths:
-                response = jsonify({
-                    'code': 200,
-                    'data': file_paths,
-                    'README': ''
-                })
-                response.status_code = 200
+        if file_paths:
+            # Presence of a message means something went wrong with our request
+            if 'message' in file_paths:
+                response_obj = file_paths
+                code = 400
+                if 'not_found' in file_paths:
+                    code = 404
             else:
-                response = jsonify({
-                    'code': 404,
-                    'message': "The provided file UUIDs were not found."})
-                response.status_code = 404
+                response_obj = {
+                    'data': file_paths
+                }
+                code = 200
+
+        else:
+            response_obj = {
+                'message': "Error while attempting to retrieve file manifest for cohort {}.".format(str(cohort_id))
+            }
+            code = 500
 
     except Exception as e:
         logger.exception(e)
-        response = jsonify({
-            'code': 500,
+        response_obj = {
             'message': 'Encountered an error while attempting to retrieve file paths for these file UUIDs.'
-        })
-        response.status_code = 500
+        }
+        code = 500
     finally:
         close_old_connections()
+
+    response_obj['code'] = code
+    response = jsonify(response_obj)
+    response.status_code = code
         
     return response
 

@@ -20,6 +20,7 @@ import django
 import re
 
 from flask import request
+from werkzeug.exceptions import BadRequest
 
 from django.contrib.auth.models import User as Django_User
 from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
@@ -77,6 +78,11 @@ def get_file_manifest(cohort_id, user):
 
         file_manifest = response['file_list'] if response and response['file_list'] else None
 
+    except BadRequest as e:
+        logger.warn("[WARNING] Received bad request - couldn't load JSON.")
+        file_manifest = {
+            'message': 'The JSON provided in this request appears to be improperly formatted.',
+        }
     except Exception as e:
         logger.error("[ERROR] File trieving the file manifest for Cohort {}:".format(str(cohort_id)))
         logger.exception(e)
@@ -143,12 +149,19 @@ def get_cohort_counts():
         else:
             cohort_counts = get_sample_case_list_bq(None, request_data['filters'])
 
-            for prog in cohort_counts:
-                if cohort_counts[prog]['case_count'] <= 0:
-                    cohort_counts[prog]['message'] = "No cases or samples found which meet the filter criteria for this program."
-                cohort_counts[prog]['provided_filters'] = request_data['filters'][prog]
+            if cohort_counts:
+                for prog in cohort_counts:
+                    if cohort_counts[prog]['case_count'] <= 0:
+                        cohort_counts[prog]['message'] = "No cases or samples found which meet the filter criteria for this program."
+                    cohort_counts[prog]['provided_filters'] = request_data['filters'][prog]
+
+    except BadRequest as e:
+        logger.warn("[WARNING] Received bad request - couldn't load JSON.")
+        cohort_counts = {
+            'message': 'The JSON provided in this request appears to be improperly formatted.',
+        }
     except ValidationError as e:
-        logger.warn('Filters rejected for improper formatting: {}'.format(e))
+        logger.warn('[WARNING] Filters rejected for improper formatting: {}'.format(e))
         cohort_counts = {
             'message': 'Filters were improperly formatted.'
         }
@@ -168,7 +181,6 @@ def create_cohort(user):
         if 'name' not in request_data:
             cohort_info = {
                 'message': 'A name was not provided for this cohort. The cohort was not made.',
-                'code': 400
             }
             return cohort_info
 
@@ -176,7 +188,6 @@ def create_cohort(user):
             cohort_info = {
                 'message': 'Filters were not provided; at least one filter must be provided for a cohort to be valid.' +
                        ' The cohort was not made.',
-                'code': 400
             }
             return cohort_info
 
@@ -190,7 +201,6 @@ def create_cohort(user):
             cohort_info = {
                 'message': 'Your cohort\'s name or description contains invalid characters; please edit them and resubmit. ' +
                     '[Saw {}]'.format(str(match)),
-                'code': 400
             }
 
         else:
@@ -201,11 +211,16 @@ def create_cohort(user):
             else:
                 cohort_info = get_cohort_info(result['cohort_id'])
 
+    except BadRequest as e:
+        logger.warn("[WARNING] Received bad request - couldn't load JSON.")
+        cohort_info = {
+            'message': 'The JSON provided in this request appears to be improperly formatted.',
+        }
+
     except ValidationError as e:
         logger.warn("[WARNING] Cohort information rejected for improper formatting: {}".format(e))
         cohort_info = {
             'message': 'Cohort information was improperly formatted - cohort not edited.',
-            'code': 400
         }
 
     return cohort_info
@@ -221,9 +236,8 @@ def edit_cohort(cohort_id, user, delete=False):
             cohort.active = False
             cohort.save()
             result = {
-                'message': 'Cohort {} (\'{}\') has been deleted.'.format(cohort_id, cohort.name),
+                'notes': 'Cohort {} (\'{}\') has been deleted.'.format(cohort_id, cohort.name),
                 'data': {'filters': cohort.get_current_filters(unformatted=True)},
-                'code': 200
             }
         else:
             request_data = request.get_json()
@@ -241,23 +255,24 @@ def edit_cohort(cohort_id, user, delete=False):
                 result = {
                     'message': 'Your cohort\'s name or description contains invalid characters; please edit them and resubmit. ' +
                                '[Saw {}]'.format(str(match)),
-                    'code': 400
                 }
             else:
                 result = make_cohort(user, source_id=cohort_id, **request_data)
 
+    except BadRequest as e:
+        logger.warn("[WARNING] Received bad request - couldn't load JSON.")
+        result = {
+            'message': 'The JSON provided in this request appears to be improperly formatted.',
+        }
+
     except ObjectDoesNotExist as e:
         logger.error("[ERROR] During {} for cohort ID {}:".format(request.method,str(cohort_id)))
         logger.error("Couldn't find a cohort with that ID!")
-        result = {
-            'message': 'Cohort with ID {} not found.'.format(str(cohort_id)),
-            'code': 404
-        }
+
     except ValidationError as e:
         logger.warn("[WARNING] Cohort information rejected for improper formatting: {}".format(e))
         result = {
             'message': 'Cohort information was improperly formatted - cohort not edited.',
-            'code': 400
         }
 
     return result
