@@ -56,23 +56,25 @@ def get_file_manifest(cohort_id, user):
 
         request_data = request.get_json()
 
-        if request_data:
-            params['offset'] = request_data['offset'] if 'offset' in request_data['offset'] else request.args.get('offset', default=0, type=int) if request.args.has_key('offset') else 0
+        param_set = {
+            'offset': {'default': 0, 'type': int, 'name': 'offset'},
+            'page': {'default': 1, 'type': int, 'name': 'page'},
+            'fetch_count': {'default': 5000, 'type': int, 'name': 'limit'},
+            'genomic_build': {'default': "HG19", 'type': str, 'name': 'build'}
+        }
 
-            if request_data['fetch_count']:
-                params['limit'] = request_data['fetch_count'] if 'fetch_count' in request_data['fetch_count'] else request.args.get('fetch_count', default=5000, type=int) if request.args.has_key('fetch_count') else 5000
+        for param in param_set:
+            default = param['default']
+            param_type = param['type']
+            name = param['name']
+            params[name] = request_data[param] if (request_data and param in request_data) else request.args.get(param, default=default, type=param_type) if request.args.has_key(param) else default
 
-            if request_data['page']:
-                params['page'] = request_data['page'] if 'page' in request_data['page'] else request.args.get('page', default=1, type=int) if request.args.has_key('page') else 1
-
-            if request_data['genomic_build']:
-                params['build'] = request_data['genomic_build'] if 'genomic_build' in request_data['genomic_build'] else request.args.get('genomic_build', default="HG19", type=str) if request.args.has_key('genomic_build') else 'HG19'
-
-            inc_filters = {
-                filter: request_data[filter]
-                for filter in request_data.keys()
-                if filter not in ['cohort_id', 'fetch_count', 'offset', 'genomic_build']
-            }
+            if request_data:
+                inc_filters = {
+                    filter: request_data[filter]
+                    for filter in request_data.keys()
+                    if filter not in list(param_set.keys())
+                }
 
         response = cohort_files(cohort_id, user=user, inc_filters=inc_filters, **params)
 

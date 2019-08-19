@@ -147,7 +147,7 @@ jobs:
           nane: Deployment
           command: |
             sudo -E /bin/bash ./shell/unpack_for_deployment.sh
-            sudo -E gcloud endpoints services deploy openapi-appengine.yaml
+            sudo -E gcloud endpoints services deploy ./openapi-appengine.yaml
             sudo -E gcloud app deploy --verbosity=debug ./app.yaml --quiet
 workflows:
   version: 2
