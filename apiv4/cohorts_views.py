@@ -63,11 +63,10 @@ def get_file_manifest(cohort_id, user):
             'genomic_build': {'default': "HG19", 'type': str, 'name': 'build'}
         }
 
-        for p in param_set:
-            param = param_set[p]
-            default = param['default']
-            param_type = param['type']
-            name = param['name']
+        for param, parameter in param_set.items():
+            default = parameter['default']
+            param_type = parameter['type']
+            name = parameter['name']
             params[name] = request_data[param] if (request_data and param in request_data) else request.args.get(param, default=default, type=param_type) if request.args.has_key(param) else default
 
             if request_data:
