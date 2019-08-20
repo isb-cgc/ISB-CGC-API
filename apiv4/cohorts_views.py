@@ -101,7 +101,8 @@ def get_cohort_info(cohort_id, get_barcodes=False):
             'name': cohort_obj.name,
             'case_count': cohort_obj.case_size(),
             'sample_count': cohort_obj.sample_size(),
-            'programs': cohort_obj.get_program_names()
+            'programs': cohort_obj.get_program_names(),
+            'filters': cohort_obj.get_current_filters(True)
         }
 
         if get_barcodes:
@@ -121,13 +122,14 @@ def get_cohorts(user_email):
 
     try:
         user = Django_User.objects.get(email=user_email)
-        cohort_perms = Cohort_Perms.objects.filter(user_id=user.id)
+        cohort_perms = Cohort_Perms.objects.filter(user_id=user.id, cohort__active=1)
         cohort_list = []
         for cohort_perm in cohort_perms:
             cohort_list.append({
                 'id': cohort_perm.cohort.id,
                 'name': cohort_perm.cohort.name,
-                'permission': cohort_perm.perm
+                'permission': cohort_perm.perm,
+                'filters': cohort_perm.cohort.get_current_filters(True)
             })
 
     except ObjectDoesNotExist as e:
@@ -229,7 +231,6 @@ def create_cohort(user):
 
 
 def edit_cohort(cohort_id, user, delete=False):
-    result = None
     match = None
 
     try:
@@ -237,7 +238,7 @@ def edit_cohort(cohort_id, user, delete=False):
             cohort = Cohort.objects.get(id=cohort_id)
             cohort.active = False
             cohort.save()
-            result = {
+            cohort_info = {
                 'notes': 'Cohort {} (\'{}\') has been deleted.'.format(cohort_id, cohort.name),
                 'data': {'filters': cohort.get_current_filters(unformatted=True)},
             }
@@ -254,16 +255,21 @@ def edit_cohort(cohort_id, user, delete=False):
                 match = blacklist.search(str(request_data['desc']))
 
             if match:
-                result = {
+                cohort_info = {
                     'message': 'Your cohort\'s name or description contains invalid characters; please edit them and resubmit. ' +
                                '[Saw {}]'.format(str(match)),
                 }
             else:
                 result = make_cohort(user, source_id=cohort_id, **request_data)
+                if 'message' in result:
+                    cohort_info = result
+                else:
+                    cohort_info = get_cohort_info(result['cohort_id'])
+
 
     except BadRequest as e:
         logger.warn("[WARNING] Received bad request - couldn't load JSON.")
-        result = {
+        cohort_info = {
             'message': 'The JSON provided in this request appears to be improperly formatted.',
         }
 
@@ -273,8 +279,8 @@ def edit_cohort(cohort_id, user, delete=False):
 
     except ValidationError as e:
         logger.warn("[WARNING] Cohort information rejected for improper formatting: {}".format(e))
-        result = {
+        cohort_info = {
             'message': 'Cohort information was improperly formatted - cohort not edited.',
         }
 
-    return result
+    return cohort_info
