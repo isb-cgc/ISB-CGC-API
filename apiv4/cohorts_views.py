@@ -63,7 +63,8 @@ def get_file_manifest(cohort_id, user):
             'genomic_build': {'default': "HG19", 'type': str, 'name': 'build'}
         }
 
-        for param in param_set:
+        for p in param_set:
+            param = param_set[p]
             default = param['default']
             param_type = param['type']
             name = param['name']
