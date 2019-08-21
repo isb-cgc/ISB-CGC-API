@@ -29,8 +29,7 @@ from django.conf import settings
 from cohorts.models import Cohort_Perms, Cohort, Filters
 from accounts.sa_utils import auth_dataset_whitelists_for_user
 from cohorts.file_helpers import cohort_files
-from cohorts.metadata_helpers import get_sample_case_list_bq
-from cohorts.utils import create_cohort as make_cohort
+from cohorts.utils import get_sample_case_list_bq, create_cohort as make_cohort
 from projects.models import Program
 
 from jsonschema import validate as schema_validate, ValidationError
