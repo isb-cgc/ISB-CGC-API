@@ -67,7 +67,7 @@ def get_file_manifest(cohort_id, user):
             default = parameter['default']
             param_type = parameter['type']
             name = parameter['name']
-            params[name] = request_data[param] if (request_data and param in request_data) else request.args.get(param, default=default, type=param_type) if request.args.has_key(param) else default
+            params[name] = request_data[param] if (request_data and param in request_data) else request.args.get(param, default=default, type=param_type) if param in request.args else default
 
             if request_data:
                 inc_filters = {
@@ -250,9 +250,6 @@ def edit_cohort(cohort_id, user, delete=False):
             if 'name' in request_data:
                 blacklist = re.compile(BLACKLIST_RE, re.UNICODE)
                 match = blacklist.search(str(request_data['name']))
-
-            if not match and 'desc' in request_data:
-                match = blacklist.search(str(request_data['desc']))
 
             if match:
                 cohort_info = {
