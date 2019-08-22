@@ -73,18 +73,11 @@ target/
 .sass-cache
 #*
 *.json
-!isb_cgc_apiv3_openapiv2.json
-!isb_cgc_ccle_apiv3_openapiv2.json
-!isb_cgc_target_apiv3_openapiv2.json
-!isb_cgc_tcga_apiv3_openapiv2.json
-!isb_cgc_apiv3_openapiv3.json
-!isb_cgc_ccle_apiv3_openapiv3.json
-!isb_cgc_target_apiv3_openapiv3.json
-!isb_cgc_tcga_apiv3_openapiv3.json
 *.patch
 .env
 *.env
 openapi-appengine.yaml
+app.yaml
 scripts/metadata_featdef_tables.sql
 
 # dummy datasets
