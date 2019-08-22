@@ -14,8 +14,6 @@ gsutil cp "gs://${DEPLOYMENT_BUCKET}/${SERVICE_ACCOUNT_BLACKLIST_JSON_FILE}" ./
 gsutil cp "gs://${DEPLOYMENT_BUCKET}/${GOOGLE_ORG_WHITELIST_JSON_FILE}" ./
 gsutil cp "gs://${DEPLOYMENT_BUCKET}/${MANAGED_SERVICE_ACCOUNTS_JSON_FILE}" ./
 
-gsutil cp "gs://${DEPLOYMENT_BUCKET}/${STATIC_COMMIT_CHECK_FILE}" ./
-
 # Pack staged files for caching
 echo "Packing JSON and text files for caching into deployment..."
 cp --verbose *.json ./json
