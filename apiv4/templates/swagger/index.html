@@ -1,0 +1,101 @@
+<!-- HTML for static distribution bundle build -->
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <title>ISB-CGC API - Swagger UI</title>
+    <link rel="stylesheet" type="text/css" href="{{ static_uri }}{{ url_for('static', filename = 'swagger-ui.css') }}" >
+    <link rel="icon" type="image/png" href="{{ static_uri }}{{ url_for('static', filename = 'favicon-32x32.png') }}" sizes="32x32" />
+    <link rel="icon" type="image/png" href="{{ static_uri }}{{ url_for('static', filename = 'favicon-16x16.png') }}" sizes="16x16" />
+    <style>
+      html
+      {
+        box-sizing: border-box;
+        overflow: -moz-scrollbars-vertical;
+        overflow-y: scroll;
+      }
+
+      *,
+      *:before,
+      *:after
+      {
+        box-sizing: inherit;
+      }
+
+      body
+      {
+        margin:0;
+        background: #fafafa;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div id="swagger-ui"></div>
+
+    <script src="{{ static_uri }}{{ url_for('static', filename = 'swagger-ui-bundle.js') }}"> </script>
+    <script src="{{ static_uri }}{{ url_for('static', filename = 'swagger-ui-standalone-preset.js') }}"> </script>
+    <script>
+
+    // From https://stackoverflow.com/a/2117523/2117919
+    // Simple uuid maker for JS
+    function uuidv4() {
+      return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+        var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+        return v.toString(16);
+      });
+    }
+
+    window.onload = function() {
+      var js_spec = JSON.parse('{{ load_spec()|safe }}');
+      // Begin Swagger UI call region
+      var ui = SwaggerUIBundle({
+        spec: js_spec,
+        dom_id: '#swagger-ui',
+        deepLinking: true,
+        presets: [
+          SwaggerUIBundle.presets.apis,
+          SwaggerUIStandalonePreset.slice(1)
+        ],
+        plugins: [
+          SwaggerUIBundle.plugins.DownloadUrl
+        ],
+        layout: "StandaloneLayout",
+        // This just redirects to the oath2-redirect page under /swagger
+        oauth2RedirectUrl: "{{ api_base_uri }}/{{ ouath2_callback_path }}"
+      });
+
+      // Set up our OAuth
+      // >>> DO NOT EVER PUT THE CLIENT SECRET IN HERE <<<
+      // We don't need it for this flow
+      ui.initOAuth({
+        clientId: "{{ api_client_id }}",
+        appName: "ISB-CGC API v4",
+        scopeSeparator: " ",
+        additionalQueryStringParams: {
+          'nonce': uuidv4()
+        }
+      });
+
+      // Per https://github.com/swagger-api/swagger-ui/issues/3906#issuecomment-368544203 until OIDC is officially
+      // supported we have to edit the URI before it's called to ask for an id_token
+      if (!window.isOpenReplaced) {
+        window.open = function (open) {
+          return function (url) {
+            url = url
+              // Swagger UI does not support custom response_type parameters. Azure Active Directory requires an 'id_token' value to
+              // be passed instead of 'token' (See https://github.com/swagger-api/swagger-ui/issues/1974).
+              .replace('response_type=token', 'response_type=id_token');
+            return open.call(window, url);
+          };
+        }(window.open);
+        window.isOpenReplaced = true;
+      }
+
+      // End Swagger UI call region
+
+      window.ui = ui
+    }
+  </script>
+  </body>
+</html>

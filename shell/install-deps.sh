@@ -2,68 +2,80 @@ if [ -n "$CI" ]; then
     export HOME=/home/circleci/${CIRCLE_PROJECT_REPONAME}
     export HOMEROOT=/home/circleci/${CIRCLE_PROJECT_REPONAME}
     # Clone dependencies
-    git clone -b isb-cgc-test https://github.com/isb-cgc/ISB-CGC-Common.git
+    COMMON_BRANCH=master
+    if [[ ${CIRCLE_BRANCH} =~ isb-cgc-(prod|uat|test).* ]]; then
+        COMMON_BRANCH=$(awk -F- '{print $1"-"$2"-"$3}' <<< ${CIRCLE_BRANCH})
+    fi
+    echo "Cloning ISB-CGC-Common branch ${COMMON_BRANCH}..."
+    git clone -b ${COMMON_BRANCH} https://github.com/isb-cgc/ISB-CGC-Common.git
 else
-    export $(cat /home/vagrant/www/.env | grep -v ^# | xargs) 2> /dev/null
+    export $(cat /home/vagrant/API/.env | grep -v ^# | xargs) 2> /dev/null
     export HOME=/home/vagrant
-    export HOMEROOT=/home/vagrant/www
+    export HOMEROOT=/home/vagrant/API
 fi
+
+# Remove .pyc files; these can sometimes stick around and if a
+# model has changed names it will cause various load failures
+find . -type f -name '*.pyc' -delete
+
+export DEBIAN_FRONTEND=noninteractive
 
 # Install and update apt-get info
 echo "Preparing System..."
 apt-get -y install software-properties-common
 
 if [ -n "$CI" ]; then
-    # CI Takes care of Python update
-    apt-get update -qq
-else
-    # Add apt-get repository to update python from 2.7.6 (default) to latest 2.7.x
-    add-apt-repository -y ppa:jonathonf/python-2.7
-    apt-get update -qq
-    apt-get install -qq -y python2.7
+    # Use these next 4 lines to update mysql public build key
+    echo 'download mysql public build key'
+    wget -O - -q 'https://keyserver.ubuntu.com/pks/lookup?op=get&search=0x8C718D3B5072E1F5' | grep -v '>' | grep -v '<' | grep -v '{' > mysql_pubkey.asc
+    apt-key add mysql_pubkey.asc || exit 1
+    echo 'mysql build key update done.'
+    wget https://dev.mysql.com/get/mysql-apt-config_0.8.9-1_all.deb
+    apt-get install -y lsb-release
+    dpkg -i mysql-apt-config_0.8.9-1_all.deb
 fi
+
+apt-get update -qq
 
 # Install apt-get dependencies
 echo "Installing Dependencies..."
-apt-get install -qq -y unzip libffi-dev libssl-dev mysql-client libmysqlclient-dev python2.7-dev git
-echo "Dependencies Installed "
+if [ -n "$CI" ]; then
+apt-get install -y --force-yes unzip libffi-dev libssl-dev libmysqlclient-dev python3-mysqldb python3-dev libpython3-dev git ruby g++ curl dos2unix python3.5
+apt-get install -y --force-yes mysql-client
+else
+    apt-get install -qq -y --force-yes unzip libffi-dev libssl-dev libmysqlclient-dev python3-mysqldb python3-dev libpython3-dev git ruby g++ curl dos2unix python3.5 mysql-client-5.7
+fi
+echo "Dependencies Installed"
+
+# If this is local development, clean out lib for a re-structuring
+if [ -z "${CI}" ]; then
+    # Clean out lib to prevent confusion over multiple builds in local development
+    # and prep for local install
+    echo "Emptying out ${HOMEROOT}/lib/ ..."
+fi
 
 # Install PIP + Dependencies
-echo "Installing PIP..."
-curl --silent https://bootstrap.pypa.io/get-pip.py | python
-echo "...PIP installed."
+echo "Installing pip3..."
+curl --silent https://bootstrap.pypa.io/get-pip.py | python3
 
 # Install our primary python libraries
 # If we're not on CircleCI, or we are but the lib directory isn't there (cache miss), install lib
 if [ -z "${CI}" ] || [ ! -d "lib" ]; then
     echo "Installing Python Libraries..."
-    pip install -q -r ${HOMEROOT}/requirements.txt -t ${HOMEROOT}/lib --upgrade --only-binary all
+    pip3 install -r ${HOMEROOT}/requirements.txt -t ${HOMEROOT}/lib --upgrade --only-binary all
 else
     echo "Using restored cache for Python Libraries"
 fi
 
-# Install Google App Engine
-# If we're not on CircleCI or we are but google_appengine isn't there, install it
-if [ -z "${CI}" ] || [ ! -d "google_appengine" ]; then
-    echo "Installing Google App Engine..."
-    wget https://storage.googleapis.com/appengine-sdks/featured/google_appengine_1.9.69.zip -O ${HOME}/google_appengine.zip
-    unzip -n -qq ${HOME}/google_appengine.zip -d $HOME
-    export PATH=$PATH:${HOME}/google_appengine/
-    echo "Google App Engine Installed"
-else
-    echo "Using restored cache for Google App Engine. "
-fi
-
 # Install Google Cloud SDK
 # If we're not on CircleCI or we are but google-cloud-sdk isn't there, install it
-if [ -z "${CI}" ] || [ ! -d "google-cloud-sdk" ]; then
+if [ -z "${CI}" ] || [ ! -d "/usr/lib/google-cloud-sdk" ]; then
     echo "Installing Google Cloud SDK..."
     export CLOUDSDK_CORE_DISABLE_PROMPTS=1
-    curl https://sdk.cloud.google.com | bash
-    export PATH=$PATH:${HOME}/google-cloud-sdk/bin
-    echo 'export PATH=$PATH:${HOME}/google-cloud-sdk/bin' | tee -a ${HOME}/.bash_profile
+    echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.cloud.google.com/apt cloud-sdk main" | sudo tee -a /etc/apt/sources.list.d/google-cloud-sdk.list
+    apt-get install apt-transport-https ca-certificates
+    curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key --keyring /usr/share/keyrings/cloud.google.gpg add -
+    apt-get update && apt-get -y --allow-downgrades install google-cloud-sdk=251.0.0-0
+    apt-get -y --allow-downgrades install google-cloud-sdk-app-engine-python=251.0.0-0
     echo "Google Cloud SDK Installed"
-else
-    echo "Using restored cache for Google Cloud SDK."
 fi
-
