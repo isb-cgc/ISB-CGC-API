@@ -1,0 +1,2 @@
+echo 'export PYTHONPATH=/home/vagrant/API:/home/vagrant/google_appengine:/home/vagrant/google_appengine/lib/protorpc-1.0:/home/vagrant/API/lib' | tee -a /home/vagrant/.bash_profile
+chmod +x /home/vagrant/API/shell/python-su.sh

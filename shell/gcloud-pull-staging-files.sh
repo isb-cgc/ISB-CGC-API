@@ -1,24 +1,19 @@
 mkdir ./json
 mkdir ./txt
 
-./google-cloud-sdk/bin/gsutil cp "gs://${GCLOUD_BUCKET}/${PROD_APP_YAML}" ./app.yaml
-./google-cloud-sdk/bin/gsutil cp "gs://${GCLOUD_BUCKET}/${PROD_SECRETS_FILE}" ./client_secrets.json
-./google-cloud-sdk/bin/gsutil cp "gs://${GCLOUD_BUCKET}/${PROD_JSON_FILE}" ./privatekey.json
+gsutil cp "gs://${DEPLOYMENT_BUCKET}/${ENV_FILE}" ./.env
+gsutil cp "gs://${DEPLOYMENT_BUCKET}/${API_RUNTIME_SA_KEY}" ./privatekey.json
+gsutil cp "gs://${DEPLOYMENT_BUCKET}/${OPEN_API_YAML}" ./openapi-appengine.yaml
+gsutil cp "gs://${DEPLOYMENT_BUCKET}/${OPEN_API_YAML}" ./apiv4/api.yaml
+gsutil cp "gs://${DEPLOYMENT_BUCKET}/${API_APP_YAML}" ./app.yaml
+gsutil cp "gs://${DEPLOYMENT_BUCKET}/${USER_GCP_KEY}" ./
+gsutil cp "gs://${DEPLOYMENT_BUCKET}/${DCF_SECRETS_FILE}" ./dcf_secrets.txt
 
-./google-cloud-sdk/bin/gsutil cp "gs://${GCLOUD_BUCKET}/${PROD_DATASET_JSON_FILE}" ./
-./google-cloud-sdk/bin/gsutil cp "gs://${GCLOUD_BUCKET}/${SERVICE_ACCOUNT_BLACKLIST_JSON_FILE}" ./
-./google-cloud-sdk/bin/gsutil cp "gs://${GCLOUD_BUCKET}/${GOOGLE_ORG_WHITELIST_JSON_FILE}" ./
-./google-cloud-sdk/bin/gsutil cp "gs://${GCLOUD_BUCKET}/${MANAGED_SERVICE_ACCOUNTS_JSON_FILE}" ./
-./google-cloud-sdk/bin/gsutil cp "gs://${GCLOUD_BUCKET}/${PROD_DATASET_JSON_FILE}" ./
-
-if [ -n "${PROD_NIH_AUTH_ON}" ]; then
-  ./google-cloud-sdk/bin/gsutil cp "gs://${GCLOUD_BUCKET}/saml/advanced_settings.json" ./saml/advanced_settings.json
-  ./google-cloud-sdk/bin/gsutil cp "gs://${GCLOUD_BUCKET}/saml/settings.json" ./saml/settings.json
-  ./google-cloud-sdk/bin/gsutil cp "gs://${GCLOUD_BUCKET}/saml/certs/cert.pem" ./saml/certs/cert.pem
-  ./google-cloud-sdk/bin/gsutil cp "gs://${GCLOUD_BUCKET}/saml/certs/key.pem" ./saml/certs/key.pem
-  ./google-cloud-sdk/bin/gsutil cp "gs://${GCLOUD_BUCKET}/NIH_FTP.txt" ./NIH_FTP.txt
-fi
+gsutil cp "gs://${DEPLOYMENT_BUCKET}/${SERVICE_ACCOUNT_BLACKLIST_JSON_FILE}" ./
+gsutil cp "gs://${DEPLOYMENT_BUCKET}/${GOOGLE_ORG_WHITELIST_JSON_FILE}" ./
+gsutil cp "gs://${DEPLOYMENT_BUCKET}/${MANAGED_SERVICE_ACCOUNTS_JSON_FILE}" ./
 
 # Pack staged files for caching
+echo "Packing JSON and text files for caching into deployment..."
 cp --verbose *.json ./json
 cp --verbose *.txt ./txt
