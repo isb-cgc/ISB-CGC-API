@@ -54,7 +54,7 @@ def auth_info():
         if 'email' not in user_info:
             raise UserValidationException("Couldn't obtain user email - the correct scopes may not have been provided during authorization!")
     else:
-        logger.info("[STATUS] No user encoded info found.")
+        logger.warn("[WARNING] No user encoded info found.")
         user_info = {'id': 'anonymous', 'email': 'Anonymous'}
 
     return user_info
@@ -71,6 +71,7 @@ def get_user(user_email=None):
     django.setup()
     try:
         user = Django_User.objects.get(email=user_email)
+        logger.info("[USER API AUTH] User {} seen in API".format(user_email))
     except ObjectDoesNotExist as e:
         logger.warn("User {} does not exist in our system.".format(user_email))
         raise UserValidationException(
