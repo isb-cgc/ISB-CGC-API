@@ -47,6 +47,8 @@ def cohort(cohort_id):
             })
             response.status_code = 500
         else:
+            logger.info("[USER API CALL] User {} performing method {} path {}".format(user_info['email'], request.method,
+                                                                               request.full_path))
             if request.method == 'GET':
                 include_barcodes = (request.args.get('include_barcodes', default="false", type=str).lower() == "true")
                 cohort_info = get_cohort_info(cohort_id, include_barcodes)
@@ -113,6 +115,8 @@ def cohorts():
             })
             response.status_code = 500
         else:
+            logger.info("[USER API CALL] User {} performing method {} path {}".format(user_info['email'], request.method,
+                                                                               request.full_path))
             if request.method == 'GET':
                 info = get_cohorts(user_info['email'])
             else:
@@ -182,6 +186,7 @@ def cohort_file_manifest(cohort_id):
             }
             code = 500
         else:
+            logger.info("[USER API CALL] User {} performing method {} path {}".format(user_info['email'],request.method, request.full_path))
             file_manifest = get_file_manifest(cohort_id, user)
             if file_manifest:
                 # Presence of a message means something went wrong with our request
@@ -226,6 +231,8 @@ def cohort_preview():
 
     code = None
     response_obj = None
+
+    logger.info("[API CALL] Saw method {} for path {}".format(request.method, request.full_path))
 
     try:
         cohort_counts = get_cohort_counts()

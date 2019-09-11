@@ -122,6 +122,8 @@ def file_path(file_uuid):
     resp_obj = None
     code = None
 
+    logger.info("[API CALL] Saw method {} for path {}".format(request.method, request.full_path))
+
     try:
         file_paths = get_file_paths(file_uuid)
 
@@ -162,6 +164,8 @@ def file_path(file_uuid):
 def file_path_list():
 
     response_obj = None
+
+    logger.info("[API CALL] Saw method {} for path {}".format(request.method, request.full_path))
 
     try:
         file_paths = get_file_paths()

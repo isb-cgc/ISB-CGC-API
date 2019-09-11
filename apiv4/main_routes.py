@@ -28,6 +28,9 @@ SCOPE = 'https://www.googleapis.com/auth/userinfo.email'
 @app.route('/v4/about/', methods=['GET'], strict_slashes=False)
 def apiv4():
     """Base response"""
+
+    logger.info("[API CALL] Saw method {} for path {}".format(request.method, request.full_path))
+    
     response = jsonify({
         'code': 200,
         'message': 'Welcome to the ISB-CGC API, Version 4.',
