@@ -29,6 +29,8 @@ logger = logging.getLogger(settings.LOGGER_NAME)
 def programs():
     """Retrieve the list of programs and builds currently available for cohort creation."""
     response = None
+
+    logger.info("[API CALL] Saw method {} for path {}".format(request.method, request.full_path))
     
     try:
     
