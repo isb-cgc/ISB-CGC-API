@@ -431,6 +431,9 @@ if IS_DEV:
 # Path to application runtime JSON key
 GOOGLE_APPLICATION_CREDENTIALS  = os.path.join(os.path.dirname(__file__), os.environ.get('GOOGLE_APPLICATION_CREDENTIALS')) if os.environ.get('GOOGLE_APPLICATION_CREDENTIALS') else ''
 
+# OAuth2 client ID for the API
+API_CLIENT_ID                   = os.environ.get('API_CLIENT_ID', '') # Client ID for the API
+
 # GCP monitoring Service Account
 MONITORING_SA_CLIENT_EMAIL            = os.environ.get('MONITORING_SA_CLIENT_EMAIL', '')
 
