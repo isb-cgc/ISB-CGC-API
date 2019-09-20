@@ -1,6 +1,9 @@
 FILE_FILTER_SCHEMA = {
     'type': 'object',
     'properties': {
+        'case_insensitive': {
+            'type': 'string'
+        },
         'filters': {
             'type': 'object',
             'properties': {
