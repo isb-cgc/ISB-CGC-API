@@ -59,7 +59,8 @@ def get_file_manifest(cohort_id, user):
             'offset': {'default': 0, 'type': int, 'name': 'offset'},
             'page': {'default': 1, 'type': int, 'name': 'page'},
             'fetch_count': {'default': 5000, 'type': int, 'name': 'limit'},
-            'genomic_build': {'default': "HG19", 'type': str, 'name': 'build'}
+            'genomic_build': {'default': "HG19", 'type': str, 'name': 'build'},
+            'case_insensitive': {'default': "True", 'type': str, 'name': 'case_insensitive'}
         }
 
         for param, parameter in param_set.items():
@@ -67,6 +68,8 @@ def get_file_manifest(cohort_id, user):
             param_type = parameter['type']
             name = parameter['name']
             params[name] = request_data[param] if (request_data and param in request_data) else request.args.get(param, default=default, type=param_type) if param in request.args else default
+            if name == 'case_insensitive':
+                params[name] = bool(params[name] == "True")
 
             if request_data:
                 inc_filters = {
@@ -150,7 +153,9 @@ def get_cohort_counts():
                 'message': 'No filters were provided; ensure that the request body contains a \'filters\' property.'
             }
         else:
-            cohort_counts = get_sample_case_list_bq(None, request_data['filters'])
+            case_insensitive = request_data['case_insensitive'] if (request_data and 'case_insensitive' in request_data) else request.args.get('case_insensitive', default="True", type=str) if param in request.args else "True"
+            
+            cohort_counts = get_sample_case_list_bq(None, request_data['filters'], case_insen=bool(case_insensitive == "True"))
 
             if cohort_counts:
                 for prog in cohort_counts:

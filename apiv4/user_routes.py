@@ -45,7 +45,8 @@ def account_details():
             })
             response.status_code = 500
         else:
-
+            logger.info("[USER API CALL] User {} performing method {} path {}".format(user_info['email'], request.method,
+                                                                               request.full_path))
             account_info = get_account_details(user)             
 
             if account_info:
@@ -104,6 +105,8 @@ def validate_gcp(gcp_id):
             })
             response.status_code = 500
         else:
+            logger.info("[USER API CALL] User {} performing method {} path {}".format(user_info['email'], request.method,
+                                                                               request.full_path))
             validation = gcp_validation(user, gcp_id)
 
             if validation:
@@ -174,6 +177,8 @@ def user_gcp(gcp_id):
             }
             code = 500
         else:
+            logger.info("[USER API CALL] User {} performing method {} path {}".format(user_info['email'], request.method,
+                                                                               request.full_path))
             action = None
             result = None
             success = False
@@ -270,6 +275,8 @@ def user_gcps():
             }
             code = 500
         else:
+            logger.info("[USER API CALL] User {} performing method {} path {}".format(user_info['email'], request.method,
+                                                                               request.full_path))
             action = None
             result = None
             success = None
