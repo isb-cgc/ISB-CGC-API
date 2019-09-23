@@ -31,6 +31,8 @@ def sample_metadata(sample_barcode):
     
     response = None
 
+    logger.info("[API CALL] Saw method {} for path {}".format(request.method, request.full_path))
+
     try:
 
         metadata = get_metadata(sample_barcode, 'sample')
@@ -73,6 +75,8 @@ def case_metadata(case_barcode):
 
     resp_obj = None
 
+    logger.info("[API CALL] Saw method {} for path {}".format(request.method, request.full_path))
+
     try:
         metadata = get_metadata(case_barcode, 'case')
 
@@ -114,6 +118,8 @@ def sample_metadata_list():
 
     resp_obj = None
     code = None
+
+    logger.info("[API CALL] Saw method {} for path {}".format(request.method, request.full_path))
 
     try:
 
@@ -158,7 +164,9 @@ def case_metadata_list():
 
     resp_obj = None
     code = None
-    
+
+    logger.info("[API CALL] Saw method {} for path {}".format(request.method, request.full_path))
+
     try:
         metadata = get_metadata(type='case')
 

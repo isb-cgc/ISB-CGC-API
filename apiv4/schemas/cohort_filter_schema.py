@@ -1901,6 +1901,9 @@ COHORT_FILTER_SCHEMA = {
             },
             'name': {
                 'type': 'string'
+            },
+            'case_insensitive': {
+                'type': 'string'
             }
         },
         "additionalProperties": False
