@@ -125,6 +125,10 @@ jobs:
             - ./txt
             - ./json
             - ./.env
+      - save_cache:
+          key: isb-cgc-api-{{ .Branch }}-{{ .Revision }}-
+          paths:
+            - ./.env
   deploy_job:
     environment:
       TZ: "/usr/share/zoneinfo/America/Los_Angeles"
@@ -135,9 +139,6 @@ jobs:
       - restore_cache:
           keys:
             - isb-cgc-api-
-      - restore_cache:
-          keys:
-            - isb-cgc-api-{{ .Branch }}-{{ .Revision }}-
       - restore_cache:
           keys:
             - isb-cgc-api-google-deps-
