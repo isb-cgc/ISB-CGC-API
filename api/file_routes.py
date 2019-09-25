@@ -17,7 +17,7 @@
 import logging
 import json
 from flask import jsonify, request
-from apiv4 import app
+from api import app
 from django.conf import settings
 from django.db import close_old_connections
 from auth import validate_user, UserValidationException

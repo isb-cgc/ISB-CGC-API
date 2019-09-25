@@ -15,10 +15,6 @@
 #
 
 import logging
-import json
-import django
-
-from flask import request
 
 from django.conf import settings
 

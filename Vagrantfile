@@ -5,8 +5,8 @@ Vagrant.configure(2) do |config|
     config.vm.box = "ubuntu/xenial64"
 
     # API ports
-    config.vm.network "forwarded_port", guest: 8090, host: 8090
-    config.vm.network "forwarded_port", guest: 9000, host: 9000
+    config.vm.network "forwarded_port", guest: 8095, host: 8095
+    config.vm.network "forwarded_port", guest: 9005, host: 9005
 
     config.vm.synced_folder ".", "/home/vagrant/API"
     config.vm.synced_folder "../", "/home/vagrant/parentDir"

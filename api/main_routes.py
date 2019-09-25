@@ -18,7 +18,7 @@ import logging
 import json
 from flask import jsonify, request, render_template
 from django.conf import settings
-from apiv4 import app
+from api import app
 
 logger = logging.getLogger(settings.LOGGER_NAME)
 
@@ -26,7 +26,7 @@ SCOPE = 'https://www.googleapis.com/auth/userinfo.email'
 
 
 @app.route('/v4/about/', methods=['GET'], strict_slashes=False)
-def apiv4():
+def api():
     """Base response"""
     response = jsonify({
         'code': 200,
