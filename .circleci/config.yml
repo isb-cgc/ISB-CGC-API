@@ -113,7 +113,7 @@ jobs:
           command: |
             sudo -E /bin/bash ./shell/gcloud-pull-staging-files.sh
       - save_cache:
-          key: isb-cgc-api-{{ epoch }}
+          key: isb-cgc-api-{{ .Branch }}-{{ .Revision }}-{{ epoch }}
           paths:
             - ./apiv4
             - ./shell
@@ -125,10 +125,6 @@ jobs:
             - ./txt
             - ./json
             - ./.env
-      - save_cache:
-          key: isb-cgc-api-{{ .Branch }}-{{ .Revision }}-
-          paths:
-            - ./.env
   deploy_job:
     environment:
       TZ: "/usr/share/zoneinfo/America/Los_Angeles"
@@ -138,7 +134,7 @@ jobs:
     steps:
       - restore_cache:
           keys:
-            - isb-cgc-api-
+            - isb-cgc-api-{{ .Branch }}-{{ .Revision }}-
       - restore_cache:
           keys:
             - isb-cgc-api-google-deps-
