@@ -155,7 +155,7 @@ def get_cohort_counts():
         else:
             case_insensitive = request_data['case_insensitive'] if (request_data and 'case_insensitive' in request_data) else request.args.get('case_insensitive', default="True", type=str) if 'case_insensitive' in request.args else "True"
             
-            cohort_counts = get_sample_case_list_bq(None, request_data['filters'], case_insen=bool(case_insensitive == "True"))
+            cohort_counts = get_sample_case_list_bq(None, request_data['filters'], case_insens=bool(case_insensitive == "True"))
 
             if cohort_counts:
                 for prog in cohort_counts:
