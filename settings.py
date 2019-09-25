@@ -82,7 +82,6 @@ LOGGER_NAME = os.environ.get('API_LOGGER_NAME', 'main_logger')
 GCLOUD_PROJECT_ID              = os.environ.get('GCLOUD_PROJECT_ID', '')
 GCLOUD_PROJECT_NUMBER          = os.environ.get('GCLOUD_PROJECT_NUMBER', '')
 BIGQUERY_PROJECT_ID           = os.environ.get('BIGQUERY_PROJECT_ID', GCLOUD_PROJECT_ID)
-BIGQUERY_DATASET_V1         = os.environ.get('BIGQUERY_DATASET_V1', '')
 BIGQUERY_DATA_PROJECT_ID  = os.environ.get('BIGQUERY_DATA_PROJECT_ID', GCLOUD_PROJECT_ID)
 
 # Deployment module
@@ -90,23 +89,14 @@ CRON_MODULE             = os.environ.get('CRON_MODULE')
 
 # Log Names
 SERVICE_ACCOUNT_LOG_NAME = os.environ.get('SERVICE_ACCOUNT_LOG_NAME', 'local_dev_logging')
-WEBAPP_LOGIN_LOG_NAME = os.environ.get('WEBAPP_LOGIN_LOG_NAME', 'local_dev_logging')
-GCP_ACTIVITY_LOG_NAME = os.environ.get('GCP_ACTIVITY_LOG_NAME', 'local_dev_logging')
 
-BASE_URL                = os.environ.get('BASE_URL', 'https://isb-cgc.appspot.com')
-BASE_API_URL            = os.environ.get('BASE_API_URL', 'https://api-dot-isb-cgc.appspot.com')
+BASE_URL                = os.environ.get('BASE_URL', 'https://idc-dev.appspot.com')
+BASE_API_URL            = os.environ.get('BASE_API_URL', 'https://api-dot-idc-dev.appspot.com')
 
-# Data Buckets
-OPEN_DATA_BUCKET        = os.environ.get('OPEN_DATA_BUCKET', '')
-DCC_CONTROLLED_DATA_BUCKET = os.environ.get('DCC_CONTROLLED_DATA_BUCKET', '')
-CGHUB_CONTROLLED_DATA_BUCKET = os.environ.get('CGHUB_CONTROLLED_DATA_BUCKET', '')
-GCLOUD_BUCKET           = os.environ.get('GOOGLE_STORAGE_BUCKET')
 
 # BigQuery cohort storage settings
 BIGQUERY_COHORT_DATASET_ID           = os.environ.get('BIGQUERY_COHORT_DATASET_ID', 'cohort_dataset')
 BIGQUERY_COHORT_TABLE_ID    = os.environ.get('BIGQUERY_COHORT_TABLE_ID', 'developer_cohorts')
-BIGQUERY_COSMIC_DATASET_ID    = os.environ.get('BIGQUERY_COSMIC_DATASET_ID', '')
-BIGQUERY_CGC_TABLE_ID    = os.environ.get('BIGQUERY_CGC_TABLE_ID', '')
 MAX_BQ_INSERT               = int(os.environ.get('MAX_BQ_INSERT', '500'))
 
 USER_DATA_ON            = bool(os.environ.get('USER_DATA_ON', False))
@@ -162,12 +152,6 @@ def GET_BQ_COHORT_SETTINGS():
     return BigQueryCohortStorageSettings(BIGQUERY_COHORT_DATASET_ID, BIGQUERY_COHORT_TABLE_ID)
 
 USE_CLOUD_STORAGE           = os.environ.get('USE_CLOUD_STORAGE', False)
-
-PROCESSING_ENABLED          = os.environ.get('PROCESSING_ENABLED', False)
-PROCESSING_JENKINS_URL      = os.environ.get('PROCESSING_JENKINS_URL', 'http://localhost/jenkins')
-PROCESSING_JENKINS_PROJECT  = os.environ.get('PROCESSING_JENKINS_PROJECT', 'cgc-processing')
-PROCESSING_JENKINS_USER     = os.environ.get('PROCESSING_JENKINS_USER', 'user')
-PROCESSING_JENKINS_PASSWORD = os.environ.get('PROCESSING_JENKINS_PASSWORD', '')
 
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
@@ -254,7 +238,7 @@ MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
-    'GenespotRE.checkreqsize_middleware.CheckReqSize',
+    'idc.checkreqsize_middleware.CheckReqSize',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'adminrestrict.middleware.AdminPagesRestrictMiddleware',
@@ -263,10 +247,10 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware'
 ]
 
-ROOT_URLCONF = 'GenespotRE.urls'
+ROOT_URLCONF = 'idc.urls'
 
 # Python dotted path to the WSGI application used by Django's runserver.
-WSGI_APPLICATION = 'GenespotRE.wsgi.application'
+WSGI_APPLICATION = 'idc.wsgi.application'
 
 INSTALLED_APPS = (
     'django.contrib.auth',
@@ -390,7 +374,7 @@ TEMPLATES = [
                 'django.contrib.messages.context_processors.messages',
                 'django.template.context_processors.tz',
                 'finalware.context_processors.contextify',
-                'GenespotRE.context_processor.additional_context',
+                'idc.context_processor.additional_context',
             ),
             # add any loaders here; if using the defaults, we can comment it out
             # 'loaders': (
@@ -428,79 +412,13 @@ if IS_DEV:
 #   End django-allauth   #
 ##########################
 
+
 GOOGLE_APPLICATION_CREDENTIALS  = os.path.join(os.path.dirname(__file__), os.environ.get('GOOGLE_APPLICATION_CREDENTIALS')) if os.environ.get('GOOGLE_APPLICATION_CREDENTIALS') else ''
-CLIENT_SECRETS                  = os.path.join(os.path.dirname(__file__), os.environ.get('CLIENT_SECRETS')) if os.environ.get('CLIENT_SECRETS') else ''
-WEB_CLIENT_ID                   = os.environ.get('WEB_CLIENT_ID', '') # Client ID from client_secrets.json
-API_CLIENT_ID                   = os.environ.get('API_CLIENT_ID', '') # Client ID for the API
-IGV_WEB_CLIENT_ID               = os.environ.get('IGV_WEB_CLIENT_ID', WEB_CLIENT_ID)
-INSTALLED_APP_CLIENT_ID         = os.environ.get('INSTALLED_APP_CLIENT_ID', '') # Native Client ID
-GCP_REG_CLIENT_EMAIL            = os.environ.get('CLIENT_EMAIL','')
 
-#################################
-#   For NIH/eRA Commons login   #
-#################################
+OAUTH2_CLIENT_ID = os.environ.get('OAUTH2_CLIENT_ID', '')
 
-LOGIN_EXPIRATION_MINUTES                = int(os.environ.get('LOGIN_EXPIRATION_MINUTES', 24*60))
-OPEN_ACL_GOOGLE_GROUP                   = os.environ.get('OPEN_ACL_GOOGLE_GROUP', '')
-GOOGLE_GROUP_ADMIN                      = os.environ.get('GOOGLE_GROUP_ADMIN', '')
-SUPERADMIN_FOR_REPORTS                  = os.environ.get('SUPERADMIN_FOR_REPORTS', '')
+OAUTH2_CLIENT_SECRET = os.environ.get('OAUTH2_CLIENT_SECRET', '')
 
-# TaskQueue used when users go through the ERA flow
-LOGOUT_WORKER_TASKQUEUE                  = os.environ.get('LOGOUT_WORKER_TASKQUEUE', '')
-CHECK_NIH_USER_LOGIN_TASK_URI            = os.environ.get('CHECK_NIH_USER_LOGIN_TASK_URI', '')
-
-# TaskQueue used by the sweep_nih_user_logins task
-LOGOUT_SWEEPER_FALLBACK_TASKQUEUE        = os.environ.get('LOGOUT_SWEEPER_FALLBACK_TASKQUEUE', '')
-
-# PubSub topic for ERA login notifications
-PUBSUB_TOPIC_ERA_LOGIN                   = os.environ.get('PUBSUB_TOPIC_ERA_LOGIN', '')
-
-# User project access key
-USER_GCP_ACCESS_CREDENTIALS              = os.environ.get('USER_GCP_ACCESS_CREDENTIALS', '')
-
-# Log name for ERA login views
-LOG_NAME_ERA_LOGIN_VIEW                  = os.environ.get('LOG_NAME_ERA_LOGIN_VIEW', '')
-
-# Service account blacklist file path
-SERVICE_ACCOUNT_BLACKLIST_PATH           = os.environ.get('SERVICE_ACCOUNT_BLACKLIST_PATH', '')
-
-# Google Org whitelist file path
-GOOGLE_ORG_WHITELIST_PATH                = os.environ.get('GOOGLE_ORG_WHITELIST_PATH', '')
-
-# Managed Service Account file path
-MANAGED_SERVICE_ACCOUNTS_PATH            = os.environ.get('MANAGED_SERVICE_ACCOUNTS_PATH', '')
-
-# Dataset configuration file path
-DATASET_CONFIGURATION_PATH               = os.environ.get('DATASET_CONFIGURATION_PATH', '')
-
-# DCF Phase I enable flag
-DCF_TEST                                 = bool(os.environ.get('DCF_TEST', 'False') == 'True')
-
-# SA via DCF
-SA_VIA_DCF                               = bool(os.environ.get('SA_VIA_DCF', 'False') == 'True')
-
-# DCF Monitoring SA
-DCF_MONITORING_SA                        = os.environ.get('DCF_MONITORING_SA', '')
-
-#################################
-#   For DCF login               #
-#################################
-
-DCF_AUTH_URL                             = os.environ.get('DCF_AUTH_URL', '')
-DCF_TOKEN_URL                            = os.environ.get('DCF_TOKEN_URL', '')
-DCF_USER_URL                             = os.environ.get('DCF_USER_URL', '')
-DCF_KEY_URL                              = os.environ.get('DCF_KEY_URL', '')
-DCF_GOOGLE_URL                           = os.environ.get('DCF_GOOGLE_URL', '')
-DCF_REVOKE_URL                           = os.environ.get('DCF_REVOKE_URL', '')
-DCF_LOGOUT_URL                           = os.environ.get('DCF_LOGOUT_URL', '')
-DCF_URL_URL                              = os.environ.get('DCF_URL_URL', '')
-DCF_CLIENT_SECRETS                       = os.environ.get('DCF_CLIENT_SECRETS', '')
-DCF_GOOGLE_SA_REGISTER_URL               = os.environ.get('DCF_GOOGLE_SA_REGISTER_URL', '')
-DCF_GOOGLE_SA_VERIFY_URL                 = os.environ.get('DCF_GOOGLE_SA_VERIFY_URL', '')
-DCF_GOOGLE_SA_MONITOR_URL                = os.environ.get('DCF_GOOGLE_SA_MONITOR_URL', '')
-DCF_GOOGLE_SA_URL                        = os.environ.get('DCF_GOOGLE_SA_URL', '')
-DCF_TOKEN_REFRESH_WINDOW_SECONDS         = int(os.environ.get('DCF_TOKEN_REFRESH_WINDOW_SECONDS', 86400))
-DCF_LOGIN_EXPIRATION_SECONDS             = int(os.environ.get('DCF_LOGIN_EXPIRATION_SECONDS', 86400))
 
 ##############################
 #   Start django-finalware   #

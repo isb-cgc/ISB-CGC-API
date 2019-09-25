@@ -93,16 +93,16 @@ jobs:
             echo "export PYTHONPATH=/home/circleci/${CIRCLE_PROJECT_REPONAME}:/home/circleci/${CIRCLE_PROJECT_REPONAME}/lib" >> $BASH_ENV
       - restore_cache:
           keys:
-            - isb-cgc-api-lib-{{ checksum "requirements.txt" }}
+            - idc-api-lib-{{ checksum "requirements.txt" }}
       - restore_cache:
           keys:
-            - isb-cgc-api-google-deps-{{ checksum "shell/install-deps.sh" }}
+            - idc-api-google-deps-{{ checksum "shell/install-deps.sh" }}
       - run:
           name: Install Dependencies
           command: |
             sudo -E /bin/bash ./shell/install-deps.sh
       - save_cache:
-          key: isb-cgc-api-lib-{{ checksum "requirements.txt" }}
+          key: idc-api-lib-{{ checksum "requirements.txt" }}
           paths:
             - ./lib
       - deployment_setup
@@ -113,7 +113,7 @@ jobs:
           command: |
             sudo -E /bin/bash ./shell/gcloud-pull-staging-files.sh
       - save_cache:
-          key: isb-cgc-api-{{ epoch }}
+          key: idc-api-{{ epoch }}
           paths:
             - ./apiv4
             - ./shell
@@ -135,10 +135,10 @@ jobs:
     steps:
       - restore_cache:
           keys:
-            - isb-cgc-api-
+            - idc-api-
       - restore_cache:
           keys:
-            - isb-cgc-api-google-deps-
+            - idc-api-google-deps-
       - install_cloud_sdk
       - deployment_setup
       - auth
