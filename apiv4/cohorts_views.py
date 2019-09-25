@@ -213,7 +213,7 @@ def create_cohort(user):
 
         else:
             case_insensitive = request_data['case_insensitive'] if (request_data and 'case_insensitive' in request_data) else request.args.get('case_insensitive', default="True", type=str) if 'case_insensitive' in request.args else "True"
-            del request_data['case_insensitive']
+            request_data.pop('case_insensitive', None)
             request_data['case_insens'] = bool(case_insensitive == 'True')
 
             result = make_cohort(user, **request_data)
