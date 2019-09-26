@@ -22,6 +22,7 @@ from cohorts_views import get_cohort_info, get_cohorts, get_file_manifest, get_c
 from auth import auth_info, UserValidationException, validate_user
 from django.conf import settings
 from django.db import close_old_connections
+from api_logging import *
 
 logger = logging.getLogger(settings.LOGGER_NAME)
 
@@ -53,8 +54,7 @@ def cohort(cohort_id):
                     'message': '"{}" is not a valid cohort ID.'.format(str(cohort_id))
                 }
             else:
-                logger.info("[USER API CALL] User {} performing method {} path {}".format(user_info['email'], request.method,
-                                                                                   request.full_path))
+                st_logger.write_text_log_entry(log_name, user_activity_message.format(user_info['email'], request.method, request.full_path))
                 if request.method == 'GET':
                     include_barcodes = (request.args.get('include_barcodes', default="false", type=str).lower() == "true")
                     cohort_info = get_cohort_info(cohort_id, include_barcodes)
@@ -117,8 +117,7 @@ def cohorts():
             }
             code = 500
         else:
-            logger.info("[USER API CALL] User {} performing method {} path {}".format(user_info['email'], request.method,
-                                                                               request.full_path))
+            st_logger.write_text_log_entry(log_name, user_activity_message.format(user_info['email'], request.method, request.full_path))
             if request.method == 'GET':
                 info = get_cohorts(user_info['email'])
             else:
@@ -193,7 +192,7 @@ def cohort_file_manifest(cohort_id):
                     'message': '"{}" is not a valid cohort ID.'.format(str(cohort_id))
                 }
             else:
-                logger.info("[USER API CALL] User {} performing method {} path {}".format(user_info['email'],request.method, request.full_path))
+                st_logger.write_text_log_entry(log_name, user_activity_message.format(user_info['email'], request.method, request.full_path))
                 file_manifest = get_file_manifest(cohort_id, user)
                 if file_manifest:
                     # Presence of a message means something went wrong with our request
@@ -239,7 +238,7 @@ def cohort_preview():
     code = None
     response_obj = None
 
-    logger.info("[API CALL] Saw method {} for path {}".format(request.method, request.full_path))
+    st_logger.write_text_log_entry(log_name, activity_message.format(request.method, request.full_path))
 
     try:
         cohort_counts = get_cohort_counts()

@@ -22,6 +22,7 @@ from django.conf import settings
 from django.db import close_old_connections
 from sample_case_views import get_metadata
 from auth import validate_user, UserValidationException
+from api_logging import *
 
 logger = logging.getLogger(settings.LOGGER_NAME)
 
@@ -31,7 +32,7 @@ def sample_metadata(sample_barcode):
     
     response = None
 
-    logger.info("[API CALL] Saw method {} for path {}".format(request.method, request.full_path))
+    st_logger.write_text_log_entry(log_name, activity_message.format(request.method, request.full_path))
 
     try:
 
@@ -75,7 +76,7 @@ def case_metadata(case_barcode):
 
     resp_obj = None
 
-    logger.info("[API CALL] Saw method {} for path {}".format(request.method, request.full_path))
+    st_logger.write_text_log_entry(log_name, activity_message.format(request.method, request.full_path))
 
     try:
         metadata = get_metadata(case_barcode, 'case')
@@ -119,7 +120,7 @@ def sample_metadata_list():
     resp_obj = None
     code = None
 
-    logger.info("[API CALL] Saw method {} for path {}".format(request.method, request.full_path))
+    st_logger.write_text_log_entry(log_name, activity_message.format(request.method, request.full_path))
 
     try:
 
@@ -165,7 +166,7 @@ def case_metadata_list():
     resp_obj = None
     code = None
 
-    logger.info("[API CALL] Saw method {} for path {}".format(request.method, request.full_path))
+    st_logger.write_text_log_entry(log_name, activity_message.format(request.method, request.full_path))
 
     try:
         metadata = get_metadata(type='case')
