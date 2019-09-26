@@ -9,7 +9,7 @@ if [ -n "$CI" ]; then
     echo "Cloning ISB-CGC-Common branch ${COMMON_BRANCH}..."
     git clone -b ${COMMON_BRANCH} https://github.com/ImagingDataCommons/IDC-Common.git
 else
-    export $(cat /home/vagrant/API/.env | grep -v ^# | xargs) 2> /dev/null
+    export $(cat /home/vagrant/parentDir/secure_files/.env | grep -v ^# | xargs) 2> /dev/null
     export HOME=/home/vagrant
     export HOMEROOT=/home/vagrant/API
 fi
