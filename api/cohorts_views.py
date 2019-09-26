@@ -27,8 +27,6 @@ from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 from django.conf import settings
 
 from cohorts.models import Cohort_Perms, Cohort, Filters
-from accounts.sa_utils import auth_dataset_whitelists_for_user
-from cohorts.file_helpers import cohort_files
 from cohorts.utils import get_sample_case_list_bq, create_cohort as make_cohort
 from projects.models import Program
 
