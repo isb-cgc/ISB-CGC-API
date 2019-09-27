@@ -19,6 +19,7 @@ import json
 from flask import jsonify, request, render_template
 from django.conf import settings
 from apiv4 import app
+from api_logging import *
 
 logger = logging.getLogger(settings.LOGGER_NAME)
 
@@ -28,6 +29,9 @@ SCOPE = 'https://www.googleapis.com/auth/userinfo.email'
 @app.route('/v4/about/', methods=['GET'], strict_slashes=False)
 def apiv4():
     """Base response"""
+
+    st_logger.write_text_log_entry(log_name, activity_message.format(request.method, request.full_path))
+
     response = jsonify({
         'code': 200,
         'message': 'Welcome to the ISB-CGC API, Version 4.',
@@ -41,6 +45,7 @@ def apiv4():
 # Swagger UI
 @app.route('/v4/swagger/', methods=['GET'], strict_slashes=False)
 def swagger():
+    st_logger.write_text_log_entry(log_name, activity_message.format(request.method, request.full_path))
     return render_template('swagger/index.html')
 
 

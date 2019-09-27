@@ -22,6 +22,7 @@ from django.conf import settings
 from django.db import close_old_connections
 from auth import validate_user, UserValidationException
 from file_views import get_file_paths, get_signed_uris
+from api_logging import *
 
 logger = logging.getLogger(settings.LOGGER_NAME)
 
@@ -122,6 +123,8 @@ def file_path(file_uuid):
     resp_obj = None
     code = None
 
+    st_logger.write_text_log_entry(log_name, activity_message.format(request.method, request.full_path))
+
     try:
         file_paths = get_file_paths(file_uuid)
 
@@ -163,6 +166,8 @@ def file_path_list():
 
     response_obj = None
 
+    st_logger.write_text_log_entry(log_name, activity_message.format(request.method, request.full_path))
+
     try:
         file_paths = get_file_paths()
 
@@ -199,4 +204,3 @@ def file_path_list():
     response.status_code = code
         
     return response
-
