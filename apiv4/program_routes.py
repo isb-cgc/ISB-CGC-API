@@ -21,6 +21,7 @@ from apiv4 import app
 from django.conf import settings
 from django.db import close_old_connections
 from program_views import get_programs
+from api_logging import *
 
 logger = logging.getLogger(settings.LOGGER_NAME)
 
@@ -30,8 +31,8 @@ def programs():
     """Retrieve the list of programs and builds currently available for cohort creation."""
     response = None
 
-    logger.info("[API CALL] Saw method {} for path {}".format(request.method, request.full_path))
-    
+    st_logger.write_text_log_entry(log_name, activity_message.format(request.method, request.full_path))
+
     try:
     
         program_info = get_programs()

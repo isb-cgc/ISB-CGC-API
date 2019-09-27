@@ -22,6 +22,7 @@ from auth import auth_info, UserValidationException, validate_user, get_user
 from user_views import get_user_acls, get_account_details, gcp_validation, gcp_registration, gcp_unregistration, gcp_info
 from django.conf import settings
 from django.db import close_old_connections
+from api_logging import *
 
 logger = logging.getLogger(settings.LOGGER_NAME)
 
@@ -45,8 +46,8 @@ def account_details():
             })
             response.status_code = 500
         else:
-            logger.info("[USER API CALL] User {} performing method {} path {}".format(user_info['email'], request.method,
-                                                                               request.full_path))
+            st_logger.write_text_log_entry(log_name, user_activity_message.format(user_info['email'], request.method,
+                                                                                  request.full_path))
             account_info = get_account_details(user)             
 
             if account_info:
@@ -105,8 +106,8 @@ def validate_gcp(gcp_id):
             })
             response.status_code = 500
         else:
-            logger.info("[USER API CALL] User {} performing method {} path {}".format(user_info['email'], request.method,
-                                                                               request.full_path))
+            st_logger.write_text_log_entry(log_name, user_activity_message.format(user_info['email'], request.method,
+                                                                                  request.full_path))
             validation = gcp_validation(user, gcp_id)
 
             if validation:
@@ -177,8 +178,8 @@ def user_gcp(gcp_id):
             }
             code = 500
         else:
-            logger.info("[USER API CALL] User {} performing method {} path {}".format(user_info['email'], request.method,
-                                                                               request.full_path))
+            st_logger.write_text_log_entry(log_name, user_activity_message.format(user_info['email'], request.method,
+                                                                                  request.full_path))
             action = None
             result = None
             success = False
@@ -275,8 +276,8 @@ def user_gcps():
             }
             code = 500
         else:
-            logger.info("[USER API CALL] User {} performing method {} path {}".format(user_info['email'], request.method,
-                                                                               request.full_path))
+            st_logger.write_text_log_entry(log_name, user_activity_message.format(user_info['email'], request.method,
+                                                                                  request.full_path))
             action = None
             result = None
             success = None
@@ -346,3 +347,8 @@ def user_gcps():
     response.status_code = code
 
     return response
+
+
+
+
+
