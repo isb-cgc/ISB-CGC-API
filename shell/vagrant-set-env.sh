@@ -4,6 +4,7 @@ echo 'export SECURE_LOCAL_PATH=../parentDir/secure_files/idc/' | tee -a /home/va
 echo 'export DJANGO_SETTINGS_MODULE=settings' | tee -a /home/vagrant/.bash_profile
 echo 'export FLASK_APP=api'
 echo 'export FLASK_RUN_PORT=8095'
+echo 'export FLASK_ENV=development'
 source /home/vagrant/.bash_profile
 
 chmod +x /home/vagrant/API/shell/python-su.sh
