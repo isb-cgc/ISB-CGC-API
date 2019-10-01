@@ -27,7 +27,6 @@ from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 from django.conf import settings
 
 from cohorts.models import Cohort_Perms, Cohort, Filters
-from cohorts.utils import get_sample_case_list_bq, create_cohort as make_cohort
 from projects.models import Program
 
 from jsonschema import validate as schema_validate, ValidationError

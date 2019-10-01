@@ -25,7 +25,7 @@ logger = logging.getLogger(settings.LOGGER_NAME)
 SCOPE = 'https://www.googleapis.com/auth/userinfo.email'
 
 
-@app.route('/v4/about/', methods=['GET'], strict_slashes=False)
+@app.route('/v1/about/', methods=['GET'], strict_slashes=False)
 def api():
     """Base response"""
     response = jsonify({
@@ -39,12 +39,12 @@ def api():
 
 
 # Swagger UI
-@app.route('/v4/swagger/', methods=['GET'], strict_slashes=False)
+@app.route('/v1/swagger/', methods=['GET'], strict_slashes=False)
 def swagger():
     return render_template('swagger/index.html')
 
 
-@app.route('/v4/oauth2callback/', strict_slashes=False)
+@app.route('/v1/oauth2callback/', strict_slashes=False)
 def oauth2callback():
     return render_template('swagger/oauth2-redirect.html')
 

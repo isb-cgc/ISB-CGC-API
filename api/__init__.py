@@ -43,7 +43,6 @@ from auth import auth_info
 from main_routes import *
 from cohorts_routes import *
 from program_routes import *
-from sample_case_routes import *
 from file_routes import *
 from user_routes import *
 
@@ -65,7 +64,7 @@ def utilities():
                 data['securityDefinitions']['google_id_token'] = {
                     'type': 'oauth2',
                     'authorizationUrl': "https://accounts.google.com/o/oauth2/v2/auth",
-                    'tokenUrl': 'https://www.googleapis.com/oauth2/v4/token',
+                    'tokenUrl': 'https://www.googleapis.com/oauth2/v1/token',
                     'flow': 'implicit',
                     'scopes': {"https://www.googleapis.com/auth/userinfo.email": "User email address", "openid": "For OIDC"},
                     'x-tokenName': 'id_token'
@@ -101,4 +100,4 @@ def unexpected_error(e):
 
 
 if __name__ == '__main__':
-    app.run(host='127.0.0.1', port=8090, debug=True)
+    app.run(host='0.0.0.0', port=8095, debug=True)

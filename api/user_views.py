@@ -17,8 +17,7 @@
 import logging
 
 from django.conf import settings
-from accounts.models import AuthorizedDataset
-from auth import get_user_acls, UserValidationException
+from auth import UserValidationException
 
 logger = logging.getLogger(settings.LOGGER_NAME)
 
@@ -27,14 +26,10 @@ def get_account_details(user):
     accounts_details = None
 
     try:
-        whitelists = get_user_acls(user)
-
-        if whitelists:
-            uads = AuthorizedDataset.objects.filter(whitelist_id__in=whitelists)
-            accounts_details = {'dataset_access': [{'name': uad.name, 'whitelist_id': uad.whitelist_id} for uad in uads]}
+        accounts_details = {}
 
     except UserValidationException as u:
-        logger.warn(u)
+        logger.warning(u)
         accounts_details = {'message': str(u)}
 
     except Exception as e:

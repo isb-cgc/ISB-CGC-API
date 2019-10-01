@@ -26,7 +26,7 @@ from django.db import close_old_connections
 logger = logging.getLogger(settings.LOGGER_NAME)
 
 
-@app.route('/v4/users/account_details/', methods=['GET'], strict_slashes=False)
+@app.route('/v1/users/account_details/', methods=['GET'], strict_slashes=False)
 def account_details():
     """
     GET: Retrieve extended information for a specific user

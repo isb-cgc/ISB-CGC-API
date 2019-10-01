@@ -22,7 +22,6 @@ from flask import request
 from werkzeug.exceptions import BadRequest
 
 from django.conf import settings
-from cohorts.metadata_helpers import get_paths_by_uuid
 
 from auth import UserValidationException
 
