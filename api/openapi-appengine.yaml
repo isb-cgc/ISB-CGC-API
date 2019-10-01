@@ -1,0 +1,824 @@
+# [START swagger]
+swagger: "2.0"
+info:
+  description: "IDC API Endpoints, version 1"
+  title: "IDC API"
+  version: "4.0"
+host: "api-dot-idc-dev.appspot.com"
+basePath: "/v1"
+# [END swagger]
+consumes:
+- "application/json"
+produces:
+- "application/json"
+schemes:
+- "https"
+paths:
+  /about:
+    get:
+      description: "API Description and Swagger UI link"
+      operationId: "root-get"
+      produces:
+        - "application/json"
+      responses:
+        200:
+          description: "API Description and link to SwaggerUI interface."
+          schema:
+            $ref: "#/definitions/responseMessage"
+        500:
+          description: "Server error message"
+          schema:
+            $ref: "#/definitions/errorMessage"
+
+  /swagger:
+    get:
+      description: "Swagger UI of the API spec"
+      operationId: "swaggerUI"
+      produces:
+        - "text/html"
+      responses:
+        200:
+          description: "Swagger UI of the API spec"
+        500:
+          description: "Server error message"
+          schema:
+            $ref: "#/definitions/errorMessage"
+
+  /oauth2callback:
+    get:
+      description: "OAuth2 Redirect URI"
+      operationId: "oauth2redirect"
+      produces:
+        - "text/html"
+      responses:
+        200:
+          description: "OAuth2 Redirect URI"
+        500:
+          description: "Server error message"
+          schema:
+            $ref: "#/definitions/errorMessage"
+
+  /programs:
+    get:
+      description: "Get a list of the available programs."
+      operationId: "getPrograms"
+      produces:
+        - "application/json"
+      responses:
+        200:
+          description: "A list of the programs available in this API."
+          schema:
+            $ref: "#/definitions/programListResponse"
+        500:
+          description: "Server error message"
+          schema:
+            $ref: "#/definitions/errorMessage"
+
+  /cohorts:
+    get:
+      description: "Get a list of the user's cohorts."
+      operationId: "getCohorts"
+      produces:
+        - "application/json"
+      responses:
+        200:
+          description: "A list of the user's cohorts."
+          schema:
+            $ref: "#/definitions/cohortListResponse"
+        500:
+          description: "Server error message"
+          schema:
+            $ref: "#/definitions/errorMessage"
+      security:
+        - google_id_token: []
+    post:
+      description: "Create the cohort defined by the supplied filter set."
+      operationId: "cohortCreate"
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - in: body
+          name: "cohort_def"
+          required: true
+          description: "Filters, name, and description used to create this cohort."
+          schema:
+            $ref: "#/definitions/cohortDefinition"
+      responses:
+        200:
+          description: "Summary information about the cohort generated."
+          schema:
+            $ref: "#/definitions/cohortResponse"
+        500:
+          description: "Server error message"
+          schema:
+            $ref: "#/definitions/errorMessage"
+      security:
+        - google_id_token: []
+
+  /cohorts/{cohort_id}:
+    get:
+      description: "Get information for the specified cohort."
+      operationId: "getCohort"
+      produces:
+        - "application/json"
+      parameters:
+        - name: cohort_id
+          in: path
+          description: "Numeric ISB-CGC Cohort ID"
+          type: integer
+          required: true
+        - name: include_barcodes
+          in: query
+          description: "Boolean indicator for inclusion of sample and case barcode lists in the cohort information."
+          type: "string"
+          required: false
+      responses:
+        200:
+          description: "Information about the specified cohort"
+          schema:
+            $ref: "#/definitions/cohortResponse"
+        500:
+          description: "Server error message"
+          schema:
+            $ref: "#/definitions/errorMessage"
+      security:
+        - google_id_token: []
+    patch:
+      description: "Update the specified cohort using the supplied information."
+      operationId: "cohortEdit"
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - name: cohort_id
+          in: path
+          description: "Numeric ISB-CGC Cohort ID"
+          type: integer
+          required: true
+        - name: "cohort_def"
+          in: body
+          required: true
+          description: "Definitions to use in editing this cohort"
+          schema:
+            $ref: "#/definitions/cohortDefinition"
+      responses:
+        200:
+          description: "Summary information about the cohort's current status."
+          schema:
+            $ref: "#/definitions/cohortResponse"
+        500:
+          description: "Server error message"
+          schema:
+            $ref: "#/definitions/errorMessage"
+      security:
+        - google_id_token: []
+    delete:
+      description: "Delete the specified cohort."
+      operationId: "cohortDelete"
+      produces:
+        - "application/json"
+      parameters:
+        - name: cohort_id
+          in: path
+          description: "Numeric ISB-CGC Cohort ID"
+          type: integer
+          required: true
+      responses:
+        200:
+          description: "Summary information about the deleted cohort."
+          schema:
+            $ref: "#/definitions/cohortResponse"
+        500:
+          description: "Server error message"
+          schema:
+            $ref: "#/definitions/errorMessage"
+      security:
+        - google_id_token: []
+
+  /cohorts/preview:
+    post:
+      description: "View the case and sample list of a cohort based on the preview of a filter set."
+      operationId: "cohortPreview"
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - name: "filters"
+          in: body
+          required: true
+          description: "Filters to apply to this cohort preview."
+          schema:
+            type: "object"
+            properties:
+              filters:
+                $ref: "#/definitions/cohortFilterSet"
+        - name: case_insensitive
+          in: query
+          description: "BigQuery string comparisons are case sensitive by default - this will perform string comparisons without case sensitivity."
+          type: string
+          required: false
+          default: "True"
+          enum: ["True", "False"]
+      responses:
+        200:
+          description: "Information about the specified cohort"
+          schema:
+            $ref: "#/definitions/cohortPreviewResponse"
+        500:
+          description: "Server error message"
+          schema:
+            $ref: "#/definitions/errorMessage"
+
+  /cohorts/{cohort_id}/file_manifest:
+    get:
+      description: "Retrieve a cohort's file manifest."
+      operationId: "getCohortFileManifest"
+      produces:
+        - "application/json"
+      parameters:
+        - name: cohort_id
+          in: path
+          description: "Numeric ISB-CGC Cohort ID"
+          type: integer
+          required: true
+        - name: fetch_count
+          in: query
+          description: "The number of file entries to retrieve this call."
+          type: integer
+          required: false
+          default: 5000
+          minimum: 1
+          maximum: 40000
+        - name: page
+          in: query
+          description: "The page, in per fetch count file entries (def. 5000 if not provided), to retrieve."
+          type: integer
+          required: false
+          default: 1
+          minimum: 1
+        - name: offset
+          in: query
+          description: "The number of file entries to skip in the return set."
+          type: integer
+          required: false
+          default: 0
+          minimum: 0
+        - name: genomic_build
+          in: query
+          description: "The genomic build from which these files should come (if applicable)."
+          type: string
+          required: false
+          default: "HG19"
+          enum: ["HG19", "HG38"]
+        - name: case_insensitive
+          in: query
+          description: "BigQuery string comparisons are case sensitive by default - this will perform string comparisons without case sensitivity."
+          type: string
+          required: false
+          default: "True"
+          enum: ["True", "False"]
+      responses:
+        200:
+          description: "File manifest for the specified cohort."
+          schema:
+            $ref: "#/definitions/cohortFileManifestResponse"
+        500:
+          description: "Server error message"
+          schema:
+            $ref: "#/definitions/errorMessage"
+      security:
+        - google_id_token: []
+    post:
+      description: "Retrieve a cohort's file manifest based on filters provided."
+      operationId: "postCohortFileManifest"
+      produces:
+        - "application/json"
+      consumes:
+        - "application/json"
+      parameters:
+        - name: cohort_id
+          in: path
+          description: "Numeric ISB-CGC Cohort ID"
+          type: integer
+          required: true
+        - name: fetch_count
+          in: query
+          description: "The number of file entries to retrieve this call."
+          type: integer
+          required: false
+          default: 5000
+          minimum: 1
+          maximum: 40000
+        - name: page
+          in: query
+          description: "The page, in per fetch count file entries (def. 5000 if not provided), to retrieve."
+          type: integer
+          required: false
+          default: 1
+          minimum: 1
+        - name: offset
+          in: query
+          description: "The number of file entries to skip in the return set."
+          type: integer
+          required: false
+          default: 0
+          minimum: 0
+        - name: genomic_build
+          in: query
+          description: "The genomic build from which these files should come (if applicable)."
+          type: string
+          required: false
+          default: "HG19"
+          enum: ["HG19", "HG38"]
+        - name: case_insensitive
+          in: query
+          description: "BigQuery string comparisons are case sensitive by default - this will perform string comparisons without case sensitivity."
+          type: string
+          required: false
+          default: "True"
+          enum: ["True", "False"]
+        - name: filters
+          required: true
+          in: body
+          description: "Filters to apply to the file manifest."
+          schema:
+            $ref: "#/definitions/fileFilterSet"
+      responses:
+        200:
+          description: "File manifest for the specified cohort."
+          schema:
+            $ref: "#/definitions/cohortFileManifestResponse"
+        500:
+          description: "Server error message"
+          schema:
+            $ref: "#/definitions/errorMessage"
+      security:
+        - google_id_token: []
+
+  /users/account_details:
+    get:
+      description: "Retrieve current account information."
+      operationId: "getUserAccountDetails"
+      produces:
+        - "application/json"
+      responses:
+        200:
+          description: "Current account information for the validated user."
+          schema:
+            $ref: "#/definitions/accountDetailsResponse"
+        400:
+          description: "Invalid request error message"
+          schema:
+            $ref: "#/definitions/errorMessage"
+        500:
+          description: "Server error message"
+          schema:
+            $ref: "#/definitions/errorMessage"
+      security:
+        - google_id_token: []
+
+definitions:
+  responseMessage:
+    type: "object"
+    properties:
+      message:
+        type: "string"
+      documentation:
+        type: "string"
+      code:
+        type: "integer"
+  fileMetadata:
+    type: "object"
+    properties:
+      access:
+        type: "string"
+      acl:
+        type: "string"
+      case_barcode:
+        type: "string"
+      case_gdc_id:
+        type: "string"
+      data_category:
+        type: "string"
+      data_format:
+        type: "string"
+      data_type:
+        type: "string"
+      disease_code:
+        type: "string"
+      experimental_strategy:
+        type: "string"
+      file_gdc_id:
+        type: "string"
+      file_name_key:
+        type: "string"
+      file_size:
+        type: "number"
+      index_file_id:
+        type: "string"
+      index_file_name_key:
+        type: "string"
+      index_file_size:
+        type: "string"
+      platform:
+        type: "string"
+      program_name:
+        type: "string"
+      project_short_name:
+        type: "string"
+      sample_barcode:
+        type: "string"
+      sample_gdc_id:
+        type: "string"
+      type:
+        type: "string"
+  cohortFilterSet:
+    type: "object"
+    properties:
+      TCGA:
+        $ref: "#/definitions/caseSampleFilters"
+      TARGET:
+        $ref: "#/definitions/caseSampleFilters"
+      CCLE:
+        $ref: "#/definitions/caseSampleFilters"
+    example:
+      TCGA:
+        disease_code: ["BRCA","READ"]
+        vital_status: ["Alive"]
+      TARGET:
+        age_at_diagnosis_btw: [5,10]
+      CCLE:
+        case_gdc_id: ["216a0048-168c-4257-88a4-31346d81a639","6cd41ffa-8dbd-4af0-8e52-eb9bec7c2c82"]
+  fileFilterSet:
+    type: "object"
+    properties:
+      access:
+        type: "array"
+        items:
+          type: "string"
+      acl:
+        type: "array"
+        items:
+          type: "string"
+      case_barcode:
+        type: "array"
+        items:
+          type: "string"
+      case_gdc_id:
+        type: "array"
+        items:
+          type: "string"
+      data_category:
+        type: "array"
+        items:
+          type: "string"
+      data_format:
+        type: "array"
+        items:
+          type: "string"
+      data_type:
+        type: "array"
+        items:
+          type: "string"
+      disease_code:
+        type: "array"
+        items:
+          type: "string"
+      experimental_strategy:
+        type: "array"
+        items:
+          type: "string"
+      file_gdc_id:
+        type: "array"
+        items:
+          type: "string"
+      file_name_key:
+        type: "array"
+        items:
+          type: "string"
+      file_size:
+        type: "array"
+        items:
+          type: "integer"
+      file_size_lte:
+        type: "array"
+        items:
+          type: "integer"
+      file_size_gte:
+        type: "array"
+        items:
+          type: "integer"
+      file_size_btw:
+        type: "array"
+        items:
+          type: "integer"
+      index_file_id:
+        type: "array"
+        items:
+          type: "string"
+      index_file_name_key:
+        type: "array"
+        items:
+          type: "string"
+      index_file_size:
+        type: "array"
+        items:
+          type: "integer"
+      index_file_size_lte:
+        type: "array"
+        items:
+          type: "integer"
+      index_file_size_gte:
+        type: "array"
+        items:
+          type: "integer"
+      index_file_size_btw:
+        type: "array"
+        items:
+          type: "integer"
+      platform:
+        type: "array"
+        items:
+          type: "string"
+      program_name:
+        type: "array"
+        items:
+          type: "string"
+      genomic_build:
+        type: "string"
+        enum: ["HG19", "HG38"]
+      offset:
+        type: "integer"
+        minimum: 0
+        default: 0
+      page:
+        type: "integer"
+        minimum: 1
+        default: 1
+      fetch_count:
+        type: "integer"
+        minimum: 1
+        maximum: 40000
+        default: 5000
+      project_short_name:
+        type: "array"
+        items:
+          type: "string"
+      sample_barcode:
+        type: "array"
+        items:
+          type: "string"
+      sample_gdc_id:
+        type: "array"
+        items:
+          type: "string"
+      type:
+        type: "array"
+        items:
+          type: "string"
+    example:
+      data_format: ["BAM"]
+  cohortPreviewProgram:
+    type: "object"
+    properties:
+      sample_count:
+        type: integer
+      samples:
+        type: array
+        items:
+          type: string
+      case_count:
+        type: integer
+      cases:
+        type: array
+        items:
+          type: string
+      msg:
+        type: string
+      provided_filters:
+        $ref: "#/definitions/caseSampleFilters"
+  cohortPreview:
+    type: "object"
+    properties:
+      TCGA:
+        $ref: "#/definitions/cohortPreviewProgram"
+      TARGET:
+        $ref: "#/definitions/cohortPreviewProgram"
+      CCLE:
+        $ref: "#/definitions/cohortPreviewProgram"
+  cohortPreviewResponse:
+    type: "object"
+    properties:
+      data:
+        $ref: "#/definitions/cohortPreview"
+      code:
+        type: "integer"
+  cohortDescription:
+    type: "object"
+    properties:
+      id:
+        type: integer
+      name:
+        type: "string"
+      sample_count:
+        type: integer
+      case_count:
+        type: integer
+      programs:
+        type: array
+        items:
+          type: "string"
+      filters:
+        $ref: "#/definitions/caseSampleFilters"
+      permission:
+        type: "string"
+      barcodes:
+        type: object
+        properties:
+          samples:
+            type: array
+            items:
+              type: string
+          cases:
+            type: array
+            items:
+              type: string
+    required:
+      - id
+      - name
+  cohortDefinition:
+    type: "object"
+    properties:
+      name:
+        type: "string"
+      filters:
+        $ref: "#/definitions/cohortFilterSet"
+    example:
+      name: "An example cohort name."
+      filters:
+        TCGA:
+          disease_code: ["BRCA","READ"]
+          vital_status: ["Alive"]
+        TARGET:
+          age_at_diagnosis_btw: [5,10]
+        CCLE:
+          case_gdc_id: ["216a0048-168c-4257-88a4-31346d81a639","6cd41ffa-8dbd-4af0-8e52-eb9bec7c2c82"]
+  filePath:
+    type: "object"
+    properties:
+      uuid:
+        type: "string"
+      gcs_path:
+        type: "string"
+  filePathResponse:
+    type: "object"
+    properties:
+      file_paths:
+        type: "array"
+        items:
+          $ref: "#/definitions/filePath"
+      code:
+        type: "integer"
+      notes:
+        type: "string"
+      uuids_not_found:
+        type: "array"
+        items:
+          type: "string"
+  cohortListResponse:
+    type: "object"
+    properties:
+      data:
+        type: "array"
+        items:
+          $ref: "#/definitions/cohortDescription"
+      code:
+        type: "integer"
+  projectInfo:
+    type: "object"
+    properties:
+      name:
+        type: "string"
+        description: "Name of this program"
+      description:
+        type: "string"
+        description: "Description of this program"
+  programInfo:
+    type: "object"
+    properties:
+      name:
+        type: "string"
+        description: "Name of this program"
+      description:
+        type: "string"
+        description: "Description of this program"
+      projects:
+        type: "array"
+        items:
+          $ref: "#/definitions/projectInfo"
+  programListResponse:
+    type: "object"
+    properties:
+      data:
+        type: "array"
+        items:
+          $ref: "#/definitions/programInfo"
+      code:
+        type: "integer"
+  cohortResponse:
+    type: "object"
+    properties:
+      data:
+        $ref: "#/definitions/cohortDescription"
+      code:
+        type: "integer"
+  cohortFileManifestResponse:
+    type: "object"
+    properties:
+      data:
+        type: "string"
+      code:
+        type: "integer"
+  errorMessage:
+    type: "object"
+    properties:
+      message:
+        type: "string"
+      code:
+        type: "integer"
+      not_found:
+        type: "array"
+        items:
+          type: "string"
+  accountDetailsResponse:
+    type: "object"
+    properties:
+      dataset_access:
+        type: "array"
+        items:
+          type: "string"
+      code:
+        type: "integer"
+
+## [START securityDef]
+securityDefinitions:
+#  # This section configures basic authentication with an API key.
+#  api_key:
+#    type: "apiKey"
+#    name: "key"
+#    in: "query"
+## [END securityDef]
+#  # This section configures authentication using Google API Service Accounts
+#  # to sign a json web token. This is mostly used for server-to-server
+#  # communication.
+#  google_jwt:
+#    authorizationUrl: ""
+#    flow: "implicit"
+#    type: "oauth2"
+#    # This must match the 'iss' field in the JWT.
+#    x-google-issuer: "jwt-client.endpoints.sample.google.com"
+#    # Update this with your service account's email address.
+#    x-google-jwks_uri: "https://www.googleapis.com/service_accounts/v1/jwk/YOUR-SERVICE-ACCOUNT-EMAIL"
+#    # This must match the "aud" field in the JWT. You can add multiple audiences to accept JWTs from multiple clients.
+#    x-google-audiences: "echo.endpoints.sample.google.com"
+#  # This section configures authentication using Google App Engine default
+#  # service account to sign a json web token. This is mostly used for
+#  # server-to-server communication.
+#  gae_default_service_account:
+#    authorizationUrl: ""
+#    flow: "implicit"
+#    type: "oauth2"
+#    # Replace YOUR-CLIENT-PROJECT-ID with your client project ID.
+#    x-google-issuer: "YOUR-CLIENT-PROJECT-ID@appspot.gserviceaccount.com"
+#    # Replace YOUR-CLIENT-PROJECT-ID with your client project ID.
+#    x-google-jwks_uri: "https://www.googleapis.com/robot/v1/metadata/x509/YOUR-CLIENT-PROJECT-ID@appspot.gserviceaccount.com"
+#    # This must match the "aud" field in the JWT. You can add multiple audiences to accept JWTs from multiple clients.
+#    x-google-audiences: "echo.endpoints.sample.google.com"
+#  # This section configures authentication using a service account
+#  # to sign a json web token. This is mostly used for server-to-server
+#  # communication.
+#  google_service_account:
+#    authorizationUrl: ""
+#    flow: "implicit"
+#    type: "oauth2"
+#    # Replace YOUR-SERVICE-ACCOUNT-EMAIL with your service account email.
+#    x-google-issuer: "YOUR-SERVICE-ACCOUNT-EMAIL"
+#    # Replace YOUR-SERVICE-ACCOUNT-EMAIL with your service account email.
+#    x-google-jwks_uri: "https://www.googleapis.com/robot/v1/metadata/x509/YOUR-SERVICE-ACCOUNT-EMAIL"
+#    # This must match the "aud" field in the JWT. You can add multiple audiences to accept JWTs from multiple clients.
+#    x-google-audiences: "echo.endpoints.sample.google.com"
+#  # This section configures authentication using Google OAuth2 ID Tokens.
+#  # ID Tokens can be obtained using OAuth2 clients, and can be used to access
+#  # your API on behalf of a particular user.
+  google_id_token:
+    authorizationUrl: ""
+    flow: "implicit"
+    type: "oauth2"
+    x-google-issuer: "https://accounts.google.com"
+    x-google-jwks_uri: "https://www.googleapis.com/oauth2/v3/certs"
+    # Your OAuth2 client's Client ID must be added here. You can add multiple client IDs to accept tokens form multiple clients.
+    x-google-audiences: ""
