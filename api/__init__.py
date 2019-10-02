@@ -24,7 +24,7 @@ from flask import Flask, jsonify, request
 from flask_cors import cross_origin
 from flask_talisman import Talisman
 
-app = Flask(__name__, static_folder='api_static')
+app = Flask(__name__, static_folder='static', static_url_path='/static')
 Talisman(app, strict_transport_security_max_age=300, content_security_policy={
     'default-src': [
         '\'self\'',
@@ -78,7 +78,7 @@ def utilities():
 
     return dict(
         load_spec=load_spec,
-        static_uri=(settings.STATIC_URL.replace('/static/', '')),
+        static_uri='',
         api_base_uri=settings.BASE_API_URL,
         ouath2_callback_path="oauth2callback",
         api_client_id=settings.API_CLIENT_ID
