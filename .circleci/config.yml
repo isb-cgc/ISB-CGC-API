@@ -115,7 +115,7 @@ jobs:
       - save_cache:
           key: idc-api-{{ epoch }}
           paths:
-            - ./apiv4
+            - ./api
             - ./shell
             - ./ISB-CGC-Common
             - ./Dockerfile
