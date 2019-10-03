@@ -92,7 +92,7 @@ paths:
       security:
         - google_id_token: []
     post:
-      description: "Create the cohort defined by the supplied filter set."
+      description: "Save the supplied filter set as a cohort."
       operationId: "cohortCreate"
       consumes:
         - "application/json"
@@ -126,14 +126,45 @@ paths:
       parameters:
         - name: cohort_id
           in: path
-          description: "Numeric ISB-CGC Cohort ID"
+          description: "Numeric IDC Cohort ID"
           type: integer
           required: true
-        - name: include_barcodes
+        - name: include_files
           in: query
-          description: "Boolean indicator for inclusion of sample and case barcode lists in the cohort information."
-          type: "string"
+          description: "Boolean as a string indicating if the list of files matching this cohort's filters should be included."
+          type: string
           required: false
+          default: "True"
+          enum: ["True", "False"]
+        - name: fetch_count
+          in: query
+          description: "The number of file entries to retrieve this call."
+          type: integer
+          required: false
+          default: 5000
+          minimum: 1
+          maximum: 40000
+        - name: page
+          in: query
+          description: "The page, in per fetch count file entries (def. 5000 if not provided), to retrieve."
+          type: integer
+          required: false
+          default: 1
+          minimum: 1
+        - name: offset
+          in: query
+          description: "The number of file entries to skip in the return set."
+          type: integer
+          required: false
+          default: 0
+          minimum: 0
+        - name: case_insensitive
+          in: query
+          description: "BigQuery string comparisons are case sensitive by default - this will perform string comparisons without case sensitivity."
+          type: string
+          required: false
+          default: "True"
+          enum: ["True", "False"]
       responses:
         200:
           description: "Information about the specified cohort"
@@ -155,7 +186,7 @@ paths:
       parameters:
         - name: cohort_id
           in: path
-          description: "Numeric ISB-CGC Cohort ID"
+          description: "Numeric IDC Cohort ID"
           type: integer
           required: true
         - name: "cohort_def"
@@ -183,7 +214,7 @@ paths:
       parameters:
         - name: cohort_id
           in: path
-          description: "Numeric ISB-CGC Cohort ID"
+          description: "Numeric IDC Cohort ID"
           type: integer
           required: true
       responses:
@@ -200,7 +231,7 @@ paths:
 
   /cohorts/preview:
     post:
-      description: "View the case and sample list of a cohort based on the preview of a filter set."
+      description: "Preview the files found in a cohort based on the supplied filter set."
       operationId: "cohortPreview"
       consumes:
         - "application/json"
@@ -232,132 +263,6 @@ paths:
           description: "Server error message"
           schema:
             $ref: "#/definitions/errorMessage"
-
-  /cohorts/{cohort_id}/file_manifest:
-    get:
-      description: "Retrieve a cohort's file manifest."
-      operationId: "getCohortFileManifest"
-      produces:
-        - "application/json"
-      parameters:
-        - name: cohort_id
-          in: path
-          description: "Numeric ISB-CGC Cohort ID"
-          type: integer
-          required: true
-        - name: fetch_count
-          in: query
-          description: "The number of file entries to retrieve this call."
-          type: integer
-          required: false
-          default: 5000
-          minimum: 1
-          maximum: 40000
-        - name: page
-          in: query
-          description: "The page, in per fetch count file entries (def. 5000 if not provided), to retrieve."
-          type: integer
-          required: false
-          default: 1
-          minimum: 1
-        - name: offset
-          in: query
-          description: "The number of file entries to skip in the return set."
-          type: integer
-          required: false
-          default: 0
-          minimum: 0
-        - name: genomic_build
-          in: query
-          description: "The genomic build from which these files should come (if applicable)."
-          type: string
-          required: false
-          default: "HG19"
-          enum: ["HG19", "HG38"]
-        - name: case_insensitive
-          in: query
-          description: "BigQuery string comparisons are case sensitive by default - this will perform string comparisons without case sensitivity."
-          type: string
-          required: false
-          default: "True"
-          enum: ["True", "False"]
-      responses:
-        200:
-          description: "File manifest for the specified cohort."
-          schema:
-            $ref: "#/definitions/cohortFileManifestResponse"
-        500:
-          description: "Server error message"
-          schema:
-            $ref: "#/definitions/errorMessage"
-      security:
-        - google_id_token: []
-    post:
-      description: "Retrieve a cohort's file manifest based on filters provided."
-      operationId: "postCohortFileManifest"
-      produces:
-        - "application/json"
-      consumes:
-        - "application/json"
-      parameters:
-        - name: cohort_id
-          in: path
-          description: "Numeric ISB-CGC Cohort ID"
-          type: integer
-          required: true
-        - name: fetch_count
-          in: query
-          description: "The number of file entries to retrieve this call."
-          type: integer
-          required: false
-          default: 5000
-          minimum: 1
-          maximum: 40000
-        - name: page
-          in: query
-          description: "The page, in per fetch count file entries (def. 5000 if not provided), to retrieve."
-          type: integer
-          required: false
-          default: 1
-          minimum: 1
-        - name: offset
-          in: query
-          description: "The number of file entries to skip in the return set."
-          type: integer
-          required: false
-          default: 0
-          minimum: 0
-        - name: genomic_build
-          in: query
-          description: "The genomic build from which these files should come (if applicable)."
-          type: string
-          required: false
-          default: "HG19"
-          enum: ["HG19", "HG38"]
-        - name: case_insensitive
-          in: query
-          description: "BigQuery string comparisons are case sensitive by default - this will perform string comparisons without case sensitivity."
-          type: string
-          required: false
-          default: "True"
-          enum: ["True", "False"]
-        - name: filters
-          required: true
-          in: body
-          description: "Filters to apply to the file manifest."
-          schema:
-            $ref: "#/definitions/fileFilterSet"
-      responses:
-        200:
-          description: "File manifest for the specified cohort."
-          schema:
-            $ref: "#/definitions/cohortFileManifestResponse"
-        500:
-          description: "Server error message"
-          schema:
-            $ref: "#/definitions/errorMessage"
-      security:
-        - google_id_token: []
 
   /users/account_details:
     get:
@@ -439,20 +344,12 @@ definitions:
   cohortFilterSet:
     type: "object"
     properties:
-      TCGA:
-        $ref: "#/definitions/caseSampleFilters"
-      TARGET:
-        $ref: "#/definitions/caseSampleFilters"
-      CCLE:
-        $ref: "#/definitions/caseSampleFilters"
+      filters:
+        $ref: "#/definitions/fileFilterSet"
     example:
-      TCGA:
-        disease_code: ["BRCA","READ"]
-        vital_status: ["Alive"]
-      TARGET:
-        age_at_diagnosis_btw: [5,10]
-      CCLE:
-        case_gdc_id: ["216a0048-168c-4257-88a4-31346d81a639","6cd41ffa-8dbd-4af0-8e52-eb9bec7c2c82"]
+      disease_code: ["BRCA","READ"]
+      case_gdc_id: ["",""]
+      data_format: ["SVS"]
   fileFilterSet:
     type: "object"
     properties:
@@ -581,35 +478,20 @@ definitions:
         items:
           type: "string"
     example:
-      data_format: ["BAM"]
-  cohortPreviewProgram:
-    type: "object"
-    properties:
-      sample_count:
-        type: integer
-      samples:
-        type: array
-        items:
-          type: string
-      case_count:
-        type: integer
-      cases:
-        type: array
-        items:
-          type: string
-      msg:
-        type: string
-      provided_filters:
-        $ref: "#/definitions/caseSampleFilters"
+      data_format: ["SVS"]
   cohortPreview:
     type: "object"
     properties:
-      TCGA:
-        $ref: "#/definitions/cohortPreviewProgram"
-      TARGET:
-        $ref: "#/definitions/cohortPreviewProgram"
-      CCLE:
-        $ref: "#/definitions/cohortPreviewProgram"
+      file_count:
+        type: integer
+      files:
+        type: array
+        items:
+          $ref: "#/definitions/fileMetadata"
+      msg:
+        type: string
+      provided_filters:
+        $ref: "#/definitions/fileFilterSet"
   cohortPreviewResponse:
     type: "object"
     properties:
@@ -624,29 +506,16 @@ definitions:
         type: integer
       name:
         type: "string"
-      sample_count:
+      file_count:
         type: integer
-      case_count:
-        type: integer
-      programs:
+      files:
         type: array
         items:
-          type: "string"
+          $ref: "#/definitions/fileMetadata"
       filters:
-        $ref: "#/definitions/caseSampleFilters"
+        $ref: "#/definitions/fileFilterSet"
       permission:
         type: "string"
-      barcodes:
-        type: object
-        properties:
-          samples:
-            type: array
-            items:
-              type: string
-          cases:
-            type: array
-            items:
-              type: string
     required:
       - id
       - name
@@ -660,13 +529,7 @@ definitions:
     example:
       name: "An example cohort name."
       filters:
-        TCGA:
-          disease_code: ["BRCA","READ"]
-          vital_status: ["Alive"]
-        TARGET:
-          age_at_diagnosis_btw: [5,10]
-        CCLE:
-          case_gdc_id: ["216a0048-168c-4257-88a4-31346d81a639","6cd41ffa-8dbd-4af0-8e52-eb9bec7c2c82"]
+        diease_code: ["BRCA","READ"]
   filePath:
     type: "object"
     properties:
@@ -734,13 +597,6 @@ definitions:
     properties:
       data:
         $ref: "#/definitions/cohortDescription"
-      code:
-        type: "integer"
-  cohortFileManifestResponse:
-    type: "object"
-    properties:
-      data:
-        type: "string"
       code:
         type: "integer"
   errorMessage:
