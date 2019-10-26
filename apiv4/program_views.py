@@ -23,11 +23,12 @@ from flask import request
 from django.conf import settings
 
 from projects.models import Program, Project
+from accounts.models import AuthorizedDataset
 
 logger = logging.getLogger(settings.LOGGER_NAME)
 
 
-def get_programs():
+def get_cohort_programs():
     django.setup()
     program_info = None
     try:
@@ -43,3 +44,20 @@ def get_programs():
         logger.exception(e)
 
     return program_info
+
+
+def get_dataset_for_reg():
+    django.setup()
+    datasets = None
+    try:
+        datasets = [
+            {
+                'name': x.name,
+                'dataset_id': x.whitelist_id
+            }
+            for x in AuthorizedDataset.get_private_datasets()
+        ]
+    except Exception as e:
+        logger.exception(e)
+
+    return datasets
