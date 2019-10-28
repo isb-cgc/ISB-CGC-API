@@ -20,7 +20,7 @@ from flask import jsonify, request
 from apiv4 import app
 from django.conf import settings
 from django.db import close_old_connections
-from program_views import get_cohort_programs, get_data_for_reg
+from program_views import get_cohort_programs, get_dataset_for_reg
 from api_logging import *
 
 logger = logging.getLogger(settings.LOGGER_NAME)
