@@ -55,7 +55,7 @@ def get_dataset_for_reg():
                 'name': x.name,
                 'dataset_id': x.whitelist_id
             }
-            for x in AuthorizedDataset.get_private_datasets()
+            for x in AuthorizedDataset.get_public_datasets()
         ]
     except Exception as e:
         logger.exception(e)
