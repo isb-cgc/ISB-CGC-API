@@ -58,7 +58,9 @@ def get_dataset_for_reg():
     try:
         name = request.args.get('name', default='%', type=str) if 'name' in request.args else None
         id = request.args.get('id', default='%', type=str) if 'id' in request.args else None
-        public = request.args.get('public', default=False, type=bool) if 'public' in request.args else None
+        access = request.args.get('access', default='controlled', type=str) if 'access' in request.args else None
+
+        public = True if access.lower()=='open' else False if access.lower()=='controlled' else None
 
         results = AuthorizedDataset.get_datasets(name=name, whitelist_id=id, public=public)
 
