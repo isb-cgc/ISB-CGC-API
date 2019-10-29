@@ -36,20 +36,13 @@ def data(routes=None):
     st_logger.write_text_log_entry(log_name, activity_message.format(request.method, request.full_path))
     
     try:
-
         if not routes or 'cohorts' in routes:
             program_info = get_cohort_programs()
-            if program_info and len(program_info) > 0:
-                response_obj['programs_for_cohorts'] = program_info
-            else:
-                response_obj['programs_for_cohorts'] = 'None found'
+            response_obj['programs_for_cohorts'] = program_info if program_info and len(program_info) > 0 else 'None found'
 
         if not routes or 'registration' in routes:
             reg_info = get_dataset_for_reg()
-            if reg_info and len(reg_info) > 0:
-                response_obj['datasets_for_registration'] = reg_info
-            else:
-                response_obj['datasets_for_registration'] = 'None found'
+            response_obj['datasets_for_registration'] = reg_info if reg_info and len(reg_info) > 0 else 'None found'
 
         response_code = 200
     except Exception as e:
