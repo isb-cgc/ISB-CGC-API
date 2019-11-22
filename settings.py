@@ -523,6 +523,11 @@ MAX_FILES_IGV = 5
 # Rough max file size to allow for eg. barcode list upload, to revent triggering RequestDataTooBig
 FILE_SIZE_UPLOAD_MAX = 1950000
 
+# Apache Solr settings
+SOLR_URI = os.environ.get('SOLR_URI', '')
+SOLR_LOGIN = os.environ.get('SOLR_LOGIN', '')
+SOLR_PASSWORD = os.environ.get('SOLR_PASSWORD', '')
+
 ##############################################################
 #   MailGun Email Settings
 ##############################################################
