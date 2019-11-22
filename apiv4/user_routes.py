@@ -42,11 +42,7 @@ def account_details():
         response = None
 
         if not user:
-            response = jsonify({
-                'code': 500,
-                'message': 'Encountered an error while attempting to identify this user.'
-            })
-            response.status_code = 500
+            raise Exception("Encountered an error while attempting to identify this user.")
         else:
             st_logger.write_text_log_entry(log_name, user_activity_message.format(user_info['email'], request.method,
                                                                                   request.full_path))
@@ -100,18 +96,14 @@ def validate_gcp(gcp_id):
     GET: Validate a Google Cloud Project for registration and return the results to the user
     """
 
+    response_obj = None
+
     try:
         user_info = auth_info()
         user = validate_user(user_info['email'])
 
-        response = None
-
         if not user:
-            response = jsonify({
-                'code': 500,
-                'message': 'Encountered an error while attempting to identify this user.'
-            })
-            response.status_code = 500
+            raise Exception("Encountered an error while attempting to identify this user.")
         else:
             st_logger.write_text_log_entry(log_name, user_activity_message.format(user_info['email'], request.method,
                                                                                   request.full_path))
@@ -126,22 +118,14 @@ def validate_gcp(gcp_id):
 
             # Lack of a valid object means something went wrong on the server
             else:
-                response_obj = {
-                    'code': 500,
-                    'message': "Encountered an error while attempting to validate Google Cloud Platform project ID {}.".format(gcp_id)
-                }
-                code = 500
+                raise Exception("Encountered an error while attempting to validate Google Cloud Platform project ID {}.".format(gcp_id))
 
     except UserValidationException as e:
-        response_obj = {
-            'code': 403,
-            'message': str(e)
-        }
+        response_obj = {'message': str(e)}
         code = 403
     except Exception as e:
         logger.exception(e)
         response_obj = {
-            'code': 500,
             'message': 'Encountered an error while attempting to validate Google Cloud Platform project ID {}.'.format(gcp_id)
         }
         code = 500
@@ -176,10 +160,7 @@ def user_gcp(gcp_id):
         user = validate_user(user_info['email'])
 
         if not user:
-            response_obj = {
-                'message': 'Encountered an error while attempting to identify this user.'
-            }
-            code = 500
+            raise Exception('Encountered an error while attempting to identify this user.')
         else:
             st_logger.write_text_log_entry(log_name, user_activity_message.format(user_info['email'], request.method,
                                                                                   request.full_path))
@@ -278,10 +259,7 @@ def user_gcps():
         user = validate_user(user_info['email'])
 
         if not user:
-            response_obj = {
-                'message': 'Encountered an error while attempting to identify this user.'
-            }
-            code = 500
+            raise Exception('Encountered an error while attempting to identify this user.')
         else:
             st_logger.write_text_log_entry(log_name, user_activity_message.format(user_info['email'], request.method,
                                                                                   request.full_path))
@@ -371,10 +349,7 @@ def user_sas(gcp_id):
         user = validate_user(user_info['email'])
 
         if not user:
-            response_obj = {
-                'message': 'Encountered an error while attempting to identify this user.'
-            }
-            code = 500
+            raise Exception('Encountered an error while attempting to identify this user.')
         else:
             st_logger.write_text_log_entry(log_name, user_activity_message.format(user_info['email'], request.method,
                                                                                   request.full_path))
@@ -469,10 +444,7 @@ def validate_sa(gcp_id, sa_id):
         user = validate_user(user_info['email'])
 
         if not user:
-            response_obj = {
-                'message': 'Encountered an error while attempting to identify this user.'
-            }
-            code = 500
+            raise Exception('Encountered an error while attempting to identify this user.')
         else:
             st_logger.write_text_log_entry(log_name, user_activity_message.format(user_info['email'], request.method,
                                                                                   request.full_path))
@@ -569,10 +541,7 @@ def user_sa(gcp_id, sa_id):
         user = validate_user(user_info['email'])
 
         if not user:
-            response_obj = {
-                'message': 'Encountered an error while attempting to identify this user.'
-            }
-            code = 500
+            raise Exception('Encountered an error while attempting to identify this user.')
         else:
             st_logger.write_text_log_entry(log_name, user_activity_message.format(user_info['email'], request.method,
                                                                                   request.full_path))
