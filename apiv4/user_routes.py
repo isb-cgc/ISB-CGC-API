@@ -16,13 +16,15 @@
 
 import logging
 import json
-from flask import jsonify, request
+from flask import jsonify, request, redirect, url_for
 from apiv4 import app
 from auth import auth_info, UserValidationException, validate_user, get_user
 from user_views import get_user_acls, get_account_details, gcp_validation, gcp_registration, gcp_unregistration, gcp_info
 from django.conf import settings
 from django.db import close_old_connections
 from api_logging import *
+
+HTTP_301_MOVED_PERMANENTLY = 301
 
 logger = logging.getLogger(settings.LOGGER_NAME)
 
@@ -40,11 +42,7 @@ def account_details():
         response = None
 
         if not user:
-            response = jsonify({
-                'code': 500,
-                'message': 'Encountered an error while attempting to identify this user.'
-            })
-            response.status_code = 500
+            raise Exception("Encountered an error while attempting to identify this user.")
         else:
             st_logger.write_text_log_entry(log_name, user_activity_message.format(user_info['email'], request.method,
                                                                                   request.full_path))
@@ -88,78 +86,67 @@ def account_details():
 
 
 @app.route('/v4/users/gcp/validate/<gcp_id>/', methods=['GET'], strict_slashes=False)
+def validate_gcp_old():
+    return redirect(url_for('validate_gcp'), HTTP_301_MOVED_PERMANENTLY)
+
+
+@app.route('/v4/users/cloud_projects/validate/<gcp_id>/', methods=['GET'], strict_slashes=False)
 def validate_gcp(gcp_id):
     """
     GET: Validate a Google Cloud Project for registration and return the results to the user
     """
 
+    response_obj = None
+
     try:
         user_info = auth_info()
         user = validate_user(user_info['email'])
 
-        response = None
-
         if not user:
-            response = jsonify({
-                'code': 500,
-                'message': 'Encountered an error while attempting to identify this user.'
-            })
-            response.status_code = 500
+            raise Exception("Encountered an error while attempting to identify this user.")
         else:
             st_logger.write_text_log_entry(log_name, user_activity_message.format(user_info['email'], request.method,
                                                                                   request.full_path))
             validation = gcp_validation(user, gcp_id)
 
             if validation:
-                response_obj = {}
-                code = None
+                response_obj = {
+                    'data': validation
+                }
 
-                if 'message' in validation:
-                    response_obj['message'] = validation['message']
-                if 'notes' in validation:
-                    response_obj['notes'] = validation['notes']
-
-                if 'roles' not in validation:
-                    code = 400
-                else:
-                    code = 200
-                    response_obj['gcp_project_id'] = validation['gcp_id']
-
-                response_obj['code'] = code
-                response = jsonify(response_obj)
-                response.status_code = code
+                code = 400 if 'roles' not in validation else 200
 
             # Lack of a valid object means something went wrong on the server
             else:
-                response = jsonify({
-                    'code': 500,
-                    'message': "Encountered an error while attempting to validate Google Cloud Platform project ID {}.".format(gcp_id)
-                })
-                response.status_code = 500
+                raise Exception("Encountered an error while attempting to validate Google Cloud Platform project ID {}.".format(gcp_id))
 
     except UserValidationException as e:
-        response = jsonify({
-            'code': 403,
-            'message': str(e)
-        })
-        response.status_code = 403
+        response_obj = {'message': str(e)}
+        code = 403
     except Exception as e:
         logger.exception(e)
-        response = jsonify({
-            'code': 500,
+        response_obj = {
             'message': 'Encountered an error while attempting to validate Google Cloud Platform project ID {}.'.format(gcp_id)
-        })
-        response.status_code = 500
+        }
+        code = 500
     finally:
         close_old_connections()
-        
+
+    response_obj['code'] = code
+    response = jsonify(response_obj)
+    response.status_code = code
+
     return response
 
 
-@app.route('/v4/users/gcp/<gcp_id>/', methods=['POST', 'DELETE', 'PATCH', 'GET'], strict_slashes=False)
+@app.route('/v4/users/gcp/<gcp_id>/', methods=['DELETE', 'PATCH', 'GET'], strict_slashes=False)
+def user_gcp_old():
+    return redirect(url_for('user_gcp'), HTTP_301_MOVED_PERMANENTLY)
+
+
+@app.route('/v4/users/cloud_projects/<gcp_id>/', methods=['DELETE', 'PATCH', 'GET'], strict_slashes=False)
 def user_gcp(gcp_id):
     """
-    POST: Register a Google Cloud Project with ISB-CGC
     PATCH: Update the Google Cloud Project's user list with ISB-CGC
     DELETE: Unregister the Google Cloud Project with ISB-CGC
     GET: Fetch details about the Google Cloud Project
@@ -173,10 +160,7 @@ def user_gcp(gcp_id):
         user = validate_user(user_info['email'])
 
         if not user:
-            response_obj = {
-                'message': 'Encountered an error while attempting to identify this user.'
-            }
-            code = 500
+            raise Exception('Encountered an error while attempting to identify this user.')
         else:
             st_logger.write_text_log_entry(log_name, user_activity_message.format(user_info['email'], request.method,
                                                                                   request.full_path))
@@ -184,7 +168,7 @@ def user_gcp(gcp_id):
             result = None
             success = False
             
-            if request.method == 'POST' or request.method == 'PATCH':
+            if request.method == 'PATCH':
                 action, success = gcp_registration(user, gcp_id, (request.method == 'PATCH'))
             elif request.method == 'GET':
                 result, success = gcp_info(user, gcp_id)
@@ -237,7 +221,7 @@ def user_gcp(gcp_id):
         }
 
     except Exception as e:
-        logger.error("[ERROR] For route /v4/users/gcp/<gcp_id> method {}:".format(request.method))
+        logger.error("[ERROR] For route /v4/users/cloud_projects/<gcp_id> method {}:".format(request.method))
         logger.exception(e)
         code = 500
         response_obj = {
@@ -253,12 +237,16 @@ def user_gcp(gcp_id):
 
     return response
 
+
 @app.route('/v4/users/gcp/', methods=['POST', 'GET'], strict_slashes=False)
+def user_gcps_old():
+    return redirect(url_for('user_gcps'), HTTP_301_MOVED_PERMANENTLY)
+
+
+@app.route('/v4/users/cloud_projects/', methods=['POST', 'GET'], strict_slashes=False)
 def user_gcps():
     """
     POST: Register a Google Cloud Project with ISB-CGC
-    PATCH: Update the Google Cloud Project's user list with ISB-CGC
-    DELETE: Unregister the Google Cloud Project with ISB-CGC
     GET: Fetch details about the Google Cloud Project
     """
 
@@ -271,10 +259,7 @@ def user_gcps():
         user = validate_user(user_info['email'])
 
         if not user:
-            response_obj = {
-                'message': 'Encountered an error while attempting to identify this user.'
-            }
-            code = 500
+            raise Exception('Encountered an error while attempting to identify this user.')
         else:
             st_logger.write_text_log_entry(log_name, user_activity_message.format(user_info['email'], request.method,
                                                                                   request.full_path))
@@ -332,12 +317,299 @@ def user_gcps():
         }
 
     except Exception as e:
-        logger.error("[ERROR] For route /v4/users/gcp/{gcp_id} method {}:".format(request.method))
+        logger.error("[ERROR] For route /v4/users/cloud_projects/{gcp_id} method {}:".format(request.method))
         logger.exception(e)
         code = 500
         response_obj = {
             'message': 'Encountered an error while attempting to register Google Cloud Platform project ID {}.'.format(
                 gcp_id)
+        }
+    finally:
+        close_old_connections()
+
+    response_obj['code'] = code
+    response = jsonify(response_obj)
+    response.status_code = code
+
+    return response
+
+
+@app.route('/v4/users/cloud_projects/<gcp_id>/service_accounts', methods=['POST', 'GET'], strict_slashes=False)
+def user_sas(gcp_id):
+    """
+    POST: Register a Service Account with ISB-CGC
+    GET: Fetch a list of all Service Accounts from a Google Cloud Platform project.
+    """
+
+    response_obj = {}
+    code = None
+
+    try:
+        user_info = auth_info()
+        user = validate_user(user_info['email'])
+
+        if not user:
+            raise Exception('Encountered an error while attempting to identify this user.')
+        else:
+            st_logger.write_text_log_entry(log_name, user_activity_message.format(user_info['email'], request.method,
+                                                                                  request.full_path))
+            action = None
+            result = None
+            success = False
+
+            if request.method == 'POST':
+                action, success = sa_registration(user, gcp_id, None, (request.method == 'PATCH'))
+            elif request.method == 'GET':
+                result, success = sa_info(user, gcp_id, None)
+            else:
+                raise Exception("Method not recognized: {}".format(request.method))
+
+            code = 200
+
+            if action is not None:
+                response_obj['gcp_project_id'] = gcp_id
+                response_obj['service_account_id'] = sa_id
+                if 'message' in action:
+                    response_obj['message'] = action['message']
+                if 'notes' in action:
+                    response_obj['notes'] = action['notes']
+                if not success:
+                    code = 400
+            elif result is not None:
+                # The case of an empty result set is handled above
+                if success:
+                    response_obj['data'] = result
+                else:
+                    code = 404
+                    response_obj['message'] = 'A Google Cloud Platform service account with ID {} in project ID {} was not found for user {}'.format(
+                        sa_id, gcp_id, user.email
+                    )
+
+            # Lack of a valid object means something went wrong on the server
+            else:
+                code = 500
+                act = "fetch"
+                if request.method == 'POST':
+                    act = "register"
+                if request.method == 'DELETE':
+                    act = "unregister"
+                if request.method == "PATCH":
+                    act = "refresh"
+                response_obj = {
+                    'message': "Encountered an error while attempting to {} Service Account ID {} from Google Cloud Platform Project {}.".format(
+                        act,
+                        sa_id,
+                        gcp_id
+                    )
+                }
+
+    except UserValidationException as e:
+        code = 403
+        response_obj = {
+            'message': str(e)
+        }
+
+    except Exception as e:
+        logger.error("[ERROR] For route /v4/users/cloud_projects/<gcp_id>/service_account/<sa_id> method {}:".format(request.method))
+        logger.exception(e)
+        code = 500
+        response_obj = {
+            'message': 'Encountered an error while attempting to register service account ID {} from Google Cloud Platform project {}.'.format(
+                sa_id, gcp_id)
+        }
+    finally:
+        close_old_connections()
+
+    response_obj['code'] = code
+    response = jsonify(response_obj)
+    response.status_code = code
+
+    return response
+
+
+@app.route('/v4/users/cloud_projects/<gcp_id>/service_account/validate/<sa_id>', methods=['GET'], strict_slashes=False)
+def validate_sa(gcp_id, sa_id):
+    """
+    POST: Register a Service Account with ISB-CGC
+    PATCH: Refresh a Service Account's expiration time with ISB-CGC
+    DELETE: Unregister a Service Account with ISB-CGC
+    GET: Fetch details about a Service Account
+    """
+
+    response_obj = {}
+    code = None
+
+    try:
+        user_info = auth_info()
+        user = validate_user(user_info['email'])
+
+        if not user:
+            raise Exception('Encountered an error while attempting to identify this user.')
+        else:
+            st_logger.write_text_log_entry(log_name, user_activity_message.format(user_info['email'], request.method,
+                                                                                  request.full_path))
+            action = None
+            result = None
+            success = False
+
+            if request.method == 'POST' or request.method == 'PATCH':
+                action, success = sa_registration(user, gcp_id, sa_id, (request.method == 'PATCH'))
+            elif request.method == 'GET':
+                result, success = sa_info(user, gcp_id, sa_id)
+            elif request.method == 'DELETE':
+                action, success = sa_unregistration(user, gcp_id, sa_id)
+            else:
+                raise Exception("Method not recognized: {}".format(request.method))
+
+            code = 200
+
+            if action is not None:
+                response_obj['gcp_project_id'] = gcp_id
+                response_obj['service_account_id'] = sa_id
+                if 'message' in action:
+                    response_obj['message'] = action['message']
+                if 'notes' in action:
+                    response_obj['notes'] = action['notes']
+                if not success:
+                    code = 400
+            elif result is not None:
+                # The case of an empty result set is handled above
+                if success:
+                    response_obj['data'] = result
+                else:
+                    code = 404
+                    response_obj['message'] = 'A Google Cloud Platform service account with ID {} in project ID {} was not found for user {}'.format(
+                        sa_id, gcp_id, user.email
+                    )
+
+            # Lack of a valid object means something went wrong on the server
+            else:
+                code = 500
+                act = "fetch"
+                if request.method == 'POST':
+                    act = "register"
+                if request.method == 'DELETE':
+                    act = "unregister"
+                if request.method == "PATCH":
+                    act = "refresh"
+                response_obj = {
+                    'message': "Encountered an error while attempting to {} Service Account ID {} from Google Cloud Platform Project {}.".format(
+                        act,
+                        sa_id,
+                        gcp_id
+                    )
+                }
+
+    except UserValidationException as e:
+        code = 403
+        response_obj = {
+            'message': str(e)
+        }
+
+    except Exception as e:
+        logger.error("[ERROR] For route /v4/users/cloud_projects/<gcp_id>/service_account/<sa_id> method {}:".format(request.method))
+        logger.exception(e)
+        code = 500
+        response_obj = {
+            'message': 'Encountered an error while attempting to register service account ID {} from Google Cloud Platform project {}.'.format(
+                sa_id, gcp_id)
+        }
+    finally:
+        close_old_connections()
+
+    response_obj['code'] = code
+    response = jsonify(response_obj)
+    response.status_code = code
+
+    return response
+
+
+@app.route('/v4/users/cloud_projects/<gcp_id>/service_account/<sa_id>', methods=['DELETE', 'PATCH', 'GET'], strict_slashes=False)
+def user_sa(gcp_id, sa_id):
+    """
+    POST: Register a Service Account with ISB-CGC
+    PATCH: Refresh a Service Account's expiration time with ISB-CGC
+    DELETE: Unregister a Service Account with ISB-CGC
+    GET: Fetch details about a Service Account
+    """
+
+    response_obj = {}
+    code = None
+
+    try:
+        user_info = auth_info()
+        user = validate_user(user_info['email'])
+
+        if not user:
+            raise Exception('Encountered an error while attempting to identify this user.')
+        else:
+            st_logger.write_text_log_entry(log_name, user_activity_message.format(user_info['email'], request.method,
+                                                                                  request.full_path))
+            action = None
+            result = None
+            success = False
+
+            if request.method == 'POST' or request.method == 'PATCH':
+                action, success = sa_registration(user, gcp_id, sa_id, (request.method == 'PATCH'))
+            elif request.method == 'GET':
+                result, success = sa_info(user, gcp_id, sa_id)
+            elif request.method == 'DELETE':
+                action, success = sa_unregistration(user, gcp_id, sa_id)
+            else:
+                raise Exception("Method not recognized: {}".format(request.method))
+
+            code = 200
+
+            if action is not None:
+                response_obj['gcp_project_id'] = gcp_id
+                response_obj['service_account_id'] = sa_id
+                if 'message' in action:
+                    response_obj['message'] = action['message']
+                if 'notes' in action:
+                    response_obj['notes'] = action['notes']
+                if not success:
+                    code = 400
+            elif result is not None:
+                # The case of an empty result set is handled above
+                if success:
+                    response_obj['data'] = result
+                else:
+                    code = 404
+                    response_obj['message'] = 'A Google Cloud Platform service account with ID {} in project ID {} was not found for user {}'.format(
+                        sa_id, gcp_id, user.email
+                    )
+
+            # Lack of a valid object means something went wrong on the server
+            else:
+                code = 500
+                act = "fetch"
+                if request.method == 'POST':
+                    act = "register"
+                if request.method == 'DELETE':
+                    act = "unregister"
+                if request.method == "PATCH":
+                    act = "refresh"
+                response_obj = {
+                    'message': "Encountered an error while attempting to {} Service Account ID {} from Google Cloud Platform Project {}.".format(
+                        act,
+                        sa_id,
+                        gcp_id
+                    )
+                }
+
+    except UserValidationException as e:
+        code = 403
+        response_obj = {
+            'message': str(e)
+        }
+
+    except Exception as e:
+        logger.error("[ERROR] For route /v4/users/cloud_projects/<gcp_id>/service_account/<sa_id> method {}:".format(request.method))
+        logger.exception(e)
+        code = 500
+        response_obj = {
+            'message': 'Encountered an error while attempting to register service account ID {} from Google Cloud Platform project {}.'.format(
+                sa_id, gcp_id)
         }
     finally:
         close_old_connections()

@@ -16,7 +16,7 @@
 
 import logging
 import json
-from flask import jsonify, request, render_template
+from flask import jsonify, request, render_template, redirect, url_for
 from django.conf import settings
 from apiv4 import app
 from api_logging import *
@@ -52,5 +52,4 @@ def swagger():
 @app.route('/v4/oauth2callback/', strict_slashes=False)
 def oauth2callback():
     return render_template('swagger/oauth2-redirect.html')
-
 
