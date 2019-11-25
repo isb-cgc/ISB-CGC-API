@@ -107,7 +107,7 @@ def validate_gcp(gcp_id):
         else:
             st_logger.write_text_log_entry(log_name, user_activity_message.format(user_info['email'], request.method,
                                                                                   request.full_path))
-            validation = sa_validation(user, gcp_id)
+            validation = gcp_validation(user, gcp_id)
 
             if validation:
                 response_obj = {
