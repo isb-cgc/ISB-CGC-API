@@ -86,7 +86,7 @@ def account_details():
 
 
 @app.route('/v4/users/gcp/validate/<gcp_id>/', methods=['GET'], strict_slashes=False)
-def validate_gcp_old():
+def validate_gcp_old(gcp_id):
     return redirect(url_for('validate_gcp'), HTTP_301_MOVED_PERMANENTLY)
 
 
@@ -140,7 +140,7 @@ def validate_gcp(gcp_id):
 
 
 @app.route('/v4/users/gcp/<gcp_id>/', methods=['DELETE', 'PATCH', 'GET'], strict_slashes=False)
-def user_gcp_old():
+def user_gcp_old(gcp_id):
     return redirect(url_for('user_gcp'), HTTP_301_MOVED_PERMANENTLY)
 
 
