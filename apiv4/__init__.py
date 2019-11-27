@@ -35,8 +35,7 @@ Talisman(app, strict_transport_security_max_age=300, content_security_policy={
     ],
     'connect-src': [
         '\'self\'',
-        '*.googleapis.com',
-        '*.swagger.io'
+        '*.appspot.com'
     ]
 })
 
