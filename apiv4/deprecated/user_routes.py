@@ -36,4 +36,5 @@ def user_gcp_old(gcp_id):
 
 @app.route('/v4/users/gcp/', methods=['POST', 'GET'], strict_slashes=False)
 def user_gcps_old():
+    print(flask.request.environ['wsgi.url_scheme'])
     return redirect(url_for('user_gcps'), HTTP_301_MOVED_PERMANENTLY)
