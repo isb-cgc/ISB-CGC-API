@@ -265,7 +265,7 @@ def user_gcps():
                 if result is not None:
                     code = 404
                     response_obj['message'] = 'No Google Cloud Platform projects found for user {}'.format(
-                        gcp_id, user.email
+                        user.email
                     )
             else:
                 code = 200
