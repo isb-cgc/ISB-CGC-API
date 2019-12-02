@@ -23,6 +23,7 @@ import json
 from flask import Flask, jsonify, request
 from flask_cors import cross_origin
 from flask_talisman import Talisman
+from werkzeug.middleware.proxy_fix import ProxyFix
 
 app = Flask(__name__, static_folder='api_static')
 Talisman(app, strict_transport_security_max_age=300, content_security_policy={
@@ -34,6 +35,8 @@ Talisman(app, strict_transport_security_max_age=300, content_security_policy={
         'data:'
     ]
 })
+
+app = ProxyFix(app, x_for=1, x_host=1)
 
 import django
 django.setup()
