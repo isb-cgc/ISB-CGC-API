@@ -73,4 +73,4 @@ RUN pip3 install gunicorn==19.9.0
 
 ENV PYTHONPATH=/app:/app/apiv4:/app/lib:/app/ISB-CGC-Common:${PYTHONPATH}
 
-CMD gunicorn -b :$PORT apiv4:app -w 3 -t 130
+CMD gunicorn -c gunicorn.conf.py -b :$PORT apiv4:app -w 3 -t 130

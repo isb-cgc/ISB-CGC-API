@@ -32,11 +32,6 @@ Talisman(app, strict_transport_security_max_age=300, content_security_policy={
         '*.swagger.io',
         '\'unsafe-inline\'',
         'data:'
-    ],
-    'connect-src': [
-        '\'self\'',
-        'blob:',
-        'filesystem:'
     ]
 })
 
@@ -51,6 +46,7 @@ from program_routes import *
 from sample_case_routes import *
 from file_routes import *
 from user_routes import *
+from deprecated import *
 
 logger = logging.getLogger(settings.LOGGER_NAME)
 
@@ -61,7 +57,6 @@ def utilities():
         json_spec = ""
         try:
             yaml = ruamel.yaml.YAML(typ='safe')
-            logger.debug(os.path.split(os.path.abspath(dirname(__file__)))[0] + '/openapi-appengine.yaml')
             with open(os.path.split(os.path.abspath(dirname(__file__)))[0] + '/openapi-appengine.yaml') as fpi:
                 data = yaml.load(fpi)
                 del data['paths']['/swagger']
