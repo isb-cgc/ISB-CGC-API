@@ -267,6 +267,8 @@ def user_gcps():
                     response_obj['message'] = 'No Google Cloud Platform projects found for user {}'.format(
                         user.email
                     )
+                elif action is not None:
+                    code = 400
             else:
                 code = 200
 
