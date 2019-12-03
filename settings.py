@@ -22,10 +22,16 @@ from dotenv import load_dotenv
 from socket import gethostname, gethostbyname
 
 env_path = ''
+env_file = '.env'
+
 if os.environ.get('SECURE_LOCAL_PATH', None):
     env_path += os.environ.get('SECURE_LOCAL_PATH')
 
-load_dotenv(dotenv_path=join(dirname(__file__), env_path+'.env'))
+if os.environ.get('ENV_FILE', None):
+    env_file = os.environ.get('ENV_FILE')
+
+
+load_dotenv(dotenv_path=join(dirname(__file__), env_path+env_file))
 
 APP_ENGINE_FLEX = 'aef-'
 APP_ENGINE = 'Google App Engine/'

@@ -1,3 +1,3 @@
 
 # Enforce HTTPS
-secure_scheme_headers = {'X-FORWARDED-PROTOCOL': 'ssl', 'X-FORWARDED-PROTO': 'https', 'X-FORWARDED-SSL': 'on'}
+secure_scheme_headers = {'X-FORWARDED-PROTO': 'https'}
