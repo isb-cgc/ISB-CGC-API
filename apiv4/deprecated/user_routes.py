@@ -21,8 +21,6 @@ from apiv4 import app
 
 HTTP_301_MOVED_PERMANENTLY = 301
 
-logger = logging.getLogger(settings.LOGGER_NAME)
-
 
 def external_url_for(for_this):
     return url_for(for_this, _external=True, _scheme='https')
@@ -40,5 +38,4 @@ def user_gcp_old(gcp_id):
 
 @app.route('/v4/users/gcp/', methods=['POST', 'GET'], strict_slashes=False)
 def user_gcps_old():
-    print(flask.request.environ['wsgi.url_scheme'])
     return redirect(external_url_for('user_gcps'), HTTP_301_MOVED_PERMANENTLY)
