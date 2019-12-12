@@ -242,8 +242,6 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware'
 ]
 
-ROOT_URLCONF = 'isb_cgc.urls'
-
 INSTALLED_APPS = (
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -365,8 +363,7 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
                 'django.template.context_processors.tz',
-                'finalware.context_processors.contextify',
-                'isb_cgc.context_processor.additional_context',
+                'finalware.context_processors.contextify'
             ),
             # add any loaders here; if using the defaults, we can comment it out
             # 'loaders': (
