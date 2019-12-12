@@ -507,6 +507,7 @@ FILE_SIZE_UPLOAD_MAX = 1950000
 SOLR_URI = os.environ.get('SOLR_URI', '')
 SOLR_LOGIN = os.environ.get('SOLR_LOGIN', '')
 SOLR_PASSWORD = os.environ.get('SOLR_PASSWORD', '')
+SOLR_CERT = os.environ.get('SOLR_CERT', '')
 
 ##############################################################
 #   MailGun Email Settings
