@@ -30,7 +30,6 @@ if os.environ.get('SECURE_LOCAL_PATH', None):
 if os.environ.get('ENV_FILE', None):
     env_file = os.environ.get('ENV_FILE')
 
-
 load_dotenv(dotenv_path=join(dirname(__file__), env_path+env_file))
 
 APP_ENGINE_FLEX = 'aef-'
@@ -235,7 +234,6 @@ MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
-    'GenespotRE.checkreqsize_middleware.CheckReqSize',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'adminrestrict.middleware.AdminPagesRestrictMiddleware',
@@ -245,9 +243,6 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = 'isb_cgc.urls'
-
-# Python dotted path to the WSGI application used by Django's runserver.
-WSGI_APPLICATION = 'GenespotRE.wsgi.application'
 
 INSTALLED_APPS = (
     'django.contrib.auth',
