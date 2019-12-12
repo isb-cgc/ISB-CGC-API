@@ -21,10 +21,12 @@ from pathlib import Path
 from dotenv import load_dotenv
 from socket import gethostname, gethostbyname
 
+SECURE_LOCAL_PATH = os.environ.get('SECURE_LOCAL_PATH', None)
+
 env_path = ''
 env_file = '.env'
 
-if os.environ.get('SECURE_LOCAL_PATH', None):
+if SECURE_LOCAL_PATH:
     env_path += os.environ.get('SECURE_LOCAL_PATH')
 
 if os.environ.get('ENV_FILE', None):
@@ -226,22 +228,6 @@ STATICFILES_FINDERS = (
 # Make this unique, and don't share it with anybody.
 SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', '')
 
-SECURE_HSTS_INCLUDE_SUBDOMAINS = (os.environ.get('SECURE_HSTS_INCLUDE_SUBDOMAINS','True') == 'True')
-SECURE_HSTS_PRELOAD = (os.environ.get('SECURE_HSTS_PRELOAD','True') == 'True')
-SECURE_HSTS_SECONDS = int(os.environ.get('SECURE_HSTS_SECONDS','3600'))
-
-MIDDLEWARE = [
-    'django.middleware.security.SecurityMiddleware',
-    'django.middleware.common.CommonMiddleware',
-    'django.contrib.sessions.middleware.SessionMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
-    'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'adminrestrict.middleware.AdminPagesRestrictMiddleware',
-    'django.contrib.messages.middleware.MessageMiddleware',
-    # Uncomment the next line for simple clickjacking protection:
-    'django.middleware.clickjacking.XFrameOptionsMiddleware'
-]
-
 INSTALLED_APPS = (
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -402,7 +388,7 @@ if IS_DEV:
 ##########################
 
 # Path to application runtime JSON key
-GOOGLE_APPLICATION_CREDENTIALS  = os.path.join(os.path.dirname(__file__), os.environ.get('GOOGLE_APPLICATION_CREDENTIALS')) if os.environ.get('GOOGLE_APPLICATION_CREDENTIALS') else ''
+GOOGLE_APPLICATION_CREDENTIALS  = join(dirname(__file__), '{}{}'.format(SECURE_LOCAL_PATH,os.environ.get('GOOGLE_APPLICATION_CREDENTIALS', '')))
 
 # OAuth2 client ID for the API
 API_CLIENT_ID                   = os.environ.get('API_CLIENT_ID', '') # Client ID for the API
@@ -411,7 +397,7 @@ API_CLIENT_ID                   = os.environ.get('API_CLIENT_ID', '') # Client I
 MONITORING_SA_CLIENT_EMAIL            = os.environ.get('MONITORING_SA_CLIENT_EMAIL', '')
 
 # GCP monitoring Service Account key
-MONITORING_SA_ACCESS_CREDENTIALS      = os.environ.get('MONITORING_SA_ACCESS_CREDENTIALS', '')
+MONITORING_SA_ACCESS_CREDENTIALS      = join(dirname(__file__), '{}{}'.format(SECURE_LOCAL_PATH,os.environ.get('MONITORING_SA_ACCESS_CREDENTIALS', '')))
 
 #################################
 #   For NIH/eRA Commons login   #
