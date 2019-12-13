@@ -21,7 +21,7 @@ from pathlib import Path
 from dotenv import load_dotenv
 from socket import gethostname, gethostbyname
 
-SECURE_LOCAL_PATH = os.environ.get('SECURE_LOCAL_PATH', None)
+SECURE_LOCAL_PATH = os.environ.get('SECURE_LOCAL_PATH', '')
 
 env_path = ''
 env_file = '.env'
