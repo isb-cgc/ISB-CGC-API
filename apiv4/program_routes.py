@@ -20,7 +20,7 @@ from flask import jsonify, request
 from apiv4 import app
 from django.conf import settings
 from django.db import close_old_connections
-from program_views import get_programs
+from program_views import get_cohort_programs, get_dataset_for_reg
 from api_logging import *
 
 logger = logging.getLogger(settings.LOGGER_NAME)
@@ -28,36 +28,59 @@ logger = logging.getLogger(settings.LOGGER_NAME)
 
 @app.route('/v4/programs/', methods=['GET'], strict_slashes=False)
 def programs():
-    """Retrieve the list of programs and builds currently available for cohort creation."""
+    response = jsonify({
+        'code': 405,
+        'message': "The 'programs' path has been deprecated in version 4.1 in favor of /data/availabile and subroutes."
+    })
+
+    response.status_code=405
+
+    return response
+
+@app.route('/v4/data/available/', methods=['GET'], strict_slashes=False)
+def data(routes=None):
+    """Retrieve the list of all data available via ISB-CGC"""
     response = None
+    response_obj = {}
+    response_code = None
 
     st_logger.write_text_log_entry(log_name, activity_message.format(request.method, request.full_path))
-
-    try:
     
-        program_info = get_programs()
-        
-        if program_info:   
-            response = jsonify({
-                'code': 200,
-                'data': program_info
-            })
-            response.status_code = 200
-        else:
-            response = jsonify({
-                'code': 500,
-                'message': 'Encountered an error while retrieving the program list.'
-            })
-            response.status_code = 500
+    try:
+        if not routes or 'cohorts' in routes:
+            program_info = get_cohort_programs()
+            response_obj['programs_for_cohorts'] = program_info if program_info and len(program_info) > 0 else 'None found'
+
+        if not routes or 'registration' in routes:
+            reg_info = get_dataset_for_reg()
+            response_obj['datasets_for_registration'] = reg_info if reg_info and len(reg_info) > 0 else 'None found'
+
+        response_code = 200
     except Exception as e:
-        logger.error("[ERROR] While retrieving program information:")
+        logger.error("[ERROR] While retrieving data availability:")
         logger.exception(e)
-        response = jsonify({
-            'code': 500,
-            'message': 'Encountered an error while retrieving the program list.'
-        })
-        response.status_code = 500
+        response_obj = {
+            'message': 'Encountered an error while retrieving data availability.'
+        }
+        response_code = 500
     finally:
         close_old_connections()
-        
+
+    response_obj['code'] = response_code
+    response = jsonify(response_obj)
+    response.status_code = response_code
+
     return response
+
+
+@app.route('/v4/data/available/registration/', methods=['GET'], strict_slashes=False)
+def data_for_reg():
+    """Retrieve the list of all data available for GCP project and service account registration via ISB-CGC"""
+    return data(['registration'])
+
+
+@app.route('/v4/data/available/cohorts/', methods=['GET'], strict_slashes=False)
+def data_for_cohorts():
+    """Retrieve the list of all data available for cohort creation via ISB-CGC"""
+    return data(['cohorts'])
+

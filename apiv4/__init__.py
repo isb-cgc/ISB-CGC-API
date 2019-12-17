@@ -25,6 +25,7 @@ from flask_cors import cross_origin
 from flask_talisman import Talisman
 
 app = Flask(__name__, static_folder='api_static')
+
 Talisman(app, strict_transport_security_max_age=300, content_security_policy={
     'default-src': [
         '\'self\'',
@@ -46,6 +47,7 @@ from program_routes import *
 from sample_case_routes import *
 from file_routes import *
 from user_routes import *
+from deprecated.user_routes import *
 
 logger = logging.getLogger(settings.LOGGER_NAME)
 
@@ -56,7 +58,6 @@ def utilities():
         json_spec = ""
         try:
             yaml = ruamel.yaml.YAML(typ='safe')
-            logger.debug(os.path.split(os.path.abspath(dirname(__file__)))[0] + '/openapi-appengine.yaml')
             with open(os.path.split(os.path.abspath(dirname(__file__)))[0] + '/openapi-appengine.yaml') as fpi:
                 data = yaml.load(fpi)
                 del data['paths']['/swagger']

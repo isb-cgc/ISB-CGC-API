@@ -16,7 +16,7 @@
 
 import logging
 import json
-from flask import jsonify, request, render_template
+from flask import jsonify, request, render_template, redirect, url_for
 from django.conf import settings
 from apiv4 import app
 from api_logging import *
@@ -31,12 +31,12 @@ def apiv4():
     """Base response"""
 
     st_logger.write_text_log_entry(log_name, activity_message.format(request.method, request.full_path))
-
+    
     response = jsonify({
         'code': 200,
         'message': 'Welcome to the ISB-CGC API, Version 4.',
         'documentation': 'SwaggerUI interface available at <{}/swagger/>.'.format(settings.BASE_API_URL) +
-             'Documentation available at <https://isb-cancer-genomics-cloud.readthedocs.io/en/latest/sections/progapi/Programmatic-API.html>'
+             'Documentation available at <https://isb-cancer-genomics-cloud.readthedocs.io/en/latest/sections/progapi/progAPI-v4/Programmatic-Demo.html>'
     })
     response.status_code = 200
     return response

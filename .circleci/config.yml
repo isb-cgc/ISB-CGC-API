@@ -121,6 +121,7 @@ jobs:
             - ./Dockerfile
             - ./app.yaml
             - ./openapi-appengine.yaml
+            - ./gunicorn.conf.py
             - ./settings.py
             - ./txt
             - ./json

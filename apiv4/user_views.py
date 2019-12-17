@@ -27,6 +27,7 @@ from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 from django.conf import settings
 
 from accounts.sa_utils import auth_dataset_whitelists_for_user
+from accounts.dcf_support import verify_sa_at_dcf, register_sa_at_dcf
 from accounts.utils import register_or_refresh_gcp, verify_gcp_for_reg, api_gcp_delete, get_user_gcps
 from accounts.models import AuthorizedDataset
 from projects.models import Program
@@ -79,34 +80,34 @@ def gcp_info(user, gcp_id=None):
 
 def gcp_validation(user, gcp_id, refresh=False):
     validation = None
+    result = {}
 
     try:
         validation, status = verify_gcp_for_reg(user, gcp_id, refresh)
 
-        logger.info("Validation result: {}".format(str(validation)))
-
         if validation:
+
             if 'roles' in validation:
-                unregs = [x for x in validation['roles'] if not validation['roles'][x]['registered_user']]
-
+                result['registered_users'] = [{'email': x, 'project_roles': validation['roles'][x]['roles']} for x in validation['roles'] if validation['roles'][x]['registered_user']]
+                unregs = [{'email': x, 'project_roles': validation['roles'][x]['roles']} for x in validation['roles'] if not validation['roles'][x]['registered_user']]
                 if len(unregs):
-                    validation['notes'] = "The following users are not registered in our system. Please note that if GCP {} ".format(gcp_id) + \
-                       "is intended for use with controlled access data, all users must log in to the ISB-CGC " + \
+                    result['unregistered_users'] = unregs
+                    result['notes'] = "Users listed under 'unregistered users' are not registered in the ISB-CGC WebApp. Please note that if GCP Project {} ".format(gcp_id) + \
+                       "is intended for use with controlled access data, all users on the project must log in to the ISB-CGC " + \
                        "web application at <https://isb-cgc.appspot.com> and link their Google Account to their eRA " + \
-                       "Commons ID. The link to do so is found in Account Settings. Unregistered users: " + \
-                       "{}".format("; ".join(unregs))
+                       "Commons ID. The link to do so is found in Account Settings."
 
-                if 'message' not in validation:
-                    validation['message'] = "Google Cloud Platform project ID {} was successfully validated for registration.".format(gcp_id)
-
+            result['message'] = "Google Cloud Platform project ID {} was successfully validated for registration.".format(gcp_id) \
+                if 'message' not in validation else validation['message']
+            result['gcp_project_id'] = validation['gcp_id']
         else:
-            logger.warn("[WARNING] Validation of {} by user {} was unsuccessful!".format(gcp_id, user.email))
+            logger.warn("[WARNING] Validation of GCP ID {} by user {} was unsuccessful!".format(gcp_id, user.email))
 
     except Exception as e:
         logger.error("[ERROR] While attempting to validate a project for registration:")
         logger.exception(e)
 
-    return validation
+    return result
 
 
 def gcp_registration(user, gcp_id, refresh):
@@ -117,18 +118,20 @@ def gcp_registration(user, gcp_id, refresh):
         validation = gcp_validation(user, gcp_id, refresh)
 
         if validation:
-            if 'roles' in validation:
+            if 'users' in validation:
 
-                registered_users = [x for x, y in validation['roles'].items() if y['registered_user']]
+                registered_users = [x for x, y in validation['users'].items() if y['registered_user']]
                 registration, status = register_or_refresh_gcp(user, gcp_id, registered_users, refresh)
-                logger.info("Registration: {}".format(str(registration)))
 
                 if status == 200:
                     success = True
+                    registration['registered_users'] = validation['registered_users']
                     if 'notes' in validation:
                         registration['notes'] = validation['notes']
                     if 'message' not in registration:
                         registration['message'] = "Google Cloud Platform project ID {} was successfully {}.".format(gcp_id, 'refreshed' if refresh else 'registered')
+                    if 'unregistered_users' in validation:
+                        registration['unregistered_users'] = validation['unregistered_users']
             else:
                 registration = validation
                 logger.warn("[WARNING] Validation of {} by user {} was unsuccessful! This project was not {}".format(gcp_id, user.email, 'refreshed' if refresh else 'registered'))
@@ -137,7 +140,7 @@ def gcp_registration(user, gcp_id, refresh):
             logger.warn("[WARNING] Validation of {} by user {} was unsuccessful!".format(gcp_id, user.email))
     
     except Exception as e:
-        logger.error("[ERROR] While registering a GCP:")
+        logger.error("[ERROR] While registering GCP ID {}:".format(gcp_id))
         logger.exception(e)
 
     return registration, success
@@ -157,8 +160,51 @@ def gcp_unregistration(user, gcp_id):
         else:
             logger.warn("[WARNING] Unregistration of {} by user {} was unsuccessful!".format(gcp_id, user.email))
 
+        unreg['gcp_project_id'] = gcp_id
+
     except Exception as e:
         logger.error("[ERROR] While unregistering a GCP:")
         logger.exception(e)
 
     return unreg, success
+
+
+def sa_info(user, gcp_id=None, sa_id=None):
+    return None
+
+
+def sa_registration(user, gcp_id=None, sa_id=None, action=None):
+
+    result = {}
+
+    try:
+        request_data = request.get_json()
+        sa_id = request_data['sa_id'] if 'sa_id' in request_data and not sa_id else None
+        datasets = request.args.get('datasets', default=None, type=str).split(',') if 'datasets' in request.args else None
+
+        if not sa_id:
+            raise Exception("Service Account ID not provided!")
+        
+        if not len(datasets):
+            raise Exception("Dataset list not provided!")
+
+        result = verify_sa_at_dcf(user, gcp_id, sa_id, datasets, {})
+
+    except RefreshTokenExpired as e:
+        logger.error("[ERROR] RefreshTokenExpired for user {} registering SA ID {}".format(user.email,sa_id))
+        result['message'] = "Your DCF login has expired. Please go to our web application at https://isb-cgc.appspot.com and refresh your DCF login, then try to register your Service Account again."
+    except TokenFailure as e:
+        logger.error("[ERROR] TokenFailure for user {} registering SA ID {}".format(user.email,sa_id))
+        result['message'] = "Your DCF login has expired or been disconnected. Please go to our web application at https://isb-cgc.appspot.com and renew your DCF login, then try to register your Service Account again."
+    except Exception as e:
+        logger.error("[ERROR] While registering service account {}:".format(sa_id))
+        logger.exception(e)
+        result['message'] = "Encountered a server error while attempting to register service account {}. Please contact the administrator.".format(sa_id)
+
+    return result
+
+
+def sa_unregistration(user, gcp_id=None, sa_id=None):
+    return None
+
+
