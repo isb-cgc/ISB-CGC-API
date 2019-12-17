@@ -36,7 +36,7 @@ def apiv4():
         'code': 200,
         'message': 'Welcome to the ISB-CGC API, Version 4.',
         'documentation': 'SwaggerUI interface available at <{}/swagger/>.'.format(settings.BASE_API_URL) +
-             'Documentation available at <https://isb-cancer-genomics-cloud.readthedocs.io/en/latest/sections/progapi/Programmatic-API.html>'
+             'Documentation available at <https://isb-cancer-genomics-cloud.readthedocs.io/en/latest/sections/progapi/progAPI-v4/Programmatic-Demo.html>'
     })
     response.status_code = 200
     return response
