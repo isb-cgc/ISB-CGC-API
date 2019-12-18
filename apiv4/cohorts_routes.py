@@ -42,10 +42,7 @@ def cohort(cohort_id):
         response_obj = None
 
         if not user:
-            response_obj = {
-                'message': 'Encountered an error while attempting to identify this user.'
-            }
-            code = 500
+            raise Exception('Encountered an error while attempting to identify this user.')
         else:
             if cohort_id <= 0:
                 logger.warn("[WARNING] Invalid cohort ID {}".format(str(cohort_id)))
@@ -62,12 +59,8 @@ def cohort(cohort_id):
                     cohort_info = edit_cohort(cohort_id, user, delete=(request.method == 'DELETE'))
 
                 if cohort_info:
-                    response_obj['data'] = cohort_info
-
-                    if 'message' in cohort_info:
-                        code = 400
-                    else:
-                        code = 200
+                    response_obj = {'data': cohort_info}
+                    code = 400 if 'message' in cohort_info else 200
                 else:
                     response_obj = {
                         'message': "Cohort ID {} was not found.".format(str(cohort_id))
@@ -111,36 +104,23 @@ def cohorts():
         user = validate_user(user_info['email'])
 
         if not user:
-            response_obj = {
-                'code': 500,
-                'message': 'Encountered an error while attempting to identify this user.'
-            }
-            code = 500
+            raise Exception('Encountered an error while attempting to identify this user.')
         else:
             st_logger.write_text_log_entry(log_name, user_activity_message.format(user_info['email'], request.method, request.full_path))
-            if request.method == 'GET':
-                info = get_cohorts(user_info['email'])
-            else:
-                info = create_cohort(user)
+            info = get_cohorts(user_info['email']) if request.method == 'GET' else create_cohort(user)
 
             if info:
-                response_obj = {}
+                response_obj = {
+                    'data': info
+                }
 
-                if 'message' in info:
-                    code = 400
-                else:
-                    code = 200
-
-                response_obj['data'] = info
+                code = 400 if 'message' in info else 200
 
             # Lack of a valid object means something went wrong on the server
             else:
-                response_obj = {
-                    'message': "Error while attempting to {}.".format(
-                        'retrieve the cohort list' if request.method == 'GET' else 'create this cohort'
-                    )
-                }
-                code = 500
+                raise Exception("Invalid response while attempting to {}.".format(
+                    'retrieve the cohort list' if request.method == 'GET' else 'create this cohort'
+                ))
 
     except UserValidationException as e:
         response_obj = {
@@ -161,7 +141,7 @@ def cohorts():
     response_obj['code'] = code
     response = jsonify(response_obj)
     response.status_code = code
-
+        
     return response
 
 
@@ -180,10 +160,7 @@ def cohort_file_manifest(cohort_id):
         user = validate_user(user_info['email'], cohort_id)
 
         if not user:
-            response_obj = {
-                'message': 'Encountered an error while attempting to identify this user.'
-            }
-            code = 500
+            raise Exception('Encountered an error while attempting to identify this user.')
         else:
             if cohort_id <= 0:
                 logger.warn("[WARNING] Invalid cohort ID {}".format(str(cohort_id)))
@@ -205,10 +182,7 @@ def cohort_file_manifest(cohort_id):
                             'data': file_manifest
                         }
                 else:
-                    response_obj = {
-                        'message': "Error while attempting to retrieve file manifest for cohort {}.".format(str(cohort_id))
-                    }
-                    code = 500
+                    raise Exception("Invalid response while attempting to retrieve file manifest for cohort {}.".format(str(cohort_id)))
 
     except UserValidationException as e:
         response_obj = {
@@ -256,11 +230,8 @@ def cohort_preview():
                 
         # Lack of a valid object means something went wrong on the server
         else:
-            response_obj = {
-                'message': "Error while attempting to retrieve case and sample counts for these filters."
-            }
-            code = 500
-            
+            raise Exception("Invalid response while attempting to retrieve case and sample counts for these filters.")
+
     except Exception as e:
         logger.exception(e)
         response_obj = {
