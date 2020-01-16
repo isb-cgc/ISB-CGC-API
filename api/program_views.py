@@ -18,7 +18,7 @@ import logging
 
 from django.conf import settings
 
-from projects.models import Program, Project
+from idc_collections.models import Program, Collection
 
 logger = logging.getLogger(settings.LOGGER_NAME)
 

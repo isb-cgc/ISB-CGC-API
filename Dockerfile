@@ -76,6 +76,6 @@ RUN echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] http://packages.c
 # Install the Python Libraries
 RUN apt-get -y install google-cloud-sdk-app-engine-python
 
-ENV PYTHONPATH=/app:/app/apiv4:/app/lib:/app/ISB-CGC-Common:${PYTHONPATH}
+ENV PYTHONPATH=/app:/app/apiv4:/app/lib:/app/IDC-Common:${PYTHONPATH}
 
 CMD gunicorn -b :$PORT apiv4:app -w 3 -t 130

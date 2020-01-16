@@ -1,4 +1,4 @@
-# 
+#
 # Copyright 2019, Institute for Systems Biology
 # 
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,11 +17,16 @@
 import logging
 import json
 from flask import jsonify, request
-from api import app
+#from api import app
 from django.conf import settings
 from django.db import close_old_connections
-from auth import validate_user, UserValidationException
-from file_views import get_file_paths, get_signed_uris
+from . auth import validate_user, UserValidationException
+from . file_views import get_file_paths, get_signed_uris
+
+from flask import Blueprint
+from flask import g
+
+file_bp = Blueprint('file_bp', __name__, url_prefix='/v1')
 
 logger = logging.getLogger(settings.LOGGER_NAME)
 
@@ -117,7 +122,7 @@ logger = logging.getLogger(settings.LOGGER_NAME)
 #     return response
 
 
-@app.route('/v1/files/paths/<file_uuid>/', methods=['GET'], strict_slashes=False)
+@file_bp.route('/files/paths/<file_uuid>/', methods=['GET'], strict_slashes=False)
 def file_path(file_uuid):
     resp_obj = None
     code = None
@@ -158,7 +163,7 @@ def file_path(file_uuid):
     return response
 
 
-@app.route('/v1/files/paths/', methods=['POST'], strict_slashes=False)
+@file_bp.route('/files/paths/', methods=['POST'], strict_slashes=False)
 def file_path_list():
 
     response_obj = None
@@ -199,4 +204,3 @@ def file_path_list():
     response.status_code = code
         
     return response
-

@@ -76,7 +76,7 @@ jobs:
   build_job:
     environment:
       TZ: "/usr/share/zoneinfo/America/Los_Angeles"
-    working_directory: ~/ISB-CGC-API
+    working_directory: ~/IDC-API
     docker:
       - image: circleci/python:3.7.0-stretch
       - image: circleci/mysql:5.7
@@ -117,7 +117,7 @@ jobs:
           paths:
             - ./api
             - ./shell
-            - ./ISB-CGC-Common
+            - ./IDC-Common
             - ./Dockerfile
             - ./app.yaml
             - ./openapi-appengine.yaml
@@ -131,7 +131,7 @@ jobs:
       TZ: "/usr/share/zoneinfo/America/Los_Angeles"
     docker:
       - image: circleci/python:3.7.0-stretch
-    working_directory: ~/ISB-CGC-API
+    working_directory: ~/IDC-API
     steps:
       - restore_cache:
           keys:

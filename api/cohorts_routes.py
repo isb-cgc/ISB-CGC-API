@@ -13,20 +13,23 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
 import logging
 import json
 from flask import jsonify, request
-from api import app
-from cohorts_views import get_cohort_info, get_cohorts, get_file_manifest, get_cohort_counts, create_cohort, edit_cohort
-from auth import auth_info, UserValidationException, validate_user
+#from api import app
+from . cohorts_views import get_cohort_info, get_cohorts, get_file_manifest, get_cohort_counts, create_cohort, edit_cohort
+from . auth import auth_info, UserValidationException, validate_user
 from django.conf import settings
 from django.db import close_old_connections
 
 logger = logging.getLogger(settings.LOGGER_NAME)
 
+from flask import Blueprint
+from flask import g
 
-@app.route('/v1/cohorts/<int:cohort_id>/', methods=['GET', 'PATCH', 'DELETE'], strict_slashes=False)
+cohorts_bp = Blueprint('cohorts_bp', __name__, url_prefix='/v1')
+
+@cohorts_bp.route('/cohorts/<int:cohort_id>/', methods=['GET', 'DELETE'], strict_slashes=False)
 def cohort(cohort_id):
     """
     GET: Retrieve extended information for a specific cohort
@@ -91,7 +94,7 @@ def cohort(cohort_id):
     return response
 
 
-@app.route('/v1/cohorts/', methods=['GET', 'POST'], strict_slashes=False)
+@cohorts_bp.route('/cohorts/', methods=['GET', 'POST'], strict_slashes=False)
 def cohorts():
     """
     GET: Retrieve a user's list of cohorts
@@ -161,8 +164,7 @@ def cohorts():
         
     return response
 
-
-@app.route('/v1/cohorts/<int:cohort_id>/file_manifest/', methods=['POST', 'GET'], strict_slashes=False)
+@cohorts_bp.route('/cohorts/<int:cohort_id>/file_manifest/', methods=['POST', 'GET'], strict_slashes=False)
 def cohort_file_manifest(cohort_id):
     """
     GET: Retrieve a cohort's file manifest
@@ -220,7 +222,7 @@ def cohort_file_manifest(cohort_id):
     return response
 
 
-@app.route('/v1/cohorts/preview/', methods=['POST'], strict_slashes=False)
+@cohorts_bp.route('/cohorts/preview/', methods=['POST'], strict_slashes=False)
 def cohort_preview():
     """List the samples, cases, and counts a given set of cohort filters would produce"""
 

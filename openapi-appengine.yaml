@@ -4,7 +4,8 @@ info:
   description: "IDC API Endpoints, version 1"
   title: "IDC API"
   version: "4.0"
-host: "api-dot-idc-dev.appspot.com"
+#host: "api-dot-idc-dev.appspot.com"
+host: "127.0.0.1:8095"
 basePath: "/v1"
 # [END swagger]
 consumes:
@@ -12,7 +13,15 @@ consumes:
 produces:
 - "application/json"
 schemes:
-- "https"
+#- "https"
+- "http"
+tags:
+  - name: default
+  - name: cohorts
+  - name: collections
+  - name: manifest
+  - name: query
+  - name: users
 paths:
   /about:
     get:
@@ -58,80 +67,143 @@ paths:
           schema:
             $ref: "#/definitions/errorMessage"
 
-  /programs:
+  /collections:
     get:
-      description: "Get a list of the available programs."
-      operationId: "getPrograms"
+      description: "Get a list of the available collections and versions of each."
+      tags:
+        - collections
+      operationId: "getCollections"
       produces:
         - "application/json"
       responses:
         200:
-          description: "A list of the programs available in this API."
+          description: "A list of the collections available in this API with versions."
           schema:
-            $ref: "#/definitions/programListResponse"
+            $ref: "#/definitions/collectionListResponse"
         500:
           description: "Server error message"
           schema:
             $ref: "#/definitions/errorMessage"
 
-  /cohorts:
+  # Different versions of a collection can have different fields
+  /collections/{collection_id}/{version}:
     get:
-      description: "Get a list of the user's cohorts."
-      operationId: "getCohorts"
-      produces:
-        - "application/json"
-      responses:
-        200:
-          description: "A list of the user's cohorts."
-          schema:
-            $ref: "#/definitions/cohortListResponse"
-        500:
-          description: "Server error message"
-          schema:
-            $ref: "#/definitions/errorMessage"
-      security:
-        - google_id_token: []
-    post:
-      description: "Save the supplied filter set as a cohort."
-      operationId: "cohortCreate"
+      description: "Get list of the fields in a version of a collection"
+      tags:
+        - collections
+      operationId: "getFields"
       consumes:
         - "application/json"
       produces:
         - "application/json"
       parameters:
-        - in: body
-          name: "cohort_def"
+        - name: collection_id
+          in: path
+          description: "Collection ID"
+          type: string
           required: true
-          description: "Filters, name, and description used to create this cohort."
-          schema:
-            $ref: "#/definitions/cohortDefinition"
+        - name: version
+          in: path
+          description: "Version"
+          type: string
+          required: true
       responses:
         200:
-          description: "Summary information about the cohort generated."
+          description: "A list of the fields in a specific version of a collection"
           schema:
-            $ref: "#/definitions/cohortResponse"
+            $ref: "#/definitions/collectionFieldsResponse"
         500:
           description: "Server error message"
           schema:
             $ref: "#/definitions/errorMessage"
-      security:
-        - google_id_token: []
 
-  /cohorts/{cohort_id}:
+  /collections/{collection_id}/{version}/{field_name}:
     get:
-      description: "Get information for the specified cohort."
-      operationId: "getCohort"
+      description: "Get metadata for a field in a version of a collection"
+      tags:
+        - collections
+      operationId: "getFields"
+      consumes:
+        - "application/json"
       produces:
         - "application/json"
       parameters:
-        - name: cohort_id
+        - name: collection_id
           in: path
-          description: "Numeric IDC Cohort ID"
-          type: integer
+          description: "Collection ID"
+          type: string
           required: true
+        - name: version
+          in: path
+          description: "Version"
+          type: string
+          required: true
+        - name: field_name
+          in: path
+          description: "Field Name"
+          type: string
+          required: true
+      responses:
+        200:
+          description: "Metadata for a field in a collection"
+          schema:
+            $ref: "#/definitions/collectionFieldMetadataResponse"
+        500:
+          description: "Server error message"
+          schema:
+            $ref: "#/definitions/errorMessage"
+
+  /cohorts/preview:
+    post:
+      description: "Preview the files that a cohort would have, given on a supplied filter set."
+      tags:
+        -   cohorts
+      operationId: "cohortPreview"
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - name: "filter"
+          in: body
+          required: true
+          description: "Filter to apply to this cohort preview."
+          schema:
+            type: "object"
+            properties:
+              filter:
+                $ref: "#/definitions/filterSet"
+        - name: case_insensitive
+          in: query
+          description: "BigQuery string comparisons are case sensitive by default - this will perform string comparisons without case sensitivity."
+          type: string
+          required: false
+          default: "True"
+          enum: ["True", "False"]
+        - name: include_filter
+          in: query
+          description: "If True, return the filter that defines this cohort."
+          type: string
+          required: false
+          default: "True"
+          enum: ["True", "False"]
         - name: include_files
           in: query
-          description: "Boolean as a string indicating if the list of files matching this cohort's filters should be included."
+          description: "If True, return the list of files matching this cohort's filters."
+          type: string
+          required: false
+          default: "True"
+          enum: ["True", "False"]
+        - name: include_DOIs
+          in: query
+          description: "If True, return a digital object identifiers for each study, series and instance in the cohort."
+          type: string
+          required: false
+          default: "True"
+          enum: ["True", "False"]
+        - name: include_URLs
+          in: query
+          description: "If True, return one or more URLs for each study, series and instance in the cohort."
           type: string
           required: false
           default: "True"
@@ -158,6 +230,52 @@ paths:
           required: false
           default: 0
           minimum: 0
+      responses:
+        200:
+          description: "Information about the specified cohort"
+          schema:
+            $ref: "#/definitions/cohortDefinition"
+        500:
+          description: "Server error message"
+          schema:
+            $ref: "#/definitions/errorMessage"
+
+  /cohorts:
+    get:
+      description: "Get metadata on the user's cohorts."
+      tags:
+        - cohorts
+      operationId: "getCohorts"
+      produces:
+        - "application/json"
+      responses:
+        200:
+          description: "A list of the user's cohorts."
+          schema:
+            $ref: "#/definitions/cohortList"
+        500:
+          description: "Server error message"
+          schema:
+            $ref: "#/definitions/errorMessage"
+      security:
+        - google_id_token: []
+
+    post:
+      description: "Save the supplied filter set as a cohort."
+      tags:
+        -   cohorts
+      operationId: "cohortCreate"
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - in: body
+          name: "cohort_def"
+          required: true
+          description: "Filters, name, and description used to create this cohort."
+          schema:
+            $ref: "#/definitions/cohortSpec"
         - name: case_insensitive
           in: query
           description: "BigQuery string comparisons are case sensitive by default - this will perform string comparisons without case sensitivity."
@@ -165,22 +283,74 @@ paths:
           required: false
           default: "True"
           enum: ["True", "False"]
+        - name: include_filter
+          in: query
+          description: "If True, return the filter that defines this cohort."
+          type: string
+          required: false
+          default: "True"
+          enum: ["True", "False"]
+        - name: include_files
+          in: query
+          description: "If True, return the list of files matching this cohort's filters."
+          type: string
+          required: false
+          default: "True"
+          enum: ["True", "False"]
+        - name: include_DOIs
+          in: query
+          description: "If True, return a digital object identifiers study, series and instance in the cohort."
+          type: string
+          required: false
+          default: "True"
+          enum: ["True", "False"]
+        - name: include_URLs
+          in: query
+          description: "If True, return one or more URLs for for each each study, series and instance in the cohort."
+          type: string
+          required: false
+          default: "True"
+          enum: ["True", "False"]
+        - name: fetch_count
+          in: query
+          description: "The number of file entries to retrieve this call."
+          type: integer
+          required: false
+          default: 5000
+          minimum: 1
+          maximum: 40000
+        - name: page
+          in: query
+          description: "The page, in per fetch count file entries (def. 5000 if not provided), to retrieve."
+          type: integer
+          required: false
+          default: 1
+          minimum: 1
+        - name: offset
+          in: query
+          description: "The number of file entries to skip in the return set."
+          type: integer
+          required: false
+          default: 0
+          minimum: 0
       responses:
         200:
-          description: "Information about the specified cohort"
+          description: "Summary information about the cohort generated."
           schema:
-            $ref: "#/definitions/cohortResponse"
+            $ref: "#/definitions/cohortDefinition"
         500:
           description: "Server error message"
           schema:
             $ref: "#/definitions/errorMessage"
       security:
         - google_id_token: []
-    patch:
-      description: "Update the specified cohort using the supplied information."
-      operationId: "cohortEdit"
-      consumes:
-        - "application/json"
+
+  /cohorts/{cohort_id}:
+    get:
+      description: "Get information for the specified cohort."
+      tags:
+        -   cohorts
+      operationId: "getCohort"
       produces:
         - "application/json"
       parameters:
@@ -189,17 +359,61 @@ paths:
           description: "Numeric IDC Cohort ID"
           type: integer
           required: true
-        - name: "cohort_def"
-          in: body
-          required: true
-          description: "Definitions to use in editing this cohort"
-          schema:
-            $ref: "#/definitions/cohortDefinition"
+        - name: include_filter
+          in: query
+          description: "If True, return the filter that defines this cohort."
+          type: string
+          required: false
+          default: "True"
+          enum: ["True", "False"]
+        - name: include_files
+          in: query
+          description: "If True, return the list of files matching this cohort's filters."
+          type: string
+          required: false
+          default: "True"
+          enum: ["True", "False"]
+        - name: include_DOIs
+          in: query
+          description: "If True, return a digital object identifiers for each study, series and instance in the cohort."
+          type: string
+          required: false
+          default: "True"
+          enum: ["True", "False"]
+        - name: include_URLs
+          in: query
+          description: "If True, return one or more URLs for each study, series and instance in the cohort."
+          type: string
+          required: false
+          default: "True"
+          enum: ["True", "False"]
+        - name: fetch_count
+          in: query
+          description: "The number of file entries to retrieve this call."
+          type: integer
+          required: false
+          default: 5000
+          minimum: 1
+          maximum: 40000
+        - name: page
+          in: query
+          description: "The page, in per fetch count file entries (def. 5000 if not provided), to retrieve."
+          type: integer
+          required: false
+          default: 1
+          minimum: 1
+        - name: offset
+          in: query
+          description: "The number of file entries to skip in the return set."
+          type: integer
+          required: false
+          default: 0
+          minimum: 0
       responses:
         200:
-          description: "Summary information about the cohort's current status."
+          description: "Information about the specified cohort"
           schema:
-            $ref: "#/definitions/cohortResponse"
+            $ref: "#/definitions/cohortDefinition"
         500:
           description: "Server error message"
           schema:
@@ -208,6 +422,8 @@ paths:
         - google_id_token: []
     delete:
       description: "Delete the specified cohort."
+      tags:
+        -   cohorts
       operationId: "cohortDelete"
       produces:
         - "application/json"
@@ -217,11 +433,61 @@ paths:
           description: "Numeric IDC Cohort ID"
           type: integer
           required: true
+        - name: include_filter
+          in: query
+          description: "If True, return the filter that defines this cohort."
+          type: string
+          required: false
+          default: "False"
+          enum: ["True", "False"]
+        - name: include_files
+          in: query
+          description: "If True, return the list of files matching this cohort's filters."
+          type: string
+          required: false
+          default: "False"
+          enum: ["True", "False"]
+        - name: include_DOIs
+          in: query
+          description: "If True, return a digital object identifiers for each study, series and instance in the cohort."
+          type: string
+          required: false
+          default: "True"
+          enum: ["True", "False"]
+        - name: include_URLs
+          in: query
+          description: "If True, return one or more URLs for each study, series and instance in the cohort."
+          type: string
+          required: false
+          default: "True"
+          enum: ["True", "False"]
+        - name: fetch_count
+          in: query
+          description: "The number of file entries to retrieve this call."
+          type: integer
+          required: false
+          default: 5000
+          minimum: 1
+          maximum: 40000
+        - name: page
+          in: query
+          description: "The page, in per fetch count file entries (def. 5000 if not provided), to retrieve."
+          type: integer
+          required: false
+          default: 1
+          minimum: 1
+        - name: offset
+          in: query
+          description: "The number of file entries to skip in the return set."
+          type: integer
+          required: false
+          default: 0
+          minimum: 0
       responses:
         200:
           description: "Summary information about the deleted cohort."
           schema:
-            $ref: "#/definitions/cohortResponse"
+            $ref: "#/definitions/cohortDefinition"
         500:
           description: "Server error message"
           schema:
@@ -229,44 +495,12 @@ paths:
       security:
         - google_id_token: []
 
-  /cohorts/preview:
-    post:
-      description: "Preview the files found in a cohort based on the supplied filter set."
-      operationId: "cohortPreview"
-      consumes:
-        - "application/json"
-      produces:
-        - "application/json"
-      parameters:
-        - name: "filters"
-          in: body
-          required: true
-          description: "Filters to apply to this cohort preview."
-          schema:
-            type: "object"
-            properties:
-              filters:
-                $ref: "#/definitions/cohortFilterSet"
-        - name: case_insensitive
-          in: query
-          description: "BigQuery string comparisons are case sensitive by default - this will perform string comparisons without case sensitivity."
-          type: string
-          required: false
-          default: "True"
-          enum: ["True", "False"]
-      responses:
-        200:
-          description: "Information about the specified cohort"
-          schema:
-            $ref: "#/definitions/cohortPreviewResponse"
-        500:
-          description: "Server error message"
-          schema:
-            $ref: "#/definitions/errorMessage"
 
   /users/account_details:
     get:
       description: "Retrieve current account information."
+      tags:
+        -   users
       operationId: "getUserAccountDetails"
       produces:
         - "application/json"
@@ -294,8 +528,470 @@ definitions:
         type: "string"
       documentation:
         type: "string"
-      code:
+#      code:
+#        type: "integer"
+
+  collectionListResponse:
+    type: "array"
+    items:
+      type: "object"
+      properties:
+        name:
+          type: "string"
+          $ref: "#/definitions/collectionNames"
+        description:
+          type: "string"
+        versions:
+          type: "array"
+          items:
+            type: "object"
+            properties:
+              version:
+                type: "string"
+              release_date:
+                type: "date"
+
+  collectionFieldsResponse:
+    type: "array"
+    items:
+      type: "string"
+
+  collectionFieldMetadataResponse:
+    type: "object"
+    properties:
+      fieldName:
+        type: "string"
+      description:
+        type: "string"
+      fieldType:
+        type: "string"
+        enum: ["string", "date", "time", "timestamp", "integer", "float", "record", "array"]
+      enumerated_values:
+        type: "array"
+        items:
+          type: "string"
+
+  cohortList:
+    type: "array"
+    items:
+      $ref: "#/definitions/cohortMetadata"
+
+  cohortMetadata:
+    type: "object"
+    properties:
+      id:
         type: "integer"
+      name:
+        type: "string"
+      description:
+        type: "string"
+      file_count:
+        type: "integer"
+      hashes:
+        type: "array"
+        items:
+          type: "object"
+          properties:
+            hashtype:
+              type: "string"
+              enum: ["md5", "sha256", "sha512"]
+            hash:
+              type: "string"
+
+  cohortDefinition:
+    type: "object"
+    properties:
+      filter:
+        $ref: "#/definitions/FilterSet"
+      data:
+        $ref: "#/definitions/cohortObject"
+#      code:
+#        type: "integer"
+#    example:
+#      name: "An example cohort name."
+#      filters:
+#        disease_code: ["BRCA","READ"]
+
+  cohortSpec:
+    type: "object"
+    properties:
+      name:
+        type: "string"
+      description:
+        type: "string"
+      filters:
+        $ref: "#/definitions/filterSet"
+
+  filterSet:
+    type: "object"
+    properties:
+      collections:
+        type: "array"
+        items:
+          "#/definitions/collection"
+      clinical:
+        $ref: "#/definitions/clinicalFilterSet"
+      imaging:
+        $ref: "#/definitions/imagingFilterSet"
+      derived:
+        $ref: "#/definitions/derivedFilterSet"
+
+  clinicalFilterSet:
+    type: "object"
+    properties:
+      disease_code:
+        type: "array"
+        items:
+          type: "string"
+      vital_status:
+        type: "array"
+        items:
+          type: "string"
+      gender:
+        type: "array"
+        items:
+          type: "string"
+      age_at_diagnosis:
+        type: "array"
+        items:
+          type: "string"
+      sample_type:
+        type: "array"
+        items:
+          type: "string"
+      tumor_tissue_site:
+        type: "array"
+        items:
+          type: "string"
+      histological_site:
+        type: "array"
+        items:
+          type: "string"
+      pathological_stage:
+        type: "array"
+        items:
+          type: "string"
+      person_neoplasm_cancer_status:
+        type: "array"
+        items:
+          type: "string"
+      neoplasm_histologic_grade:
+        type: "array"
+        items:
+          type: "string"
+      bmi:
+        type: "array"
+        items:
+          type: "string"
+      hpv_status:
+        type: "array"
+        items:
+          type: "string"
+      residual_tumor:
+        type: "array"
+        items:
+          type: "string"
+      tobacco_smoking_history:
+        type: "array"
+        items:
+          type: "string"
+      race:
+        type: "array"
+        items:
+          type: "string"
+      ethnicity:
+        type: "array"
+        items:
+          type: "string"
+      days_to_last_known_alive:
+        type: "array"
+        items:
+          type: "string"
+      menopause_status:
+        type: "array"
+        items:
+          type: "string"
+      year_of_diagnosis:
+        type: "array"
+        items:
+          type: "string"
+
+  imagingFilterSet:
+    type: "object"
+    properties:
+      Modality:
+        type: "array"
+        items:
+          $ref: "#/definitions/modalities"
+      SOPInstanceUID:
+        type: "array"
+        items:
+           type: "string"
+      StudyDescription:
+        type: "array"
+        items:
+           type: "string"
+      SeriesDescription:
+        type: "array"
+        items:
+           type: "string"
+      BodyPartExamined:
+        type: "array"
+        items:
+           type: "string"
+      ScanningSequence:
+        type: "array"
+        items:
+           type: "string"
+           enum: ["SE", "IR", "GR", "EP", "RM"]
+      SequenceVariant:
+        type: "array"
+        items:
+           type: "string"
+           enum: ["SK", "MTC", "SS", "TRSS", "SP", "MP", "OSP", "NONE"]
+      ScanOptions:
+        type: "array"
+        items:
+           type: "string"
+           enum: ["EKG", "PHY", "TOMO", "CHASE", "ROTA"]
+      SliceThickness:
+        type: "array"
+        items:
+           type: "integer"
+      SliceThickness_btw:
+        type: "array"
+        items:
+           type: "integer"
+      SliceThickness_gte:
+        type: "array"
+        items:
+           type: "integer"
+      SliceThickness_lte:
+        type: "array"
+        items:
+           type: "integer"
+
+  derivedFilterSet:
+    type: "object"
+    properties:
+
+  cohortObject:
+    type: "object"
+    properties:
+      collections:
+        type: "array"
+        items:
+          $ref: "#/definitions/collectionObject"
+
+  collectionObject:
+    type: "object"
+    properities:
+      collection:
+        type: "object"
+        properties:
+          collection_name:
+            type: "string"
+          version:
+            type: "string"
+      patients:
+        type: "array"
+        items:
+          $ref: "#/definitions/patientObject"
+
+  patientObject:
+    type: "object"
+    properities:
+      patient:
+        patient_name:
+          type: "string"
+      studies:
+        type: "array"
+        items:
+          $ref: "#/definitions/studyObject"
+
+  studyObject:
+    type: "object"
+    properities:
+      study:
+        type: "object"
+        properties:
+          StudyInstanceUID:
+            type: "string"
+          DOI:
+            type: "string"
+          AccessMethods:
+            type: "array"
+            items:
+              $ref: "#/definitions/accessMethod"
+      series:
+        type: "array"
+        items:
+          $ref: "#/definitions/seriesObject"
+
+
+  seriesObject:
+    type: "object"
+    properities:
+      series:
+        type: "object"
+        properties:
+          SeriesInstanceUID:
+            type: "string"
+          DOI:
+            type: "string"
+          AccessMethods:
+            type: "array"
+            items:
+              $ref: "#/definitions/accessMethod"
+      instances:
+        type: "array"
+        items:
+          $ref: "#/definitions/instanceObject"
+
+  instanceObject:
+    type: "object"
+    properities:
+      instance:
+        type: "object"
+        properties:
+          SOPInstanceUID:
+            type: "string"
+          DOI:
+            type: "string"
+          AccessMethods:
+            type: "array"
+            items:
+              $ref: "#/definitions/accessMethod"
+
+  collection:
+    type: "object"
+    properties:
+      name:
+        $ref: "#/definitions/collectionNames"
+      versions:
+        type: "array"
+        items:
+          type: "string"
+
+  accessMethod:
+    type: "object"
+    properties:
+      access_url:
+        type: "string"
+      region:
+        type: "string"
+      type:
+        type: "string"
+        enum: ["s3", "gs", "ftp", "gsiftp", "globus", "htsget", "https", "dcm", "file"]
+
+  collectionNames:
+    type: "string"
+    enum: [
+      "tcga_blca",
+      "tcga_brca",
+      "tcga_cesc",
+      "tcga_coad",
+      "tcga_esca",
+      "tcga_gbm",
+      "tcga_hnsc",
+      "tcga_kich",
+      "tcga_kirc",
+      "tcga_kirp",
+      "tcga_lgg",
+      "tcga_luad",
+      "tcga_kusc",
+      "tcga_ov",
+      "tcga_prad",
+      "tcga_reas",
+      "tcga_sarc",
+      "tcga_stad",
+      "tcga_thca",
+      "tcga_ucec"
+      ]
+
+  modalities:
+    type: "string"
+    enum: [
+      "CR",
+      "CT",
+      "CTPT",
+      "DX",
+      "FUSION",
+      "KO",
+      "MR",
+      "MG",
+      "NM",
+      "OT",
+      "PR",
+      "PT",
+      "REG",
+      "RTDOSE",
+      "RTPLAN",
+      "RTSTRUCT",
+      "RWV",
+      "SC",
+      "SEG",
+      "SR",
+      "US"
+      ]
+
+  anatomicalSites:
+    type: "string"
+    enum: [
+      "BREAST",
+      "ABD PEL",
+      "ABD PELV",
+      "ABDOMEN",
+      "ABDOMENPELVIS",
+      "BD CT ABD WO_W",
+      "BLADDER",
+      "BRAIN",
+      "CAP",
+      "CAROTID",
+      "CERVIX",
+      "CHEST",
+      "CHEST_ABDOMEN",
+      "CHEST_TO_PELVIS",
+      "CHESTABDPELVIS",
+      "COLON",
+      "CT 3PHASE REN",
+      "CT CHEST WO CE",
+      "CT THORAX W CNT",
+      "ESOPHAGUS",
+      "EXTREMITY",
+      "FUSION",
+      "HEAD",
+      "HEAD-NECK",
+      "HEADANDNECK",
+      "HEADNECK",
+      "HEART",
+      "J BRZUSZNA",
+      "KIDNEY",
+      "LEG",
+      "LIVER",
+      "LUMBO-SACRAL SP",
+      "LUNG",
+      "MEDIASTINUM",
+      "NECK",
+      "OVARY",
+      "PANCREAS",
+      "PELVIS",
+      "PHANTOM",
+      "PROSTATE",
+      "RECTUM",
+      "SEG",
+      "SELLA",
+      "SKULL",
+      "STOMACH",
+      "TH CT CHEST WO",
+      "THORAX_1HEAD_NE",
+      "THYROID",
+      "TSPINE",
+      "UNDEFINED",
+      "UTERUS",
+      "WO INTER"
+      ]
+
   fileMetadata:
     type: "object"
     properties:
@@ -341,15 +1037,7 @@ definitions:
         type: "string"
       type:
         type: "string"
-  cohortFilterSet:
-    type: "object"
-    properties:
-      filters:
-        $ref: "#/definitions/fileFilterSet"
-    example:
-      disease_code: ["BRCA","READ"]
-      case_gdc_id: ["",""]
-      data_format: ["SVS"]
+
   fileFilterSet:
     type: "object"
     properties:
@@ -479,64 +1167,7 @@ definitions:
           type: "string"
     example:
       data_format: ["SVS"]
-  cohortPreview:
-    type: "object"
-    properties:
-      file_count:
-        type: integer
-      files:
-        type: array
-        items:
-          $ref: "#/definitions/fileMetadata"
-      msg:
-        type: string
-      provided_filters:
-        $ref: "#/definitions/fileFilterSet"
-  cohortPreviewResponse:
-    type: "object"
-    properties:
-      data:
-        $ref: "#/definitions/cohortPreview"
-      code:
-        type: "integer"
-  cohortDescription:
-    type: "object"
-    properties:
-      id:
-        type: integer
-      name:
-        type: "string"
-      file_count:
-        type: integer
-      files:
-        type: array
-        items:
-          $ref: "#/definitions/fileMetadata"
-      filters:
-        $ref: "#/definitions/fileFilterSet"
-      permission:
-        type: "string"
-    required:
-      - id
-      - name
-  cohortDefinition:
-    type: "object"
-    properties:
-      name:
-        type: "string"
-      filters:
-        $ref: "#/definitions/cohortFilterSet"
-    example:
-      name: "An example cohort name."
-      filters:
-        diease_code: ["BRCA","READ"]
-  filePath:
-    type: "object"
-    properties:
-      uuid:
-        type: "string"
-      gcs_path:
-        type: "string"
+
   filePathResponse:
     type: "object"
     properties:
@@ -552,53 +1183,16 @@ definitions:
         type: "array"
         items:
           type: "string"
-  cohortListResponse:
+
+  filePath:
     type: "object"
     properties:
-      data:
-        type: "array"
-        items:
-          $ref: "#/definitions/cohortDescription"
-      code:
-        type: "integer"
-  projectInfo:
-    type: "object"
-    properties:
-      name:
+      uuid:
         type: "string"
-        description: "Name of this program"
-      description:
+      gcs_path:
         type: "string"
-        description: "Description of this program"
-  programInfo:
-    type: "object"
-    properties:
-      name:
-        type: "string"
-        description: "Name of this program"
-      description:
-        type: "string"
-        description: "Description of this program"
-      projects:
-        type: "array"
-        items:
-          $ref: "#/definitions/projectInfo"
-  programListResponse:
-    type: "object"
-    properties:
-      data:
-        type: "array"
-        items:
-          $ref: "#/definitions/programInfo"
-      code:
-        type: "integer"
-  cohortResponse:
-    type: "object"
-    properties:
-      data:
-        $ref: "#/definitions/cohortDescription"
-      code:
-        type: "integer"
+
+
   errorMessage:
     type: "object"
     properties:
@@ -610,6 +1204,7 @@ definitions:
         type: "array"
         items:
           type: "string"
+
   accountDetailsResponse:
     type: "object"
     properties:

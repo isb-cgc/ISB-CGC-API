@@ -27,10 +27,11 @@ from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 from django.conf import settings
 
 from cohorts.models import Cohort_Perms, Cohort, Filters
-from projects.models import Program
+from cohorts.utils import get_sample_case_list_bq
+from idc_collections.models import Program
 
 from jsonschema import validate as schema_validate, ValidationError
-from schemas.cohort_filter_schema import COHORT_FILTER_SCHEMA
+from . schemas.cohort_filter_schema import COHORT_FILTER_SCHEMA
 
 BLACKLIST_RE = settings.BLACKLIST_RE
 
