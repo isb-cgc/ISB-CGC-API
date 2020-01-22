@@ -66,6 +66,8 @@ def oauth2callback():
     return render_template('swagger/oauth2-redirect.html')
 
 
+# This will likely be deleted at some point. It's here just to be able to test an API entrypoint that can be
+# satisfied by the webapp.
 @main_bp.route('/privacy/', methods=['GET'], strict_slashes=False)
 def privacy():
     try:
@@ -96,6 +98,8 @@ def privacy():
 
     return response
 
+# This will likely be deleted at some point. It's here just to be able to test an API entrypoint that can be
+# satisfied by the webapp.
 @main_bp.route('/help/', methods=['GET'], strict_slashes=False)
 def help():
     try:

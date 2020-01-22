@@ -3,7 +3,7 @@ swagger: "2.0"
 info:
   description: "IDC API Endpoints, version 1"
   title: "IDC API"
-  version: "4.0"
+  version: "1.0"
 #host: "api-dot-idc-dev.appspot.com"
 host: "127.0.0.1:8095"
 basePath: "/v1"
@@ -20,6 +20,7 @@ tags:
   - name: cohorts
   - name: collections
   - name: manifest
+  - name: programs
   - name: query
   - name: users
 paths:
@@ -67,6 +68,24 @@ paths:
           schema:
             $ref: "#/definitions/errorMessage"
 
+  /programs:
+    get:
+      description: "Get a list of the available programs"
+      tags:
+        - programs
+      operationId: "getPrograms"
+      produces:
+        - "application/json"
+      responses:
+        200:
+          description: "A list of the available programs."
+          schema:
+            $ref: "#/definitions/programListResponse"
+        500:
+          description: "Server error message"
+          schema:
+            $ref: "#/definitions/errorMessage"
+
   /collections:
     get:
       description: "Get a list of the available collections and versions of each."
@@ -85,13 +104,13 @@ paths:
           schema:
             $ref: "#/definitions/errorMessage"
 
-  # Different versions of a collection can have different fields
+  # Different versions of a collection can have different attributes
   /collections/{collection_id}/{version}:
     get:
-      description: "Get list of the fields in a version of a collection"
+      description: "Get list of the attributes in a version of a collection"
       tags:
         - collections
-      operationId: "getFields"
+      operationId: "getAttributes"
       consumes:
         - "application/json"
       produces:
@@ -109,20 +128,20 @@ paths:
           required: true
       responses:
         200:
-          description: "A list of the fields in a specific version of a collection"
+          description: "A list of the attributes in a specific version of a collection"
           schema:
-            $ref: "#/definitions/collectionFieldsResponse"
+            $ref: "#/definitions/collectionAttributesResponse"
         500:
           description: "Server error message"
           schema:
             $ref: "#/definitions/errorMessage"
 
-  /collections/{collection_id}/{version}/{field_name}:
+  /collections/{collection_id}/{version}/{attribute_name}:
     get:
-      description: "Get metadata for a field in a version of a collection"
+      description: "Get metadata for an attribute in a version of a collection"
       tags:
         - collections
-      operationId: "getFields"
+      operationId: "getAttributeMetadata"
       consumes:
         - "application/json"
       produces:
@@ -138,16 +157,16 @@ paths:
           description: "Version"
           type: string
           required: true
-        - name: field_name
+        - name: attribute_name
           in: path
-          description: "Field Name"
+          description: "Attribute Name"
           type: string
           required: true
       responses:
         200:
-          description: "Metadata for a field in a collection"
+          description: "Metadata for a attribute in a collection"
           schema:
-            $ref: "#/definitions/collectionFieldMetadataResponse"
+            $ref: "#/definitions/collectionAttributeMetadataResponse"
         500:
           description: "Server error message"
           schema:
@@ -234,7 +253,7 @@ paths:
         200:
           description: "Information about the specified cohort"
           schema:
-            $ref: "#/definitions/cohortDefinition"
+            $ref: "#/definitions/cohort"
         500:
           description: "Server error message"
           schema:
@@ -275,7 +294,7 @@ paths:
           required: true
           description: "Filters, name, and description used to create this cohort."
           schema:
-            $ref: "#/definitions/cohortSpec"
+            $ref: "#/definitions/filterSet"
         - name: case_insensitive
           in: query
           description: "BigQuery string comparisons are case sensitive by default - this will perform string comparisons without case sensitivity."
@@ -337,7 +356,7 @@ paths:
         200:
           description: "Summary information about the cohort generated."
           schema:
-            $ref: "#/definitions/cohortDefinition"
+            $ref: "#/definitions/cohort"
         500:
           description: "Server error message"
           schema:
@@ -413,13 +432,14 @@ paths:
         200:
           description: "Information about the specified cohort"
           schema:
-            $ref: "#/definitions/cohortDefinition"
+            $ref: "#/definitions/cohort"
         500:
           description: "Server error message"
           schema:
             $ref: "#/definitions/errorMessage"
       security:
         - google_id_token: []
+
     delete:
       description: "Delete the specified cohort."
       tags:
@@ -487,7 +507,7 @@ paths:
         200:
           description: "Summary information about the deleted cohort."
           schema:
-            $ref: "#/definitions/cohortDefinition"
+            $ref: "#/definitions/cohort"
         500:
           description: "Server error message"
           schema:
@@ -495,6 +515,111 @@ paths:
       security:
         - google_id_token: []
 
+  /query/{cohort_id}:
+    post:
+      description: "Perform a query against a cohort and return results"
+      tags:
+        - query
+      operationId: "queryCohort"
+      produces:
+        - "application/json"
+      parameters:
+        - name: cohort_id
+          in: path
+          description: "Numeric IDC Cohort ID"
+          type: integer
+          required: true
+        - name: "fields"
+          in: body
+          required: true
+          description: "List of fields to return."
+          schema:
+            $ref: "#/definitions/queryFields"
+            required: true
+        - name: case_insensitive
+          in: query
+          description: "BigQuery string comparisons are case sensitive by default - this will perform string comparisons without case sensitivity."
+          type: string
+          required: false
+          default: "True"
+          enum: ["True", "False"]
+        - name: fetch_count
+          in: query
+          description: "The number of file entries to retrieve this call."
+          type: integer
+          required: false
+          default: 5000
+          minimum: 1
+          maximum: 40000
+        - name: page
+          in: query
+          description: "The page, in per fetch count file entries (def. 5000 if not provided), to retrieve."
+          type: integer
+          required: false
+          default: 1
+          minimum: 1
+        - name: offset
+          in: query
+          description: "The number of file entries to skip in the return set."
+          type: integer
+          required: false
+          default: 0
+          minimum: 0
+      responses:
+        200:
+          description: "Query results"
+          schema:
+            $ref: "#/definitions/queryResults"
+        500:
+          description: "Server error message"
+          schema:
+            $ref: "#/definitions/errorMessage"
+
+  /manifest/{cohort_id}:
+    get:
+      description: "Get a manifest of the DICOM entities in a cohort"
+      tags:
+        - manifest
+      operationId: "getManifest"
+      produces:
+        - "application/json"
+      parameters:
+        - name: cohort_id
+          in: path
+          description: "Numeric IDC Cohort ID"
+          type: integer
+          required: true
+        - name: fetch_count
+          in: query
+          description: "The number of file entries to retrieve this call."
+          type: integer
+          required: false
+          default: 5000
+          minimum: 1
+          maximum: 40000
+        - name: page
+          in: query
+          description: "The page, in per fetch count file entries (def. 5000 if not provided), to retrieve."
+          type: integer
+          required: false
+          default: 1
+          minimum: 1
+        - name: offset
+          in: query
+          description: "The number of file entries to skip in the return set."
+          type: integer
+          required: false
+          default: 0
+          minimum: 0
+      responses:
+        200:
+          description: "Manifest"
+          schema:
+            $ref: "#/definitions/manifestResponse"
+        500:
+          description: "Server error message"
+          schema:
+            $ref: "#/definitions/errorMessage"
 
   /users/account_details:
     get:
@@ -531,16 +656,33 @@ definitions:
 #      code:
 #        type: "integer"
 
+  programListResponse:
+    type: "array"
+    items:
+      type: "object"
+      properties:
+        short_name:
+          type: "string"
+        name:
+          type: "string"
+        description:
+          type: "string"
+        active:
+          type: "boolean"
+
   collectionListResponse:
     type: "array"
     items:
       type: "object"
       properties:
+        short_name:
+          type: "string"
         name:
           type: "string"
-          $ref: "#/definitions/collectionNames"
         description:
           type: "string"
+        active:
+          type: "boolean"
         versions:
           type: "array"
           items:
@@ -551,21 +693,24 @@ definitions:
               release_date:
                 type: "date"
 
-  collectionFieldsResponse:
+  collectionAttributesResponse:
     type: "array"
     items:
       type: "string"
 
-  collectionFieldMetadataResponse:
+  collectionAttributeMetadataResponse:
     type: "object"
     properties:
-      fieldName:
+      name:
+        type: "string"
+      display_name:
         type: "string"
       description:
         type: "string"
-      fieldType:
-        type: "string"
-        enum: ["string", "date", "time", "timestamp", "integer", "float", "record", "array"]
+      active:
+        type: "boolean"
+      cross_collections:
+        type: "boolean"
       enumerated_values:
         type: "array"
         items:
@@ -598,11 +743,11 @@ definitions:
             hash:
               type: "string"
 
-  cohortDefinition:
+  cohort:
     type: "object"
     properties:
       filter:
-        $ref: "#/definitions/FilterSet"
+        $ref: "#/definitions/filterSet"
       data:
         $ref: "#/definitions/cohortObject"
 #      code:
@@ -612,33 +757,211 @@ definitions:
 #      filters:
 #        disease_code: ["BRCA","READ"]
 
-  cohortSpec:
-    type: "object"
-    properties:
-      name:
-        type: "string"
-      description:
-        type: "string"
-      filters:
-        $ref: "#/definitions/filterSet"
-
   filterSet:
+      type: "object"
+      properties:
+        collections:
+          type: "array"
+          items:
+            $ref: "#/definitions/collection"
+        clinical:
+          $ref: "#/definitions/clinicalFilterFacets"
+        imaging:
+          $ref: "#/definitions/imagingFilterFacets"
+        derived:
+          $ref: "#/definitions/derivedFilterFacets"
+
+  clinicalFilterFacets:
     type: "object"
     properties:
-      collections:
+      program_name:
         type: "array"
         items:
-          "#/definitions/collection"
-      clinical:
-        $ref: "#/definitions/clinicalFilterSet"
-      imaging:
-        $ref: "#/definitions/imagingFilterSet"
-      derived:
-        $ref: "#/definitions/derivedFilterSet"
-
-  clinicalFilterSet:
-    type: "object"
-    properties:
+          type: "string"
+      case_barcode:
+        type: "array"
+        items:
+          type: "string"
+      case_gdc_id:
+        type: "array"
+        items:
+          type: "string"
+      program_dbgap_accession_number:
+        type: "array"
+        items:
+          type: "string"
+      project_short_name:
+        type: "array"
+        items:
+          type: "string"
+      project_name:
+        type: "array"
+        items:
+          type: "string"
+      clinical_stage:
+        type: "array"
+        items:
+          type: "string"
+      clinical_T:
+        type: "array"
+        items:
+          type: "string"
+      clinical_N:
+        type: "array"
+        items:
+          type: "string"
+      clinical_M:
+        type: "array"
+        items:
+          type: "string"
+      pathologic_stage:
+        type: "array"
+        items:
+          type: "string"
+      pathologic_T:
+        type: "array"
+        items:
+          type: "string"
+      pathologic_N:
+        type: "array"
+        items:
+          type: "string"
+      pathlogic_M:
+        type: "array"
+        items:
+          type: "string"
+      primary_neoplasm_melanoma_dx:
+        type: "array"
+        items:
+          type: "string"
+      anatomic_neoplasm_subdivision:
+        type: "array"
+        items:
+          type: "string"
+      country:
+        type: "array"
+        items:
+          type: "string"
+      other_dx:
+        type: "array"
+        items:
+          type: "string"
+      other_malignancy_anatomic_site:
+        type: "array"
+        items:
+          type: "string"
+      other_malignancy_type:
+        type: "array"
+        items:
+          type: "string"
+      other_malignancy_histological_type:
+        type: "array"
+        items:
+          type: "string"
+      history_of_neoadjuvant_treatment:
+        type: "array"
+        items:
+          type: "string"
+      primary_therapy_outcome_success:
+        type: "array"
+        items:
+          type: "string"
+      histological_type:
+        type: "array"
+        items:
+          type: "string"
+      neoplasm_histologic_grade:
+        type: "array"
+        items:
+          type: "string"
+      icd_10:
+        type: "array"
+        items:
+          type: "string"
+      icd_o_3_site:
+        type: "array"
+        items:
+          type: "string"
+      icd_o_3_histology:
+        type: "array"
+        items:
+          type: "string"
+      person_neoplasm_cancer_status:
+        type: "array"
+        items:
+          type: "string"
+      tumor_type:
+        type: "array"
+        items:
+          type: "string"
+      new_tumor_event_after_initial_treatment:
+        type: "array"
+        items:
+          type: "string"
+      lymphnodes_examined:
+        type: "array"
+        items:
+          type: "string"
+      lymphatic_invasion:
+        type: "array"
+        items:
+          type: "string"
+      venous_invasion:
+        type: "array"
+        items:
+          type: "string"
+      lymphovascular_invasion_present:
+        type: "array"
+        items:
+          type: "string"
+      bcr:
+        type: "array"
+        items:
+          type: "string"
+      tss_code:
+        type: "array"
+        items:
+          type: "string"
+      tobacco_smoking_history:
+        type: "array"
+        items:
+          type: "string"
+      mononucleotide_and_dinucleotide_marker_panel_analysis_status:
+        type: "array"
+        items:
+          type: "string"
+      h_pylori_infection:
+        type: "array"
+        items:
+          type: "string"
+      colorectal_cancer:
+        type: "array"
+        items:
+          type: "string"
+      history_of_colon_polyps:
+        type: "array"
+        items:
+          type: "string"
+      sample_barcode:
+        type: "array"
+        items:
+          type: "string"
+      sample_gdc_id:
+        type: "array"
+        items:
+          type: "string"
+      sample_type:
+        type: "array"
+        items:
+          type: "string"
+      sample_type_name:
+        type: "array"
+        items:
+          type: "string"
+      is_ffpe:
+        type: "array"
+        items:
+          type: "string"
       disease_code:
         type: "array"
         items:
@@ -655,10 +978,6 @@ definitions:
         type: "array"
         items:
           type: "string"
-      sample_type:
-        type: "array"
-        items:
-          type: "string"
       tumor_tissue_site:
         type: "array"
         items:
@@ -671,27 +990,11 @@ definitions:
         type: "array"
         items:
           type: "string"
-      person_neoplasm_cancer_status:
-        type: "array"
-        items:
-          type: "string"
-      neoplasm_histologic_grade:
-        type: "array"
-        items:
-          type: "string"
-      bmi:
-        type: "array"
-        items:
-          type: "string"
       hpv_status:
         type: "array"
         items:
           type: "string"
       residual_tumor:
-        type: "array"
-        items:
-          type: "string"
-      tobacco_smoking_history:
         type: "array"
         items:
           type: "string"
@@ -715,8 +1018,760 @@ definitions:
         type: "array"
         items:
           type: "string"
+      bmi:
+        type: "array"
+        items:
+          type: "number"
+      year_of_initial_pathologic_diagnosis:
+        type: "array"
+        items:
+          type: "integer"
+      days_to_birth:
+        type: "array"
+        items:
+          type: "integer"
+      days_to_death:
+        type: "array"
+        items:
+          type: "integer"
+      days_to_initial_pathologic_diagnosis:
+        type: "array"
+        items:
+          type: "integer"
+      days_to_last_followup:
+        type: "array"
+        items:
+          type: "integer"
+      days_to_submitted_specimen_dx:
+        type: "array"
+        items:
+          type: "integer"
+      number_of_lymphnodes_examined:
+        type: "array"
+        items:
+          type: "integer"
+      number_of_lymphnodes_positive_by_he:
+        type: "array"
+        items:
+          type: "integer"
+      batch_number:
+        type: "array"
+        items:
+          type: "integer"
+      age_began_smoking_in_years:
+        type: "array"
+        items:
+          type: "integer"
+      year_of_tobacco_smoking_onset:
+        type: "array"
+        items:
+          type: "integer"
+      stopped_smoking_year:
+        type: "array"
+        items:
+          type: "integer"
+      number_pack_years_smoked:
+        type: "array"
+        items:
+          type: "integer"
+      height:
+        type: "array"
+        items:
+          type: "integer"
+      weight:
+        type: "array"
+        items:
+          type: "integer"
+      pregnancies:
+        type: "array"
+        items:
+          type: "integer"
+      hpv_calls:
+        type: "array"
+        items:
+          type: "integer"
+      gleason_score_combined:
+        type: "array"
+        items:
+          type: "integer"
+      psa_value:
+        type: "array"
+        items:
+          type: "number"
+      days_to_collection:
+        type: "array"
+        items:
+          type: "integer"
+      days_to_sample_procurement:
+        type: "array"
+        items:
+          type: "integer"
+      num_portions:
+        type: "array"
+        items:
+          type: "integer"
+      num_slides:
+        type: "array"
+        items:
+          type: "integer"
+      avg_percent_lymphocyte_infiltration:
+        type: "array"
+        items:
+          type: "number"
+      avg_percent_monocyte_infiltration:
+        type: "array"
+        items:
+          type: "number"
+      avg_percent_necrosis:
+        type: "array"
+        items:
+          type: "number"
+      avg_percent_neutrophil_infiltration:
+        type: "array"
+        items:
+          type: "number"
+      avg_percent_normal_cells:
+        type: "array"
+        items:
+          type: "number"
+      avg_percent_stromal_cells:
+        type: "array"
+        items:
+          type: "number"
+      avg_percent_tumor_cells:
+        type: "array"
+        items:
+          type: "number"
+      avg_percent_tumor_nuclei:
+        type: "array"
+        items:
+          type: "number"
+      max_percent_lymphocyte_infiltration:
+        type: "array"
+        items:
+          type: "number"
+      max_percent_monocyte_infiltration:
+        type: "array"
+        items:
+          type: "number"
+      max_percent_necrosis:
+        type: "array"
+        items:
+          type: "integer"
+      max_percent_neutrophil_infiltration:
+        type: "array"
+        items:
+          type: "integer"
+      max_percent_normal_cells:
+        type: "array"
+        items:
+          type: "integer"
+      max_percent_stromal_cells:
+        type: "array"
+        items:
+          type: "integer"
+      max_percent_tumor_cells:
+        type: "array"
+        items:
+          type: "integer"
+      min_percent_tumor_nuclei:
+        type: "array"
+        items:
+          type: "integer"
+      min_percent_lymphocyte_infiltration:
+        type: "array"
+        items:
+          type: "integer"
+      min_percent_monocyte_infiltration:
+        type: "array"
+        items:
+          type: "integer"
+      min_percent_necrosis:
+        type: "array"
+        items:
+          type: "integer"
+      min_percent_neutrophil_infiltration:
+        type: "array"
+        items:
+          type: "integer"
+      min_percent_normal_cells:
+        type: "array"
+        items:
+          type: "integer"
+      min_percent_stromal_cells:
+        type: "array"
+        items:
+          type: "integer"
+      min_percent_tumor_cells:
+        type: "array"
+        items:
+          type: "integer"
+      bmi_lte:
+        type: "array"
+        items:
+          type: "number"
+      year_of_initial_pathologic_diagnosis_lte:
+        type: "array"
+        items:
+          type: "integer"
+      days_to_birth_lte:
+        type: "array"
+        items:
+          type: "integer"
+      days_to_death_lte:
+        type: "array"
+        items:
+          type: "integer"
+      days_to_initial_pathologic_diagnosis_lte:
+        type: "array"
+        items:
+          type: "integer"
+      days_to_last_followup_lte:
+        type: "array"
+        items:
+          type: "integer"
+      days_to_submitted_specimen_dx_lte:
+        type: "array"
+        items:
+          type: "integer"
+      number_of_lymphnodes_examined_lte:
+        type: "array"
+        items:
+          type: "integer"
+      number_of_lymphnodes_positive_by_he_lte:
+        type: "array"
+        items:
+          type: "integer"
+      batch_number_lte:
+        type: "array"
+        items:
+          type: "integer"
+      age_began_smoking_in_years_lte:
+        type: "array"
+        items:
+          type: "integer"
+      year_of_tobacco_smoking_onset_lte:
+        type: "array"
+        items:
+          type: "integer"
+      stopped_smoking_year_lte:
+        type: "array"
+        items:
+          type: "integer"
+      number_pack_years_smoked_lte:
+        type: "array"
+        items:
+          type: "integer"
+      height_lte:
+        type: "array"
+        items:
+          type: "integer"
+      weight_lte:
+        type: "array"
+        items:
+          type: "integer"
+      pregnancies_lte:
+        type: "array"
+        items:
+          type: "integer"
+      hpv_calls_lte:
+        type: "array"
+        items:
+          type: "integer"
+      gleason_score_combined_lte:
+        type: "array"
+        items:
+          type: "integer"
+      psa_value_lte:
+        type: "array"
+        items:
+          type: "number"
+      days_to_collection_lte:
+        type: "array"
+        items:
+          type: "integer"
+      days_to_sample_procurement_lte:
+        type: "array"
+        items:
+          type: "integer"
+      num_portions_lte:
+        type: "array"
+        items:
+          type: "integer"
+      num_slides_lte:
+        type: "array"
+        items:
+          type: "integer"
+      avg_percent_lymphocyte_infiltration_lte:
+        type: "array"
+        items:
+          type: "number"
+      avg_percent_monocyte_infiltration_lte:
+        type: "array"
+        items:
+          type: "number"
+      avg_percent_necrosis_lte:
+        type: "array"
+        items:
+          type: "number"
+      avg_percent_neutrophil_infiltration_lte:
+        type: "array"
+        items:
+          type: "number"
+      avg_percent_normal_cells_lte:
+        type: "array"
+        items:
+          type: "number"
+      avg_percent_stromal_cells_lte:
+        type: "array"
+        items:
+          type: "number"
+      avg_percent_tumor_cells_lte:
+        type: "array"
+        items:
+          type: "number"
+      avg_percent_tumor_nuclei_lte:
+        type: "array"
+        items:
+          type: "number"
+      max_percent_lymphocyte_infiltration_lte:
+        type: "array"
+        items:
+          type: "number"
+      max_percent_monocyte_infiltration_lte:
+        type: "array"
+        items:
+          type: "number"
+      max_percent_necrosis_lte:
+        type: "array"
+        items:
+          type: "number"
+      max_percent_neutrophil_infiltration_lte:
+        type: "array"
+        items:
+          type: "number"
+      max_percent_normal_cells_lte:
+        type: "array"
+        items:
+          type: "number"
+      max_percent_stromal_cells_lte:
+        type: "array"
+        items:
+          type: "number"
+      max_percent_tumor_cells_lte:
+        type: "array"
+        items:
+          type: "number"
+      min_percent_tumor_nuclei_lte:
+        type: "array"
+        items:
+          type: "number"
+      min_percent_lymphocyte_infiltration_lte:
+        type: "array"
+        items:
+          type: "number"
+      min_percent_monocyte_infiltration_lte:
+        type: "array"
+        items:
+          type: "number"
+      min_percent_necrosis_lte:
+        type: "array"
+        items:
+          type: "number"
+      min_percent_neutrophil_infiltration_lte:
+        type: "array"
+        items:
+          type: "number"
+      min_percent_normal_cells_lte:
+        type: "array"
+        items:
+          type: "number"
+      min_percent_stromal_cells_lte:
+        type: "array"
+        items:
+          type: "number"
+      min_percent_tumor_cells_lte:
+        type: "array"
+        items:
+          type: "number"
+      bmi_gte:
+        type: "array"
+        items:
+          type: "number"
+      year_of_initial_pathologic_diagnosis_gte:
+        type: "array"
+        items:
+          type: "integer"
+      days_to_birth_gte:
+        type: "array"
+        items:
+          type: "integer"
+      days_to_death_gte:
+        type: "array"
+        items:
+          type: "integer"
+      days_to_initial_pathologic_diagnosis_gte:
+        type: "array"
+        items:
+          type: "integer"
+      days_to_last_followup_gte:
+        type: "array"
+        items:
+          type: "integer"
+      days_to_submitted_specimen_dx_gte:
+        type: "array"
+        items:
+          type: "integer"
+      number_of_lymphnodes_examined_gte:
+        type: "array"
+        items:
+          type: "integer"
+      number_of_lymphnodes_positive_by_he_gte:
+        type: "array"
+        items:
+          type: "integer"
+      batch_number_gte:
+        type: "array"
+        items:
+          type: "integer"
+      age_began_smoking_in_years_gte:
+        type: "array"
+        items:
+          type: "integer"
+      year_of_tobacco_smoking_onset_gte:
+        type: "array"
+        items:
+          type: "integer"
+      stopped_smoking_year_gte:
+        type: "array"
+        items:
+          type: "integer"
+      number_pack_years_smoked_gte:
+        type: "array"
+        items:
+          type: "integer"
+      height_gte:
+        type: "array"
+        items:
+          type: "integer"
+      weight_gte:
+        type: "array"
+        items:
+          type: "integer"
+      pregnancies_gte:
+        type: "array"
+        items:
+          type: "integer"
+      hpv_calls_gte:
+        type: "array"
+        items:
+          type: "integer"
+      gleason_score_combined_gte:
+        type: "array"
+        items:
+          type: "integer"
+      psa_value_gte:
+        type: "array"
+        items:
+          type: "number"
+      days_to_collection_gte:
+        type: "array"
+        items:
+          type: "integer"
+      days_to_sample_procurement_gte:
+        type: "array"
+        items:
+          type: "integer"
+      num_portions_gte:
+        type: "array"
+        items:
+          type: "integer"
+      num_slides_gte:
+        type: "array"
+        items:
+          type: "integer"
+      avg_percent_lymphocyte_infiltration_gte:
+        type: "array"
+        items:
+          type: "number"
+      avg_percent_monocyte_infiltration_gte:
+        type: "array"
+        items:
+          type: "number"
+      avg_percent_necrosis_gte:
+        type: "array"
+        items:
+          type: "number"
+      avg_percent_neutrophil_infiltration_gte:
+        type: "array"
+        items:
+          type: "number"
+      avg_percent_normal_cells_gte:
+        type: "array"
+        items:
+          type: "number"
+      avg_percent_stromal_cells_gte:
+        type: "array"
+        items:
+          type: "number"
+      avg_percent_tumor_cells_gte:
+        type: "array"
+        items:
+          type: "number"
+      avg_percent_tumor_nuclei_gte:
+        type: "array"
+        items:
+          type: "number"
+      max_percent_lymphocyte_infiltration_gte:
+        type: "array"
+        items:
+          type: "number"
+      max_percent_monocyte_infiltration_gte:
+        type: "array"
+        items:
+          type: "number"
+      max_percent_necrosis_gte:
+        type: "array"
+        items:
+          type: "number"
+      max_percent_neutrophil_infiltration_gte:
+        type: "array"
+        items:
+          type: "number"
+      max_percent_normal_cells_gte:
+        type: "array"
+        items:
+          type: "number"
+      max_percent_stromal_cells_gte:
+        type: "array"
+        items:
+          type: "number"
+      max_percent_tumor_cells_gte:
+        type: "array"
+        items:
+          type: "number"
+      min_percent_tumor_nuclei_gte:
+        type: "array"
+        items:
+          type: "number"
+      min_percent_lymphocyte_infiltration_gte:
+        type: "array"
+        items:
+          type: "number"
+      min_percent_monocyte_infiltration_gte:
+        type: "array"
+        items:
+          type: "number"
+      min_percent_necrosis_gte:
+        type: "array"
+        items:
+          type: "number"
+      min_percent_neutrophil_infiltration_gte:
+        type: "array"
+        items:
+          type: "number"
+      min_percent_normal_cells_gte:
+        type: "array"
+        items:
+          type: "number"
+      min_percent_stromal_cells_gte:
+        type: "array"
+        items:
+          type: "number"
+      min_percent_tumor_cells_gte:
+        type: "array"
+        items:
+          type: "number"
+      bmi_btw:
+        type: "array"
+        items:
+          type: "number"
+      year_of_initial_pathologic_diagnosis_btw:
+        type: "array"
+        items:
+          type: "integer"
+      days_to_birth_btw:
+        type: "array"
+        items:
+          type: "integer"
+      days_to_death_btw:
+        type: "array"
+        items:
+          type: "integer"
+      days_to_initial_pathologic_diagnosis_btw:
+        type: "array"
+        items:
+          type: "integer"
+      days_to_last_followup_btw:
+        type: "array"
+        items:
+          type: "integer"
+      days_to_submitted_specimen_dx_btw:
+        type: "array"
+        items:
+          type: "integer"
+      number_of_lymphnodes_examined_btw:
+        type: "array"
+        items:
+          type: "integer"
+      number_of_lymphnodes_positive_by_he_btw:
+        type: "array"
+        items:
+          type: "integer"
+      batch_number_btw:
+        type: "array"
+        items:
+          type: "integer"
+      age_began_smoking_in_years_btw:
+        type: "array"
+        items:
+          type: "integer"
+      year_of_tobacco_smoking_onset_btw:
+        type: "array"
+        items:
+          type: "integer"
+      stopped_smoking_year_btw:
+        type: "array"
+        items:
+          type: "integer"
+      number_pack_years_smoked_btw:
+        type: "array"
+        items:
+          type: "integer"
+      height_btw:
+        type: "array"
+        items:
+          type: "integer"
+      weight_btw:
+        type: "array"
+        items:
+          type: "integer"
+      pregnancies_btw:
+        type: "array"
+        items:
+          type: "integer"
+      hpv_calls_btw:
+        type: "array"
+        items:
+          type: "integer"
+      gleason_score_combined_btw:
+        type: "array"
+        items:
+          type: "integer"
+      psa_value_btw:
+        type: "array"
+        items:
+          type: "number"
+      days_to_collection_btw:
+        type: "array"
+        items:
+          type: "integer"
+      days_to_sample_procurement_btw:
+        type: "array"
+        items:
+          type: "integer"
+      num_portions_btw:
+        type: "array"
+        items:
+          type: "integer"
+      num_slides_btw:
+        type: "array"
+        items:
+          type: "integer"
+      avg_percent_lymphocyte_infiltration_btw:
+        type: "array"
+        items:
+          type: "number"
+      avg_percent_monocyte_infiltration_btw:
+        type: "array"
+        items:
+          type: "number"
+      avg_percent_necrosis_btw:
+        type: "array"
+        items:
+          type: "number"
+      avg_percent_neutrophil_infiltration_btw:
+        type: "array"
+        items:
+          type: "number"
+      avg_percent_normal_cells_btw:
+        type: "array"
+        items:
+          type: "number"
+      avg_percent_stromal_cells_btw:
+        type: "array"
+        items:
+          type: "number"
+      avg_percent_tumor_cells_btw:
+        type: "array"
+        items:
+          type: "number"
+      avg_percent_tumor_nuclei_btw:
+        type: "array"
+        items:
+          type: "number"
+      max_percent_lymphocyte_infiltration_btw:
+        type: "array"
+        items:
+          type: "number"
+      max_percent_monocyte_infiltration_btw:
+        type: "array"
+        items:
+          type: "number"
+      max_percent_necrosis_btw:
+        type: "array"
+        items:
+          type: "number"
+      max_percent_neutrophil_infiltration_btw:
+        type: "array"
+        items:
+          type: "number"
+      max_percent_normal_cells_btw:
+        type: "array"
+        items:
+          type: "number"
+      max_percent_stromal_cells_btw:
+        type: "array"
+        items:
+          type: "number"
+      max_percent_tumor_cells_btw:
+        type: "array"
+        items:
+          type: "number"
+      min_percent_tumor_nuclei_btw:
+        type: "array"
+        items:
+          type: "number"
+      min_percent_lymphocyte_infiltration_btw:
+        type: "array"
+        items:
+          type: "number"
+      min_percent_monocyte_infiltration_btw:
+        type: "array"
+        items:
+          type: "number"
+      min_percent_necrosis_btw:
+        type: "array"
+        items:
+          type: "number"
+      min_percent_neutrophil_infiltration_btw:
+        type: "array"
+        items:
+          type: "number"
+      min_percent_normal_cells_btw:
+        type: "array"
+        items:
+          type: "number"
+      min_percent_stromal_cells_btw:
+        type: "array"
+        items:
+          type: "number"
+      min_percent_tumor_cells_btw:
+        type: "array"
+        items:
+          type: "number"
 
-  imagingFilterSet:
+  imagingFilterFacets:
     type: "object"
     properties:
       Modality:
@@ -724,6 +1779,14 @@ definitions:
         items:
           $ref: "#/definitions/modalities"
       SOPInstanceUID:
+        type: "array"
+        items:
+           type: "string"
+      SeriesInstanceUID:
+        type: "array"
+        items:
+           type: "string"
+      StudyInstanceUID:
         type: "array"
         items:
            type: "string"
@@ -757,23 +1820,437 @@ definitions:
       SliceThickness:
         type: "array"
         items:
-           type: "integer"
+          type: "number"
       SliceThickness_btw:
         type: "array"
         items:
-           type: "integer"
+          type: "number"
       SliceThickness_gte:
         type: "array"
         items:
-           type: "integer"
+          type: "number"
       SliceThickness_lte:
         type: "array"
         items:
-           type: "integer"
+          type: "number"
 
-  derivedFilterSet:
+  derivedFilterFacets:
     type: "object"
     properties:
+      dummy:
+        type: "string"
+
+  queryFields:
+    type: "object"
+    properties:
+      clinical:
+        $ref: "#/definitions/clinicalQueryFields"
+      imaging:
+        $ref: "#/definitions/imagingQueryFields"
+      derived:
+        $ref: "#/definitions/derivedQueryFields"
+
+  clinicalQueryFields:
+    type: "string"
+    enum: [
+      "program_name",
+      "case_barcode",
+      "case_gdc_id",
+      "program_dbgap_accession_number",
+      "project_short_name",
+      "project_name",
+      "clinical_stage",
+      "clinical_T",
+      "clinical_N",
+      "clinical_M",
+      "pathologic_stage",
+      "pathologic_T",
+      "pathologic_N",
+      "pathlogic_M",
+      "primary_neoplasm_melanoma_dx",
+      "anatomic_neoplasm_subdivision",
+      "country",
+      "other_dx",
+      "other_malignancy_anatomic_site",
+      "other_malignancy_type",
+      "other_malignancy_histological_type",
+      "history_of_neoadjuvant_treatment",
+      "primary_therapy_outcome_success",
+      "histological_type",
+      "neoplasm_histologic_grade",
+      "icd_10",
+      "icd_o_3_site",
+      "icd_o_3_histology",
+      "person_neoplasm_cancer_status",
+      "tumor_type",
+      "new_tumor_event_after_initial_treatment",
+      "lymphnodes_examined",
+      "lymphatic_invasion",
+      "venous_invasion",
+      "lymphovascular_invasion_present",
+      "bcr",
+      "tss_code",
+      "tobacco_smoking_history",
+      "mononucleotide_and_dinucleotide_marker_panel_analysis_status",
+      "h_pylori_infection",
+      "colorectal_cancer",
+      "history_of_colon_polyps",
+      "sample_barcode",
+      "sample_gdc_id",
+      "sample_type",
+      "sample_type_name",
+      "is_ffpe",
+      "disease_code",
+      "vital_status",
+      "gender",
+      "age_at_diagnosis",
+      "tumor_tissue_site",
+      "histological_site",
+      "pathological_stage",
+      "hpv_status",
+      "residual_tumor",
+      "race",
+      "ethnicity",
+      "days_to_birth",
+      "days_to_death",
+      "days_to_initial_pathologic_diagnosis",
+      "days_to_last_followup",
+      "days_to_submitted_specimen_dx",
+      "year_of_initial_pathologic_diagnosis",
+      "number_of_lymphnodes_examined",
+      "number_of_lymphnodes_positive_by_he",
+      "batch_number",
+      "age_began_smoking_in_years",
+      "year_of_tobacco_smoking_onset",
+      "stopped_smoking_year",
+      "number_pack_years_smoked",
+      "height",
+      "weight",
+      "pregnancies",
+      "hpv_calls",
+      "gleason_score_combined",
+      "psa_value",
+      "days_to_collection",
+      "days_to_sample_procurement",
+      "num_portions",
+      "num_slides",
+      "avg_percent_lymphocyte_infiltration",
+      "avg_percent_monocyte_infiltration",
+      "avg_percent_necrosis",
+      "avg_percent_neutrophil_infiltration",
+      "avg_percent_normal_cells",
+      "avg_percent_stromal_cells",
+      "avg_percent_tumor_cells",
+      "avg_percent_tumor_nuclei",
+      "max_percent_lymphocyte_infiltration",
+      "max_percent_monocyte_infiltration",
+      "max_percent_necrosis",
+      "max_percent_neutrophil_infiltration",
+      "max_percent_normal_cells",
+      "max_percent_stromal_cells",
+      "max_percent_tumor_cells",
+      "min_percent_tumor_nuclei",
+      "min_percent_lymphocyte_infiltration",
+      "min_percent_monocyte_infiltration",
+      "min_percent_necrosis",
+      "min_percent_neutrophil_infiltration",
+      "min_percent_normal_cells",
+      "min_percent_stromal_cells",
+      "min_percent_tumor_cells",
+      "age_at_diagnosis",
+      "days_to_last_known_alive",
+      "menopause_status",
+      "year_of_diagnosis"
+    ]
+
+  imagingQueryFields:
+    type: "string"
+    enum: [
+      "Modality",
+      "SOPInstanceUID",
+      "SeriesInstanceUID",
+      "StudyInstanceUID",
+      "StudyDescription",
+      "SeriesDescription",
+      "BodyPartExamined",
+      "ScanningSequence",
+      "SequenceVariant",
+      "SliceThickness",
+    ]
+
+  derivedQueryFields:
+    type: "string"
+    enum: [
+      "dummy"
+    ]
+
+  queryResults:
+    type: "array"
+    items:
+      type: "object"
+      properties:
+        clinical:
+          $ref: "#/definitions/clinicalQueryResults"
+        imaging:
+          $ref: "#/definitions/imagingQueryResults"
+        derived:
+          $ref: "#/definitions/derivedQueryResults"
+
+
+
+  clinicalQueryResults:
+    type: "object"
+    properties:
+      program_name:
+        type: "string"
+      case_barcode:
+        type: "string"
+      case_gdc_id:
+        type: "string"
+      program_dbgap_accession_number:
+        type: "string"
+      project_short_name:
+        type: "string"
+      project_name:
+        type: "string"
+      clinical_stage:
+        type: "string"
+      clinical_T:
+        type: "string"
+      clinical_N:
+        type: "string"
+      clinical_M:
+        type: "string"
+      pathologic_stage:
+        type: "string"
+      pathologic_T:
+        type: "string"
+      pathologic_N:
+        type: "string"
+      pathlogic_M:
+        type: "string"
+      primary_neoplasm_melanoma_dx:
+        type: "string"
+      anatomic_neoplasm_subdivision:
+        type: "string"
+      country:
+        type: "string"
+      other_dx:
+        type: "string"
+      other_malignancy_anatomic_site:
+        type: "string"
+      other_malignancy_type:
+        type: "string"
+      other_malignancy_histological_type:
+        type: "string"
+      history_of_neoadjuvant_treatment:
+        type: "string"
+      primary_therapy_outcome_success:
+        type: "string"
+      histological_type:
+        type: "string"
+      neoplasm_histologic_grade:
+        type: "string"
+      icd_10:
+        type: "string"
+      icd_o_3_site:
+        type: "string"
+      icd_o_3_histology:
+        type: "string"
+      person_neoplasm_cancer_status:
+        type: "string"
+      tumor_type:
+        type: "string"
+      new_tumor_event_after_initial_treatment:
+        type: "string"
+      lymphnodes_examined:
+        type: "string"
+      lymphatic_invasion:
+        type: "string"
+      venous_invasion:
+        type: "string"
+      lymphovascular_invasion_present:
+        type: "string"
+      bcr:
+        type: "string"
+      tss_code:
+        type: "string"
+      tobacco_smoking_history:
+        type: "string"
+      mononucleotide_and_dinucleotide_marker_panel_analysis_status:
+        type: "string"
+      h_pylori_infection:
+        type: "string"
+      colorectal_cancer:
+        type: "string"
+      history_of_colon_polyps:
+        type: "string"
+      sample_barcode:
+        type: "string"
+      sample_gdc_id:
+        type: "string"
+      sample_type:
+        type: "string"
+      sample_type_name:
+        type: "string"
+      is_ffpe:
+        type: "string"
+      disease_code:
+        type: "string"
+      vital_status:
+        type: "string"
+      gender:
+        type: "string"
+      age_at_diagnosis:
+        type: "integer"
+      tumor_tissue_site:
+        type: "string"
+      histological_site:
+        type: "string"
+      pathological_stage:
+        type: "string"
+      hpv_status:
+        type: "string"
+      residual_tumor:
+        type: "string"
+      race:
+        type: "string"
+      ethnicity:
+        type: "string"
+      days_to_birth:
+        type: "integer"
+      days_to_death:
+        type: "integer"
+      days_to_initial_pathologic_diagnosis:
+        type: "integer"
+      days_to_last_followup:
+        type: "integer"
+      days_to_submitted_specimen_dx:
+        type: "integer"
+      year_of_initial_pathologic_diagnosis:
+        type: "integer"
+      number_of_lymphnodes_examined:
+        type: "integer"
+      number_of_lymphnodes_positive_by_he:
+        type: "integer"
+      batch_number:
+        type: "integer"
+      age_began_smoking_in_years:
+        type: "integer"
+      year_of_tobacco_smoking_onset:
+        type: "integer"
+      stopped_smoking_year:
+        type: "integer"
+      number_pack_years_smoked:
+        type: "integer"
+      height:
+        type: "integer"
+      weight:
+        type: "integer"
+      pregnancies:
+        type: "integer"
+      hpv_calls:
+        type: "integer"
+      gleason_score_combined:
+        type: "integer"
+      psa_value:
+        type: "number"
+      days_to_collection:
+        type: "integer"
+      days_to_sample_procurement:
+        type: "integer"
+      num_portions:
+        type: "integer"
+      num_slides:
+        type: "integer"
+      avg_percent_lymphocyte_infiltration:
+        type: "number"
+      avg_percent_monocyte_infiltration:
+        type: "number"
+      avg_percent_necrosis:
+        type: "number"
+      avg_percent_neutrophil_infiltration:
+        type: "number"
+      avg_percent_normal_cells:
+        type: "number"
+      avg_percent_stromal_cells:
+        type: "number"
+      avg_percent_tumor_cells:
+        type: "number"
+      avg_percent_tumor_nuclei:
+        type: "number"
+      max_percent_lymphocyte_infiltration:
+        type: "number"
+      max_percent_monocyte_infiltration:
+        type: "number"
+      max_percent_necrosis:
+        type: "number"
+      max_percent_neutrophil_infiltration:
+        type: "number"
+      max_percent_normal_cells:
+        type: "number"
+      max_percent_stromal_cells:
+        type: "number"
+      max_percent_tumor_cells:
+        type: "number"
+      min_percent_tumor_nuclei:
+        type: "number"
+      min_percent_lymphocyte_infiltration:
+        type: "number"
+      min_percent_monocyte_infiltration:
+        type: "number"
+      min_percent_necrosis:
+        type: "number"
+      min_percent_neutrophil_infiltration:
+        type: "number"
+      min_percent_normal_cells:
+        type: "number"
+      min_percent_stromal_cells:
+        type: "number"
+      min_percent_tumor_cells:
+        type: "number"
+      days_to_last_known_alive:
+        type: "integer"
+      menopause_status:
+        type: "string"
+      year_of_diagnosis:
+        type: "integer"
+
+  imagingQueryResults:
+    type: "object"
+    properties:
+      Modality:
+        $ref: "#/definitions/modalities"
+      SOPInstanceUID:
+        type: "string"
+      SeriesInstanceUID:
+        type: "string"
+      StudyInstanceUID:
+        type: "string"
+      StudyDescription:
+        type: "string"
+      SeriesDescription:
+        type: "string"
+      BodyPartExamined:
+        type: "string"
+      ScanningSequence:
+        type: "string"
+        enum: ["SE", "IR", "GR", "EP", "RM"]
+      SequenceVariant:
+        type: "string"
+        enum: ["SK", "MTC", "SS", "TRSS", "SP", "MP", "OSP", "NONE"]
+      ScanOptions:
+        type: "string"
+        enum: ["EKG", "PHY", "TOMO", "CHASE", "ROTA"]
+      SliceThickness:
+        type: "integer"
+
+  derivedQueryResults:
+    type: "object"
+    properties:
+      dummy:
+        type: "string"
+
 
   cohortObject:
     type: "object"
@@ -858,7 +2335,7 @@ definitions:
             type: "string"
           DOI:
             type: "string"
-          AccessMethods:
+          accessMethods:
             type: "array"
             items:
               $ref: "#/definitions/accessMethod"
@@ -872,6 +2349,28 @@ definitions:
         type: "array"
         items:
           type: "string"
+
+  manifestResponse:
+    type: "array"
+    items:
+      type: "object"
+      properties:
+        program:
+          type: "string"
+        collection:
+          type: "string"
+        patient:
+          type: "string"
+        studyInstanceUID:
+          type: "string"
+        seriesInstanceUID:
+          type: "string"
+        SOPInstanceUID:
+          type: "string"
+        accessMethods:
+          type: "array"
+          items:
+            $ref: "#/definitions/accessMethod"
 
   accessMethod:
     type: "object"
@@ -991,207 +2490,6 @@ definitions:
       "UTERUS",
       "WO INTER"
       ]
-
-  fileMetadata:
-    type: "object"
-    properties:
-      access:
-        type: "string"
-      acl:
-        type: "string"
-      case_barcode:
-        type: "string"
-      case_gdc_id:
-        type: "string"
-      data_category:
-        type: "string"
-      data_format:
-        type: "string"
-      data_type:
-        type: "string"
-      disease_code:
-        type: "string"
-      experimental_strategy:
-        type: "string"
-      file_gdc_id:
-        type: "string"
-      file_name_key:
-        type: "string"
-      file_size:
-        type: "number"
-      index_file_id:
-        type: "string"
-      index_file_name_key:
-        type: "string"
-      index_file_size:
-        type: "string"
-      platform:
-        type: "string"
-      program_name:
-        type: "string"
-      project_short_name:
-        type: "string"
-      sample_barcode:
-        type: "string"
-      sample_gdc_id:
-        type: "string"
-      type:
-        type: "string"
-
-  fileFilterSet:
-    type: "object"
-    properties:
-      access:
-        type: "array"
-        items:
-          type: "string"
-      acl:
-        type: "array"
-        items:
-          type: "string"
-      case_barcode:
-        type: "array"
-        items:
-          type: "string"
-      case_gdc_id:
-        type: "array"
-        items:
-          type: "string"
-      data_category:
-        type: "array"
-        items:
-          type: "string"
-      data_format:
-        type: "array"
-        items:
-          type: "string"
-      data_type:
-        type: "array"
-        items:
-          type: "string"
-      disease_code:
-        type: "array"
-        items:
-          type: "string"
-      experimental_strategy:
-        type: "array"
-        items:
-          type: "string"
-      file_gdc_id:
-        type: "array"
-        items:
-          type: "string"
-      file_name_key:
-        type: "array"
-        items:
-          type: "string"
-      file_size:
-        type: "array"
-        items:
-          type: "integer"
-      file_size_lte:
-        type: "array"
-        items:
-          type: "integer"
-      file_size_gte:
-        type: "array"
-        items:
-          type: "integer"
-      file_size_btw:
-        type: "array"
-        items:
-          type: "integer"
-      index_file_id:
-        type: "array"
-        items:
-          type: "string"
-      index_file_name_key:
-        type: "array"
-        items:
-          type: "string"
-      index_file_size:
-        type: "array"
-        items:
-          type: "integer"
-      index_file_size_lte:
-        type: "array"
-        items:
-          type: "integer"
-      index_file_size_gte:
-        type: "array"
-        items:
-          type: "integer"
-      index_file_size_btw:
-        type: "array"
-        items:
-          type: "integer"
-      platform:
-        type: "array"
-        items:
-          type: "string"
-      program_name:
-        type: "array"
-        items:
-          type: "string"
-      genomic_build:
-        type: "string"
-        enum: ["HG19", "HG38"]
-      offset:
-        type: "integer"
-        minimum: 0
-        default: 0
-      page:
-        type: "integer"
-        minimum: 1
-        default: 1
-      fetch_count:
-        type: "integer"
-        minimum: 1
-        maximum: 40000
-        default: 5000
-      project_short_name:
-        type: "array"
-        items:
-          type: "string"
-      sample_barcode:
-        type: "array"
-        items:
-          type: "string"
-      sample_gdc_id:
-        type: "array"
-        items:
-          type: "string"
-      type:
-        type: "array"
-        items:
-          type: "string"
-    example:
-      data_format: ["SVS"]
-
-  filePathResponse:
-    type: "object"
-    properties:
-      file_paths:
-        type: "array"
-        items:
-          $ref: "#/definitions/filePath"
-      code:
-        type: "integer"
-      notes:
-        type: "string"
-      uuids_not_found:
-        type: "array"
-        items:
-          type: "string"
-
-  filePath:
-    type: "object"
-    properties:
-      uuid:
-        type: "string"
-      gcs_path:
-        type: "string"
-
 
   errorMessage:
     type: "object"

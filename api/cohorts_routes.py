@@ -17,7 +17,7 @@ import logging
 import json
 from flask import jsonify, request
 #from api import app
-from . cohorts_views import get_cohort_info, get_cohorts, get_file_manifest, get_cohort_counts, create_cohort, edit_cohort
+from . cohorts_views import get_cohort_info, get_cohorts, get_file_manifest, get_cohort_preview, create_cohort, edit_cohort
 from . auth import auth_info, UserValidationException, validate_user
 from django.conf import settings
 from django.db import close_old_connections
@@ -230,16 +230,16 @@ def cohort_preview():
     response_obj = None
 
     try:
-        cohort_counts = get_cohort_counts()
+        cohort = get_cohort_preview()
         
-        if cohort_counts:
+        if cohort:
             # Presence of a message means something went wrong with the filters we received
-            if 'message' in cohort_counts:
-                response_obj = cohort_counts
+            if 'message' in cohort:
+                response_obj = cohort
                 code = 400
             else:
                 response_obj = {
-                    'data': cohort_counts
+                    'data': cohort
                 }
                 code = 200
                 

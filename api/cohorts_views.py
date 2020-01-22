@@ -18,6 +18,8 @@ import logging
 import json
 import django
 import re
+import os
+import requests
 
 from flask import request
 from werkzeug.exceptions import BadRequest
@@ -31,12 +33,13 @@ from cohorts.utils import get_sample_case_list_bq
 from idc_collections.models import Program
 
 from jsonschema import validate as schema_validate, ValidationError
-from . schemas.cohort_filter_schema import COHORT_FILTER_SCHEMA
+from . schemas.filterset import COHORT_FILTER_SCHEMA
 
 BLACKLIST_RE = settings.BLACKLIST_RE
 
 logger = logging.getLogger(settings.LOGGER_NAME)
 
+DJANGO_URI = os.getenv('DJANGO_URI')
 
 def get_file_manifest(cohort_id, user):
     file_manifest = None
@@ -135,26 +138,48 @@ def get_cohorts(user_email):
     return cohort_list
 
 
-def get_cohort_counts():
+def get_cohort_preview():
 
-    cohort_counts = None
+    preview = None
 
     try:
         request_data = request.get_json()
         schema_validate(request_data, COHORT_FILTER_SCHEMA)
 
-        if 'filters' not in request_data:
-            cohort_counts = {
+        if 'filter' not in request_data:
+            cohort = {
                 'message': 'No filters were provided; ensure that the request body contains a \'filters\' property.'
             }
         else:
-            cohort_counts = get_sample_case_list_bq(None, request_data['filters'])
+            param_defaults = {
+                "case_insensitive":True,
+                "include_filter":True,
+                "include_files":True,
+                "include_DOIs":True,
+                "include_URLs":True,
+                "fetch_count":5000,
+                "page":1,
+                "offset":0
+            }
 
-            if cohort_counts:
-                for prog in cohort_counts:
-                    if cohort_counts[prog]['case_count'] <= 0:
-                        cohort_counts[prog]['message'] = "No cases or samples found which meet the filter criteria for this program."
-                    cohort_counts[prog]['provided_filters'] = request_data['filters'][prog]
+            params = get_params(param_defaults)
+            try:
+                result = requests.post("{}/{}".format(DJANGO_URI, 'cohort/preview'),
+                            json = request_data,
+                            params = params)
+            except:
+                if result.status_code != 200:
+                   raise Exception("oops!")
+            #response = result.json()
+            return result
+
+#           cohort_counts = get_sample_case_list_bq(None, request_data['filters'])
+#
+#             if cohort_counts:
+#                 for prog in cohort_counts:
+#                     if cohort_counts[prog]['case_count'] <= 0:
+#                         cohort_counts[prog]['message'] = "No cases or samples found which meet the filter criteria for this program."
+#                     cohort_counts[prog]['provided_filters'] = request_data['filters'][prog]
 
     except BadRequest as e:
         logger.warn("[WARNING] Received bad request - couldn't load JSON.")
@@ -169,7 +194,7 @@ def get_cohort_counts():
     except Exception as e:
         logger.exception(e)
 
-    return cohort_counts
+    return cohort
 
 
 def create_cohort(user):
@@ -278,3 +303,11 @@ def edit_cohort(cohort_id, user, delete=False):
         }
 
     return cohort_info
+
+def get_params(param_defaults):
+    params = {}
+    for key in param_defaults:
+        params[key] = request.args.get(key)
+        if params[key] == None:
+            params[key] = param_defaults[key]
+    return params
