@@ -91,6 +91,8 @@ def create_app(test_config=None):
     app.register_blueprint(collections_routes.collections_bp)
     from . user_routes import user_bp
     app.register_blueprint(user_routes.user_bp)
+    from . program_routes import program_bp
+    app.register_blueprint(program_routes.program_bp)
 
     print("__init__.py, 90")
 

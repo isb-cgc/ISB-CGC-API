@@ -15,7 +15,6 @@
 #
 
 import logging
-import django
 import os
 import requests
 

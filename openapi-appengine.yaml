@@ -86,14 +86,20 @@ paths:
           schema:
             $ref: "#/definitions/errorMessage"
 
-  /collections:
+  /collections/{program_name}:
     get:
-      description: "Get a list of the available collections and versions of each."
+      description: "Get a list of the available collections and versions f a specified program."
       tags:
         - collections
       operationId: "getCollections"
       produces:
         - "application/json"
+      parameters:
+        - name: program_name
+          in: path
+          description: "Program name"
+          type: string
+          required: true
       responses:
         200:
           description: "A list of the collections available in this API with versions."
@@ -105,7 +111,7 @@ paths:
             $ref: "#/definitions/errorMessage"
 
   # Different versions of a collection can have different attributes
-  /collections/{collection_id}/{version}:
+  /collections//metadata/{collection_id}/{version}:
     get:
       description: "Get list of the attributes in a version of a collection"
       tags:
@@ -136,7 +142,7 @@ paths:
           schema:
             $ref: "#/definitions/errorMessage"
 
-  /collections/{collection_id}/{version}/{attribute_name}:
+  /collections/metadata/{collection_id}/{version}/{attribute_name}:
     get:
       description: "Get metadata for an attribute in a version of a collection"
       tags:
@@ -657,41 +663,51 @@ definitions:
 #        type: "integer"
 
   programListResponse:
-    type: "array"
-    items:
-      type: "object"
-      properties:
-        short_name:
-          type: "string"
-        name:
-          type: "string"
-        description:
-          type: "string"
-        active:
-          type: "boolean"
+    type: "object"
+    properties:
+      programs:
+        type: "array"
+        items:
+          type: "object"
+          properties:
+            short_name:
+              type: "string"
+            name:
+              type: "string"
+            description:
+              type: "string"
+            active:
+              type: "boolean"
+      code:
+        type: "integer"
 
   collectionListResponse:
-    type: "array"
-    items:
-      type: "object"
-      properties:
-        short_name:
-          type: "string"
-        name:
-          type: "string"
-        description:
-          type: "string"
-        active:
-          type: "boolean"
-        versions:
-          type: "array"
-          items:
-            type: "object"
-            properties:
-              version:
-                type: "string"
-              release_date:
-                type: "date"
+    type: "object"
+    properties:
+      collections:
+        type: "array"
+        items:
+          type: "object"
+          properties:
+            short_name:
+              type: "string"
+            name:
+              type: "string"
+            description:
+              type: "string"
+            active:
+              type: "boolean"
+            versions:
+              type: "array"
+              items:
+                type: "object"
+                properties:
+                  version:
+                    type: "string"
+                  release_date:
+                    type: "date"
+      code:
+        type: "integer"
 
   collectionAttributesResponse:
     type: "array"

@@ -33,16 +33,16 @@ logger = logging.getLogger(settings.LOGGER_NAME)
 @program_bp.route('/programs/', methods=['GET'], strict_slashes=False)
 def programs():
     """Retrieve the list of programs and builds currently available for cohort creation."""
+
     response = None
     
     try:
-    
         program_info = get_programs()
         
         if program_info:   
             response = jsonify({
                 'code': 200,
-                'data': program_info
+                'programs': program_info.text
             })
             response.status_code = 200
         else:

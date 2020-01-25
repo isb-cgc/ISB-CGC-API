@@ -14,27 +14,22 @@
 # limitations under the License.
 #
 
+
 import logging
+import os
+import requests
 
 from django.conf import settings
 
-from idc_collections.models import Program, Collection
-
 logger = logging.getLogger(settings.LOGGER_NAME)
 
+DJANGO_URI = os.getenv('DJANGO_URI')
 
 def get_programs():
-    django.setup()
     program_info = None
+
     try:
-        program_info = [
-            {
-                'name': x.name,
-                'description': x.description,
-                'projects': [{'name': y.name, 'description': y.description} for y in Project.objects.filter(program=x,active=1)]
-            }
-            for x in Program.get_public_programs()
-        ]
+        program_info = requests.get("{}/{}".format(DJANGO_URI, 'collections/api/public/'))
     except Exception as e:
         logger.exception(e)
 

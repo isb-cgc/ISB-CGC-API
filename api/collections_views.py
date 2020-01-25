@@ -15,42 +15,26 @@
 #
 
 import logging
-import django
+import os
+import requests
 
 from django.core.exceptions import ObjectDoesNotExist
 from django.conf import settings
 
-#  from idc_collections.models import Collection, CollectionVersion, CollectionField, FieldEnumerant
-
 logger = logging.getLogger(settings.LOGGER_NAME)
 
+DJANGO_URI = os.getenv('DJANGO_URI')
 
-# def get_collections():
-#     DJANGO_URI = os.getenv('DJANGO_URI')
-#     try:
-#         result = requests.get("{}/{}".format(DJANGO_URI, 'collections/'))
-#     except:
-#         if result.status_code != 200:
-#            raise Exception("oops!")
-#     #response = result.json()
-#     return result
-#
-#     django.setup()
-#     collections = None
-#     try:
-#         collections = [
-#             {
-#                 'name': collection.name,
-#                 'description': collection.description,
-#                 'versions': [{'version': version.version, 'date': version.date} for version in CollectionVersion.objects.filter(collection=collection)]
-#             }
-#             for collection in Collection.objects.all()
-#         ]
-#     except Exception as e:
-#         logger.exception(e)
-#
-#     return collections
-#
+def get_collections(program_name):
+    collections_info = None
+
+    try:
+        collections_info = requests.get("{}/{}/{}/".format(DJANGO_URI, 'collections/api',program_name))
+    except Exception as e:
+        logger.exception(e)
+
+    return collections_info
+
 # def get_collection_info(collection_id, version):
 #     django.setup()
 #     collection_info = None

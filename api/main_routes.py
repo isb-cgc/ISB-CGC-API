@@ -68,38 +68,6 @@ def oauth2callback():
 
 # This will likely be deleted at some point. It's here just to be able to test an API entrypoint that can be
 # satisfied by the webapp.
-@main_bp.route('/privacy/', methods=['GET'], strict_slashes=False)
-def privacy():
-    try:
-        privacy_info = get_privacy()
-
-        if privacy_info:
-            response = jsonify({
-                'code': 200,
-                'data': privacy_info
-            })
-            response.status_code = 200
-        else:
-            response = jsonify({
-                'code': 500,
-                'message': 'Encountered an error while retrieving the privacy info.'
-            })
-            response.status_code = 500
-    except Exception as e:
-        logger.error("[ERROR] While retrieving privacy information:")
-        logger.exception(e)
-        response = jsonify({
-            'code': 500,
-            'message': 'Encountered an error while retrieving the privacy list.'
-        })
-        response.status_code = 500
-    finally:
-        close_old_connections()
-
-    return response
-
-# This will likely be deleted at some point. It's here just to be able to test an API entrypoint that can be
-# satisfied by the webapp.
 @main_bp.route('/help/', methods=['GET'], strict_slashes=False)
 def help():
     try:
