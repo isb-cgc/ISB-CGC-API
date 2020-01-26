@@ -26,3 +26,6 @@ future==0.17.1
 python-dotenv==0.10.0
 ruamel.yaml==0.15.94
 google-cloud-storage==1.16.1
+pytest==5.2.2
+coverage==5.0a8
+openapi2jsonschema==0.9.1

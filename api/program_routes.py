@@ -1,4 +1,4 @@
-# 
+#
 # Copyright 2019, Institute for Systems Biology
 # 
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,27 +17,32 @@
 import logging
 import json
 from flask import jsonify, request
-from api import app
+#from api import app
 from django.conf import settings
 from django.db import close_old_connections
-from program_views import get_programs
+from . program_views import get_programs
+
+from flask import Blueprint
+from flask import g
+
+program_bp = Blueprint('program_bp', __name__, url_prefix='/v1')
 
 logger = logging.getLogger(settings.LOGGER_NAME)
 
 
-@app.route('/v1/programs/', methods=['GET'], strict_slashes=False)
+@program_bp.route('/programs/', methods=['GET'], strict_slashes=False)
 def programs():
     """Retrieve the list of programs and builds currently available for cohort creation."""
+
     response = None
     
     try:
-    
         program_info = get_programs()
         
         if program_info:   
             response = jsonify({
                 'code': 200,
-                'data': program_info
+                'programs': program_info.text
             })
             response.status_code = 200
         else:

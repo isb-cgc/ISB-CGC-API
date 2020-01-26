@@ -1,4 +1,4 @@
-# 
+#
 # Copyright 2019, Institute for Systems Biology
 # 
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,16 +17,21 @@
 import logging
 import json
 from flask import jsonify, request
-from api import app
-from auth import auth_info, UserValidationException, get_user
-from user_views import get_account_details
+#from api import app
+from . auth import auth_info, UserValidationException, get_user
+from . user_views import get_account_details
 from django.conf import settings
 from django.db import close_old_connections
+
+from flask import Blueprint
+from flask import g
+
+user_bp = Blueprint('user_bp', __name__, url_prefix='/v1')
 
 logger = logging.getLogger(settings.LOGGER_NAME)
 
 
-@app.route('/v1/users/account_details/', methods=['GET'], strict_slashes=False)
+@user_bp.route('/users/account_details/', methods=['GET'], strict_slashes=False)
 def account_details():
     """
     GET: Retrieve extended information for a specific user
