@@ -34,3 +34,15 @@ def get_programs():
         logger.exception(e)
 
     return program_info
+
+
+def get_collections(program_name):
+    collections_info = None
+
+    try:
+        collections_info = requests.get("{}/{}/{}/".format(DJANGO_URI, 'collections/api',program_name))
+    except Exception as e:
+        logger.exception(e)
+
+    return collections_info
+

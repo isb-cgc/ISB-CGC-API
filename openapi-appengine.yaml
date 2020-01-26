@@ -86,7 +86,7 @@ paths:
           schema:
             $ref: "#/definitions/errorMessage"
 
-  /collections/{program_name}:
+  /programs/{program_name}:
     get:
       description: "Get a list of the available collections and versions f a specified program."
       tags:
@@ -111,7 +111,7 @@ paths:
             $ref: "#/definitions/errorMessage"
 
   # Different versions of a collection can have different attributes
-  /collections//metadata/{collection_id}/{version}:
+  /collections/metadata/{collection_id}/{version}:
     get:
       description: "Get list of the attributes in a version of a collection"
       tags:

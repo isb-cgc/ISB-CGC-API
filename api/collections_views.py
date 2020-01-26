@@ -25,16 +25,6 @@ logger = logging.getLogger(settings.LOGGER_NAME)
 
 DJANGO_URI = os.getenv('DJANGO_URI')
 
-def get_collections(program_name):
-    collections_info = None
-
-    try:
-        collections_info = requests.get("{}/{}/{}/".format(DJANGO_URI, 'collections/api',program_name))
-    except Exception as e:
-        logger.exception(e)
-
-    return collections_info
-
 # def get_collection_info(collection_id, version):
 #     django.setup()
 #     collection_info = None

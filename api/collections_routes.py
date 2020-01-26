@@ -18,7 +18,7 @@ import logging
 import json
 from flask import jsonify, request
 # from api import app
-from . collections_views import get_collections #, get_collection_info, get_collection_field_info
+#from . collections_views import get_collection_info, get_collection_field_info
 from django.conf import settings
 from django.db import close_old_connections
 
@@ -29,40 +29,6 @@ collections_bp = Blueprint('collections_bp', __name__, url_prefix='/v1')
 
 logger = logging.getLogger(settings.LOGGER_NAME)
 
-
-@collections_bp.route('/collections/<program_name>', methods=['GET'], strict_slashes=False)
-def collections(program_name):
-    """Retrieve the list of collections and versions in prom <program_name>."""
-    response = None
-
-    try:
-
-        collection_info = get_collections(program_name)
-
-        if collection_info:
-            response = jsonify({
-                'code': 200,
-                'collections': collection_info.text
-            })
-            response.status_code = 200
-        else:
-            response = jsonify({
-                'code': 500,
-                'message': 'Encountered an error while retrieving the collection list.'
-            })
-            response.status_code = 500
-    except Exception as e:
-        logger.error("[ERROR] While retrieving collection information:")
-        logger.exception(e)
-        response = jsonify({
-            'code': 500,
-            'message': 'Encountered an error while retrieving the collection list.'
-        })
-        response.status_code = 500
-    finally:
-        close_old_connections()
-
-    return response
 
 
 @collections_bp.route('/collections/<collection_id>/<version>', methods=['GET'], strict_slashes=False)
