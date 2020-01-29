@@ -20,7 +20,7 @@ from flask import jsonify, request
 #from api import app
 from django.conf import settings
 from django.db import close_old_connections
-from . program_views import get_programs, get_collections
+from . program_views import get_programs, get_collections, get_collection_info
 
 from flask import Blueprint
 from flask import g
@@ -67,16 +67,16 @@ def programs():
 @program_bp.route('/programs/<program_name>', methods=['GET'], strict_slashes=False)
 def collections(program_name):
     """Retrieve the list of collections and versions in program <program_name>."""
-    response = None
+    collections_info = None
 
     try:
 
-        collection_info = get_collections(program_name)
+        collections_info = get_collections(program_name)
 
-        if collection_info:
+        if collections_info:
             response = jsonify({
                 'code': 200,
-                'collections': collection_info.text
+                'collections': collections_info.text
             })
             response.status_code = 200
         else:
@@ -91,6 +91,41 @@ def collections(program_name):
         response = jsonify({
             'code': 500,
             'message': 'Encountered an error while retrieving the collection list.'
+        })
+        response.status_code = 500
+    finally:
+        close_old_connections()
+
+    return response
+
+
+
+@program_bp.route('/programs/<program_name>/<collection_name>/<version>', methods=['GET'], defaults={'version': None}, strict_slashes=False)
+def collection(program_name,collection_name, version):
+    """"Get a list of the available fields for a specific version of a collection."""
+    collection_info = None
+
+    try:
+        collection_info = get_collection_info(program_name, collection_name, version)
+
+        if collection_info:
+            response = jsonify({
+                'code': 200,
+                'collection': collection_info.text
+            })
+            response.status_code = 200
+        else:
+            response = jsonify({
+                'code': 500,
+                'message': 'Encountered an error while retrieving the collection list.'
+            })
+            response.status_code = 500
+    except Exception as e:
+        logger.error("[ERROR] While retrieving collection information:")
+        logger.exception(e)
+        response = jsonify({
+            'code': 500,
+            'message': 'Encountered an error while retrieving the collection metadata.'
         })
         response.status_code = 500
     finally:

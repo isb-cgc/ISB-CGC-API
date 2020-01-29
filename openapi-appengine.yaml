@@ -18,7 +18,6 @@ schemes:
 tags:
   - name: default
   - name: cohorts
-  - name: collections
   - name: manifest
   - name: programs
   - name: query
@@ -88,16 +87,16 @@ paths:
 
   /programs/{program_name}:
     get:
-      description: "Get a list of the available collections and versions f a specified program."
+      description: "Get a list of the available collections and versions for a specified program."
       tags:
-        - collections
+        - programs
       operationId: "getCollections"
       produces:
         - "application/json"
       parameters:
         - name: program_name
           in: path
-          description: "Program name"
+          description: "Program short_name"
           type: string
           required: true
       responses:
@@ -110,69 +109,38 @@ paths:
           schema:
             $ref: "#/definitions/errorMessage"
 
-  # Different versions of a collection can have different attributes
-  /collections/metadata/{collection_id}/{version}:
+  # Different versions of a collection can have different fields
+  /programs/{program_name}/{collection_name}/{version}:
     get:
-      description: "Get list of the attributes in a version of a collection"
+      description: "Get list of the fields in a version of a collection. If no version is given, return data for the latest version"
       tags:
-        - collections
-      operationId: "getAttributes"
+        - programs
+      operationId: "getFields"
       consumes:
         - "application/json"
       produces:
         - "application/json"
       parameters:
-        - name: collection_id
+        - name: program_name
           in: path
-          description: "Collection ID"
+          description: "Program short_name"
+          type: string
+          required: true
+        - name: collection_name
+          in: path
+          description: "Collection short_name"
           type: string
           required: true
         - name: version
           in: path
           description: "Version"
           type: string
-          required: true
+          required: false
       responses:
         200:
-          description: "A list of the attributes in a specific version of a collection"
+          description: "A list of the fields in a specific version of a collection"
           schema:
-            $ref: "#/definitions/collectionAttributesResponse"
-        500:
-          description: "Server error message"
-          schema:
-            $ref: "#/definitions/errorMessage"
-
-  /collections/metadata/{collection_id}/{version}/{attribute_name}:
-    get:
-      description: "Get metadata for an attribute in a version of a collection"
-      tags:
-        - collections
-      operationId: "getAttributeMetadata"
-      consumes:
-        - "application/json"
-      produces:
-        - "application/json"
-      parameters:
-        - name: collection_id
-          in: path
-          description: "Collection ID"
-          type: string
-          required: true
-        - name: version
-          in: path
-          description: "Version"
-          type: string
-          required: true
-        - name: attribute_name
-          in: path
-          description: "Attribute Name"
-          type: string
-          required: true
-      responses:
-        200:
-          description: "Metadata for a attribute in a collection"
-          schema:
-            $ref: "#/definitions/collectionAttributeMetadataResponse"
+            $ref: "#/definitions/collectionFieldsResponse"
         500:
           description: "Server error message"
           schema:
@@ -259,7 +227,7 @@ paths:
         200:
           description: "Information about the specified cohort"
           schema:
-            $ref: "#/definitions/cohort"
+            $ref: "#/definitions/cohortResponse"
         500:
           description: "Server error message"
           schema:
@@ -362,7 +330,7 @@ paths:
         200:
           description: "Summary information about the cohort generated."
           schema:
-            $ref: "#/definitions/cohort"
+            $ref: "#/definitions/cohortResponse"
         500:
           description: "Server error message"
           schema:
@@ -438,7 +406,7 @@ paths:
         200:
           description: "Information about the specified cohort"
           schema:
-            $ref: "#/definitions/cohort"
+            $ref: "#/definitions/cohortResponse"
         500:
           description: "Server error message"
           schema:
@@ -513,7 +481,7 @@ paths:
         200:
           description: "Summary information about the deleted cohort."
           schema:
-            $ref: "#/definitions/cohort"
+            $ref: "#/definitions/cohortResponse"
         500:
           description: "Server error message"
           schema:
@@ -575,7 +543,7 @@ paths:
         200:
           description: "Query results"
           schema:
-            $ref: "#/definitions/queryResults"
+            $ref: "#/definitions/queryResponse"
         500:
           description: "Server error message"
           schema:
@@ -709,28 +677,41 @@ definitions:
       code:
         type: "integer"
 
-  collectionAttributesResponse:
-    type: "array"
-    items:
-      type: "string"
-
-  collectionAttributeMetadataResponse:
+  collectionFieldsResponse:
     type: "object"
     properties:
-      name:
-        type: "string"
-      display_name:
-        type: "string"
-      description:
-        type: "string"
-      active:
-        type: "boolean"
-      cross_collections:
-        type: "boolean"
-      enumerated_values:
-        type: "array"
-        items:
-          type: "string"
+      collection:
+        type: "object"
+        properties:
+          collection_name:
+            type: "string"
+          version:
+            type: "string"
+          release_date:
+            type: "date"
+          fields:
+            type: "array"
+            items:
+              type: "object"
+              properties:
+                id:
+                  type: "integer"
+                name:
+                  type: "string"
+                display_name:
+                  type: "string"
+                description:
+                  type: "string"
+                data_type:
+                  type: "string"
+                active:
+                  type: "boolean"
+                cross_collections:
+                  type: "boolean"
+                preformatted_values:
+                  type: "boolean"
+      code:
+        type: "integer"
 
   cohortList:
     type: "array"
@@ -759,15 +740,18 @@ definitions:
             hash:
               type: "string"
 
-  cohort:
+  cohortResponse:
     type: "object"
     properties:
-      filter:
-        $ref: "#/definitions/filterSet"
-      data:
-        $ref: "#/definitions/cohortObject"
-#      code:
-#        type: "integer"
+      cohort:
+        type: "object"
+        properties:
+          filter:
+            $ref: "#/definitions/filterSet"
+          data:
+            $ref: "#/definitions/cohortObject"
+      code:
+        type: "integer"
 #    example:
 #      name: "An example cohort name."
 #      filters:
@@ -2000,17 +1984,22 @@ definitions:
       "dummy"
     ]
 
-  queryResults:
-    type: "array"
-    items:
-      type: "object"
-      properties:
-        clinical:
-          $ref: "#/definitions/clinicalQueryResults"
-        imaging:
-          $ref: "#/definitions/imagingQueryResults"
-        derived:
-          $ref: "#/definitions/derivedQueryResults"
+  queryResponse:
+    type: "object"
+    properties:
+      query_results:
+        type: "array"
+        items:
+          type: "object"
+          properties:
+            clinical:
+              $ref: "#/definitions/clinicalQueryResults"
+            imaging:
+              $ref: "#/definitions/imagingQueryResults"
+            derived:
+              $ref: "#/definitions/derivedQueryResults"
+      code:
+        type: "integer"
 
 
 
@@ -2367,26 +2356,31 @@ definitions:
           type: "string"
 
   manifestResponse:
-    type: "array"
-    items:
-      type: "object"
-      properties:
-        program:
-          type: "string"
-        collection:
-          type: "string"
-        patient:
-          type: "string"
-        studyInstanceUID:
-          type: "string"
-        seriesInstanceUID:
-          type: "string"
-        SOPInstanceUID:
-          type: "string"
-        accessMethods:
-          type: "array"
-          items:
-            $ref: "#/definitions/accessMethod"
+    type: "object"
+    properties:
+      manifest:
+        type: "array"
+        items:
+          type: "object"
+          properties:
+            program:
+              type: "string"
+            collection:
+              type: "string"
+            patient:
+              type: "string"
+            studyInstanceUID:
+              type: "string"
+            seriesInstanceUID:
+              type: "string"
+            SOPInstanceUID:
+              type: "string"
+            accessMethods:
+              type: "array"
+              items:
+                $ref: "#/definitions/accessMethod"
+      code:
+        type: "integer"
 
   accessMethod:
     type: "object"

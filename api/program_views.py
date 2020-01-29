@@ -46,3 +46,13 @@ def get_collections(program_name):
 
     return collections_info
 
+def get_collection_info(program_name, collection_name, version):
+    collection_info = None
+
+    try:
+        collection_info = requests.get("{}/{}/{}/{}/{}".format(DJANGO_URI, 'collections/api',program_name, collection_name, version))
+    except Exception as e:
+        logger.exception(e)
+
+    return collection_info
+

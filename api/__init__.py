@@ -28,9 +28,6 @@ import os
 
 from flask import Flask
 
-
-
-
 def create_app(test_config=None):
     # create and configure the app
     app = Flask(__name__, instance_relative_config=True)
@@ -87,8 +84,6 @@ def create_app(test_config=None):
     app.register_blueprint(cohorts_routes.cohorts_bp)
     from . file_routes import file_bp
     app.register_blueprint(file_routes.file_bp)
-    from . collections_routes import collections_bp
-    app.register_blueprint(collections_routes.collections_bp)
     from . user_routes import user_bp
     app.register_blueprint(user_routes.user_bp)
     from . program_routes import program_bp
