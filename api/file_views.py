@@ -23,7 +23,7 @@ from werkzeug.exceptions import BadRequest
 
 from django.conf import settings
 
-from auth import UserValidationException
+from . auth import UserValidationException
 
 logger = logging.getLogger(settings.LOGGER_NAME)
 

@@ -37,7 +37,7 @@ DEBUG                   = (os.environ.get('DEBUG', 'False') == 'True')
 print("[STATUS] DEBUG mode is "+str(DEBUG))
 
 SHARED_SOURCE_DIRECTORIES = [
-    'ISB-CGC-Common'
+    'IDC-Common'
 ]
 
 # Add the shared Django application subdirectory to the Python module search path
@@ -235,7 +235,7 @@ INSTALLED_APPS = (
     'django.contrib.staticfiles',
     'sharing',
     'cohorts',
-    'projects',
+    'idc_collections',
     'data_upload',
 )
 
@@ -386,7 +386,6 @@ if IS_DEV:
 ##########################
 
 GOOGLE_APPLICATION_CREDENTIALS  = os.path.join(os.path.dirname(__file__), os.environ.get('GOOGLE_APPLICATION_CREDENTIALS')) if os.environ.get('GOOGLE_APPLICATION_CREDENTIALS') else ''
-
 OAUTH2_CLIENT_ID = os.environ.get('OAUTH2_CLIENT_ID', '')
 
 OAUTH2_CLIENT_SECRET = os.environ.get('OAUTH2_CLIENT_SECRET', '')
