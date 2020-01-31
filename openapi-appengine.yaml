@@ -3,7 +3,7 @@ swagger: "2.0"
 info:
   description: "IDC API Endpoints, version 1"
   title: "IDC API"
-  version: "4.0"
+  version: "1.0"
 host: "api-dot-idc-dev.appspot.com"
 basePath: "/v1"
 # [END swagger]

@@ -40,35 +40,9 @@ SHARED_SOURCE_DIRECTORIES = [
     'ISB-CGC-Common'
 ]
 
-# The Google AppEngine library and the Google Cloud APIs don't play nice. Teach them to get along.
-# This unfortunately requires either hardcoding the path to the SDK, or sorting out a way to
-# provide an environment variable indicating where it is.
-# From https://github.com/GoogleCloudPlatform/python-repo-tools/blob/master/gcp_devrel/testing/appengine.py#L26
-def setup_sdk_imports():
-    """Sets up appengine SDK third-party imports."""
-    sdk_path = os.environ.get('GAE_SDK_PATH', '/usr/lib/google-cloud-sdk')
-
-    # Trigger loading of the Cloud APIs so they're in sys.modules
-    import google.cloud
-
-    # The libraries are specifically under platform/google_appengine
-    if os.path.exists(os.path.join(sdk_path, 'platform/google_appengine')):
-        sdk_path = os.path.join(sdk_path, 'platform/google_appengine')
-
-    # This sets up libraries packaged with the SDK, but puts them last in
-    # sys.path to prevent clobbering newer versions
-    if 'google' in sys.modules:
-        sys.modules['google'].__path__.append(
-            os.path.join(sdk_path, 'google'))
-
-    sys.path.append(sdk_path)
-
-
 # Add the shared Django application subdirectory to the Python module search path
 for directory_name in SHARED_SOURCE_DIRECTORIES:
     sys.path.append(os.path.join(BASE_DIR, directory_name))
-
-setup_sdk_imports()
 
 ALLOWED_HOSTS = list(set(os.environ.get('ALLOWED_HOST', 'localhost').split(',') + ['localhost', '127.0.0.1', '[::1]', gethostname(), gethostbyname(gethostname()),]))
 # Testing health checks problem
@@ -407,11 +381,9 @@ ACCOUNT_DEFAULT_HTTP_PROTOCOL = 'https'
 if IS_DEV:
     ACCOUNT_DEFAULT_HTTP_PROTOCOL = 'http'
 
-
 ##########################
 #   End django-allauth   #
 ##########################
-
 
 GOOGLE_APPLICATION_CREDENTIALS  = os.path.join(os.path.dirname(__file__), os.environ.get('GOOGLE_APPLICATION_CREDENTIALS')) if os.environ.get('GOOGLE_APPLICATION_CREDENTIALS') else ''
 
