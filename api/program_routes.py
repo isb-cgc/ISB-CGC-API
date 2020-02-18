@@ -15,15 +15,12 @@
 #
 
 import logging
-import json
-from flask import jsonify, request
-#from api import app
+from flask import jsonify
 from django.conf import settings
 from django.db import close_old_connections
 from . program_views import get_programs, get_collections, get_collection_info
 
 from flask import Blueprint
-from flask import g
 
 program_bp = Blueprint('program_bp', __name__, url_prefix='/v1')
 
@@ -64,6 +61,7 @@ def programs():
         
     return response
 
+
 @program_bp.route('/programs/<program_name>', methods=['GET'], strict_slashes=False)
 def collections(program_name):
     """Retrieve the list of collections and versions in program <program_name>."""
@@ -99,15 +97,13 @@ def collections(program_name):
     return response
 
 
-
-@program_bp.route('/programs/<program_name>/<collection_name>/<version>', methods=['GET'], defaults={'version': None}, strict_slashes=False)
-def collection(program_name,collection_name, version):
+@program_bp.route('/programs/<program_name>/<collection_name>/', methods=['GET'], strict_slashes=False)
+def collection(program_name, collection_name):
     """"Get a list of the available fields for a specific version of a collection."""
     collection_info = None
 
     try:
-        collection_info = get_collection_info(program_name, collection_name, version)
-
+        collection_info = get_collection_info(program_name, collection_name)
         if collection_info:
             response = jsonify({
                 'code': 200,

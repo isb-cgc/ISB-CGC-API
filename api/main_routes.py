@@ -48,7 +48,7 @@ def about():
     response = jsonify({
         'code': 200,
         'message': 'Welcome to the NCI IDC API, Version 1.',
-        'documentation': 'SwaggerUI interface available at <{}/swagger/>.'.format(settings.BASE_API_URL) +
+        'documentation': 'SwaggerUI interface available at <{}/v1/swagger/>.'.format(settings.BASE_API_URL) +
              'Documentation available at <https://isb-cancer-genomics-cloud.readthedocs.io/en/latest/sections/progapi/Programmatic-API.html>'
     })
     response.status_code = 200

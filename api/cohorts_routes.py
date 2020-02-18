@@ -17,7 +17,7 @@ import logging
 import json
 from flask import jsonify, request
 #from api import app
-from . cohorts_views import get_cohort_info, get_cohorts, get_file_manifest, get_cohort_preview, create_cohort, edit_cohort
+from . cohorts_views import post_cohort_preview, create_cohort#,get_cohort_info, get_cohorts, get_file_manifest, get_cohort_preview, create_cohort, edit_cohort
 from . auth import auth_info, UserValidationException, validate_user
 from django.conf import settings
 from django.db import close_old_connections
@@ -28,6 +28,51 @@ from flask import Blueprint
 from flask import g
 
 cohorts_bp = Blueprint('cohorts_bp', __name__, url_prefix='/v1')
+
+
+@cohorts_bp.route('/cohorts/preview/', methods=['POST'], strict_slashes=False)
+def cohort_preview():
+    """List the samples, cases, and counts a given set of cohort filters would produce"""
+
+    code = None
+    response_obj = None
+
+    try:
+        cohort = post_cohort_preview()
+
+        if cohort:
+            # Presence of a message means something went wrong with the filters we received
+            if 'message' in cohort:
+                response_obj = cohort
+                code = 400
+            else:
+                response_obj = {
+                    'data': cohort
+                }
+                code = 200
+
+        # Lack of a valid object means something went wrong on the server
+        else:
+            response_obj = {
+                'message': "Error while attempting to retrieve case and sample counts for these filters."
+            }
+            code = 500
+
+    except Exception as e:
+        logger.exception(e)
+        response_obj = {
+            'message': 'Encountered an error while attempting to build this cohort preview.'
+        }
+        code = 500
+    finally:
+        close_old_connections()
+
+    response_obj['code'] = code
+    response = jsonify(response_obj)
+    response.status_code = code
+
+    return response
+
 
 @cohorts_bp.route('/cohorts/<int:cohort_id>/', methods=['GET', 'DELETE'], strict_slashes=False)
 def cohort(cohort_id):
@@ -107,7 +152,8 @@ def cohorts():
 
     try:
         user_info = auth_info()
-        user = validate_user(user_info['email'])
+        #user = validate_user(user_info['email'])
+        user = True
 
         if not user:
             response = jsonify({
@@ -122,17 +168,21 @@ def cohorts():
                 info = create_cohort(user)
 
             if info:
-                response_obj = {}
-                
+                # response_obj = {}
+                #
                 if 'message' in info:
                     code = 400
                 else:
                     code = 200
-
-                response_obj['data'] = info
-                response_obj['code'] = code
-                response = jsonify(response_obj)
+                response = jsonify({
+                    'code': code,
+                    'cohortSpec': info.text
+                })
                 response.status_code = code
+                #
+                # response_obj['data'] = info.text
+                # response_obj['code'] = code
+                # response = jsonify(response_obj)
 
             # Lack of a valid object means something went wrong on the server
             else:
@@ -163,6 +213,7 @@ def cohorts():
         close_old_connections()
         
     return response
+
 
 @cohorts_bp.route('/cohorts/<int:cohort_id>/file_manifest/', methods=['POST', 'GET'], strict_slashes=False)
 def cohort_file_manifest(cohort_id):
@@ -222,45 +273,3 @@ def cohort_file_manifest(cohort_id):
     return response
 
 
-@cohorts_bp.route('/cohorts/preview/', methods=['POST'], strict_slashes=False)
-def cohort_preview():
-    """List the samples, cases, and counts a given set of cohort filters would produce"""
-
-    code = None
-    response_obj = None
-
-    try:
-        cohort = get_cohort_preview()
-        
-        if cohort:
-            # Presence of a message means something went wrong with the filters we received
-            if 'message' in cohort:
-                response_obj = cohort
-                code = 400
-            else:
-                response_obj = {
-                    'data': cohort
-                }
-                code = 200
-                
-        # Lack of a valid object means something went wrong on the server
-        else:
-            response_obj = {
-                'message': "Error while attempting to retrieve case and sample counts for these filters."
-            }
-            code = 500
-            
-    except Exception as e:
-        logger.exception(e)
-        response_obj = {
-            'message': 'Encountered an error while attempting to build this cohort preview.'
-        }
-        code = 500
-    finally:
-        close_old_connections()
-
-    response_obj['code'] = code
-    response = jsonify(response_obj)
-    response.status_code = code
-
-    return response

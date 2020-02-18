@@ -28,9 +28,9 @@ from django.contrib.auth.models import User as Django_User
 from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 from django.conf import settings
 
-from cohorts.models import Cohort_Perms, Cohort, Filters
+#from cohorts.models import Cohort_Perms, Cohort, Filters
 #from cohorts.utils import get_sample_case_list_bq
-from idc_collections.models import Program
+#from idc_collections.models import Program
 
 from jsonschema import validate as schema_validate, ValidationError
 from . schemas.filterset import COHORT_FILTER_SCHEMA
@@ -138,9 +138,60 @@ def get_cohorts(user_email):
     return cohort_list
 
 
-def get_cohort_preview():
+# def post_create_cohort():
+#
+#     preview = None
+#
+#     try:
+#         request_data = request.get_json()
+#         schema_validate(request_data, COHORT_FILTER_SCHEMA)
+#
+#         if 'filter' not in request_data:
+#             cohort = {
+#                 'message': 'No filters were provided; ensure that the request body contains a \'filters\' property.'
+#             }
+#         else:
+#             param_defaults = {
+#                 "case_insensitive":True,
+#                 "include_filter":True,
+#                 "include_files":True,
+#                 "include_DOIs":True,
+#                 "include_URLs":True,
+#                 "fetch_count":5000,
+#                 "page":1,
+#                 "offset":0
+#             }
+#
+#             params = get_params(param_defaults)
+#             try:
+#                 result = requests.post("{}/{}".format(DJANGO_URI, 'cohort/api/save_cohort'),
+#                             json = request_data,
+#                             params = params)
+#             except:
+#                 if result.status_code != 200:
+#                    raise Exception("oops!")
+#             #response = result.json()
+#             return result
+#
+#     except BadRequest as e:
+#         logger.warn("[WARNING] Received bad request - couldn't load JSON.")
+#         cohort_counts = {
+#             'message': 'The JSON provided in this request appears to be improperly formatted.',
+#         }
+#     except ValidationError as e:
+#         logger.warn('[WARNING] Filters rejected for improper formatting: {}'.format(e))
+#         cohort_counts = {
+#             'message': 'Filters were improperly formatted.'
+#         }
+#     except Exception as e:
+#         logger.exception(e)
+#
+#     return cohort
 
-    preview = None
+
+def post_cohort_preview():
+
+    result = None
 
     try:
         request_data = request.get_json()
@@ -164,14 +215,13 @@ def get_cohort_preview():
 
             params = get_params(param_defaults)
             try:
-                result = requests.post("{}/{}".format(DJANGO_URI, 'cohort/preview'),
+                result = requests.post("{}/{}".format(DJANGO_URI, 'cohort/api/preview'),
                             json = request_data,
                             params = params)
             except:
                 if result.status_code != 200:
                    raise Exception("oops!")
             #response = result.json()
-            return result
 
 #           cohort_counts = get_sample_case_list_bq(None, request_data['filters'])
 #
@@ -183,18 +233,18 @@ def get_cohort_preview():
 
     except BadRequest as e:
         logger.warn("[WARNING] Received bad request - couldn't load JSON.")
-        cohort_counts = {
+        result = {
             'message': 'The JSON provided in this request appears to be improperly formatted.',
         }
     except ValidationError as e:
         logger.warn('[WARNING] Filters rejected for improper formatting: {}'.format(e))
-        cohort_counts = {
+        result = {
             'message': 'Filters were improperly formatted.'
         }
     except Exception as e:
         logger.exception(e)
 
-    return cohort
+    return result
 
 
 def create_cohort(user):
@@ -210,7 +260,7 @@ def create_cohort(user):
             }
             return cohort_info
 
-        if 'filters' not in request_data:
+        if 'filterSet' not in request_data:
             cohort_info = {
                 'message': 'Filters were not provided; at least one filter must be provided for a cohort to be valid.' +
                        ' The cohort was not made.',
@@ -220,8 +270,8 @@ def create_cohort(user):
         blacklist = re.compile(BLACKLIST_RE, re.UNICODE)
         match = blacklist.search(str(request_data['name']))
 
-        if not match and 'desc' in request_data:
-            match = blacklist.search(str(request_data['desc']))
+        if not match and 'description' in request_data:
+            match = blacklist.search(str(request_data['description']))
 
         if match:
             cohort_info = {
@@ -230,12 +280,12 @@ def create_cohort(user):
             }
 
         else:
-            result = make_cohort(user, **request_data)
-
-            if 'message' in result:
-                cohort_info = result
-            else:
-                cohort_info = get_cohort_info(result['cohort_id'])
+            try:
+                data = {"user_name":"bill", "request_data":request_data}
+                cohort_info = requests.post("{}/{}/".format(DJANGO_URI, 'cohorts/api/save_cohort'),
+                                json = data)
+            except Exception as e:
+                logger.exception(e)
 
     except BadRequest as e:
         logger.warn("[WARNING] Received bad request - couldn't load JSON.")

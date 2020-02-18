@@ -19,6 +19,8 @@ import logging
 import os
 import requests
 
+from flask import request
+
 from django.conf import settings
 
 logger = logging.getLogger(settings.LOGGER_NAME)
@@ -46,11 +48,18 @@ def get_collections(program_name):
 
     return collections_info
 
-def get_collection_info(program_name, collection_name, version):
+def get_collection_info(program_name, collection_name):
     collection_info = None
 
+    request_string = {}
+
+    for key in request.args.keys():
+        request_string[key] = request.args.get(key)
+
     try:
-        collection_info = requests.get("{}/{}/{}/{}/{}".format(DJANGO_URI, 'collections/api',program_name, collection_name, version))
+        collection_info = requests.get("{}/{}/{}/{}/".format(
+            DJANGO_URI, 'collections/api',program_name, collection_name),
+            params=request_string)
     except Exception as e:
         logger.exception(e)
 

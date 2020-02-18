@@ -4,6 +4,7 @@ import tempfile
 import pytest
 from api import create_app
 
+
 @pytest.fixture
 def app():
     db_fd, db_path = tempfile.mkstemp()
@@ -13,15 +14,11 @@ def app():
         'DATABASE': db_path,
     })
 
-
-    '''with app.app_context():
-        init_db()
-        get_db().executescript(_data_sql)'''
-
     yield app
 
     os.close(db_fd)
     os.unlink(db_path)
+
 
 @pytest.fixture
 def client(app):
