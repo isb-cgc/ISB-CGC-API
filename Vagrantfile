@@ -7,6 +7,7 @@ Vagrant.configure(2) do |config|
     # API ports
     config.vm.network "forwarded_port", guest: 8095, host: 8095
     config.vm.network "forwarded_port", guest: 9005, host: 9005
+    config.vm.network "forwarded_port", guest: 3306, host: 3306
 
     config.vm.synced_folder ".", "/home/vagrant/API"
     config.vm.synced_folder "../", "/home/vagrant/parentDir"
