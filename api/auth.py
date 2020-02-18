@@ -17,6 +17,7 @@
 import logging
 import base64
 import json
+import os
 import requests
 import django
 from flask import request, jsonify
@@ -52,6 +53,12 @@ def auth_info():
         user_info = json.loads(info_json)
         if 'email' not in user_info:
             raise UserValidationException("Couldn't obtain user email - the correct scopes may not have been provided during authorization!")
+    elif os.getenv("DEBUG"):
+        logger.info("[STATUS] Using debug API user info")
+        user_info = {
+            'id' : os.getenv('DEBUG_API_ID'),
+            'email' : os.getenv('DEBUG_API_EMAIL')
+        }
     else:
         logger.info("[STATUS] No user encoded info found.")
         user_info = {'id': 'anonymous', 'email': 'Anonymous'}
