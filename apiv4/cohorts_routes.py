@@ -60,7 +60,11 @@ def cohort(cohort_id):
 
                 if cohort_info:
                     response_obj = {'data': cohort_info}
-                    code = 400 if 'message' in cohort_info else 200
+                    code = 200
+                    if 'message' in cohort_info:
+                        code = 400
+                        if not cohort_info.get('delete_permission',False):
+                            code = 403
                 else:
                     response_obj = {
                         'message': "Cohort ID {} was not found.".format(str(cohort_id))
