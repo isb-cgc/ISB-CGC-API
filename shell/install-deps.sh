@@ -52,6 +52,7 @@ if [ -z "${CI}" ]; then
     # Clean out lib to prevent confusion over multiple builds in local development
     # and prep for local install
     echo "Emptying out ${HOMEROOT}/lib/ ..."
+    rm -rf "${HOMEROOT}/lib/"
 fi
 
 # Install PIP + Dependencies
