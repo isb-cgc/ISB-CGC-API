@@ -26,4 +26,3 @@ future==0.17.1
 python-dotenv==0.10.0
 ruamel.yaml==0.15.94
 google-cloud-storage==1.16.1
-
