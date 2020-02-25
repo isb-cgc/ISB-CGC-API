@@ -17,7 +17,7 @@ import logging
 import json
 from flask import jsonify, request
 #from api import app
-from . cohorts_views import post_cohort_preview, create_cohort#,get_cohort_info, get_cohorts, get_file_manifest, get_cohort_preview, create_cohort, edit_cohort
+from . cohorts_views import post_cohort_preview, create_cohort, get_cohort_objects, get_cohort_list#, get_cohorts, get_file_manifest, get_cohort_preview, create_cohort, edit_cohort
 from . auth import auth_info, UserValidationException, validate_user
 from django.conf import settings
 from django.db import close_old_connections
@@ -74,16 +74,17 @@ def cohort_preview():
     return response
 
 
-@cohorts_bp.route('/cohorts/<int:cohort_id>/', methods=['GET', 'DELETE'], strict_slashes=False)
+@cohorts_bp.route('/cohorts/<int:cohort_id>/', methods=['GET'], strict_slashes=False)
 def cohort(cohort_id):
     """
     GET: Retrieve extended information for a specific cohort
-    PATCH: Edit an extent cohort
     """
+
 
     try:
         user_info = auth_info()
-        user = validate_user(user_info['email'], cohort_id)
+#        user = validate_user(user_info['email'], cohort_id)
+        user = True
 
         response = None
         code = None
@@ -96,10 +97,7 @@ def cohort(cohort_id):
             response.status_code = 500
         else:
             if request.method == 'GET':
-                include_barcodes = (request.args.get('include_barcodes', default="false", type=str).lower() == "true")
-                cohort_info = get_cohort_info(cohort_id, include_barcodes)
-            else:
-                cohort_info = edit_cohort(cohort_id, user, delete=(request.method == 'DELETE'))
+                cohort_info = get_cohort_objects(cohort_id)
 
             if cohort_info:
                 response_obj = {}
@@ -109,7 +107,7 @@ def cohort(cohort_id):
                 else:
                     code = 200
                     
-                response_obj['data'] = cohort_info
+                response_obj['cohort'] = cohort_info.text
                 response_obj['code'] = code
                 response = jsonify(response_obj)
                 response.status_code = code
@@ -139,7 +137,9 @@ def cohort(cohort_id):
     return response
 
 
-@cohorts_bp.route('/cohorts/', methods=['GET', 'POST'], strict_slashes=False)
+
+
+@cohorts_bp.route('/cohorts/', methods=('GET', 'POST'), strict_slashes=False)
 def cohorts():
     """
     GET: Retrieve a user's list of cohorts
@@ -163,7 +163,7 @@ def cohorts():
             response.status_code = 500
         else:
             if request.method == 'GET':
-                info = get_cohorts(user_info['email'])
+                info = get_cohort_list(user)
             else:
                 info = create_cohort(user)
 
@@ -215,7 +215,7 @@ def cohorts():
     return response
 
 
-@cohorts_bp.route('/cohorts/<int:cohort_id>/file_manifest/', methods=['POST', 'GET'], strict_slashes=False)
+@cohorts_bp.route('/cohorts/<int:cohort_id>/', methods=['POST', 'GET'], strict_slashes=False)
 def cohort_file_manifest(cohort_id):
     """
     GET: Retrieve a cohort's file manifest

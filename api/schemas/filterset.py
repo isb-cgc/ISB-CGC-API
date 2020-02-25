@@ -1546,48 +1546,6 @@ COHORT_FILTER_SCHEMA={
             "type": "string"
           }
         },
-        "ScanningSequence": {
-          "type": "array",
-          "items": {
-            "type": "string",
-            "enum": [
-              "SE",
-              "IR",
-              "GR",
-              "EP",
-              "RM"
-            ]
-          }
-        },
-        "SequenceVariant": {
-          "type": "array",
-          "items": {
-            "type": "string",
-            "enum": [
-              "SK",
-              "MTC",
-              "SS",
-              "TRSS",
-              "SP",
-              "MP",
-              "OSP",
-              "NONE"
-            ]
-          }
-        },
-        "ScanOptions": {
-          "type": "array",
-          "items": {
-            "type": "string",
-            "enum": [
-              "EKG",
-              "PHY",
-              "TOMO",
-              "CHASE",
-              "ROTA"
-            ]
-          }
-        },
         "SliceThickness": {
           "type": "array",
           "items": {
@@ -1610,6 +1568,18 @@ COHORT_FILTER_SCHEMA={
           "type": "array",
           "items": {
             "type": "number"
+          }
+        },
+        "file_path": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "StudyDate": {
+          "type": "array",
+          "items": {
+            "type": "string"
           }
         }
       }

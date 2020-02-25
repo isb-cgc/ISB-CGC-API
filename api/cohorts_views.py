@@ -92,6 +92,30 @@ def get_file_manifest(cohort_id, user):
     return file_manifest
 
 
+def get_cohort_objects(cohort_id):
+    cohort_objects = None
+
+    request_string = {
+        "return_level":"Series",
+        "return_filter":False,
+        "return_DOIs":False,
+        "return_URLs":True,
+        "fetch_count":5000,
+        "page":1,
+        "offset":0
+    }
+
+    for key in request.args.keys():
+        request_string[key] = request.args.get(key)
+
+    try:
+        cohort_objects = requests.get("{}/{}/{}/".format(DJANGO_URI, 'cohorts/api/objects',cohort_id),
+                            params = request_string)
+    except Exception as e:
+        logger.exception(e)
+
+    return cohort_objects
+
 def get_cohort_info(cohort_id, get_barcodes=False):
     cohort = None
     try:
@@ -246,6 +270,18 @@ def post_cohort_preview():
 
     return result
 
+def get_cohort_list(user=None):
+    cohort_list = None
+
+    try:
+        data = {"user_name": "bill"}
+        cohort_list = requests.get("{}/{}/".format(DJANGO_URI, 'cohorts/api'),
+                                    json=data)
+    except Exception as e:
+        logger.exception(e)
+
+    return cohort_list
+
 
 def create_cohort(user):
     cohort_info = None
@@ -301,58 +337,6 @@ def create_cohort(user):
 
     return cohort_info
 
-
-def edit_cohort(cohort_id, user, delete=False):
-    match = None
-
-    try:
-        if delete:
-            cohort = Cohort.objects.get(id=cohort_id)
-            cohort.active = False
-            cohort.save()
-            cohort_info = {
-                'notes': 'Cohort {} (\'{}\') has been deleted.'.format(cohort_id, cohort.name),
-                'data': {'filters': cohort.get_current_filters(unformatted=True)},
-            }
-        else:
-            request_data = request.get_json()
-            if len(request_data.keys()):
-                schema_validate(request_data, COHORT_FILTER_SCHEMA)
-
-            if 'name' in request_data:
-                blacklist = re.compile(BLACKLIST_RE, re.UNICODE)
-                match = blacklist.search(str(request_data['name']))
-
-            if match:
-                cohort_info = {
-                    'message': 'Your cohort\'s name or description contains invalid characters; please edit them and resubmit. ' +
-                               '[Saw {}]'.format(str(match)),
-                }
-            else:
-                result = make_cohort(user, source_id=cohort_id, **request_data)
-                if 'message' in result:
-                    cohort_info = result
-                else:
-                    cohort_info = get_cohort_info(result['cohort_id'])
-
-
-    except BadRequest as e:
-        logger.warn("[WARNING] Received bad request - couldn't load JSON.")
-        cohort_info = {
-            'message': 'The JSON provided in this request appears to be improperly formatted.',
-        }
-
-    except ObjectDoesNotExist as e:
-        logger.error("[ERROR] During {} for cohort ID {}:".format(request.method,str(cohort_id)))
-        logger.error("Couldn't find a cohort with that ID!")
-
-    except ValidationError as e:
-        logger.warn("[WARNING] Cohort information rejected for improper formatting: {}".format(e))
-        cohort_info = {
-            'message': 'Cohort information was improperly formatted - cohort not edited.',
-        }
-
-    return cohort_info
 
 def get_params(param_defaults):
     params = {}
