@@ -121,9 +121,10 @@ def test_list_cohorts(client,app):
     response = client.get("{}/".format('v1/cohorts'))
     assert response.content_type == 'application/json'
     assert response.status_code == 200
-    cohorts = json.loads(response.json['cohortList'])
-    assert len(list(filter(lambda cohort: cohort['id'] == cohort1, cohorts))) == 1
-    assert len(list(filter(lambda cohort: cohort['id'] == cohort2, cohorts))) == 1
+
+    cohorts = json.loads(response.json['cohortSpec'])
+    assert len([cohort for cohort in cohorts['cohorts'] if cohort['id']==int(cohort1)])
+    assert len([cohort for cohort in cohorts['cohorts'] if cohort['id']==int(cohort1)])
 
 
 # def test_delete_cohorts(client, app):

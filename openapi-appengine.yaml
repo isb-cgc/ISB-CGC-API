@@ -632,9 +632,12 @@ definitions:
         type: "integer"
 
   cohortList:
-    type: "array"
-    items:
-      $ref: "#/definitions/cohortMetadata"
+    type: "object"
+    properties:
+      cohorts:
+        type: "array"
+        items:
+          $ref: "#/definitions/cohortMetadata"
 
   cohortMetadata:
     type: "object"
