@@ -85,11 +85,6 @@ def account_details():
     return response
 
 
-@app.route('/v4/users/gcp/validate/<gcp_id>/', methods=['GET'], strict_slashes=False)
-def validate_gcp_old():
-    return redirect(url_for('validate_gcp'), HTTP_301_MOVED_PERMANENTLY)
-
-
 @app.route('/v4/users/cloud_projects/validate/<gcp_id>/', methods=['GET'], strict_slashes=False)
 def validate_gcp(gcp_id):
     """
@@ -137,11 +132,6 @@ def validate_gcp(gcp_id):
     response.status_code = code
 
     return response
-
-
-@app.route('/v4/users/gcp/<gcp_id>/', methods=['DELETE', 'PATCH', 'GET'], strict_slashes=False)
-def user_gcp_old():
-    return redirect(url_for('user_gcp'), HTTP_301_MOVED_PERMANENTLY)
 
 
 @app.route('/v4/users/cloud_projects/<gcp_id>/', methods=['DELETE', 'PATCH', 'GET'], strict_slashes=False)
@@ -238,11 +228,6 @@ def user_gcp(gcp_id):
     return response
 
 
-@app.route('/v4/users/gcp/', methods=['POST', 'GET'], strict_slashes=False)
-def user_gcps_old():
-    return redirect(url_for('user_gcps'), HTTP_301_MOVED_PERMANENTLY)
-
-
 @app.route('/v4/users/cloud_projects/', methods=['POST', 'GET'], strict_slashes=False)
 def user_gcps():
     """
@@ -280,8 +265,10 @@ def user_gcps():
                 if result is not None:
                     code = 404
                     response_obj['message'] = 'No Google Cloud Platform projects found for user {}'.format(
-                        gcp_id, user.email
+                        user.email
                     )
+                elif action is not None:
+                    code = 400
             else:
                 code = 200
 
@@ -388,17 +375,8 @@ def user_sas(gcp_id):
             # Lack of a valid object means something went wrong on the server
             else:
                 code = 500
-                act = "fetch"
-                if request.method == 'POST':
-                    act = "register"
-                if request.method == 'DELETE':
-                    act = "unregister"
-                if request.method == "PATCH":
-                    act = "refresh"
                 response_obj = {
-                    'message': "Encountered an error while attempting to {} Service Account ID {} from Google Cloud Platform Project {}.".format(
-                        act,
-                        sa_id,
+                    'message': "Encountered an error while attempting to list service accounts for Google Cloud Platform Project {}.".format(
                         gcp_id
                     )
                 }
@@ -410,7 +388,7 @@ def user_sas(gcp_id):
         }
 
     except Exception as e:
-        logger.error("[ERROR] For route /v4/users/cloud_projects/<gcp_id>/service_account/<sa_id> method {}:".format(request.method))
+        logger.error("[ERROR] For route /v4/users/cloud_projects/<gcp_id>/service_accounts/ method {}:".format(request.method))
         logger.exception(e)
         code = 500
         response_obj = {
@@ -427,7 +405,7 @@ def user_sas(gcp_id):
     return response
 
 
-@app.route('/v4/users/cloud_projects/<gcp_id>/service_account/validate/<sa_id>', methods=['GET'], strict_slashes=False)
+@app.route('/v4/users/cloud_projects/<gcp_id>/service_accounts/validate/<sa_id>', methods=['GET'], strict_slashes=False)
 def validate_sa(gcp_id, sa_id):
     """
     POST: Register a Service Account with ISB-CGC
@@ -524,7 +502,7 @@ def validate_sa(gcp_id, sa_id):
     return response
 
 
-@app.route('/v4/users/cloud_projects/<gcp_id>/service_account/<sa_id>', methods=['DELETE', 'PATCH', 'GET'], strict_slashes=False)
+@app.route('/v4/users/cloud_projects/<gcp_id>/service_accounts/<sa_id>', methods=['DELETE', 'PATCH', 'GET'], strict_slashes=False)
 def user_sa(gcp_id, sa_id):
     """
     POST: Register a Service Account with ISB-CGC

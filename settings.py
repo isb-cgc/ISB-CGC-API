@@ -21,11 +21,18 @@ from pathlib import Path
 from dotenv import load_dotenv
 from socket import gethostname, gethostbyname
 
+SECURE_LOCAL_PATH = os.environ.get('SECURE_LOCAL_PATH', '')
+
 env_path = ''
-if os.environ.get('SECURE_LOCAL_PATH', None):
+env_file = '.env'
+
+if SECURE_LOCAL_PATH:
     env_path += os.environ.get('SECURE_LOCAL_PATH')
 
-load_dotenv(dotenv_path=join(dirname(__file__), env_path+'.env'))
+if os.environ.get('ENV_FILE', None):
+    env_file = os.environ.get('ENV_FILE')
+
+load_dotenv(dotenv_path=join(dirname(__file__), env_path+env_file))
 
 APP_ENGINE_FLEX = 'aef-'
 APP_ENGINE = 'Google App Engine/'
@@ -40,35 +47,9 @@ SHARED_SOURCE_DIRECTORIES = [
     'ISB-CGC-Common'
 ]
 
-# The Google AppEngine library and the Google Cloud APIs don't play nice. Teach them to get along.
-# This unfortunately requires either hardcoding the path to the SDK, or sorting out a way to
-# provide an environment variable indicating where it is.
-# From https://github.com/GoogleCloudPlatform/python-repo-tools/blob/master/gcp_devrel/testing/appengine.py#L26
-def setup_sdk_imports():
-    """Sets up appengine SDK third-party imports."""
-    sdk_path = os.environ.get('GAE_SDK_PATH', '/usr/lib/google-cloud-sdk')
-
-    # Trigger loading of the Cloud APIs so they're in sys.modules
-    import google.cloud
-
-    # The libraries are specifically under platform/google_appengine
-    if os.path.exists(os.path.join(sdk_path, 'platform/google_appengine')):
-        sdk_path = os.path.join(sdk_path, 'platform/google_appengine')
-
-    # This sets up libraries packaged with the SDK, but puts them last in
-    # sys.path to prevent clobbering newer versions
-    if 'google' in sys.modules:
-        sys.modules['google'].__path__.append(
-            os.path.join(sdk_path, 'google'))
-
-    sys.path.append(sdk_path)
-
-
 # Add the shared Django application subdirectory to the Python module search path
 for directory_name in SHARED_SOURCE_DIRECTORIES:
     sys.path.append(os.path.join(BASE_DIR, directory_name))
-
-setup_sdk_imports()
 
 ALLOWED_HOSTS = list(set(os.environ.get('ALLOWED_HOST', 'localhost').split(',') + ['localhost', '127.0.0.1', '[::1]', gethostname(), gethostbyname(gethostname()),]))
 # Testing health checks problem
@@ -247,28 +228,6 @@ STATICFILES_FINDERS = (
 # Make this unique, and don't share it with anybody.
 SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', '')
 
-SECURE_HSTS_INCLUDE_SUBDOMAINS = (os.environ.get('SECURE_HSTS_INCLUDE_SUBDOMAINS','True') == 'True')
-SECURE_HSTS_PRELOAD = (os.environ.get('SECURE_HSTS_PRELOAD','True') == 'True')
-SECURE_HSTS_SECONDS = int(os.environ.get('SECURE_HSTS_SECONDS','3600'))
-
-MIDDLEWARE = [
-    'django.middleware.security.SecurityMiddleware',
-    'django.middleware.common.CommonMiddleware',
-    'django.contrib.sessions.middleware.SessionMiddleware',
-    'GenespotRE.checkreqsize_middleware.CheckReqSize',
-    'django.middleware.csrf.CsrfViewMiddleware',
-    'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'adminrestrict.middleware.AdminPagesRestrictMiddleware',
-    'django.contrib.messages.middleware.MessageMiddleware',
-    # Uncomment the next line for simple clickjacking protection:
-    'django.middleware.clickjacking.XFrameOptionsMiddleware'
-]
-
-ROOT_URLCONF = 'GenespotRE.urls'
-
-# Python dotted path to the WSGI application used by Django's runserver.
-WSGI_APPLICATION = 'GenespotRE.wsgi.application'
-
 INSTALLED_APPS = (
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -276,6 +235,8 @@ INSTALLED_APPS = (
     'django.contrib.sites',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.admin',
+    'django.contrib.admindocs',
     'sharing',
     'cohorts',
     'projects',
@@ -390,8 +351,7 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
                 'django.template.context_processors.tz',
-                'finalware.context_processors.contextify',
-                'GenespotRE.context_processor.additional_context',
+                'finalware.context_processors.contextify'
             ),
             # add any loaders here; if using the defaults, we can comment it out
             # 'loaders': (
@@ -430,7 +390,7 @@ if IS_DEV:
 ##########################
 
 # Path to application runtime JSON key
-GOOGLE_APPLICATION_CREDENTIALS  = os.path.join(os.path.dirname(__file__), os.environ.get('GOOGLE_APPLICATION_CREDENTIALS')) if os.environ.get('GOOGLE_APPLICATION_CREDENTIALS') else ''
+GOOGLE_APPLICATION_CREDENTIALS  = join(dirname(__file__), '{}{}'.format(SECURE_LOCAL_PATH,os.environ.get('GOOGLE_APPLICATION_CREDENTIALS', '')))
 
 # OAuth2 client ID for the API
 API_CLIENT_ID                   = os.environ.get('API_CLIENT_ID', '') # Client ID for the API
@@ -439,7 +399,7 @@ API_CLIENT_ID                   = os.environ.get('API_CLIENT_ID', '') # Client I
 MONITORING_SA_CLIENT_EMAIL            = os.environ.get('MONITORING_SA_CLIENT_EMAIL', '')
 
 # GCP monitoring Service Account key
-MONITORING_SA_ACCESS_CREDENTIALS      = os.environ.get('MONITORING_SA_ACCESS_CREDENTIALS', '')
+MONITORING_SA_ACCESS_CREDENTIALS      = join(dirname(__file__), '{}{}'.format(SECURE_LOCAL_PATH,os.environ.get('MONITORING_SA_ACCESS_CREDENTIALS', '')))
 
 #################################
 #   For NIH/eRA Commons login   #
@@ -527,6 +487,7 @@ FILE_SIZE_UPLOAD_MAX = 1950000
 SOLR_URI = os.environ.get('SOLR_URI', '')
 SOLR_LOGIN = os.environ.get('SOLR_LOGIN', '')
 SOLR_PASSWORD = os.environ.get('SOLR_PASSWORD', '')
+SOLR_CERT = os.environ.get('SOLR_CERT', '')
 
 ##############################################################
 #   MailGun Email Settings
