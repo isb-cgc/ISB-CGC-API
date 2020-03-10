@@ -29,7 +29,7 @@ from django.conf import settings
 from cohorts.models import Cohort_Perms, Cohort, Filters
 from accounts.sa_utils import auth_dataset_whitelists_for_user
 from cohorts.file_helpers import cohort_files
-from cohorts.utils import get_sample_case_list_bq, create_cohort as make_cohort
+from cohorts.utils import get_sample_case_list_bq, create_cohort as make_cohort, delete_cohort
 from projects.models import Program
 
 from jsonschema import validate as schema_validate, ValidationError
@@ -240,16 +240,10 @@ def create_cohort(user):
 
 def edit_cohort(cohort_id, user, delete=False):
     match = None
-
+    cohort_info = None
     try:
         if delete:
-            cohort = Cohort.objects.get(id=cohort_id)
-            cohort.active = False
-            cohort.save()
-            cohort_info = {
-                'notes': 'Cohort {} (\'{}\') has been deleted.'.format(cohort_id, cohort.name),
-                'data': {'filters': cohort.get_current_filters(unformatted=True)},
-            }
+            cohort_info = delete_cohort(user, cohort_id)
         else:
             request_data = request.get_json()
             if len(request_data.keys()):
@@ -271,16 +265,11 @@ def edit_cohort(cohort_id, user, delete=False):
                 else:
                     cohort_info = get_cohort_info(result['cohort_id'])
 
-
     except BadRequest as e:
         logger.warn("[WARNING] Received bad request - couldn't load JSON.")
         cohort_info = {
             'message': 'The JSON provided in this request appears to be improperly formatted.',
         }
-
-    except ObjectDoesNotExist as e:
-        logger.error("[ERROR] During {} for cohort ID {}:".format(request.method,str(cohort_id)))
-        logger.error("Couldn't find a cohort with that ID!")
 
     except ValidationError as e:
         logger.warn("[WARNING] Cohort information rejected for improper formatting: {}".format(e))
