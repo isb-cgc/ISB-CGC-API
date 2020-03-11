@@ -94,9 +94,6 @@ jobs:
       - restore_cache:
           keys:
             - isb-cgc-api-lib-{{ checksum "requirements.txt" }}
-      - restore_cache:
-          keys:
-            - isb-cgc-api-google-deps-{{ checksum "shell/install-deps.sh" }}
       - run:
           name: Install Dependencies
           command: |
@@ -121,6 +118,7 @@ jobs:
             - ./Dockerfile
             - ./app.yaml
             - ./openapi-appengine.yaml
+            - ./gunicorn.conf.py
             - ./settings.py
             - ./txt
             - ./json
@@ -135,9 +133,6 @@ jobs:
       - restore_cache:
           keys:
             - isb-cgc-api-{{ .Branch }}-{{ .Revision }}-
-      - restore_cache:
-          keys:
-            - isb-cgc-api-google-deps-
       - install_cloud_sdk
       - deployment_setup
       - auth
