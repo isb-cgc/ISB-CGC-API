@@ -216,7 +216,7 @@ paths:
           required: false
           default: 5000
           minimum: 1
-          maximum: 40000
+          maximum: 5000
         - name: page
           in: query
           description: "The page, in per fetch count file entries (def. 5000 if not provided), to retrieve."
@@ -235,7 +235,7 @@ paths:
         200:
           description: "Information about the specified cohort"
           schema:
-            $ref: "#/definitions/cohortResponse"
+            $ref: "#/definitions/cohortPreviewResponse"
         500:
           description: "Server error message"
           schema:
@@ -253,7 +253,7 @@ paths:
         200:
           description: "A list of the user's cohorts."
           schema:
-            $ref: "#/definitions/cohortList"
+            $ref: "#/definitions/cohortListResponse"
         500:
           description: "Server error message"
           schema:
@@ -288,7 +288,35 @@ paths:
         200:
           description: "Summary information about the cohort generated."
           schema:
-            $ref: "#/definitions/cohortResponse"
+            $ref: "#/definitions/cohortCreateResponse"
+        500:
+          description: "Server error message"
+          schema:
+            $ref: "#/definitions/errorMessage"
+      security:
+        - google_id_token: []
+
+    delete:
+      description: "Delete a list of cohorts."
+      tags:
+        -   cohorts
+      operationId: "cohortsDelete"
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - in: body
+          name: "cohort_list"
+          required: true
+          description: "List of IDs of cohorts to be deleted."
+          schema:
+            $ref: "#/definitions/cohortIDList"
+      responses:
+        200:
+          description: "Summary of cohort deletion."
+          schema:
+            $ref: "#/definitions/cohortDeleteResponse"
         500:
           description: "Server error message"
           schema:
@@ -316,7 +344,7 @@ paths:
           type: string
           required: False
           default: "Series"
-          enum: ["Program", "Collection", "Patient", "Study", "Series", "Instance"]
+          enum: ["Collection", "Patient", "Study", "Series", "Instance"]
         - name: return_filter
           in: query
           description: "If True, return the filter that defines this cohort."
@@ -343,16 +371,9 @@ paths:
           description: "The number of entries to retrieve this call."
           type: integer
           required: false
-          default: 5000
+          default: 1000
           minimum: 1
-          maximum: 40000
-        - name: page
-          in: query
-          description: "The page, in per fetch count file entries (def. 5000 if not provided), to retrieve."
-          type: integer
-          required: false
-          default: 1
-          minimum: 1
+          maximum: 50000
         - name: offset
           in: query
           description: "The number of file entries to skip in the return set."
@@ -364,7 +385,7 @@ paths:
         200:
           description: "Information about the specified cohort"
           schema:
-            $ref: "#/definitions/cohortResponse"
+            $ref: "#/definitions/cohortPropertiesResponse"
         500:
           description: "Server error message"
           schema:
@@ -373,23 +394,23 @@ paths:
         - google_id_token: []
 
     delete:
-      description: "Delete the specified cohort."
+      description: "Delete a cohort."
       tags:
         -   cohorts
       operationId: "cohortDelete"
       produces:
         - "application/json"
       parameters:
-        - name: cohort_id
-          in: path
-          description: "Numeric IDC Cohort ID"
-          type: integer
+        - in: path
+          name: "cohort_id"
           required: true
+          description: "ID of cohort to be deleted."
+          type: integer
       responses:
         200:
-          description: "Summary information about the deleted cohort."
+          description: "A list of the user's remaining cohorts."
           schema:
-            $ref: "#/definitions/cohortResponse"
+            $ref: "#/definitions/cohortDeleteResponse"
         500:
           description: "Server error message"
           schema:
@@ -535,8 +556,8 @@ definitions:
         type: "string"
       documentation:
         type: "string"
-#      code:
-#        type: "integer"
+      code:
+        type: "integer"
 
   programListResponse:
     type: "object"
@@ -631,13 +652,31 @@ definitions:
       code:
         type: "integer"
 
-  cohortList:
+  cohortIDList:
+    type: "array"
+    items:
+      type: "integer"
+
+  cohortListResponse:
     type: "object"
     properties:
       cohorts:
         type: "array"
         items:
           $ref: "#/definitions/cohortMetadata"
+
+  cohortDeleteResponse:
+    type: "object"
+    properties:
+      cohorts:
+        type: "array"
+        items:
+          type: "object"
+          properties:
+            cohort_id:
+              type: integer
+            result:
+              type: "string"
 
   cohortMetadata:
     type: "object"
@@ -672,7 +711,7 @@ definitions:
         $ref: "#/definitions/filterSet"
 
 
-  cohortResponse:
+  cohortCreateResponse:
     type: "object"
     properties:
       id:
@@ -684,7 +723,38 @@ definitions:
       filterSet:
         $ref: "#/definitions/filterSet"
       collections:
-        $ref: "#/definitions/collectionObject"
+        $ref: "#/definitions/cohortObjects"
+
+  cohortPreviewResponse:
+    type: "object"
+    properties:
+      id:
+        type: "string"
+      name:
+        type: "string"
+      description:
+        type: "string"
+      filterSet:
+        $ref: "#/definitions/filterSet"
+      collections:
+        $ref: "#/definitions/cohortObjects"
+
+  cohortPropertiesResponse:
+    type: "object"
+    properties:
+      cohort:
+        type: "object"
+        properties:
+          id:
+            type: "string"
+          name:
+            type: "string"
+          description:
+            type: "string"
+          filterSet:
+            $ref: "#/definitions/filterSet"
+          cohortObjects:
+            $ref: "#/definitions/cohortObjects"
 
   filterSet:
     type: "object"
@@ -2145,14 +2215,25 @@ definitions:
       "collection_id":
         type: "string"
 
-  derivedQueryResults:
+  cohortObjects:
+    type: "object"
+    properties:
+      totalRowsInCohort:
+        type: "integer"
+      sql:
+        type: "string"
+      collections:
+        type: "array"
+        items:
+          $ref: "#/definitions/collectionObject"
+
   collectionObject:
     type: "object"
     properities:
       collection:
         type: "object"
         properties:
-          collection_id:
+          id:
             type: "string"
           version:
             type: "string"
@@ -2167,7 +2248,7 @@ definitions:
       patient:
         type: "object"
         properties:
-          patientID:
+          id:
             type: "string"
       studies:
         type: "array"
@@ -2180,7 +2261,7 @@ definitions:
       study:
         type: "object"
         properties:
-          StudyInstanceUID:
+          id:
             type: "string"
           DOI:
             type: "string"
@@ -2200,7 +2281,7 @@ definitions:
       series:
         type: "object"
         properties:
-          SeriesInstanceUID:
+          id:
             type: "string"
           DOI:
             type: "string"
@@ -2219,7 +2300,7 @@ definitions:
       instance:
         type: "object"
         properties:
-          SOPInstanceUID:
+          id:
             type: "string"
           DOI:
             type: "string"

@@ -16,6 +16,7 @@
 
 
 import logging
+import re
 import os
 import requests
 
@@ -25,43 +26,65 @@ from django.conf import settings
 
 logger = logging.getLogger(settings.LOGGER_NAME)
 
+BLACKLIST_RE = settings.BLACKLIST_RE
 DJANGO_URI = os.getenv('DJANGO_URI')
 
 def get_programs():
-    program_info = None
+    info = None
 
     try:
-        program_info = requests.get("{}/{}".format(DJANGO_URI, 'collections/api/public/'))
+        response = requests.get("{}/{}".format(DJANGO_URI, 'collections/api/public/'))
+        info = response.json()
     except Exception as e:
         logger.exception(e)
 
-    return program_info
+    return info
 
 
 def get_collections(program_name):
-    collections_info = None
+    info = None
 
     try:
-        collections_info = requests.get("{}/{}/{}/".format(DJANGO_URI, 'collections/api',program_name))
+        response = requests.get("{}/{}/{}/".format(DJANGO_URI, 'collections/api',program_name))
+        info = response.json()
     except Exception as e:
         logger.exception(e)
 
-    return collections_info
+    return info
 
 def get_collection_info(program_name, collection_name):
-    collection_info = None
+    info = None
 
     request_string = {}
-
     for key in request.args.keys():
         request_string[key] = request.args.get(key)
+    if "attribute_group" not in request_string:
+        info = {
+            "message": "An attribute_group was not specified. Collection details could not be provided.",
+            "code": 400,
+            "not_found": []
+        }
+        return info
 
-    try:
-        collection_info = requests.get("{}/{}/{}/{}/".format(
-            DJANGO_URI, 'collections/api',program_name, collection_name),
-            params=request_string)
-    except Exception as e:
-        logger.exception(e)
+    blacklist = re.compile(BLACKLIST_RE, re.UNICODE)
+    match = blacklist.search(str(request_string["attribute_group"]))
+    if not match and "version" in request_string:
+        match = blacklist.search(str(request_string["version"]))
+    if match:
+        info = {
+            "message": "Your collections\'s attribute_group or version contain invalid characters; please edit them and resubmit. " +
+                       "[Saw {}]".format(str(match)),
+            "code": 400,
+            "not_found": []
+        }
+    else:
+        try:
+            response = requests.get("{}/{}/{}/{}/".format(
+                DJANGO_URI, "collections/api",program_name, collection_name),
+                params=request_string)
+            info = response.json()
+        except Exception as e:
+            logger.exception(e)
 
-    return collection_info
+    return info
 

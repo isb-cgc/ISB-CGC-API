@@ -15,8 +15,6 @@
 #
 
 import logging
-import json
-import django
 import re
 import os
 import requests
@@ -24,13 +22,7 @@ import requests
 from flask import request
 from werkzeug.exceptions import BadRequest
 
-from django.contrib.auth.models import User as Django_User
-from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 from django.conf import settings
-
-#from cohorts.models import Cohort_Perms, Cohort, Filters
-#from cohorts.utils import get_sample_case_list_bq
-#from idc_collections.models import Program
 
 from jsonschema import validate as schema_validate, ValidationError
 from . schemas.filterset import COHORT_FILTER_SCHEMA
@@ -41,54 +33,119 @@ logger = logging.getLogger(settings.LOGGER_NAME)
 
 DJANGO_URI = os.getenv('DJANGO_URI')
 
+MAX_FETCH_COUNT = 5000
+
+def convert_to_bool(s):
+    if s in ['True']:
+        s = True
+    elif s in ['False']:
+        s = False
+    return s
+
+
+def delete_cohort(cohort_id):
+    cohort_list = None
+
+    cohort_ids = [cohort_id]
+
+    cohort_list = _delete_cohorts(cohort_ids)
+
+    return cohort_list
+
+
+def delete_cohorts():
+    cohort_list = None
+
+    request_data = request.get_json()
+
+    cohort_list = _delete_cohorts(request_data)
+
+    return cohort_list
+
+def _delete_cohorts(cohort_ids):
+    cohort_list = None
+
+    try:
+        # Validate the list of ids
+        for id in cohort_ids:
+            assert type(id) == int
+        params = {"user_name": "bill", "cohort_ids": cohort_ids}
+        results = requests.delete("{}/{}/".format(DJANGO_URI, 'cohorts/api/delete_cohort'),
+                                         json=params)
+        cohort_list = results.json()
+    except Exception as e:
+        logger.exception(e)
+
+    return cohort_list
 
 
 def get_cohort_objects(cohort_id):
     cohort_objects = None
 
     request_string = {
+        "user_name": "bill",
+        "return_objects": True,
         "return_level":"Series",
-        "return_filter":False,
-        "return_DOIs":False,
+        "return_filter":True,
+        "return_DOIs":True,
         "return_URLs":True,
-        "fetch_count":5000,
+        "return_sql":False,
+        "fetch_count":1000,
         "page":1,
-        "offset":0
-    }
+        "offset":0}
 
+    return_levels = [
+        'Collection',
+        'Instance',
+        'Series',
+        'Study',
+        'Patient',
+        'Instance'
+    ]
+
+    # Get and validate parameters
     for key in request.args.keys():
         request_string[key] = request.args.get(key)
+    request_string['fetch_count'] = int(request_string['fetch_count'])
+    request_string['offset'] = int(request_string['offset'])
+    request_string['page'] = int(request_string['page'])
+    for s in ['return_objects', 'return_filter', 'return_DOIs', 'return_URLs', 'return_sql']:
+        request_string[s] = request_string[s] in [True, 'True']
+    if request_string["fetch_count"] > MAX_FETCH_COUNT:
+        cohort_objects = {
+            "message": "Fetch count greater than {}".format(MAX_FETCH_COUNT)
+        }
+    if request_string["offset"] < 0:
+        cohort_objects = {
+            "message": "Fetch offset {} must be non-negative integer".format(request_string('offset'))
+        }
+    if request_string['return_level'] not in return_levels:
+        cohort_objects = {
+            "message": "Invalid return level {}".format(request_string['return_level'])
+        }
+    # if request_string['return_filter'] not in [True,False]:
+    #     cohort_objects = {
+    #         "message": "Invalid return filter {}".format(request_string['return_filter'])
+    #     }
+    # if request_string['return_DOIs'] not in [True,False]:
+    #     cohort_objects = {
+    #         "message": "Invalid return DOIs {}".format(request_string['return_DOIs'])
+    #     }
+    # if request_string['return_URLs'] not in [True,False]:
+    #     cohort_objects = {
+    #         "message": "Invalid return URLs {}".format(request_string['return_URLs'])
+    #     }
+    if cohort_objects == None:
+        request_string["page"] = int(request_string['page'])
 
-    try:
-        cohort_objects = requests.get("{}/{}/{}/".format(DJANGO_URI, 'cohorts/api/objects',cohort_id),
-                            params = request_string)
-    except Exception as e:
-        logger.exception(e)
+        try:
+            results = requests.get("{}/{}/{}/".format(DJANGO_URI, 'cohorts/api/objects',cohort_id),
+                                params = request_string)
+            cohort_objects = results.json()
+        except Exception as e:
+            logger.exception(e)
 
     return cohort_objects
-
-
-
-def get_cohorts(user_email):
-
-    cohort_list = None
-
-    try:
-        user = Django_User.objects.get(email=user_email)
-        cohort_perms = Cohort_Perms.objects.filter(user_id=user.id, cohort__active=1)
-        cohort_list = []
-        for cohort_perm in cohort_perms:
-            cohort_list.append({
-                'id': cohort_perm.cohort.id,
-                'name': cohort_perm.cohort.name,
-                'permission': cohort_perm.perm,
-                'filters': cohort_perm.cohort.get_current_filters(True)
-            })
-
-    except ObjectDoesNotExist as e:
-        logger.info("No cohorts found for user {}!".format(user_email))
-
-    return cohort_list
 
 
 def post_cohort_preview():
@@ -145,8 +202,9 @@ def get_cohort_list(user=None):
 
     try:
         params = {"user_name": "bill"}
-        cohort_list = requests.get("{}/{}/".format(DJANGO_URI, 'cohorts/api'),
-                                    params=params)
+        results = requests.get("{}/{}/".format(DJANGO_URI, 'cohorts/api'),
+                                    json=params)
+        cohort_list = results.json()
     except Exception as e:
         logger.exception(e)
 
@@ -188,8 +246,9 @@ def create_cohort(user):
         else:
             try:
                 data = {"user_name":"bill", "request_data":request_data}
-                cohort_info = requests.post("{}/{}/".format(DJANGO_URI, 'cohorts/api/save_cohort'),
+                response = requests.post("{}/{}/".format(DJANGO_URI, 'cohorts/api/save_cohort'),
                                 json = data)
+                cohort_info = response.json()
             except Exception as e:
                 logger.exception(e)
 

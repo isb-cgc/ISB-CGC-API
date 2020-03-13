@@ -34,20 +34,18 @@ def programs():
     response = None
     
     try:
-        program_info = get_programs()
+        results = get_programs()
         
-        if program_info:   
-            response = jsonify({
-                'code': 200,
-                'programs': program_info.text
-            })
-            response.status_code = 200
+        if 'message' in results:
+            response = jsonify(results)
+            response.status_code = 500
+
         else:
             response = jsonify({
-                'code': 500,
-                'message': 'Encountered an error while retrieving the program list.'
+                'code': 200,
+                **results
             })
-            response.status_code = 500
+            response.status_code = 200
     except Exception as e:
         logger.error("[ERROR] While retrieving program information:")
         logger.exception(e)
@@ -65,24 +63,22 @@ def programs():
 @program_bp.route('/programs/<program_name>', methods=['GET'], strict_slashes=False)
 def collections(program_name):
     """Retrieve the list of collections and versions in program <program_name>."""
-    collections_info = None
+    response = None
 
     try:
 
-        collections_info = get_collections(program_name)
+        results = get_collections(program_name)
 
-        if collections_info:
-            response = jsonify({
-                'code': 200,
-                'collections': collections_info.text
-            })
-            response.status_code = 200
+        if 'message' in results:
+            response = jsonify(results)
+            response.status_code = 500
+
         else:
             response = jsonify({
-                'code': 500,
-                'message': 'Encountered an error while retrieving the collection list.'
+                'code': 200,
+                **results
             })
-            response.status_code = 500
+            response.status_code = 200
     except Exception as e:
         logger.error("[ERROR] While retrieving collection information:")
         logger.exception(e)
@@ -100,16 +96,22 @@ def collections(program_name):
 @program_bp.route('/programs/<program_name>/<collection_name>/', methods=['GET'], strict_slashes=False)
 def collection(program_name, collection_name):
     """"Get a list of the available fields for a specific version of a collection."""
-    collection_info = None
+    response = None
 
     try:
-        collection_info = get_collection_info(program_name, collection_name)
-        if collection_info:
-            response = jsonify({
-                'code': 200,
-                'collection': collection_info.text
-            })
-            response.status_code = 200
+        results = get_collection_info(program_name, collection_name)
+        if results:
+            if 'message' in results:
+                response = jsonify(results)
+                response.status_code = 500
+
+            else:
+                code = 200
+                response = jsonify({
+                    'code': code,
+                    **results
+                })
+                response.status_code = 200
         else:
             response = jsonify({
                 'code': 500,
