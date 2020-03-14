@@ -390,7 +390,13 @@ OAUTH2_CLIENT_ID = os.environ.get('OAUTH2_CLIENT_ID', '')
 
 OAUTH2_CLIENT_SECRET = os.environ.get('OAUTH2_CLIENT_SECRET', '')
 
-API_CLIENT_ID = os.environ.get('API_CLIENT_ID', '')
+API_CLIENT_ID  = os.environ.get('API_CLIENT_ID', '')
+API_AUTH_TOKEN = ''
+try:
+    with open(os.environ.get('API_TOKEN_FILE', ''), 'r') as filehandle:
+        API_AUTH_TOKEN = filehandle.read()
+except Exception:
+    print("[ERROR] Failed to load API auth token - authorized endpoints may fail!")
 
 ##############################
 #   Start django-finalware   #
