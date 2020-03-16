@@ -340,7 +340,7 @@ paths:
           required: true
         - name: return_level
           in: query
-          description: "Lowest level of Program/Collection/Patient/Study/Series/Instance to return. E.G. a value of 'Study', will return Programs, Collections, Patients, and Studies"
+          description: "Lowest level of Collection/Patient/Study/Series/Instance to return. E.G. a value of 'Study', will return Collections, Patients, and Studies"
           type: string
           required: False
           default: "Series"
