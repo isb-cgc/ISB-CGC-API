@@ -17,7 +17,7 @@ import logging
 import json
 from flask import jsonify, request
 #from api import app
-from . cohorts_views import post_cohort_preview, create_cohort, get_cohort_objects, get_cohort_list, delete_cohort, delete_cohorts #, get_cohorts, get_file_manifest, get_cohort_preview, create_cohort, edit_cohort
+from . cohorts_views import post_cohort_preview, create_cohort, get_cohort_objects, get_cohort_list, delete_cohort, delete_cohorts, post_cohort_preview # get_file_manifest
 from . auth import auth_info, UserValidationException, validate_user
 from django.conf import settings
 from django.db import close_old_connections
@@ -38,14 +38,12 @@ def cohort(cohort_id):
 
 
     try:
-        user_info = auth_info()
-#        user = validate_user(user_info['email'], cohort_id)
-        user = True
-
+        # user_info = auth_info()
+        user_info = dict(email="bcliffor@systemsbiology.org")
         response = None
         code = None
 
-        if not user:
+        if not user_info:
             response = jsonify({
                 'code': 500,
                 'message': 'Encountered an error while attempting to identify this user.'
@@ -53,7 +51,7 @@ def cohort(cohort_id):
             response.status_code = 500
         else:
             if request.method == 'GET':
-                result = get_cohort_objects(cohort_id)
+                result = get_cohort_objects(user_info["email"], cohort_id)
                 if result:
                     if 'message' in result:
                         code = 400
@@ -72,7 +70,7 @@ def cohort(cohort_id):
                     response.status_code = 404
 
             else:
-                results = delete_cohort(cohort_id)
+                results = delete_cohort(user_info["email"], cohort_id)
 
                 if results:
                     if 'message' in results:
@@ -125,11 +123,10 @@ def cohorts():
     code = None
 
     try:
-        user_info = auth_info()
-        #user = validate_user(user_info['email'])
-        user = True
+        # user_info = auth_info()
+        user_info = dict(email="bcliffor@systemsbiology.org")
 
-        if not user:
+        if not user_info:
             response = jsonify({
                 'code': 500,
                 'message': 'Encountered an error while attempting to identify this user.'
@@ -137,11 +134,11 @@ def cohorts():
             response.status_code = 500
         else:
             if request.method == 'GET':
-                result = get_cohort_list(user)
+                result = get_cohort_list(user_info["email"])
             elif request.method == 'POST':
-                result = create_cohort(user)
+                result = create_cohort(user_info["email"])
             else:
-                result = delete_cohorts()
+                result = delete_cohorts(user_info["email"])
             if result:
                 if 'message' in result:
                     code = 400
@@ -247,38 +244,37 @@ def cohort_preview():
     response_obj = None
 
     try:
-        cohort = post_cohort_preview()
+        result = post_cohort_preview()
 
-        if cohort:
+        if result:
             # Presence of a message means something went wrong with the filters we received
-            if 'message' in cohort:
-                response_obj = cohort
+            if 'message' in result:
                 code = 400
             else:
-                response_obj = {
-                    'data': cohort
-                }
-                code = 200
+                 code = 200
+            response = jsonify({
+                'code': code,
+                **result
+            })
+            response.status_code = code
 
         # Lack of a valid object means something went wrong on the server
         else:
-            response_obj = {
-                'message': "Error while attempting to retrieve case and sample counts for these filters."
-            }
-            code = 500
+            response = jsonify({
+                'code': 404,
+                'message': "Error trying to preview cohort."})
+            response.status_code = 404
+
 
     except Exception as e:
         logger.exception(e)
-        response_obj = {
-            'message': 'Encountered an error while attempting to build this cohort preview.'
-        }
-        code = 500
+        response = jsonify({
+            'code': 500,
+            'message': 'Encountered an error while attempting to retrieve this cohort\'s information.'
+        })
+        response.status_code = 500
     finally:
         close_old_connections()
-
-    response_obj['code'] = code
-    response = jsonify(response_obj)
-    response.status_code = code
 
     return response
 

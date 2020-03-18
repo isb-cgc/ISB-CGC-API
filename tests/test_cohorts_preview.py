@@ -17,64 +17,50 @@
 import logging
 import json
 
+from .cohort_utils import merge, pretty_print_cohortObjects, create_cohort_for_test_get_cohort_xxx, delete_cohort
+
 from django.conf import settings
 logger = logging.getLogger(settings.LOGGER_NAME)
 
-from .cohort_utils import pretty_print_cohortObjects, merge, create_cohort, create_cohort_for_test_get_cohort_xxx, delete_cohort
+def pretty_print_cohortObjects(cohortObjects, indent=4):
+    print(json.dumps(cohortObjects, sort_keys=True, indent=indent))
 
-# Merge two sets of collection data.
-def test_create_cohort(client, app):
-    # Create a filter set
+levels = ["collections", "patients", "studies", "series", "instances"]
+
+
+def test_cohort_preview_patients(client, app):
+    attributes = {
+        "collection_id": ["TCGA-READ"],
+        "Modality": ["CT", "MR"],
+        "race": ["WHITE"]}
     filterSet = {
         "bioclin_version": "r9",
         "imaging_version": "0",
-        "attributes": {
-            "collection_id": ["TCGA-LUAD", "TCGA-KIRC"],
-            "Modality": ["CT", "MR"],
-            "Race": ["WHITE"]}}
+        "attributes": attributes}
 
-    cohortSpec = {"name":"testcohort",
-                  "description":"Test description",
-                  "filterSet":filterSet}
+    cohortSpec = {"name": "testcohort",
+                  "description": "Test description",
+                  "filterSet": filterSet}
 
     mimetype = ' application/json'
     headers = {
         'Content-Type': mimetype,
         'Accept': mimetype
     }
-    response = client.post('/v1/cohorts', data=json.dumps(cohortSpec), headers=headers)
-    assert response.content_type == 'application/json'
-    assert response.status_code == 200
-    # cohortResponse = json.loads(response.json['cohortSpec'])
-    cohortResponse = response.json
-
-    assert cohortResponse['name']=="testcohort"
-    assert cohortResponse['description']=="Test description"
-    assert cohortResponse["filterSet"]["bioclin_version"]=="r9"
-    assert "Modality" in cohortResponse["filterSet"]["attributes"]
-    assert "TCGA-LUAD" in cohortResponse["filterSet"]["attributes"]["collection_id"]
-
-    # Delete the cohort we just created
-    delete_cohort(client, cohortResponse['id'])
-
-
-def test_get_cohort_patients(client, app):
-
-    (id, filterSet) = create_cohort_for_test_get_cohort_xxx(client)
-
     query_string = {
         'return_level': 'Patient',
         'fetch_count': 5000,
     }
 
     # Get the list of objects in the cohort
-    response = client.get("{}/{}/".format('v1/cohorts', id),
-                query_string = query_string)
+    response = client.post('v1/cohorts/preview',
+                            query_string = query_string,
+                            data = json.dumps(cohortSpec),
+                            headers=headers)
     assert response.content_type == 'application/json'
     assert response.status_code == 200
     cohort = response.json['cohort']
 
-    assert cohort['id']==id
     assert cohort['name']=="testcohort"
     assert cohort['description']=="Test description"
     assert cohort['filterSet'] == filterSet
@@ -90,26 +76,40 @@ def test_get_cohort_patients(client, app):
         for patient in collection['patients']].sort() == \
        ['TCGA-CL-5917', 'TCGA-BM-6198'].sort()
 
-    delete_cohort(client, id)
 
-def test_get_cohort_studies(client, app):
+def test_cohort_preview_studies(client, app):
+    attributes = {
+        "collection_id": ["TCGA-READ"],
+        "Modality": ["CT", "MR"],
+        "race": ["WHITE"]}
+    filterSet = {
+        "bioclin_version": "r9",
+        "imaging_version": "0",
+        "attributes": attributes}
 
-    (id, filterSet) = create_cohort_for_test_get_cohort_xxx(client)
+    cohortSpec = {"name": "testcohort",
+                  "description": "Test description",
+                  "filterSet": filterSet}
 
+    mimetype = ' application/json'
+    headers = {
+        'Content-Type': mimetype,
+        'Accept': mimetype
+    }
     query_string = {
         'return_level': 'Study',
-        'fetch_count': 5000
-
+        'fetch_count': 5000,
     }
 
     # Get the list of objects in the cohort
-    response = client.get("{}/{}/".format('v1/cohorts', id),
-                query_string = query_string)
+    response = client.post('v1/cohorts/preview',
+                            query_string = query_string,
+                            data = json.dumps(cohortSpec),
+                            headers=headers)
     assert response.content_type == 'application/json'
     assert response.status_code == 200
     cohort = response.json['cohort']
 
-    assert cohort['id']==id
     assert cohort['name']=="testcohort"
     assert cohort['description']=="Test description"
     assert cohort['filterSet'] == filterSet
@@ -142,25 +142,39 @@ def test_get_cohort_studies(client, app):
         'gs://gcs-public-data--healthcare-tcia-tcga-read/dicom/1.3.6.1.4.1.14519.5.2.1.8421.4018.329305334176079996095294344892',
         'gs://gcs-public-data--healthcare-tcia-tcga-read/dicom/1.3.6.1.4.1.14519.5.2.1.8421.4018.304030957341830836628192929917'].sort()
 
-    delete_cohort(client, id)
+def test_cohort_preview_series(client, app):
+    attributes = {
+        "collection_id": ["TCGA-READ"],
+        "Modality": ["CT", "MR"],
+        "race": ["WHITE"]}
+    filterSet = {
+        "bioclin_version": "r9",
+        "imaging_version": "0",
+        "attributes": attributes}
 
-def test_get_cohort_series(client, app):
+    cohortSpec = {"name": "testcohort",
+                  "description": "Test description",
+                  "filterSet": filterSet}
 
-    (id, filterSet) = create_cohort_for_test_get_cohort_xxx(client)
-
+    mimetype = ' application/json'
+    headers = {
+        'Content-Type': mimetype,
+        'Accept': mimetype
+    }
     query_string = {
         'return_level': 'Series',
-        'fetch_count': 5000
+        'fetch_count': 5000,
     }
 
     # Get the list of objects in the cohort
-    response = client.get("{}/{}/".format('v1/cohorts', id),
-                query_string = query_string)
+    response = client.post('v1/cohorts/preview',
+                            query_string = query_string,
+                            data = json.dumps(cohortSpec),
+                            headers=headers)
     assert response.content_type == 'application/json'
     assert response.status_code == 200
     cohort = response.json['cohort']
 
-    assert cohort['id']==id
     assert cohort['name']=="testcohort"
     assert cohort['description']=="Test description"
     assert cohort['filterSet'] == filterSet
@@ -207,26 +221,41 @@ def test_get_cohort_series(client, app):
         for series in study['series']
         for accessMethod in series['AccessMethods']]
     # pretty_print_collections(collections)
-    delete_cohort(client, id)
 
 
-def test_get_cohort_instances(client, app):
+def test_cohort_preview_instances(client, app):
+    attributes = {
+        "collection_id": ["TCGA-READ"],
+        "Modality": ["CT", "MR"],
+        "race": ["WHITE"]}
+    filterSet = {
+        "bioclin_version": "r9",
+        "imaging_version": "0",
+        "attributes": attributes}
 
-    (id, filterSet) = create_cohort_for_test_get_cohort_xxx(client)
+    cohortSpec = {"name": "testcohort",
+                  "description": "Test description",
+                  "filterSet": filterSet}
 
+    mimetype = ' application/json'
+    headers = {
+        'Content-Type': mimetype,
+        'Accept': mimetype
+    }
     query_string = {
         'return_level': 'Instance',
         'fetch_count': 5000
     }
 
     # Get the list of objects in the cohort
-    response = client.get("{}/{}/".format('v1/cohorts', id),
-                query_string = query_string)
+    response = client.post('v1/cohorts/preview',
+                            query_string = query_string,
+                            data = json.dumps(cohortSpec),
+                            headers=headers)
     assert response.content_type == 'application/json'
     assert response.status_code == 200
     cohort = response.json['cohort']
 
-    assert cohort['id']==id
     assert cohort['name']=="testcohort"
     assert cohort['description']=="Test description"
     assert cohort['filterSet'] == filterSet
@@ -291,15 +320,27 @@ def test_get_cohort_instances(client, app):
         for instance in series['instances']
         for accessMethod in instance['AccessMethods']]
 
-    delete_cohort(client, id)
-
 
 # Get the result in chunks
-def test_get_cohort_instances_paged(client, app):
+def test_cohort_preview_instances_paged(client, app):
+    attributes = {
+        "collection_id": ["TCGA-READ"],
+        "Modality": ["CT", "MR"],
+        "race": ["WHITE"]}
+    filterSet = {
+        "bioclin_version": "r9",
+        "imaging_version": "0",
+        "attributes": attributes}
 
-    (id, filterSet) = create_cohort_for_test_get_cohort_xxx(client)
+    cohortSpec = {"name": "testcohort",
+                  "description": "Test description",
+                  "filterSet": filterSet}
 
-    # First get all the rows in one call
+    mimetype = ' application/json'
+    headers = {
+        'Content-Type': mimetype,
+        'Accept': mimetype
+    }
     query_string = {
         'return_level': 'Instance',
         'fetch_count': 5000,
@@ -308,9 +349,12 @@ def test_get_cohort_instances_paged(client, app):
         'return_URLs': False,
         'return_filter': False,
     }
+
     # Get the list of objects in the cohort
-    response = client.get("{}/{}/".format('v1/cohorts', id),
-                query_string = query_string)
+    response = client.post('v1/cohorts/preview',
+                            query_string = query_string,
+                            data = json.dumps(cohortSpec),
+                            headers=headers)
     assert response.content_type == 'application/json'
     assert response.status_code == 200
     cohortall= response.json['cohort']
@@ -335,8 +379,10 @@ def test_get_cohort_instances_paged(client, app):
         }
 
         # Get the list of objects in the cohort
-        response = client.get("{}/{}/".format('v1/cohorts', id),
-                    query_string = query_string)
+        response = client.post('v1/cohorts/preview',
+                               query_string=query_string,
+                               data=json.dumps(cohortSpec),
+                               headers=headers)
         assert response.content_type == 'application/json'
         assert response.status_code == 200
         cohort = response.json['cohort']
@@ -392,124 +438,4 @@ def test_get_cohort_instances_paged(client, app):
         for series in study['series']
         for instance in series['instances']].sort()
     assert allInstances == totalInstances
-
-    delete_cohort(client, id)
-
-def test_list_cohorts(client,app):
-    cohort1 = create_cohort(client)['id']
-    cohort2 = create_cohort(client)['id']
-
-    # Get the list of cohorts
-    response = client.get("{}/".format('v1/cohorts'))
-    assert response.content_type == 'application/json'
-    assert response.status_code == 200
-
-    cohorts = response.json['cohorts']
-    assert len([cohort for cohort in cohorts if cohort['id']==int(cohort1)]) == 1
-    assert len([cohort for cohort in cohorts if cohort['id']==int(cohort2)]) == 1
-
-    delete_cohort(client, cohort1)
-    delete_cohort(client, cohort2)
-
-
-def test_delete_a_cohort(client, app):
-    # Try deleting a
-    # cohort that probably will never exist
-    big_id = 2**64
-    response = client.delete("{}/{}/".format('v1/cohorts', big_id))
-    assert response.content_type == 'application/json'
-    assert response.status_code == 200
-    cohorts = response.json['cohorts']
-    assert len(cohorts) == 1
-    assert cohorts[0]['cohort_id'] == big_id
-    assert cohorts[0]['result'] == "A cohort with the ID {} was not found!".format(str(big_id))
-
-    # Create a cohort
-    cohort1 = create_cohort(client)['id']
-    # Delete the cohort we just created
-    response = client.delete("{}/{}/".format('v1/cohorts', cohort1))
-    assert response.content_type == 'application/json'
-    assert response.status_code == 200
-    cohorts = response.json['cohorts']
-    assert len(cohorts) == 1
-    assert cohorts[0]['cohort_id'] == int(cohort1)
-    assert cohorts[0]['result'] == "Cohort ID {} has been deleted.".format(str(cohort1))
-
-    # Get the list of cohorts
-    response = client.get("{}/".format('v1/cohorts'))
-    assert response.content_type == 'application/json'
-    assert response.status_code == 200
-    cohorts = response.json['cohorts']
-    assert len([cohort for cohort in cohorts if cohort['id']==int(cohort1)]) == 0
-
-    # Try deleting the cohort we just deleted
-    response = client.delete("{}/{}/".format('v1/cohorts', cohort1))
-    assert response.content_type == 'application/json'
-    assert response.status_code == 200
-    cohorts = response.json['cohorts']
-    assert len(cohorts) == 1
-    assert cohorts[0]['cohort_id'] == int(cohort1)
-    assert cohorts[0]['result'] == "Cohort ID {} was previously deleted.".format(str(cohort1))
-
-def test_delete_cohorts(client, app):
-    # Create a cohort
-    cohort1 = create_cohort(client)['id']
-    cohort2 = create_cohort(client)['id']
-
-    # Delete the cohorts that we just created
-    cohortIDs = [cohort1, cohort2]
-    mimetype = ' application/json'
-    headers = {
-        'Content-Type': mimetype,
-        'Accept': mimetype
-    }
-    response = client.delete('/v1/cohorts', data=json.dumps(cohortIDs), headers=headers)
-    assert response.status_code == 200
-    cohorts = response.json['cohorts']
-
-    assert len(cohorts) == 2
-    assert cohorts[0]['cohort_id'] == int(cohort1)
-    assert cohorts[0]['result'] == "Cohort ID {} has been deleted.".format(str(cohort1))
-    assert cohorts[1]['cohort_id'] == int(cohort2)
-    assert cohorts[1]['result'] == "Cohort ID {} has been deleted.".format(str(cohort2))
-
-    # Get the list of cohorts
-    response = client.get("{}/".format('v1/cohorts'))
-    assert response.content_type == 'application/json'
-    assert response.status_code == 200
-
-    cohorts = response.json['cohorts']
-    assert len([cohort for cohort in cohorts
-                if cohort['id']==int(cohort1) or cohort['id']==int(cohort2)]) == 0
-
-def test_delete_all_cohorts(client,app):
-    # Create a couple of cohortsw
-    create_cohort(client)
-    create_cohort(client)
-
-    # Get the list of cohorts
-    response = client.get("{}/".format('v1/cohorts'))
-    assert response.content_type == 'application/json'
-    assert response.status_code == 200
-    cohorts = response.json['cohorts']
-
-    cohortIDs = [cohort['id'] for cohort in cohorts]
-    mimetype = ' application/json'
-    headers = {
-        'Content-Type': mimetype,
-        'Accept': mimetype
-    }
-    response = client.delete('/v1/cohorts', data=json.dumps(cohortIDs), headers=headers)
-    assert response.status_code == 200
-    cohorts = response.json['cohorts']
-    for cohort in cohorts:
-        assert cohort['result'] == "Cohort ID {} has been deleted.".format(str(cohort['cohort_id']))
-
-    # Get the list of cohorts
-    response = client.get("{}/".format('v1/cohorts'))
-    assert response.content_type == 'application/json'
-    assert response.status_code == 200
-    cohorts = response.json['cohorts']
-    assert len(cohorts) == 0
-
 

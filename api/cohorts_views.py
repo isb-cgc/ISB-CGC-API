@@ -17,6 +17,7 @@
 import logging
 import re
 import os
+from os.path import join, dirname
 import requests
 
 from flask import request
@@ -43,172 +44,21 @@ def convert_to_bool(s):
     return s
 
 
-def delete_cohort(cohort_id):
-    cohort_list = None
-
-    cohort_ids = [cohort_id]
-
-    cohort_list = _delete_cohorts(cohort_ids)
-
-    return cohort_list
+def get_auth():
+    with open(
+            join(dirname(__file__), '../{}{}'.format(os.environ.get('SECURE_LOCAL_PATH'), "dev.api_token.json"))) as f:
+        api_token = f.read()
+    auth = {"Authorization": "Token {}".format(api_token)}
+    return auth
 
 
-def delete_cohorts():
-    cohort_list = None
-
-    request_data = request.get_json()
-
-    cohort_list = _delete_cohorts(request_data)
-
-    return cohort_list
-
-def _delete_cohorts(cohort_ids):
-    cohort_list = None
-
-    try:
-        # Validate the list of ids
-        for id in cohort_ids:
-            assert type(id) == int
-        params = {"user_name": "bill", "cohort_ids": cohort_ids}
-        results = requests.delete("{}/{}/".format(DJANGO_URI, 'cohorts/api/delete_cohort'),
-                                         json=params)
-        cohort_list = results.json()
-    except Exception as e:
-        logger.exception(e)
-
-    return cohort_list
-
-
-def get_cohort_objects(cohort_id):
-    cohort_objects = None
-
-    request_string = {
-        "user_name": "bill",
-        "return_objects": True,
-        "return_level":"Series",
-        "return_filter":True,
-        "return_DOIs":True,
-        "return_URLs":True,
-        "return_sql":False,
-        "fetch_count":1000,
-        "page":1,
-        "offset":0}
-
-    return_levels = [
-        'Collection',
-        'Instance',
-        'Series',
-        'Study',
-        'Patient',
-        'Instance'
-    ]
-
-    # Get and validate parameters
-    for key in request.args.keys():
-        request_string[key] = request.args.get(key)
-    request_string['fetch_count'] = int(request_string['fetch_count'])
-    request_string['offset'] = int(request_string['offset'])
-    request_string['page'] = int(request_string['page'])
-    for s in ['return_objects', 'return_filter', 'return_DOIs', 'return_URLs', 'return_sql']:
-        request_string[s] = request_string[s] in [True, 'True']
-    if request_string["fetch_count"] > MAX_FETCH_COUNT:
-        cohort_objects = {
-            "message": "Fetch count greater than {}".format(MAX_FETCH_COUNT)
-        }
-    if request_string["offset"] < 0:
-        cohort_objects = {
-            "message": "Fetch offset {} must be non-negative integer".format(request_string('offset'))
-        }
-    if request_string['return_level'] not in return_levels:
-        cohort_objects = {
-            "message": "Invalid return level {}".format(request_string['return_level'])
-        }
-    # if request_string['return_filter'] not in [True,False]:
-    #     cohort_objects = {
-    #         "message": "Invalid return filter {}".format(request_string['return_filter'])
-    #     }
-    # if request_string['return_DOIs'] not in [True,False]:
-    #     cohort_objects = {
-    #         "message": "Invalid return DOIs {}".format(request_string['return_DOIs'])
-    #     }
-    # if request_string['return_URLs'] not in [True,False]:
-    #     cohort_objects = {
-    #         "message": "Invalid return URLs {}".format(request_string['return_URLs'])
-    #     }
-    if cohort_objects == None:
-        request_string["page"] = int(request_string['page'])
-
-        try:
-            results = requests.get("{}/{}/{}/".format(DJANGO_URI, 'cohorts/api/objects',cohort_id),
-                                params = request_string)
-            cohort_objects = results.json()
-        except Exception as e:
-            logger.exception(e)
-
-    return cohort_objects
-
-
-def post_cohort_preview():
-
-    result = None
-
-    try:
-        request_data = request.get_json()
-        schema_validate(request_data, COHORT_FILTER_SCHEMA)
-
-        if 'filter' not in request_data:
-            cohort = {
-                'message': 'No filters were provided; ensure that the request body contains a \'filters\' property.'
-            }
-        else:
-            param_defaults = {
-                "case_insensitive":True,
-                "include_filter":True,
-                "include_files":True,
-                "include_DOIs":True,
-                "include_URLs":True,
-                "fetch_count":5000,
-                "page":1,
-                "offset":0
-            }
-
-            params = get_params(param_defaults)
-            try:
-                result = requests.post("{}/{}".format(DJANGO_URI, 'cohort/api/preview'),
-                            json = request_data,
-                            params = params)
-            except:
-                if result.status_code != 200:
-                   raise Exception("oops!")
-
-    except BadRequest as e:
-        logger.warn("[WARNING] Received bad request - couldn't load JSON.")
-        result = {
-            'message': 'The JSON provided in this request appears to be improperly formatted.',
-        }
-    except ValidationError as e:
-        logger.warn('[WARNING] Filters rejected for improper formatting: {}'.format(e))
-        result = {
-            'message': 'Filters were improperly formatted.'
-        }
-    except Exception as e:
-        logger.exception(e)
-
-    return result
-
-
-def get_cohort_list(user=None):
-    cohort_list = None
-
-    try:
-        params = {"user_name": "bill"}
-        results = requests.get("{}/{}/".format(DJANGO_URI, 'cohorts/api'),
-                                    json=params)
-        cohort_list = results.json()
-    except Exception as e:
-        logger.exception(e)
-
-    return cohort_list
+def get_params(param_defaults):
+    params = {}
+    for key in param_defaults:
+        params[key] = request.args.get(key)
+        if params[key] == None:
+            params[key] = param_defaults[key]
+    return params
 
 
 def create_cohort(user):
@@ -244,10 +94,12 @@ def create_cohort(user):
             }
 
         else:
+            path_params = {'email': user}
             try:
-                data = {"user_name":"bill", "request_data":request_data}
+                auth = get_auth()
+                data = {"request_data": request_data}
                 response = requests.post("{}/{}/".format(DJANGO_URI, 'cohorts/api/save_cohort'),
-                                json = data)
+                                params=path_params, json=data, headers=auth)
                 cohort_info = response.json()
             except Exception as e:
                 logger.exception(e)
@@ -267,13 +119,183 @@ def create_cohort(user):
     return cohort_info
 
 
-def get_params(param_defaults):
-    params = {}
-    for key in param_defaults:
-        params[key] = request.args.get(key)
-        if params[key] == None:
-            params[key] = param_defaults[key]
-    return params
+def delete_cohort(user, cohort_id):
+    cohort_ids = [cohort_id]
+
+    cohort_list = _delete_cohorts(user, cohort_ids)
+
+    return cohort_list
+
+
+def delete_cohorts(user):
+    request_data = request.get_json()
+
+    cohort_list = _delete_cohorts(user, request_data)
+
+    return cohort_list
+
+def _delete_cohorts(user, cohort_ids):
+    cohort_list = None
+
+    try:
+        # Validate the list of ids
+        for id in cohort_ids:
+            assert type(id) == int
+        auth = get_auth()
+        path_params = {'email': user}
+        data = {"cohort_ids": cohort_ids}
+        results = requests.delete("{}/{}/".format(DJANGO_URI, 'cohorts/api/delete_cohort'),
+                    params=path_params, json=data, headers=auth)
+        cohort_list = results.json()
+    except Exception as e:
+        logger.exception(e)
+
+    return cohort_list
+
+
+def get_cohort_objects(user, cohort_id):
+    cohort_objects = None
+
+    path_params = {
+        "email": user,
+        "return_objects": True,
+        "return_level": "Series",
+        "return_filter": True,
+        "return_DOIs": True,
+        "return_URLs": True,
+        "return_sql": False,
+        "fetch_count": 1000,
+        "page": 1,
+        "offset": 0}
+
+    return_levels = [
+        'Collection',
+        'Instance',
+        'Series',
+        'Study',
+        'Patient',
+        'Instance'
+    ]
+
+    # Get and validate parameters
+    for key in request.args.keys():
+        path_params[key] = request.args.get(key)
+    path_params['fetch_count'] = int(path_params['fetch_count'])
+    path_params['offset'] = int(path_params['offset'])
+    path_params['page'] = int(path_params['page'])
+    for s in ['return_objects', 'return_filter', 'return_DOIs', 'return_URLs', 'return_sql']:
+        path_params[s] = path_params[s] in [True, 'True']
+    if path_params["fetch_count"] > MAX_FETCH_COUNT:
+        cohort_objects = {
+            "message": "Fetch count greater than {}".format(MAX_FETCH_COUNT)
+        }
+    if path_params["offset"] < 0:
+        cohort_objects = {
+            "message": "Fetch offset {} must be non-negative integer".format(path_params['offset'])
+        }
+    if path_params['return_level'] not in return_levels:
+        cohort_objects = {
+            "message": "Invalid return level {}".format(path_params['return_level'])
+        }
+    if cohort_objects == None:
+        path_params["page"] = int(path_params['page'])
+
+        try:
+            auth = get_auth()
+            results = requests.get("{}/{}/{}/".format(DJANGO_URI, 'cohorts/api',cohort_id),
+                                params = path_params, headers=auth)
+            cohort_objects = results.json()
+        except Exception as e:
+            logger.exception(e)
+
+    return cohort_objects
+
+
+def post_cohort_preview():
+    cohort_objects = None
+
+    path_params = {
+        "return_objects": True,
+        "return_level": "Series",
+        "return_filter": True,
+        "return_DOIs": True,
+        "return_URLs": True,
+        "return_sql": False,
+        "fetch_count": 1000,
+        "page": 1,
+        "offset": 0}
+
+    return_levels = [
+        'Collection',
+        'Instance',
+        'Series',
+        'Study',
+        'Patient',
+        'Instance'
+    ]
+
+    try:
+        request_data = request.get_json()
+        schema_validate(request_data, COHORT_FILTER_SCHEMA)
+
+        if 'filterSet' not in request_data:
+            cohort_objects = dict(message = 'No filters were provided; ensure that the request body contains a \'filters\' property.')
+        else:
+
+            # Get and validate parameters
+            for key in request.args.keys():
+                path_params[key] = request.args.get(key)
+            path_params['fetch_count'] = int(path_params['fetch_count'])
+            path_params['offset'] = int(path_params['offset'])
+            path_params['page'] = int(path_params['page'])
+            for s in ['return_objects', 'return_filter', 'return_DOIs', 'return_URLs', 'return_sql']:
+                path_params[s] = path_params[s] in [True, 'True']
+            if path_params["fetch_count"] > MAX_FETCH_COUNT:
+                cohort_objects = dict(message = "Fetch count greater than {}".format(MAX_FETCH_COUNT))
+            if path_params["offset"] < 0:
+                cohort_objects = dict(message = "Fetch offset {} must be non-negative integer".format(path_params['offset']))
+            if path_params['return_level'] not in return_levels:
+                cohort_objects = dict(message = "Invalid return level {}".format(path_params['return_level']))
+            if cohort_objects == None:
+                try:
+                    auth = get_auth()
+                    data = {"request_data": request_data}
+                    results = requests.post("{}/{}/".format(DJANGO_URI, 'cohorts/api/preview'),
+                                           params=path_params, json=data, headers=auth)
+                    pass
+                    cohort_objects = results.json()
+                except Exception as e:
+                    logger.exception(e)
+
+        return cohort_objects
+
+    except BadRequest as e:
+        logger.warning("[WARNING] Received bad request - couldn't load JSON.")
+        cohort_objects = dict(message='The JSON provided in this request appears to be improperly formatted.')
+    except ValidationError as e:
+        logger.warning('[WARNING] Filters rejected for improper formatting: {}'.format(e))
+        cohort_objects = dict(message= 'Filters were improperly formatted.')
+    except Exception as e:
+        logger.exception(e)
+        cohort_objects = dict(message = '[ERROR] Error trying to preview a cohort')
+
+    return cohort_objects
+
+
+def get_cohort_list(user):
+    cohort_list = None
+
+    try:
+        auth = get_auth()
+        path_params = {'email': user}
+        results = requests.get("{}/{}/".format(DJANGO_URI, 'cohorts/api'),
+            params=path_params, headers=auth)
+        cohort_list = results.json()
+    except Exception as e:
+        logger.exception(e)
+
+    return cohort_list
+
 
 # def get_file_manifest(cohort_id, user):
 #     file_manifest = None
@@ -325,77 +347,5 @@ def get_params(param_defaults):
 #
 #     return file_manifest
 
-# def post_create_cohort():
-#
-#     preview = None
-#
-#     try:
-#         request_data = request.get_json()
-#         schema_validate(request_data, COHORT_FILTER_SCHEMA)
-#
-#         if 'filter' not in request_data:
-#             cohort = {
-#                 'message': 'No filters were provided; ensure that the request body contains a \'filters\' property.'
-#             }
-#         else:
-#             param_defaults = {
-#                 "case_insensitive":True,
-#                 "include_filter":True,
-#                 "include_files":True,
-#                 "include_DOIs":True,
-#                 "include_URLs":True,
-#                 "fetch_count":5000,
-#                 "page":1,
-#                 "offset":0
-#             }
-#
-#             params = get_params(param_defaults)
-#             try:
-#                 result = requests.post("{}/{}".format(DJANGO_URI, 'cohort/api/save_cohort'),
-#                             json = request_data,
-#                             params = params)
-#             except:
-#                 if result.status_code != 200:
-#                    raise Exception("oops!")
-#             #response = result.json()
-#             return result
-#
-#     except BadRequest as e:
-#         logger.warn("[WARNING] Received bad request - couldn't load JSON.")
-#         cohort_counts = {
-#             'message': 'The JSON provided in this request appears to be improperly formatted.',
-#         }
-#     except ValidationError as e:
-#         logger.warn('[WARNING] Filters rejected for improper formatting: {}'.format(e))
-#         cohort_counts = {
-#             'message': 'Filters were improperly formatted.'
-#         }
-#     except Exception as e:
-#         logger.exception(e)
-#
-#     return cohort
-
-# def get_cohort_info(cohort_id, get_barcodes=False):
-#     cohort = None
-#     try:
-#         cohort_obj = Cohort.objects.get(id=cohort_id)
-#         cohort = {
-#             'id': cohort_obj.id,
-#             'name': cohort_obj.name,
-#             'case_count': cohort_obj.case_size(),
-#             'sample_count': cohort_obj.sample_size(),
-#             'programs': cohort_obj.get_program_names(),
-#             'filters': cohort_obj.get_current_filters(True)
-#         }
-#
-#         if get_barcodes:
-#             cohort['barcodes'] = get_sample_case_list_bq(cohort_id)
-#
-#     except ObjectDoesNotExist as e:
-#         logger.warn("Cohort with ID {} was not found!".format(str(cohort_id)))
-#     except Exception as e:
-#         logger.exception(e)
-#
-#     return cohort
 
 
