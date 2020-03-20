@@ -14,18 +14,16 @@
 # limitations under the License.
 #
 import logging
-import json
 from flask import jsonify, request
-#from api import app
-from . cohorts_views import post_cohort_preview, create_cohort, get_cohort_objects, get_cohort_list, delete_cohort, delete_cohorts, post_cohort_preview # get_file_manifest
-from . auth import auth_info, UserValidationException, validate_user
+from . cohorts_views import create_cohort, get_cohort_objects, get_cohort_list, delete_cohort, \
+    delete_cohorts, post_cohort_preview  # get_file_manifest
+from . auth import auth_info, UserValidationException
 from django.conf import settings
 from django.db import close_old_connections
 
 logger = logging.getLogger(settings.LOGGER_NAME)
 
 from flask import Blueprint
-from flask import g
 
 cohorts_bp = Blueprint('cohorts_bp', __name__, url_prefix='/v1')
 
@@ -34,15 +32,10 @@ cohorts_bp = Blueprint('cohorts_bp', __name__, url_prefix='/v1')
 def cohort(cohort_id):
     """
     GET: Retrieve extended information for a specific cohort
+    DELETE: Delete a cohort
     """
-
-
     try:
-        # user_info = auth_info()
-        user_info = dict(email="bcliffor@systemsbiology.org")
-        response = None
-        code = None
-
+        user_info = auth_info()
         if not user_info:
             response = jsonify({
                 'code': 500,
@@ -54,35 +47,38 @@ def cohort(cohort_id):
                 result = get_cohort_objects(user_info["email"], cohort_id)
                 if result:
                     if 'message' in result:
-                        code = 400
+                        response = jsonify({
+                            **result
+                        })
+                        response.status_code = 500
                     else:
                         code = 200
-                    response = jsonify({
-                        'code': code,
-                        **result
-                    })
-                    response.status_code = code
-
+                        response = jsonify({
+                            'code': code,
+                            **result
+                        })
+                        response.status_code = code
                 else:
                     response = jsonify({
                         'code': 404,
                         'message': "Cohort ID {} was not found.".format(str(cohort_id))})
-                    response.status_code = 404
-
+                    response.status_code = 500
             else:
                 results = delete_cohort(user_info["email"], cohort_id)
 
                 if results:
                     if 'message' in results:
-                        code = 400
+                        response = jsonify({
+                            **results
+                        })
+                        response.status_code = 500
                     else:
                         code = 200
-                    response = jsonify({
-                        'code': code,
-                        **results
-                    })
-                    response.status_code = code
-
+                        response = jsonify({
+                            'code': code,
+                            **results
+                        })
+                        response.status_code = code
                 else:
                     response = jsonify({
                         'code': 500,
@@ -95,7 +91,7 @@ def cohort(cohort_id):
             'code': 403,
             'message': str(e)
         })
-        response.status_code = 403
+        response.status_code = 500
     except Exception as e:
         logger.exception(e)
         response = jsonify({
@@ -109,26 +105,19 @@ def cohort(cohort_id):
     return response
 
 
-
-
 @cohorts_bp.route('/cohorts/', methods=('GET', 'POST', 'DELETE'), strict_slashes=False)
 def cohorts():
     """
     GET: Retrieve a user's list of cohorts
     POST: Add a new cohort
+    DELETE: Delete a list of cohorts
     """
-    
-    response = None
-    info = None
-    code = None
 
     try:
-        # user_info = auth_info()
-        user_info = dict(email="bcliffor@systemsbiology.org")
-
+        user_info = auth_info()
         if not user_info:
             response = jsonify({
-                'code': 500,
+                'code': 403,
                 'message': 'Encountered an error while attempting to identify this user.'
             })
             response.status_code = 500
@@ -141,14 +130,17 @@ def cohorts():
                 result = delete_cohorts(user_info["email"])
             if result:
                 if 'message' in result:
-                    code = 400
+                    response = jsonify({
+                        **result
+                    })
+                    response.status_code = 500
                 else:
                     code = 200
-                response = jsonify({
-                    'code': code,
-                    **result
-                })
-                response.status_code = code
+                    response = jsonify({
+                        'code': code,
+                        **result
+                    })
+                    response.status_code = code
             else:
                 response = jsonify({
                     'code': 500,
@@ -157,13 +149,12 @@ def cohorts():
                     )
                 })
                 response.status_code = 500
-
     except UserValidationException as e:
         response = jsonify({
             'code': 403,
             'message': str(e)
         })
-        response.status_code = 403
+        response.status_code = 500
     except Exception as e:
         logger.exception(e)
         response = jsonify({
@@ -240,31 +231,30 @@ def cohorts():
 def cohort_preview():
     """List the samples, cases, and counts a given set of cohort filters would produce"""
 
-    code = None
-    response_obj = None
-
     try:
         result = post_cohort_preview()
 
         if result:
             # Presence of a message means something went wrong with the filters we received
             if 'message' in result:
-                code = 400
+                response = jsonify({
+                    **result
+                })
+                response.status_code = 500
             else:
-                 code = 200
-            response = jsonify({
-                'code': code,
-                **result
-            })
-            response.status_code = code
+                code = 200
+                response = jsonify({
+                    'code': code,
+                    **result
+                })
+                response.status_code = code
 
         # Lack of a valid object means something went wrong on the server
         else:
             response = jsonify({
                 'code': 404,
                 'message': "Error trying to preview cohort."})
-            response.status_code = 404
-
+            response.status_code = 500
 
     except Exception as e:
         logger.exception(e)
@@ -277,7 +267,3 @@ def cohort_preview():
         close_old_connections()
 
     return response
-
-
-
-

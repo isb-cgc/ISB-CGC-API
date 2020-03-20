@@ -44,6 +44,16 @@ def get_programs():
 def get_collections(program_name):
     info = None
 
+    blacklist = re.compile(BLACKLIST_RE, re.UNICODE)
+    match = blacklist.search(str(program_name))
+    if match:
+        info = {
+            "message": "Your program_name contains invalid characters; please edit and resubmit. " +
+                       "[Saw {}]".format(str(match)),
+            "code": 400,
+            "not_found": []
+        }
+
     try:
         response = requests.get("{}/{}/{}/".format(DJANGO_URI, 'collections/api',program_name))
         info = response.json()
@@ -58,21 +68,21 @@ def get_collection_info(program_name, collection_name):
     request_string = {}
     for key in request.args.keys():
         request_string[key] = request.args.get(key)
-    if "attribute_group" not in request_string:
+    if "attribute_type" not in request_string:
         info = {
-            "message": "An attribute_group was not specified. Collection details could not be provided.",
+            "message": "An attribute_type was not specified. Collection details could not be provided.",
             "code": 400,
             "not_found": []
         }
         return info
 
     blacklist = re.compile(BLACKLIST_RE, re.UNICODE)
-    match = blacklist.search(str(request_string["attribute_group"]))
+    match = blacklist.search(str(request_string["attribute_type"]))
     if not match and "version" in request_string:
         match = blacklist.search(str(request_string["version"]))
     if match:
         info = {
-            "message": "Your collections\'s attribute_group or version contain invalid characters; please edit them and resubmit. " +
+            "message": "Your collections\'s attribute_type or version contain invalid characters; please edit them and resubmit. " +
                        "[Saw {}]".format(str(match)),
             "code": 400,
             "not_found": []

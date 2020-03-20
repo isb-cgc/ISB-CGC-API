@@ -39,7 +39,6 @@ def programs():
         if 'message' in results:
             response = jsonify(results)
             response.status_code = 500
-
         else:
             response = jsonify({
                 'code': 200,
@@ -72,7 +71,6 @@ def collections(program_name):
         if 'message' in results:
             response = jsonify(results)
             response.status_code = 500
-
         else:
             response = jsonify({
                 'code': 200,

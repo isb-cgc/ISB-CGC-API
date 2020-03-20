@@ -102,6 +102,7 @@ paths:
           description: "Program short_name"
           type: string
           required: true
+          default: "TCGA"
       responses:
         200:
           description: "A list of the collections available in this API with versions."
@@ -129,19 +130,22 @@ paths:
           description: "Program short_name"
           type: string
           required: true
+          default: "TCGA"
         - name: collection_name
           in: path
-          description: "Collection short_name"
+          description: "Collection name. Note: not the collection short_name"
           type: string
           required: true
-        - name: attribute_group
+          default: "TCGA-BLCA"
+        - name: attribute_type
           in: query
-          description: "The group of attributes to be enumerated"
+          description: "The group of attributes to be enumerated. I: Imaging attributes, A: Ancillary attributes"
           type: string
           required: true
+          default: "I"
         - name: version
           in: query
-          description: "Version"
+          description: "Version of collection to be enumerated. If not specified, data of the active (latest) collection is returned"
           type: string
           required: false
       responses:
@@ -165,44 +169,34 @@ paths:
       produces:
         - "application/json"
       parameters:
-        - name: "filter"
-          in: body
+        - in: body
+          name: "cohort_def"
           required: true
-          description: "Filter to apply to this cohort preview."
+          description: "Filters, name, and description used to create this cohort."
           schema:
-            type: "object"
-            properties:
-              filter:
-                $ref: "#/definitions/cohortSpec"
-        - name: case_insensitive
+            $ref: "#/definitions/cohortSpec"
+        - name: return_level
           in: query
-          description: "BigQuery string comparisons are case sensitive by default - this will perform string comparisons without case sensitivity."
+          description: "Lowest level of Collection/Patient/Study/Series/Instance to return. E.G. a value of 'Study', will return Collections, Patients, and Studies"
           type: string
-          required: false
-          default: "True"
-          enum: ["True", "False"]
-        - name: include_filter
+          required: False
+          default: "Series"
+          enum: ["Collection", "Patient", "Study", "Series", "Instance"]
+        - name: return_filter
           in: query
           description: "If True, return the filter that defines this cohort."
           type: string
           required: false
-          default: "True"
+          default: "False"
           enum: ["True", "False"]
-        - name: include_files
+        - name: return_DOIs
           in: query
-          description: "If True, return the list of files matching this cohort's filters."
+          description: "If True, return a digital object identifier for each study, series and instance in the cohort."
           type: string
           required: false
-          default: "True"
+          default: "False"
           enum: ["True", "False"]
-        - name: include_DOIs
-          in: query
-          description: "If True, return a digital object identifiers for each study, series and instance in the cohort."
-          type: string
-          required: false
-          default: "True"
-          enum: ["True", "False"]
-        - name: include_URLs
+        - name: return_URLs
           in: query
           description: "If True, return one or more URLs for each study, series and instance in the cohort."
           type: string
@@ -211,19 +205,12 @@ paths:
           enum: ["True", "False"]
         - name: fetch_count
           in: query
-          description: "The number of file entries to retrieve this call."
+          description: "The number of entries to retrieve this call."
           type: integer
           required: false
-          default: 5000
+          default: 1000
           minimum: 1
-          maximum: 5000
-        - name: page
-          in: query
-          description: "The page, in per fetch count file entries (def. 5000 if not provided), to retrieve."
-          type: integer
-          required: false
-          default: 1
-          minimum: 1
+          maximum: 50000
         - name: offset
           in: query
           description: "The number of file entries to skip in the return set."
@@ -729,16 +716,18 @@ definitions:
   cohortPreviewResponse:
     type: "object"
     properties:
-      id:
-        type: "string"
-      name:
-        type: "string"
-      description:
-        type: "string"
-      filterSet:
-        $ref: "#/definitions/filterSet"
-      collections:
-        $ref: "#/definitions/cohortObjects"
+      cohort:
+        type: "object"
+        properties:
+          name:
+            type: "string"
+          description:
+            type: "string"
+          filterSet:
+            $ref: "#/definitions/filterSet"
+          cohortObjects:
+            $ref: "#/definitions/cohortObjects"
+
 
   cohortPropertiesResponse:
     type: "object"

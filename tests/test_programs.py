@@ -44,11 +44,11 @@ def test_programs_get_fields(client, app):
     response = client.get('/v1/programs/TCGA/TCGA-BCLA')
     assert response.status_code == 500
     data = response.json
-    assert data["message"] == 'An attribute_group was not specified. Collection details could not be provided.'
+    assert data["message"] == 'An attribute_type was not specified. Collection details could not be provided.'
     assert data["code"] == 400
 
     query_string = {
-        'attribute_group': 'TCGA Clinical and Biospecimen Data',
+        'attribute_type': 'A',
         'version': 'r9'
     }
     response = client.get('/v1/programs/TCGA/FOO',query_string = query_string)
@@ -58,7 +58,7 @@ def test_programs_get_fields(client, app):
 
     # Get attributes in the TCIA Image Data attribute group
     query_string = {
-        'attribute_group': 'TCIA Image Data',
+        'attribute_type': 'I',
         'version': '0'
     }
     response = client.get('/v1/programs/TCGA/TCGA-BRCA',query_string = query_string)
@@ -70,7 +70,7 @@ def test_programs_get_fields(client, app):
 
     # Get attributes in the BioClin attribute group
     query_string = {
-        'attribute_group': 'TCGA Clinical and Biospecimen Data',
+        'attribute_type': 'A',
         'version': 'r9'
     }
     response = client.get('/v1/programs/TCGA/TCGA-BRCA',query_string = query_string)
@@ -83,17 +83,17 @@ def test_programs_get_fields(client, app):
 
     # Test that an invalid version is recognized
     query_string = {
-        'attribute_group': 'TCGA Clinical and Biospecimen Data',
+        'attribute_type': 'A',
         'version': 'r8'
     }
     response = client.get('/v1/programs/TCGA/TCGA-BRCA',query_string = query_string)
     assert response.status_code == 500
     data = response.json
-    assert data["message"] == 'Attribute group/version TCGA Clinical and Biospecimen Data/r8 does not exist'
+    assert data["message"] == 'Attribute type/version A/r8 does not exist'
 
     # Test that the attributes of the active attribute_group are returned
     query_string = {
-        'attribute_group': 'TCGA Clinical and Biospecimen Data'
+        'attribute_type': 'A'
     }
     response = client.get('/v1/programs/TCGA/TCGA-BRCA',query_string = query_string)
     assert response.status_code == 200
@@ -101,7 +101,7 @@ def test_programs_get_fields(client, app):
     assert data["version"] == "r9"
 
     query_string = {
-        'attribute_group': 'TCIA Image Data'
+        'attribute_type': 'I'
     }
     response = client.get('/v1/programs/TCGA/TCGA-BRCA',query_string = query_string)
     assert response.status_code == 200
