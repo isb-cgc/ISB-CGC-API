@@ -464,6 +464,8 @@ paths:
           description: "Server error message"
           schema:
             $ref: "#/definitions/errorMessage"
+      security:
+        - google_id_token: []
 
   /manifest/{cohort_id}:
     get:
@@ -510,6 +512,8 @@ paths:
           description: "Server error message"
           schema:
             $ref: "#/definitions/errorMessage"
+      security:
+        - google_id_token: []
 
   /users/account_details:
     get:
@@ -673,6 +677,8 @@ definitions:
       name:
         type: "string"
       description:
+        type: "string"
+      owner:
         type: "string"
       permission:
         type: "string"
@@ -2431,5 +2437,5 @@ securityDefinitions:
     type: "oauth2"
     x-google-issuer: "https://accounts.google.com"
     x-google-jwks_uri: "https://www.googleapis.com/oauth2/v3/certs"
-    # Your OAuth2 client's Client ID must be added here. You can add multiple client IDs to accept tokens form multiple clients.
-    x-google-audiences: "http://940486172223-69cjerk6429tp5ruumu1kc6p23eibdso.apps.googleusercontent.com/"
+    # Your OAuth2 client's Client ID must be added here. You can add multiple client IDs to accept tokens from multiple clients.
+    x-google-audiences: ""

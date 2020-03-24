@@ -16,11 +16,13 @@
 
 import logging
 import json
+import time
 
 from django.conf import settings
 logger = logging.getLogger(settings.LOGGER_NAME)
 
 from .cohort_utils import pretty_print_cohortObjects, merge, create_cohort, create_cohort_for_test_get_cohort_xxx, delete_cohort
+
 
 # Merge two sets of collection data.
 def test_create_cohort(client, app):
@@ -40,8 +42,10 @@ def test_create_cohort(client, app):
     mimetype = ' application/json'
     headers = {
         'Content-Type': mimetype,
-        'Accept': mimetype
+        'Accept': mimetype,
+#        'authorization': 'Bearer eyJhbGciOiJSUzI1NiIsImtpZCI6ImE1NDFkNmVmMDIyZDc3YTIzMThmN2RkNjU3ZjI3NzkzMjAzYmVkNGEiLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiJodHRwczovL2FjY291bnRzLmdvb2dsZS5jb20iLCJhenAiOiI5MDc2Njg0NDA5NzgtZ284cGJicDBpMjhrdDVhOTZsZXEwdmRrcjdtOWl1NmMuYXBwcy5nb29nbGV1c2VyY29udGVudC5jb20iLCJhdWQiOiI5MDc2Njg0NDA5NzgtZ284cGJicDBpMjhrdDVhOTZsZXEwdmRrcjdtOWl1NmMuYXBwcy5nb29nbGV1c2VyY29udGVudC5jb20iLCJzdWIiOiIxMDcxOTQ5NDc0NDMxNzY0MTIyMjkiLCJoZCI6InN5c3RlbXNiaW9sb2d5Lm9yZyIsImVtYWlsIjoiYmNsaWZmb3JAc3lzdGVtc2Jpb2xvZ3kub3JnIiwiZW1haWxfdmVyaWZpZWQiOnRydWUsIm5vbmNlIjoiMDM4YzQ0YzktOGE5MS00Y2RhLWFhM2QtMGM3YWU1ZDQ3ZDEyIiwiaWF0IjoxNTg0NjY4MjgwLCJleHAiOjE1ODQ2NzE4ODAsImp0aSI6IjMyY2YxZDIzYzY2MDRiYTExOTY3ZWJiZTlmZTQ5YjU2YmM4NTc4MWEifQ.JiWES1kSautE-2gNLxp5CWx3uTPXW5Nuj3cyM3kN5oN7isvdBr0nJzB5iPNYFWjO1yF9l2CHWjf8IJ1QKVQI22lkT2wXmU0Sw64AWXxjiCW2YSs8LwawmykDbGBZOiCzVuSO__l2fXG1eNb6KlOt51RGTmOrS0nKTjZQqsB0wv9oVECxkes4EBB08SoDz2lsSwvqkF8tGqbikBogeor7qbsFdJ1zfsVE9RKcGFDyuXOx-ZZwTCSkaDPFkLM0oucb36tFtN7kFExJcxzaW-uvWu04vZiOhubyJSpGrXJgsdL0CuFOlfuAebwC8DA3IW5rNJY_IsSUgoGQzi8Cw_KHJw'
     }
+
     response = client.post('/v1/cohorts', data=json.dumps(cohortSpec), headers=headers)
     assert response.content_type == 'application/json'
     assert response.status_code == 200
