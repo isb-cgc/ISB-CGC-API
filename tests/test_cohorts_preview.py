@@ -68,7 +68,7 @@ def test_cohort_preview_patients(client, app):
 
     collections = cohort['cohortObjects']['collections']
 
-    assert [collection['id'].upper()
+    assert [collection['cohort_id'].upper()
         for collection in collections] == ['TCGA-READ']
 
     assert [patient['id'].upper()

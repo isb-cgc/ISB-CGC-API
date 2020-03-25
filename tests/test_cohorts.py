@@ -59,7 +59,7 @@ def test_create_cohort(client, app):
     assert "TCGA-LUAD" in cohortResponse["filterSet"]["attributes"]["collection_id"]
 
     # Delete the cohort we just created
-    delete_cohort(client, cohortResponse['id'])
+    delete_cohort(client, cohortResponse['cohort_id'])
 
 
 def test_get_cohort_patients(client, app):
@@ -78,7 +78,7 @@ def test_get_cohort_patients(client, app):
     assert response.status_code == 200
     cohort = response.json['cohort']
 
-    assert cohort['id']==id
+    assert cohort['cohort_id']==id
     assert cohort['name']=="testcohort"
     assert cohort['description']=="Test description"
     assert cohort['filterSet'] == filterSet
@@ -113,7 +113,7 @@ def test_get_cohort_studies(client, app):
     assert response.status_code == 200
     cohort = response.json['cohort']
 
-    assert cohort['id']==id
+    assert cohort['cohort_id']==id
     assert cohort['name']=="testcohort"
     assert cohort['description']=="Test description"
     assert cohort['filterSet'] == filterSet
@@ -164,7 +164,7 @@ def test_get_cohort_series(client, app):
     assert response.status_code == 200
     cohort = response.json['cohort']
 
-    assert cohort['id']==id
+    assert cohort['cohort_id']==id
     assert cohort['name']=="testcohort"
     assert cohort['description']=="Test description"
     assert cohort['filterSet'] == filterSet
@@ -230,7 +230,7 @@ def test_get_cohort_instances(client, app):
     assert response.status_code == 200
     cohort = response.json['cohort']
 
-    assert cohort['id']==id
+    assert cohort['cohort_id']==id
     assert cohort['name']=="testcohort"
     assert cohort['description']=="Test description"
     assert cohort['filterSet'] == filterSet
@@ -400,8 +400,8 @@ def test_get_cohort_instances_paged(client, app):
     delete_cohort(client, id)
 
 def test_list_cohorts(client,app):
-    cohort1 = create_cohort(client)['id']
-    cohort2 = create_cohort(client)['id']
+    cohort1 = create_cohort(client)['cohort_id']
+    cohort2 = create_cohort(client)['cohort_id']
 
     # Get the list of cohorts
     response = client.get("{}/".format('v1/cohorts'))
@@ -409,8 +409,8 @@ def test_list_cohorts(client,app):
     assert response.status_code == 200
 
     cohorts = response.json['cohorts']
-    assert len([cohort for cohort in cohorts if cohort['id']==int(cohort1)]) == 1
-    assert len([cohort for cohort in cohorts if cohort['id']==int(cohort2)]) == 1
+    assert len([cohort for cohort in cohorts if cohort['cohort_id']==int(cohort1)]) == 1
+    assert len([cohort for cohort in cohorts if cohort['cohort_id']==int(cohort2)]) == 1
 
     delete_cohort(client, cohort1)
     delete_cohort(client, cohort2)
@@ -426,10 +426,10 @@ def test_delete_a_cohort(client, app):
     cohorts = response.json['cohorts']
     assert len(cohorts) == 1
     assert cohorts[0]['cohort_id'] == big_id
-    assert cohorts[0]['result'] == "A cohort with the ID {} was not found!".format(str(big_id))
+    assert cohorts[0]['result']['message'] == "A cohort with the ID {} was not found!".format(str(big_id))
 
     # Create a cohort
-    cohort1 = create_cohort(client)['id']
+    cohort1 = create_cohort(client)['cohort_id']
     # Delete the cohort we just created
     response = client.delete("{}/{}/".format('v1/cohorts', cohort1))
     assert response.content_type == 'application/json'
@@ -437,14 +437,14 @@ def test_delete_a_cohort(client, app):
     cohorts = response.json['cohorts']
     assert len(cohorts) == 1
     assert cohorts[0]['cohort_id'] == int(cohort1)
-    assert cohorts[0]['result'] == "Cohort ID {} has been deleted.".format(str(cohort1))
+    assert cohorts[0]['result']['notes'] == "Cohort {} ('testcohort') has been deleted.".format(str(cohort1))
 
     # Get the list of cohorts
     response = client.get("{}/".format('v1/cohorts'))
     assert response.content_type == 'application/json'
     assert response.status_code == 200
     cohorts = response.json['cohorts']
-    assert len([cohort for cohort in cohorts if cohort['id']==int(cohort1)]) == 0
+    assert len([cohort for cohort in cohorts if cohort['cohort_id']==int(cohort1)]) == 0
 
     # Try deleting the cohort we just deleted
     response = client.delete("{}/{}/".format('v1/cohorts', cohort1))
@@ -453,12 +453,12 @@ def test_delete_a_cohort(client, app):
     cohorts = response.json['cohorts']
     assert len(cohorts) == 1
     assert cohorts[0]['cohort_id'] == int(cohort1)
-    assert cohorts[0]['result'] == "Cohort ID {} was previously deleted.".format(str(cohort1))
+    assert cohorts[0]['result']['message'] == "Cohort ID {} has already been deleted.".format(str(cohort1))
 
 def test_delete_cohorts(client, app):
     # Create a cohort
-    cohort1 = create_cohort(client)['id']
-    cohort2 = create_cohort(client)['id']
+    cohort1 = create_cohort(client)['cohort_id']
+    cohort2 = create_cohort(client)['cohort_id']
 
     # Delete the cohorts that we just created
     cohortIDs = [cohort1, cohort2]
@@ -484,7 +484,7 @@ def test_delete_cohorts(client, app):
 
     cohorts = response.json['cohorts']
     assert len([cohort for cohort in cohorts
-                if cohort['id']==int(cohort1) or cohort['id']==int(cohort2)]) == 0
+                if cohort['cohort_id']==int(cohort1) or cohort['cohort_id']==int(cohort2)]) == 0
 
 def test_delete_all_cohorts(client,app):
     # Create a couple of cohortsw
@@ -497,7 +497,7 @@ def test_delete_all_cohorts(client,app):
     assert response.status_code == 200
     cohorts = response.json['cohorts']
 
-    cohortIDs = [cohort['id'] for cohort in cohorts]
+    cohortIDs = [cohort['cohort_id'] for cohort in cohorts]
     mimetype = ' application/json'
     headers = {
         'Content-Type': mimetype,

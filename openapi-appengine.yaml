@@ -672,7 +672,7 @@ definitions:
   cohortMetadata:
     type: "object"
     properties:
-      id:
+      cohort_id:
         type: "integer"
       name:
         type: "string"
@@ -708,7 +708,7 @@ definitions:
   cohortCreateResponse:
     type: "object"
     properties:
-      id:
+      cohort_id:
         type: "string"
       name:
         type: "string"

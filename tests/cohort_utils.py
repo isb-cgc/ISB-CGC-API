@@ -90,7 +90,7 @@ def create_cohort_for_test_get_cohort_xxx(client):
     response = client.post('/v1/cohorts', data=json.dumps(cohortSpec), headers=headers)
     assert response.status_code == 200
     cohortResponse = response.json
-    id = cohortResponse['id']
+    id = cohortResponse['cohort_id']
     return (id, filterSet)
 
 # Utility to delete an existing cohort
