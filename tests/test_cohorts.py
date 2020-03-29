@@ -16,7 +16,7 @@
 
 import logging
 import json
-import time
+import re
 
 from django.conf import settings
 logger = logging.getLogger(settings.LOGGER_NAME)
@@ -400,8 +400,8 @@ def test_get_cohort_instances_paged(client, app):
     delete_cohort(client, id)
 
 def test_list_cohorts(client,app):
+    cohort0 = create_cohort(client)['cohort_id']
     cohort1 = create_cohort(client)['cohort_id']
-    cohort2 = create_cohort(client)['cohort_id']
 
     # Get the list of cohorts
     response = client.get("{}/".format('v1/cohorts'))
@@ -409,11 +409,11 @@ def test_list_cohorts(client,app):
     assert response.status_code == 200
 
     cohorts = response.json['cohorts']
+    assert len([cohort for cohort in cohorts if cohort['cohort_id']==int(cohort0)]) == 1
     assert len([cohort for cohort in cohorts if cohort['cohort_id']==int(cohort1)]) == 1
-    assert len([cohort for cohort in cohorts if cohort['cohort_id']==int(cohort2)]) == 1
 
+    delete_cohort(client, cohort0)
     delete_cohort(client, cohort1)
-    delete_cohort(client, cohort2)
 
 
 def test_delete_a_cohort(client, app):
@@ -437,7 +437,8 @@ def test_delete_a_cohort(client, app):
     cohorts = response.json['cohorts']
     assert len(cohorts) == 1
     assert cohorts[0]['cohort_id'] == int(cohort1)
-    assert cohorts[0]['result']['notes'] == "Cohort {} ('testcohort') has been deleted.".format(str(cohort1))
+    assert re.sub(r'\(.*\) ',r'',cohorts[0]['result']['notes'])== \
+           "Cohort {} has been deleted.".format(str(cohort1))
 
     # Get the list of cohorts
     response = client.get("{}/".format('v1/cohorts'))
@@ -457,11 +458,11 @@ def test_delete_a_cohort(client, app):
 
 def test_delete_cohorts(client, app):
     # Create a cohort
+    cohort0 = create_cohort(client)['cohort_id']
     cohort1 = create_cohort(client)['cohort_id']
-    cohort2 = create_cohort(client)['cohort_id']
 
     # Delete the cohorts that we just created
-    cohortIDs = [cohort1, cohort2]
+    cohortIDs = [cohort0, cohort1]
     mimetype = ' application/json'
     headers = {
         'Content-Type': mimetype,
@@ -472,10 +473,15 @@ def test_delete_cohorts(client, app):
     cohorts = response.json['cohorts']
 
     assert len(cohorts) == 2
-    assert cohorts[0]['cohort_id'] == int(cohort1)
-    assert cohorts[0]['result'] == "Cohort ID {} has been deleted.".format(str(cohort1))
-    assert cohorts[1]['cohort_id'] == int(cohort2)
-    assert cohorts[1]['result'] == "Cohort ID {} has been deleted.".format(str(cohort2))
+    assert cohorts[0]['cohort_id'] == int(cohort0)
+    # assert cohorts[0]['result'] == "Cohort ID {} has been deleted.".format(str(cohort1))
+    assert re.sub(r'\(.*\) ',r'',cohorts[0]['result']['notes'])== \
+           "Cohort {} has been deleted.".format(str(cohort0))
+
+    assert cohorts[1]['cohort_id'] == int(cohort1)
+    # assert cohorts[1]['result'] == "Cohort ID {} has been deleted.".format(str(cohort2))
+    assert re.sub(r'\(.*\) ',r'',cohorts[1]['result']['notes'])== \
+           "Cohort {} has been deleted.".format(str(cohort1))
 
     # Get the list of cohorts
     response = client.get("{}/".format('v1/cohorts'))
@@ -484,7 +490,7 @@ def test_delete_cohorts(client, app):
 
     cohorts = response.json['cohorts']
     assert len([cohort for cohort in cohorts
-                if cohort['cohort_id']==int(cohort1) or cohort['cohort_id']==int(cohort2)]) == 0
+                if cohort['cohort_id']==int(cohort0) or cohort['cohort_id']==int(cohort1)]) == 0
 
 def test_delete_all_cohorts(client,app):
     # Create a couple of cohortsw
@@ -507,7 +513,9 @@ def test_delete_all_cohorts(client,app):
     assert response.status_code == 200
     cohorts = response.json['cohorts']
     for cohort in cohorts:
-        assert cohort['result'] == "Cohort ID {} has been deleted.".format(str(cohort['cohort_id']))
+        # assert cohort['result'] == "Cohort ID {} has been deleted.".format(str(cohort['cohort_id']))
+        assert re.sub(r'\(.*\) ',r'',cohort['result']['notes'])== \
+               "Cohort {} has been deleted.".format(str(cohort['cohort_id']))
 
     # Get the list of cohorts
     response = client.get("{}/".format('v1/cohorts'))
