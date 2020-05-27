@@ -15,17 +15,23 @@ limitations under the License.
 """
 
 import os
-from os.path import join, dirname
+from os.path import join, dirname, exists
 import sys
 from pathlib import Path
 from dotenv import load_dotenv
 from socket import gethostname, gethostbyname
 
-env_path = ''
-if os.environ.get('SECURE_LOCAL_PATH', None):
-    env_path += os.environ.get('SECURE_LOCAL_PATH')
 
-load_dotenv(dotenv_path=join(dirname(__file__), env_path+'.env'))
+SECURE_LOCAL_PATH = os.environ.get('SECURE_LOCAL_PATH', '')
+
+if not exists(join(dirname(__file__), SECURE_LOCAL_PATH, '.env')):
+    print("[ERROR] Couldn't open .env file expected at {}!".format(
+        join(dirname(__file__), SECURE_LOCAL_PATH, '.env'))
+    )
+    print("[ERROR] Exiting settings.py load - check your Pycharm settings and secure_path.env file.")
+    exit(1)
+
+load_dotenv(dotenv_path=join(dirname(__file__), SECURE_LOCAL_PATH, '.env'))
 
 APP_ENGINE_FLEX = 'aef-'
 APP_ENGINE = 'Google App Engine/'
@@ -40,35 +46,9 @@ SHARED_SOURCE_DIRECTORIES = [
     'IDC-Common'
 ]
 
-# The Google AppEngine library and the Google Cloud APIs don't play nice. Teach them to get along.
-# This unfortunately requires either hardcoding the path to the SDK, or sorting out a way to
-# provide an environment variable indicating where it is.
-# From https://github.com/GoogleCloudPlatform/python-repo-tools/blob/master/gcp_devrel/testing/appengine.py#L26
-def setup_sdk_imports():
-    """Sets up appengine SDK third-party imports."""
-    sdk_path = os.environ.get('GAE_SDK_PATH', '/usr/lib/google-cloud-sdk')
-
-    # Trigger loading of the Cloud APIs so they're in sys.modules
-    import google.cloud
-
-    # The libraries are specifically under platform/google_appengine
-    if os.path.exists(os.path.join(sdk_path, 'platform/google_appengine')):
-        sdk_path = os.path.join(sdk_path, 'platform/google_appengine')
-
-    # This sets up libraries packaged with the SDK, but puts them last in
-    # sys.path to prevent clobbering newer versions
-    if 'google' in sys.modules:
-        sys.modules['google'].__path__.append(
-            os.path.join(sdk_path, 'google'))
-
-    sys.path.append(sdk_path)
-
-
 # Add the shared Django application subdirectory to the Python module search path
 for directory_name in SHARED_SOURCE_DIRECTORIES:
     sys.path.append(os.path.join(BASE_DIR, directory_name))
-
-setup_sdk_imports()
 
 ALLOWED_HOSTS = list(set(os.environ.get('ALLOWED_HOST', 'localhost').split(',') + ['localhost', '127.0.0.1', '[::1]', gethostname(), gethostbyname(gethostname()),]))
 # Testing health checks problem
@@ -79,10 +59,10 @@ MANAGERS                = ADMINS
 
 LOGGER_NAME = os.environ.get('API_LOGGER_NAME', 'main_logger')
 
-GCLOUD_PROJECT_ID              = os.environ.get('GCLOUD_PROJECT_ID', '')
-GCLOUD_PROJECT_NUMBER          = os.environ.get('GCLOUD_PROJECT_NUMBER', '')
-BIGQUERY_PROJECT_ID           = os.environ.get('BIGQUERY_PROJECT_ID', GCLOUD_PROJECT_ID)
-BIGQUERY_DATA_PROJECT_ID  = os.environ.get('BIGQUERY_DATA_PROJECT_ID', GCLOUD_PROJECT_ID)
+GCLOUD_PROJECT_ID           = os.environ.get('GCLOUD_PROJECT_ID', '')
+GCLOUD_PROJECT_NUMBER       = os.environ.get('GCLOUD_PROJECT_NUMBER', '')
+BIGQUERY_PROJECT_ID         = os.environ.get('BIGQUERY_PROJECT_ID', GCLOUD_PROJECT_ID)
+BIGQUERY_DATA_PROJECT_ID    = os.environ.get('BIGQUERY_DATA_PROJECT_ID', GCLOUD_PROJECT_ID)
 
 # Deployment module
 CRON_MODULE             = os.environ.get('CRON_MODULE')
@@ -95,11 +75,11 @@ BASE_API_URL            = os.environ.get('BASE_API_URL', 'https://api-dot-idc-de
 
 
 # BigQuery cohort storage settings
-BIGQUERY_COHORT_DATASET_ID           = os.environ.get('BIGQUERY_COHORT_DATASET_ID', 'cohort_dataset')
+BIGQUERY_COHORT_DATASET_ID  = os.environ.get('BIGQUERY_COHORT_DATASET_ID', 'cohort_dataset')
 BIGQUERY_COHORT_TABLE_ID    = os.environ.get('BIGQUERY_COHORT_TABLE_ID', 'developer_cohorts')
 MAX_BQ_INSERT               = int(os.environ.get('MAX_BQ_INSERT', '500'))
 
-USER_DATA_ON            = bool(os.environ.get('USER_DATA_ON', False))
+USER_DATA_ON                = bool(os.environ.get('USER_DATA_ON', False))
 
 DATABASES = {
     'default': {
@@ -115,9 +95,9 @@ DB_SOCKET = DATABASES['default']['HOST'] if 'cloudsql' in DATABASES['default']['
 
 CONN_MAX_AGE = 60
 
-IS_DEV = (os.environ.get('IS_DEV', 'False') == 'True')
+IS_DEV             = (os.environ.get('IS_DEV', 'False') == 'True')
 IS_APP_ENGINE_FLEX = os.getenv('GAE_INSTANCE', '').startswith(APP_ENGINE_FLEX)
-IS_APP_ENGINE = os.getenv('SERVER_SOFTWARE', '').startswith(APP_ENGINE)
+IS_APP_ENGINE      = os.getenv('SERVER_SOFTWARE', '').startswith(APP_ENGINE)
 
 # Default to localhost for the site ID
 SITE_ID = 3
@@ -407,33 +387,21 @@ ACCOUNT_DEFAULT_HTTP_PROTOCOL = 'https'
 if IS_DEV:
     ACCOUNT_DEFAULT_HTTP_PROTOCOL = 'http'
 
-
 ##########################
 #   End django-allauth   #
 ##########################
 
+GOOGLE_APPLICATION_CREDENTIALS  = join(dirname(__file__), SECURE_LOCAL_PATH, os.environ.get('GOOGLE_APPLICATION_CREDENTIALS', ''))
+OAUTH2_CLIENT_ID                = os.environ.get('OAUTH2_CLIENT_ID', '')
+OAUTH2_CLIENT_SECRET            = os.environ.get('OAUTH2_CLIENT_SECRET', '')
 
-GOOGLE_APPLICATION_CREDENTIALS  = os.path.join(os.path.dirname(__file__), os.environ.get('GOOGLE_APPLICATION_CREDENTIALS')) if os.environ.get('GOOGLE_APPLICATION_CREDENTIALS') else ''
-OAUTH2_CLIENT_ID = os.environ.get('OAUTH2_CLIENT_ID', '')
-
-OAUTH2_CLIENT_SECRET = os.environ.get('OAUTH2_CLIENT_SECRET', '')
-
-API_CLIENT_ID = os.environ.get('API_CLIENT_ID', '')
-
-##############################
-#   Start django-finalware   #
-##############################
-
-INSTALLED_APPS += (
-    'finalware',)
-
-SITE_SUPERUSER_USERNAME = os.environ.get('SUPERUSER_USERNAME', '')
-SITE_SUPERUSER_EMAIL = ''
-SITE_SUPERUSER_PASSWORD = os.environ.get('SUPERUSER_PASSWORD', '')
-
-############################
-#   End django-finalware   #
-############################
+API_CLIENT_ID  = os.environ.get('API_CLIENT_ID', '')
+API_AUTH_TOKEN = ''
+try:
+    with open(join(dirname(__file__), SECURE_LOCAL_PATH, os.environ.get('API_TOKEN_FILE', '')), 'r') as filehandle:
+        API_AUTH_TOKEN = filehandle.read()
+except Exception:
+    print("[ERROR] Failed to load API auth token - authorized endpoints may fail!")
 
 ##############################################################
 #   MAXes to prevent size-limited events from causing errors
