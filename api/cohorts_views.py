@@ -48,7 +48,8 @@ def get_auth():
     with open(
             join(dirname(__file__), '../{}{}'.format(os.environ.get('SECURE_LOCAL_PATH'), "dev.api_token.json"))) as f:
         api_token = f.read()
-    auth = {"Authorization": "Token {}".format(api_token)}
+    auth = {"Authorization": "APIToken {}".format(api_token)}
+    # auth = {"Authorization": "Token {}".format(api_token)}
     return auth
 
 
