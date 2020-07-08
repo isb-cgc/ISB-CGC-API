@@ -18,37 +18,25 @@ import logging
 import json
 from flask import jsonify, request, render_template
 
-from django.conf import settings
-from django.db import close_old_connections
-
+from python_settings import settings
 
 from . main_views import get_privacy, get_help
-#from api import app
-
-# Configure Blueprint for about
-#from flask import (
-#    Blueprint, flash, g, redirect, render_template, request, session, url_for
-#)
-
 from flask import Blueprint
-from flask import g
 
 main_bp = Blueprint('main_bp', __name__, url_prefix='/v1')
-#
 
 logger = logging.getLogger(settings.LOGGER_NAME)
 
 SCOPE = 'https://www.googleapis.com/auth/userinfo.email'
 
 
-#@app.route('/v1/about/', methods=['GET'], strict_slashes=False)
 @main_bp.route('/about/', methods=['GET'], strict_slashes=False)
 def about():
     """Base response"""
     response = jsonify({
         'code': 200,
         'message': 'Welcome to the NCI IDC API, Version 1.',
-        'documentation': 'SwaggerUI interface available at <{}/swagger/>.'.format(settings.BASE_API_URL) +
+        'documentation': 'SwaggerUI interface available at <{}/v1/swagger/>.'.format(settings.BASE_API_URL) +
              'Documentation available at <https://isb-cancer-genomics-cloud.readthedocs.io/en/latest/sections/progapi/Programmatic-API.html>'
     })
     response.status_code = 200
@@ -93,8 +81,6 @@ def help():
             'message': 'Encountered an error while retrieving the help list.'
         })
         response.status_code = 500
-    finally:
-        close_old_connections()
 
     return response
 

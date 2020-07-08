@@ -1,48 +1,21 @@
 COHORT_FILTER_SCHEMA={
   "type": "object",
   "properties": {
-    "collections": {
-      "type": "array",
-      "items": {
-        "type": "object",
-        "properties": {
-          "name": {
-            "type": "string",
-            "enum": [
-              "tcga_blca",
-              "tcga_brca",
-              "tcga_cesc",
-              "tcga_coad",
-              "tcga_esca",
-              "tcga_gbm",
-              "tcga_hnsc",
-              "tcga_kich",
-              "tcga_kirc",
-              "tcga_kirp",
-              "tcga_lgg",
-              "tcga_luad",
-              "tcga_kusc",
-              "tcga_ov",
-              "tcga_prad",
-              "tcga_reas",
-              "tcga_sarc",
-              "tcga_stad",
-              "tcga_thca",
-              "tcga_ucec"
-            ]
-          },
-          "versions": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          }
-        }
-      }
+    "bioclin_version": {
+      "type": "string"
     },
-    "clinical": {
+    "imaging_version": {
+      "type": "string"
+    },
+    "attributes": {
       "type": "object",
       "properties": {
+        "collection_id": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
         "program_name": {
           "type": "array",
           "items": {
@@ -1536,40 +1509,6 @@ COHORT_FILTER_SCHEMA={
           "items": {
             "type": "number"
           }
-        }
-      }
-    },
-    "imaging": {
-      "type": "object",
-      "properties": {
-        "Modality": {
-          "type": "array",
-          "items": {
-            "type": "string",
-            "enum": [
-              "CR",
-              "CT",
-              "CTPT",
-              "DX",
-              "FUSION",
-              "KO",
-              "MR",
-              "MG",
-              "NM",
-              "OT",
-              "PR",
-              "PT",
-              "REG",
-              "RTDOSE",
-              "RTPLAN",
-              "RTSTRUCT",
-              "RWV",
-              "SC",
-              "SEG",
-              "SR",
-              "US"
-            ]
-          }
         },
         "SOPInstanceUID": {
           "type": "array",
@@ -1607,48 +1546,6 @@ COHORT_FILTER_SCHEMA={
             "type": "string"
           }
         },
-        "ScanningSequence": {
-          "type": "array",
-          "items": {
-            "type": "string",
-            "enum": [
-              "SE",
-              "IR",
-              "GR",
-              "EP",
-              "RM"
-            ]
-          }
-        },
-        "SequenceVariant": {
-          "type": "array",
-          "items": {
-            "type": "string",
-            "enum": [
-              "SK",
-              "MTC",
-              "SS",
-              "TRSS",
-              "SP",
-              "MP",
-              "OSP",
-              "NONE"
-            ]
-          }
-        },
-        "ScanOptions": {
-          "type": "array",
-          "items": {
-            "type": "string",
-            "enum": [
-              "EKG",
-              "PHY",
-              "TOMO",
-              "CHASE",
-              "ROTA"
-            ]
-          }
-        },
         "SliceThickness": {
           "type": "array",
           "items": {
@@ -1672,14 +1569,18 @@ COHORT_FILTER_SCHEMA={
           "items": {
             "type": "number"
           }
-        }
-      }
-    },
-    "derived": {
-      "type": "object",
-      "properties": {
-        "dummy": {
-          "type": "string"
+        },
+        "file_path": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "StudyDate": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
         }
       }
     }

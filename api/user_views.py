@@ -16,7 +16,7 @@
 
 import logging
 
-from django.conf import settings
+from python_settings import settings
 from . auth import UserValidationException
 
 logger = logging.getLogger(settings.LOGGER_NAME)

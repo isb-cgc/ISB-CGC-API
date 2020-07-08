@@ -28,7 +28,11 @@ import os
 
 from flask import Flask
 
+from python_settings import settings
+import settings as api_settings
 
+settings.configure(api_settings)
+assert settings.configured
 
 
 def create_app(test_config=None):
@@ -43,11 +47,6 @@ def create_app(test_config=None):
             'data:'
         ]
     })
-
-    app.config.from_mapping(
-        SECRET_KEY='dev',
-        DATABASE=os.path.join(app.instance_path, 'flaskr.sqlite'),
-    )
 
     if test_config is None:
         # load the instance config, if it exists, when not testing
@@ -67,12 +66,6 @@ def create_app(test_config=None):
     def hello():
         return 'Hello, World!'
 
-    import django
-    django.setup()
-    from django.conf import settings
-
-    from . auth import auth_info
-
     '''from main_routes import *
     from cohorts_routes import *
     from program_routes import *
@@ -87,14 +80,10 @@ def create_app(test_config=None):
     app.register_blueprint(cohorts_routes.cohorts_bp)
     from . file_routes import file_bp
     app.register_blueprint(file_routes.file_bp)
-    from . collections_routes import collections_bp
-    app.register_blueprint(collections_routes.collections_bp)
     from . user_routes import user_bp
     app.register_blueprint(user_routes.user_bp)
     from . program_routes import program_bp
     app.register_blueprint(program_routes.program_bp)
-
-    print("__init__.py, 90")
 
     @app.context_processor
     def utilities():

@@ -16,21 +16,85 @@
 
 
 import logging
+import re
 import os
 import requests
 
-from django.conf import settings
+from flask import request
+
+from python_settings import settings
 
 logger = logging.getLogger(settings.LOGGER_NAME)
 
+BLACKLIST_RE = settings.BLACKLIST_RE
 DJANGO_URI = os.getenv('DJANGO_URI')
 
 def get_programs():
-    program_info = None
+    info = None
 
     try:
-        program_info = requests.get("{}/{}".format(DJANGO_URI, 'collections/api/public/'))
+        response = requests.get("{}/{}".format(DJANGO_URI, 'collections/api/public/'))
+        info = response.json()
     except Exception as e:
         logger.exception(e)
 
-    return program_info
+    return info
+
+
+def get_collections(program_name):
+    info = None
+
+    blacklist = re.compile(BLACKLIST_RE, re.UNICODE)
+    match = blacklist.search(str(program_name))
+    if match:
+        info = {
+            "message": "Your program_name contains invalid characters; please edit and resubmit. " +
+                       "[Saw {}]".format(str(match)),
+            "code": 400,
+            "not_found": []
+        }
+
+    try:
+        response = requests.get("{}/{}/{}/".format(DJANGO_URI, 'collections/api',program_name))
+        info = response.json()
+    except Exception as e:
+        logger.exception(e)
+
+    return info
+
+def get_collection_info(program_name, collection_name):
+    info = None
+
+    request_string = {}
+    for key in request.args.keys():
+        request_string[key] = request.args.get(key)
+    if "attribute_type" not in request_string:
+        info = {
+            "message": "An attribute_type was not specified. Collection details could not be provided.",
+            "code": 400,
+            "not_found": []
+        }
+        return info
+
+    blacklist = re.compile(BLACKLIST_RE, re.UNICODE)
+    match = blacklist.search(str(request_string["attribute_type"]))
+    if not match and "version" in request_string:
+        match = blacklist.search(str(request_string["version"]))
+    if match:
+        info = {
+            "message": "Your collections\'s attribute_type or version contain invalid characters; please edit them and resubmit. " +
+                       "[Saw {}]".format(str(match)),
+            "code": 400,
+            "not_found": []
+        }
+    else:
+        try:
+            response = requests.get("{}/{}/{}/{}/".format(
+                DJANGO_URI, "collections/api",program_name, collection_name),
+                params=request_string)
+            info = response.json()
+        except Exception as e:
+            logger.exception(e)
+
+    return info
+
