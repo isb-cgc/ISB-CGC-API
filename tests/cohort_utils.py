@@ -14,12 +14,7 @@
 # limitations under the License.
 #
 
-import logging
 import json
-
-from django.conf import settings
-logger = logging.getLogger(settings.LOGGER_NAME)
-
 
 levels = ["collections", "patients", "studies", "series", "instances"]
 
@@ -61,7 +56,6 @@ def create_cohort(client):
     response = client.post('/v1/cohorts', data=json.dumps(cohortSpec), headers=headers)
     assert response.content_type == 'application/json'
     assert response.status_code == 200
-#    cohortResponse = json.loads(response.json['cohortSpec'])
     cohortResponse = response.json
 
     return cohortResponse

@@ -18,15 +18,8 @@ import logging
 import base64
 import json
 import os
-import requests
-import django
-from flask import request, jsonify
-from django.conf import settings
-# from cohorts.metadata_helpers import get_acls_by_uuid
-from django.contrib.auth.models import User as Django_User
-from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
-from cohorts.models import Cohort_Perms
-# from accounts.dcf_support import refresh_at_dcf, TokenFailure, InternalTokenError, DCFCommFailure, RefreshTokenExpired
+from flask import request
+from python_settings import settings
 
 logger = logging.getLogger(settings.LOGGER_NAME)
 
@@ -35,7 +28,6 @@ class UserValidationException(Exception):
     pass
 
 
-# BEGIN METHODS
 def _base64_decode(encoded_str):
     # Add paddings manually if necessary.
     num_missed_paddings = 4 - len(encoded_str) % 4
@@ -66,63 +58,3 @@ def auth_info():
     return user_info
 
 
-def get_user(user_email=None):
-    # Assume this is for the user information in the request header if none is
-    # provided (it could be for someone else on a project, etc.)
-    if not user_email:
-        user_email = auth_info()['email']
-
-    user = None
-
-    django.setup()
-    try:
-        user = Django_User.objects.get(email=user_email)
-    except ObjectDoesNotExist as e:
-        logger.warn("User {} does not exist in our system.".format(user_email))
-        raise UserValidationException(
-            "User {} wasn't found in our system.".format(user_email) +
-            " Please register with our Web Application first: <https://idc-dev.appspot.com>"
-        )
-    
-    return user
-
-
-def validate_user(user_email=None, cohort_id=None, uuids=None):
-    user = get_user()
-
-    if not user_email:
-        user_email = user.email
-
-    try:
-        if cohort_id:
-            Cohort_Perms.objects.get(cohort_id=cohort_id, user_id=user.id)
-    except ObjectDoesNotExist as e:
-        logger.warn("Error retrieving cohort {} for user {}: {}".format(cohort_id, user_email, e))
-        raise UserValidationException(
-            "User {} does not have access to cohort {}.".format(user_email, cohort_id) +
-            " Please contact this cohort owner to obtain permission."
-        )
-
-    # if uuids:
-    #     acls_needed = get_acls_by_uuid(uuids)
-    #     user_acls = get_user_acls(user)
-    # 
-    #     logger.info("User ACLs: {}".format(str(user_acls)))
-    #     logger.info("ACLs needed: {}".format(str(acls_needed)))
-    #     inaccessible = []
-    # 
-    #     for acl in acls_needed:
-    #         if acl not in user_acls:
-    #             inaccessible.append(acl)
-    #     
-    #     if len(inaccessible):
-    #         logger.warn(
-    #             "User {} does not have access to one or more programs in this barcode set.".format(user_email))
-    #         raise UserValidationException(
-    #             "User {} does not have access to one or more programs in this barcode set.".format(user_email) +
-    #             " Please double-check that you have linked the email '{}' to your eRA Commons ID via DCF and are currently signed in."
-    #         )
-
-    return user
-
-# END METHODS

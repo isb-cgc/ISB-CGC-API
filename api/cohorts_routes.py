@@ -18,8 +18,7 @@ from flask import jsonify, request
 from . cohorts_views import create_cohort, get_cohort_objects, get_cohort_list, delete_cohort, \
     delete_cohorts, post_cohort_preview  # get_file_manifest
 from . auth import auth_info, UserValidationException
-from django.conf import settings
-from django.db import close_old_connections
+from python_settings import settings
 
 logger = logging.getLogger(settings.LOGGER_NAME)
 
@@ -99,8 +98,6 @@ def cohort(cohort_id):
             'message': 'Encountered an error while attempting to retrieve this cohort\'s information.'
         })
         response.status_code = 500
-    finally:
-        close_old_connections()
 
     return response
 
@@ -164,9 +161,7 @@ def cohorts():
             )
         })
         response.status_code = 500
-    finally:
-        close_old_connections()
-        
+
     return response
 
 # @cohorts_bp.route('/manifest/<int:cohort_id>/', methods=['POST', 'GET'], strict_slashes=False)
@@ -263,7 +258,5 @@ def cohort_preview():
             'message': 'Encountered an error while attempting to retrieve this cohort\'s information.'
         })
         response.status_code = 500
-    finally:
-        close_old_connections()
 
     return response

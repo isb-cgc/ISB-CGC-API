@@ -23,7 +23,7 @@ import requests
 from flask import request
 from werkzeug.exceptions import BadRequest
 
-from django.conf import settings
+from python_settings import settings
 
 from jsonschema import validate as schema_validate, ValidationError
 from . schemas.filterset import COHORT_FILTER_SCHEMA

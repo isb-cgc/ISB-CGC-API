@@ -15,16 +15,11 @@
 #
 
 import logging
-import json
 from flask import jsonify, request
-#from api import app
-from django.conf import settings
-from django.db import close_old_connections
-from . auth import validate_user, UserValidationException
+from python_settings import settings
 from . file_views import get_file_paths, get_signed_uris
 
 from flask import Blueprint
-from flask import g
 
 file_bp = Blueprint('file_bp', __name__, url_prefix='/v1')
 
@@ -34,13 +29,13 @@ logger = logging.getLogger(settings.LOGGER_NAME)
 # @app.route('/v1/files/signed_uris/<file_uuid>/', methods=['GET'], strict_slashes=False)
 # def signed_uri(file_uuid):
 #     response = None
-# 
+#
 #     request_data = request.get_json()
-# 
+#
 #     try:
 #         user = validate_user(uuids=[file_uuid])
 #         signed_uris = get_signed_uris(user, file_uuid)
-# 
+#
 #         if signed_uris:
 #             response = jsonify({
 #                 'code': 200,
@@ -53,14 +48,14 @@ logger = logging.getLogger(settings.LOGGER_NAME)
 #                 'code': 404,
 #                 'message': "File UUID {} was not found.".format(file_uuid)})
 #             response.status_code = 404
-# 
+#
 #     except UserValidationException as e:
 #         response = jsonify({
 #             'code': 403,
 #             'message': str(e)
 #         })
 #         response.status_code = 403
-# 
+#
 #     except Exception as e:
 #         logger.exception(e)
 #         response = jsonify({
@@ -68,19 +63,19 @@ logger = logging.getLogger(settings.LOGGER_NAME)
 #             'message': 'Encountered an error while attempting to retrieve signed URIs for file UUID {}.'.format(file_uuid)
 #         })
 #         response.status_code = 500
-# 
+#
 #     return response
 
 
 # @app.route('/v1/files/signed_uris/', methods=['POST'], strict_slashes=False)
 # def signed_uri_list():
-# 
+#
 #     response = None
-# 
+#
 #     request_data = request.get_json()
-# 
+#
 #     try:
-# 
+#
 #         if 'uuids' not in request_data:
 #             response = jsonify({
 #                 'code': 400,
@@ -90,7 +85,7 @@ logger = logging.getLogger(settings.LOGGER_NAME)
 #         else:
 #             user = validate_user()
 #             signed_uris = get_signed_uris(user, request_data['uuids'])
-# 
+#
 #             if signed_uris:
 #                 response = jsonify({
 #                     'code': 200,
@@ -103,14 +98,14 @@ logger = logging.getLogger(settings.LOGGER_NAME)
 #                     'code': 404,
 #                     'message': "The provided file UUIDs were not found."})
 #                 response.status_code = 404
-# 
+#
 #     except UserValidationException as e:
 #         response = jsonify({
 #             'code': 403,
 #             'message': str(e)
 #         })
 #         response.status_code = 403
-# 
+#
 #     except Exception as e:
 #         logger.exception(e)
 #         response = jsonify({
@@ -118,7 +113,7 @@ logger = logging.getLogger(settings.LOGGER_NAME)
 #             'message': 'Encountered an error while attempting to retrieve signed URIs for these file UUIDs.'
 #         })
 #         response.status_code = 500
-# 
+#
 #     return response
 
 
@@ -153,8 +148,8 @@ def file_path(file_uuid):
             'message': 'Encountered an error while retrieving file paths.'
         }
         code = 500
-    finally:
-        close_old_connections()
+    # finally:
+    #     close_old_connections()
 
     resp_obj['code'] = code
     response = jsonify(resp_obj)
@@ -196,8 +191,6 @@ def file_path_list():
             'message': 'Encountered an error while attempting to retrieve file paths for these file UUIDs.'
         }
         code = 500
-    finally:
-        close_old_connections()
 
     response_obj['code'] = code
     response = jsonify(response_obj)

@@ -22,7 +22,7 @@ import requests
 
 from flask import request
 
-from django.conf import settings
+from python_settings import settings
 
 logger = logging.getLogger(settings.LOGGER_NAME)
 

@@ -16,8 +16,8 @@
 
 import logging
 from flask import jsonify
-from django.conf import settings
-from django.db import close_old_connections
+from python_settings import settings
+
 from . program_views import get_programs, get_collections, get_collection_info
 
 from flask import Blueprint
@@ -32,10 +32,10 @@ def programs():
     """Retrieve the list of programs and builds currently available for cohort creation."""
 
     response = None
-    
+
     try:
         results = get_programs()
-        
+
         if 'message' in results:
             response = jsonify(results)
             response.status_code = 500
@@ -53,9 +53,7 @@ def programs():
             'message': 'Encountered an error while retrieving the program list.'
         })
         response.status_code = 500
-    finally:
-        close_old_connections()
-        
+
     return response
 
 
@@ -85,8 +83,6 @@ def collections(program_name):
             'message': 'Encountered an error while retrieving the collection list.'
         })
         response.status_code = 500
-    finally:
-        close_old_connections()
 
     return response
 
@@ -124,8 +120,6 @@ def collection(program_name, collection_name):
             'message': 'Encountered an error while retrieving the collection metadata.'
         })
         response.status_code = 500
-    finally:
-        close_old_connections()
 
     return response
 

@@ -19,9 +19,6 @@ import json
 
 from .cohort_utils import merge, pretty_print_cohortObjects, create_cohort_for_test_get_cohort_xxx, delete_cohort
 
-from django.conf import settings
-logger = logging.getLogger(settings.LOGGER_NAME)
-
 def pretty_print_cohortObjects(cohortObjects, indent=4):
     print(json.dumps(cohortObjects, sort_keys=True, indent=indent))
 

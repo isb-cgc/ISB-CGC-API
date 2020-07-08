@@ -14,8 +14,6 @@
 # limitations under the License.
 #
 
-import json
-
 
 def test_programs(client, app):
     response = client.get('/v1/programs')

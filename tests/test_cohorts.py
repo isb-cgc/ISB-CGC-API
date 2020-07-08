@@ -14,12 +14,9 @@
 # limitations under the License.
 #
 
-import logging
 import json
 import re
 
-from django.conf import settings
-logger = logging.getLogger(settings.LOGGER_NAME)
 
 from .cohort_utils import pretty_print_cohortObjects, merge, create_cohort, create_cohort_for_test_get_cohort_xxx, delete_cohort
 

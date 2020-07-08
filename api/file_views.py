@@ -15,15 +15,10 @@
 #
 
 import logging
-import json
-import django
-
 from flask import request
 from werkzeug.exceptions import BadRequest
 
-from django.conf import settings
-
-from . auth import UserValidationException
+from python_settings import settings
 
 logger = logging.getLogger(settings.LOGGER_NAME)
 

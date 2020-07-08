@@ -14,9 +14,6 @@
 # limitations under the License.
 #
 
-import pytest
-from flask import g, session
-
 
 def test_about(client, app):
     response = client.get('/v1/about')

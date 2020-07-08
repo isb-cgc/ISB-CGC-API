@@ -18,8 +18,7 @@ import logging
 import os
 import requests
 
-from django.core.exceptions import ObjectDoesNotExist
-from django.conf import settings
+from python_settings import settings
 
 logger = logging.getLogger(settings.LOGGER_NAME)
 
@@ -31,7 +30,6 @@ def get_privacy():
     except:
         if result.status_code != 200:
            raise Exception("oops!")
-    #response = result.json()
     return result
 
 def get_help():
@@ -41,7 +39,6 @@ def get_help():
     except:
         if result.status_code != 200:
            raise Exception("oops!")
-    #response = result.json()
     return result
 
 
