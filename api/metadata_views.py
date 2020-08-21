@@ -29,11 +29,36 @@ logger = logging.getLogger(settings.LOGGER_NAME)
 BLACKLIST_RE = settings.BLACKLIST_RE
 DJANGO_URI = os.getenv('DJANGO_URI')
 
+def get_versions():
+    info = None
+
+    try:
+        response = requests.get("{}/{}".format(DJANGO_URI, 'collections/api/versions/'))
+        info = response.json()
+    except Exception as e:
+        logger.exception(e)
+
+    return info
+
+
+
 def get_programs():
     info = None
 
     try:
         response = requests.get("{}/{}".format(DJANGO_URI, 'collections/api/public/'))
+        info = response.json()
+    except Exception as e:
+        logger.exception(e)
+
+    return info
+
+
+def get_attributes():
+    info = None
+
+    try:
+        response = requests.get("{}/{}".format(DJANGO_URI, 'collections/api/attributes/'))
         info = response.json()
     except Exception as e:
         logger.exception(e)

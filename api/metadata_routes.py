@@ -18,16 +18,76 @@ import logging
 from flask import jsonify
 from python_settings import settings
 
-from . program_views import get_programs, get_collections, get_collection_info
+from . metadata_views import get_versions, get_attributes, get_programs, get_collections, get_collection_info
 
 from flask import Blueprint
 
-program_bp = Blueprint('program_bp', __name__, url_prefix='/v1')
+metadata_bp = Blueprint('metadata_bp', __name__, url_prefix='/v1')
 
 logger = logging.getLogger(settings.LOGGER_NAME)
 
 
-@program_bp.route('/programs/', methods=['GET'], strict_slashes=False)
+@metadata_bp.route('/versions/', methods=['GET'], strict_slashes=False)
+def versions():
+    """Retrieve a list of IDC versions"""
+
+    response = None
+
+    try:
+        results = get_versions()
+
+        if 'message' in results:
+            response = jsonify(results)
+            response.status_code = 500
+        else:
+            response = jsonify({
+                'code': 200,
+                **results
+            })
+            response.status_code = 200
+    except Exception as e:
+        logger.error("[ERROR] While retrieving IDC versions:")
+        logger.exception(e)
+        response = jsonify({
+            'code': 500,
+            'message': 'Encountered an error while retrieving the program list.'
+        })
+        response.status_code = 500
+
+    return response
+
+
+@metadata_bp.route('/attributes/', methods=['GET'], strict_slashes=False)
+def attributes():
+    """Retrieve a list of IDC versions"""
+
+    response = None
+
+    try:
+        results = get_attributes()
+
+        if 'message' in results:
+            response = jsonify(results)
+            response.status_code = 500
+        else:
+            response = jsonify({
+                'code': 200,
+                **results
+            })
+            response.status_code = 200
+    except Exception as e:
+        logger.error("[ERROR] While retrieving IDC versions:")
+        logger.exception(e)
+        response = jsonify({
+            'code': 500,
+            'message': 'Encountered an error while retrieving the program list.'
+        })
+        response.status_code = 500
+
+    return response
+
+
+@metadata_bp.route('/programs/', methods=['GET'], strict_slashes=False)
 def programs():
     """Retrieve the list of programs and builds currently available for cohort creation."""
 
@@ -57,7 +117,7 @@ def programs():
     return response
 
 
-@program_bp.route('/programs/<program_name>', methods=['GET'], strict_slashes=False)
+@metadata_bp.route('/programs/<program_name>', methods=['GET'], strict_slashes=False)
 def collections(program_name):
     """Retrieve the list of collections and versions in program <program_name>."""
     response = None
@@ -87,7 +147,7 @@ def collections(program_name):
     return response
 
 
-@program_bp.route('/programs/<program_name>/<collection_name>/', methods=['GET'], strict_slashes=False)
+@metadata_bp.route('/programs/<program_name>/<collection_name>/', methods=['GET'], strict_slashes=False)
 def collection(program_name, collection_name):
     """"Get a list of the available fields for a specific version of a collection."""
     response = None

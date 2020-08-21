@@ -76,14 +76,14 @@ def create_app(test_config=None):
 
     from . main_routes import main_bp
     app.register_blueprint(main_routes.main_bp)
-    from . cohorts_routes import cohorts_bp
-    app.register_blueprint(cohorts_routes.cohorts_bp)
+    from . cohort_routes import cohorts_bp
+    app.register_blueprint(cohort_routes.cohorts_bp)
     from . file_routes import file_bp
     app.register_blueprint(file_routes.file_bp)
     from . user_routes import user_bp
     app.register_blueprint(user_routes.user_bp)
-    from . program_routes import program_bp
-    app.register_blueprint(program_routes.program_bp)
+    from . metadata_routes import metadata_bp
+    app.register_blueprint(metadata_routes.metadata_bp)
 
     @app.context_processor
     def utilities():
