@@ -15,16 +15,21 @@
 #
 
 
+
 def test_versions(client, app):
     response = client.get('/v1/versions')
     assert response.status_code == 200
-    data = response.json['version']
-    versions = {version['name']: {key: version[key] for key in version.keys() if key != 'name'} for version in data}
-    assert 'GDC Data Release 9' in versions
-    assert 'TCIA Image Data' in versions
-    assert 'TCIA Derived Data' in versions
-    assert versions['GDC Data Release 9']['version'] == 'r9'
-    assert versions['TCIA Image Data']['version'] =='1'
+    data = response.json['versions']
+    versions = {version['version_id']: {key: version[key] for key in version.keys() if key != 'version_id'} for version in data}
+    assert len(versions) == 1
+    assert "1" in versions
+    assert len(list(filter(lambda comp: comp['name'] == 'GDC Data Release 9', versions['1']['components']))) == 1
+    assert len(list(filter(lambda comp: comp['name'] == 'TCIA Image Data', versions['1']['components']))) == 1
+    assert len(list(filter(lambda comp: comp['name'] == 'TCIA Derived Data', versions['1']['components']))) == 1
+    assert list(filter(lambda comp: comp['name'] == 'GDC Data Release 9', versions['1']['components']))[0]['version'] == 'r9'
+    assert list(filter(lambda comp: comp['name'] == 'TCIA Image Data', versions['1']['components']))[0]['version'] == '1'
+    assert list(filter(lambda comp: comp['name'] == 'TCIA Derived Data', versions['1']['components']))[0]['version'] == '1'
+
 
 def test_attributes(client, app):
     response = client.get('/v1/attributes')
@@ -34,7 +39,6 @@ def test_attributes(client, app):
     assert 'program_name' in attributes
     assert attributes['program_name']['dataSetTypes'][0]['data_type'] == 'Clinical, Biospecimen, and Mutation Data'
     assert attributes['program_name']['dataSetTypes'][0]['set_type'] == 'related_set'
-
     assert 'days_to_collection' in attributes
     assert attributes['days_to_collection']['data_type'] == 'Continuous Numeric'
     assert int(attributes['days_to_collection']['range'][0]['id']) == 25
@@ -52,6 +56,7 @@ def test_attributes(client, app):
     assert attributes['SegmentedPropertyCategoryCodeSequence']['dataSetTypes'][0]['data_type'] == 'Derived Data'
     assert attributes['SegmentedPropertyCategoryCodeSequence']['dataSetTypes'][0]['set_type'] == 'derived_set'
     assert attributes['SegmentedPropertyCategoryCodeSequence']['IDCVersion'][0] == 1
+
 
 def test_programs(client, app):
     response = client.get('/v1/programs')
@@ -82,74 +87,3 @@ def test_programs_get_collections(client, app):
             assert collection['status']=='Complete'
             assert collection['subject_count']==14
             assert collection['supporting_data']=='Clinical Genomics'
-
-
-
-# def test_programs_get_fields(client, app):
-#     # Test response to a no attribute_group
-#     response = client.get('/v1/programs/TCGA/TCGA-BCLA')
-#     assert response.status_code == 500
-#     data = response.json
-#     assert data["message"] == 'An attribute_type was not specified. Collection details could not be provided.'
-#     assert data["code"] == 400
-#
-#     query_string = {
-#         'attribute_type': 'A',
-#         'version': 'r9'
-#     }
-#     response = client.get('/v1/programs/TCGA/FOO',query_string = query_string)
-#     assert response.status_code == 500
-#     data = response.json
-#     assert data["message"] == 'Collection FOO does not exist'
-#
-#     # Get attributes in the TCIA Image Data attribute group
-#     query_string = {
-#         'attribute_type': 'I',
-#         'version': '0'
-#     }
-#     response = client.get('/v1/programs/TCGA/TCGA-BRCA',query_string = query_string)
-#     assert response.status_code == 200
-#     # data = json.loads(response.json['collection'])
-#     data = response.json['collection']
-#     assert 'TCGA-BRCA' == data["collection_name"]
-#     assert len(list(filter(lambda field: field['name'] == "Modality", data['fields']))) == 1
-#
-#     # Get attributes in the BioClin attribute group
-#     query_string = {
-#         'attribute_type': 'A',
-#         'version': 'r9'
-#     }
-#     response = client.get('/v1/programs/TCGA/TCGA-BRCA',query_string = query_string)
-#     assert response.status_code == 200
-#     data = response.json['collection']
-#     assert 'TCGA-BRCA' == data["collection_name"]
-#     assert len(list(filter(lambda field: field['name'] == "program_name", data['fields']))) == 2
-#     assert len(list(filter(lambda field: field['name'] == "min_percent_tumor_nuclei", data['fields']))) == 1
-#     assert len(list(filter(lambda field: field['name'] == "person_neoplasm_cancer_status", data['fields']))) == 1
-#
-#     # Test that an invalid version is recognized
-#     query_string = {
-#         'attribute_type': 'A',
-#         'version': 'r8'
-#     }
-#     response = client.get('/v1/programs/TCGA/TCGA-BRCA',query_string = query_string)
-#     assert response.status_code == 500
-#     data = response.json
-#     assert data["message"] == 'Attribute type/version A/r8 does not exist'
-#
-#     # Test that the attributes of the active attribute_group are returned
-#     query_string = {
-#         'attribute_type': 'A'
-#     }
-#     response = client.get('/v1/programs/TCGA/TCGA-BRCA',query_string = query_string)
-#     assert response.status_code == 200
-#     data = response.json['collection']
-#     assert data["version"] == "r9"
-#
-#     query_string = {
-#         'attribute_type': 'I'
-#     }
-#     response = client.get('/v1/programs/TCGA/TCGA-BRCA',query_string = query_string)
-#     assert response.status_code == 200
-#     data = response.json['collection']
-#     assert data["version"] == "0"
