@@ -62,6 +62,10 @@ def test_programs(client, app):
     response = client.get('/v1/programs')
     assert response.status_code == 200
     data = response.json['programs']
+    programs = {program['short_name']: {key: program[key] for key in program.keys() if key != 'short_name'} for program in data}
+    assert "TCGA" in programs
+    assert programs["TCGA"]["name"] == "The Cancer Genome Atlas"
+    assert "ISPY1" in programs
     assert len(list(filter(lambda program: program['short_name'] == "TCGA", data))) == 1
     assert len(list(filter(lambda program: program['name'] == "The Cancer Genome Atlas", data))) == 1
 
@@ -71,19 +75,21 @@ def test_programs_get_collections(client, app):
     assert response.status_code == 200
     data = response.json['collections']
     # One collection with id == "idc_thca"
+    collections = {collection['collection_id']: {key: collection[key] for key in collection.keys() if key != 'collection_id'} for collection
+                in data}
+    assert 'tcga_prad' in collections
+
     assert len(list(filter(lambda collection: collection['collection_id'].lower() == "tcga_thca", data))) == 1
-    for collection in data:
-        if collection["collection_id"] == 'tcga_prad':
-            assert collection['access'] == 'Public'
-            assert collection['active'] == True
-            assert collection['collection_id'] == "tcga_prad"
-            assert collection['cancer_type']=='Prostate Cancer'
-            assert collection['collection_type']=='Original'
-            assert '10.7937/K9/TCIA.2016.YXOGLM4Y' in collection['doi']
-            assert collection['image_types']=='CT, PT, MR, Pathology'
-            assert collection['location']=='Prostate'
-            assert collection['owner_id']==1
-            assert collection['species']=='Human'
-            assert collection['status']=='Complete'
-            assert collection['subject_count']==14
-            assert collection['supporting_data']=='Clinical Genomics'
+    collection = collections['tcga_prad']
+    assert collection['access'] == 'Public'
+    assert collection['active'] == True
+    assert collection['cancer_type']=='Prostate Cancer'
+    assert collection['collection_type']=='Original'
+    assert '10.7937/K9/TCIA.2016.YXOGLM4Y' in collection['doi']
+    assert collection['image_types']=='CT, PT, MR, Pathology'
+    assert collection['location']=='Prostate'
+    assert collection['owner_id']==1
+    assert collection['species']=='Human'
+    assert collection['status']=='Complete'
+    assert collection['subject_count']==14
+    assert collection['supporting_data']=='Clinical Genomics'
