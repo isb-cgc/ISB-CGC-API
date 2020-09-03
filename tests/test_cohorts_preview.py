@@ -17,7 +17,7 @@
 import logging
 import json
 
-from .cohort_utils import merge, pretty_print_cohortObjects, create_cohort_for_test_get_cohort_xxx, delete_cohort
+from tests.cohort_utils import merge, pretty_print_cohortObjects, create_cohort_for_test_get_cohort_xxx, delete_cohort
 
 def pretty_print_cohortObjects(cohortObjects, indent=4):
     print(json.dumps(cohortObjects, sort_keys=True, indent=indent))
@@ -61,7 +61,7 @@ def test_cohort_preview_patients(client, app):
     assert cohort['name']=="testcohort"
     assert cohort['description']=="Test description"
     assert cohort['filterSet'] == filterSet
-    assert cohort['cohortObjects']['totalRowsInCohort'] == 1638
+    assert cohort['cohortObjects']['totalRowsInCohort'] == 2
 
     collections = cohort['cohortObjects']['collections']
 
@@ -110,7 +110,7 @@ def test_cohort_preview_studies(client, app):
     assert cohort['name']=="testcohort"
     assert cohort['description']=="Test description"
     assert cohort['filterSet'] == filterSet
-    assert cohort['cohortObjects']['totalRowsInCohort']==1638
+    assert cohort['cohortObjects']['totalRowsInCohort']==3
 
     collections = cohort['cohortObjects']['collections']
 
@@ -175,7 +175,7 @@ def test_cohort_preview_series(client, app):
     assert cohort['name']=="testcohort"
     assert cohort['description']=="Test description"
     assert cohort['filterSet'] == filterSet
-    assert cohort['cohortObjects']['totalRowsInCohort']==1638
+    assert cohort['cohortObjects']['totalRowsInCohort']==31
 
     collections = cohort['cohortObjects']['collections']
 

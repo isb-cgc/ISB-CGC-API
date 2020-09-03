@@ -37,12 +37,11 @@ def merge(src, dst, level):
 def create_cohort(client):
     # Create a filter set
     filterSet = {
-        "bioclin_version": "r9",
-        "imaging_version": "0",
-        "attributes": {
+        "idc_version": "1",
+        "filters": {
             "collection_id": ["TCGA-LUAD", "TCGA-KIRC"],
             "Modality": ["CT", "MR"],
-            "Race": ["WHITE"]}}
+            "race": ["WHITE"]}}
 
     cohortSpec = {"name": "testcohort",
                   "description": "Test description",
@@ -63,14 +62,16 @@ def create_cohort(client):
 # Create a cohort with filter as expected by the test_get_cohort_xxx() functions
 def create_cohort_for_test_get_cohort_xxx(client):
     # Create a cohort to test against
-    attributes = {
+    filters = {
         "collection_id": ["TCGA-READ"],
         "Modality": ["CT", "MR"],
-        "race": ["WHITE"]}
+        "race": ["WHITE"]
+    }
+
     filterSet = {
-        "bioclin_version": "r9",
-        "imaging_version": "0",
-        "attributes": attributes}
+        "idc_version": "1",
+        "filters": filters
+    }
 
     cohortSpec = {"name": "testcohort",
                   "description": "Test description",

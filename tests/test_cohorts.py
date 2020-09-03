@@ -25,12 +25,11 @@ from .cohort_utils import pretty_print_cohortObjects, merge, create_cohort, crea
 def test_create_cohort(client, app):
     # Create a filter set
     filterSet = {
-        "bioclin_version": "r9",
-        "imaging_version": "0",
-        "attributes": {
+        "idc_version": "1",
+        "filters": {
             "collection_id": ["TCGA-LUAD", "TCGA-KIRC"],
             "Modality": ["CT", "MR"],
-            "Race": ["WHITE"]}}
+            "race": ["WHITE"]}}
 
     cohortSpec = {"name":"testcohort",
                   "description":"Test description",
@@ -45,14 +44,18 @@ def test_create_cohort(client, app):
     response = client.post('/v1/cohorts', data=json.dumps(cohortSpec), headers=headers)
     assert response.content_type == 'application/json'
     assert response.status_code == 200
-    # cohortResponse = json.loads(response.json['cohortSpec'])
     cohortResponse = response.json
 
     assert cohortResponse['name']=="testcohort"
     assert cohortResponse['description']=="Test description"
-    assert cohortResponse["filterSet"]["bioclin_version"]=="r9"
-    assert "Modality" in cohortResponse["filterSet"]["attributes"]
-    assert "TCGA-LUAD" in cohortResponse["filterSet"]["attributes"]["collection_id"]
+    # assert len(cohortResponse['filterSet']) == 1
+    assert cohortResponse["filterSet"]["idc_version"]=="1"
+    assert 'race' in cohortResponse['filterSet']['filters'] and \
+           cohortResponse['filterSet']['filters']['race'] == ['WHITE']
+    assert 'Modality' in cohortResponse['filterSet']['filters'] and \
+           cohortResponse['filterSet']['filters']['Modality'] == ['CT', 'MR']
+    assert 'collection_id' in cohortResponse['filterSet']['filters'] and \
+           cohortResponse['filterSet']['filters']['collection_id'] == ['TCGA-LUAD', 'TCGA-KIRC']
 
     # Delete the cohort we just created
     delete_cohort(client, cohortResponse['cohort_id'])
@@ -78,7 +81,7 @@ def test_get_cohort_patients(client, app):
     assert cohort['name']=="testcohort"
     assert cohort['description']=="Test description"
     assert cohort['filterSet'] == filterSet
-    assert cohort['cohortObjects']['totalRowsInCohort'] == 1638
+    assert cohort['cohortObjects']['totalRowsInCohort'] == 2
 
     collections = cohort['cohortObjects']['collections']
 
@@ -113,7 +116,7 @@ def test_get_cohort_studies(client, app):
     assert cohort['name']=="testcohort"
     assert cohort['description']=="Test description"
     assert cohort['filterSet'] == filterSet
-    assert cohort['cohortObjects']['totalRowsInCohort']==1638
+    assert cohort['cohortObjects']['totalRowsInCohort']==3
 
     collections = cohort['cohortObjects']['collections']
 
@@ -164,7 +167,7 @@ def test_get_cohort_series(client, app):
     assert cohort['name']=="testcohort"
     assert cohort['description']=="Test description"
     assert cohort['filterSet'] == filterSet
-    assert cohort['cohortObjects']['totalRowsInCohort']==1638
+    assert cohort['cohortObjects']['totalRowsInCohort']==31
 
     collections = cohort['cohortObjects']['collections']
 
