@@ -15,7 +15,7 @@
 #
 import logging
 from flask import jsonify, request
-from . cohorts_views import create_cohort, get_cohort_objects, get_cohort_list, delete_cohort, \
+from . cohorts_views import create_cohort, get_cohort_objects, get_cohort_manifest, get_cohort_list, delete_cohort, \
     delete_cohorts, post_cohort_preview  # get_file_manifest
 from . auth import auth_info, UserValidationException
 from python_settings import settings
@@ -25,6 +25,58 @@ logger = logging.getLogger(settings.LOGGER_NAME)
 from flask import Blueprint
 
 cohorts_bp = Blueprint('cohorts_bp', __name__, url_prefix='/v1')
+
+
+@cohorts_bp.route('/cohorts/<int:cohort_id>/manifest/', methods=['GET'], strict_slashes=False)
+def cohort_manifest(cohort_id):
+    """
+    GET: Retrieve extended information for a specific cohort
+    DELETE: Delete a cohort
+    """
+    try:
+        user_info = auth_info()
+        if not user_info:
+            response = jsonify({
+                'code': 500,
+                'message': 'Encountered an error while attempting to identify this user.'
+            })
+            response.status_code = 500
+        else:
+            result = get_cohort_manifest(user_info["email"], cohort_id)
+            if result:
+                if 'message' in result:
+                    response = jsonify({
+                        **result
+                    })
+                    response.status_code = 500
+                else:
+                    code = 200
+                    response = jsonify({
+                        'code': code,
+                        **result
+                    })
+                    response.status_code = code
+            else:
+                response = jsonify({
+                    'code': 404,
+                    'message': "Cohort ID {} was not found.".format(str(cohort_id))})
+                response.status_code = 500
+
+    except UserValidationException as e:
+        response = jsonify({
+            'code': 403,
+            'message': str(e)
+        })
+        response.status_code = 500
+    except Exception as e:
+        logger.exception(e)
+        response = jsonify({
+            'code': 500,
+            'message': 'Encountered an error while attempting to retrieve this cohort\'s information.'
+        })
+        response.status_code = 500
+
+    return response
 
 
 @cohorts_bp.route('/cohorts/<int:cohort_id>/', methods=['GET', 'DELETE'], strict_slashes=False)

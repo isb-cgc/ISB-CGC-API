@@ -154,6 +154,57 @@ def _delete_cohorts(user, cohort_ids):
     return cohort_list
 
 
+def get_cohort_manifest(user, cohort_id):
+    cohort_objects = None
+
+    path_params = {
+        "email": user,
+        "access_type": "gs",
+        "region": "us",
+        "fetch_count": 1000,
+        "page": 1,
+        "offset": 0}
+
+    access_types = ["gs"]
+    regions = ["us"]
+
+    # Get and validate parameters
+    for key in request.args.keys():
+        if key in path_params:
+            path_params[key] = request.args.get(key)
+    path_params['fetch_count'] = int(path_params['fetch_count'])
+    path_params['offset'] = int(path_params['offset'])
+    path_params['page'] = int(path_params['page'])
+    if path_params["fetch_count"] > MAX_FETCH_COUNT:
+        cohort_objects = {
+            "message": "Fetch count greater than {}".format(MAX_FETCH_COUNT)
+        }
+    if path_params["offset"] < 0:
+        cohort_objects = {
+            "message": "Fetch offset {} must be non-negative integer".format(path_params['offset'])
+        }
+    if path_params['access_type'] not in access_types:
+        cohort_objects = {
+            "message": "Invalid access type {}".format(path_params['access_type'])
+        }
+    if path_params['region'] not in regions:
+        cohort_objects = {
+            "message": "Invalid region {}".format(path_params['region'])
+        }
+    if cohort_objects == None:
+        path_params["page"] = int(path_params['page'])
+
+        try:
+            auth = get_auth()
+            results = requests.get("{}/cohorts/api/{}/manifest/".format(DJANGO_URI, cohort_id),
+                                params = path_params, headers=auth)
+            cohort_objects = results.json()
+        except Exception as e:
+            logger.exception(e)
+
+    return cohort_objects
+
+
 def get_cohort_objects(user, cohort_id):
     cohort_objects = None
 
@@ -180,7 +231,8 @@ def get_cohort_objects(user, cohort_id):
 
     # Get and validate parameters
     for key in request.args.keys():
-        path_params[key] = request.args.get(key)
+        if key in path_params:
+            path_params[key] = request.args.get(key)
     path_params['fetch_count'] = int(path_params['fetch_count'])
     path_params['offset'] = int(path_params['offset'])
     path_params['page'] = int(path_params['page'])

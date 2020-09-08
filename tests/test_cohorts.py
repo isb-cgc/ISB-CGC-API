@@ -61,6 +61,32 @@ def test_create_cohort(client, app):
     delete_cohort(client, cohortResponse['cohort_id'])
 
 
+def test_get_cohort_manifest(client, app):
+
+    (id, filterSet) = create_cohort_for_test_get_cohort_xxx(client)
+
+    query_string = {
+        'fetch_count': 5000,
+    }
+
+    # Get a manifest of the cohort's instances
+    response = client.get("{}/{}/manifest/".format('v1/cohorts', id),
+                query_string = query_string)
+    assert response.content_type == 'application/json'
+    assert response.status_code == 200
+    manifest = response.json['manifest']
+
+    assert manifest['cohort_id']==id
+
+
+    assert manifest['accessMethods']['type'] == 'gs'
+    assert manifest['accessMethods']['region'] == 'us'
+    assert len(manifest['accessMethods']['urls']) == 1638
+    assert 'gs://1.3.6.1.4.1.14519.5.2.1.3671.4018.768291480177931556369061239508/1.3.6.1.4.1.14519.5.2.1.3671.4018.183714953600569164837490663631/1.3.6.1.4.1.14519.5.2.1.3671.4018.101814896314793708382026281597' \
+        in manifest['accessMethods']['urls']
+
+    delete_cohort(client, id)
+
 def test_get_cohort_patients(client, app):
 
     (id, filterSet) = create_cohort_for_test_get_cohort_xxx(client)

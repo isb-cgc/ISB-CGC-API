@@ -81,12 +81,17 @@ def test_attributes(client, app):
     assert attributes['SegmentedPropertyCategoryCodeSequence']['dataSetTypes'][0]['set_type'] == 'derived_set'
     assert attributes['SegmentedPropertyCategoryCodeSequence']['IDCVersion'][0] == 1
 
-# def test_write_attributes(client):
-#     response = client.get('/v1/attributes')
-#     assert response.status_code == 200
-#     data = response.json['attributes']
-#     with open("attributes.json", "w") as f:
-#         json.dump(data,f)
+def test_write_attributes(client):
+    response = client.get('/v1/attributes')
+    assert response.status_code == 200
+    data = response.json['attributes']
+    # with open("attributes.json", "w") as f:
+    # attrs= json.dumps(data)
+    for a in data:
+        print(a)
+        # print("{}: id: {}, data_type:{}, preformatted_values: {}, range: {}, units: {}". \
+        #       format(a['name'], a['id'], a['data_type'], a['preformatted_values'], a['range'], a['units'] ))
+    pass
 
 
 def test_programs(client, app):

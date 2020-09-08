@@ -25,15 +25,69 @@ def pretty_print_cohortObjects(cohortObjects, indent=4):
 levels = ["collections", "patients", "studies", "series", "instances"]
 
 
-def test_cohort_preview_patients(client, app):
-    attributes = {
-        "collection_id": ["TCGA-READ"],
-        "Modality": ["CT", "MR"],
-        "race": ["WHITE"]}
+def test_cohort_preview_patients_lte(client, app):
     filterSet = {
-        "bioclin_version": "r9",
-        "imaging_version": "0",
-        "attributes": attributes}
+        "idc_version": "1",
+        "filters": {
+            "collection_id": ["TCGA-READ"],
+            "Modality": ["CT", "MR"],
+            "race": ["WHITE"],
+            "age_at_diagnosis_lte": [72]}}
+
+    cohortSpec = {"name": "testcohort",
+                  "description": "Test description",
+                  "filterSet": filterSet}
+
+    mimetype = ' application/json'
+    headers = {
+        'Content-Type': mimetype,
+        'Accept': mimetype
+    }
+    query_string = {
+        'return_level': 'Patient',
+        'fetch_count': 5000,
+    }
+
+    # Get the list of objects in the cohort
+    response = client.post('v1/cohorts/preview',
+                            query_string = query_string,
+                            data = json.dumps(cohortSpec),
+                            headers=headers)
+    assert response.content_type == 'application/json'
+    assert response.status_code == 200
+    cohort = response.json['cohort']
+
+    assert cohort['name']=="testcohort"
+    assert cohort['description']=="Test description"
+    assert cohort['filterSet'] == filterSet
+    assert cohort['cohortObjects']['totalRowsInCohort'] == 1
+
+    collections = cohort['cohortObjects']['collections']
+
+    assert [collection['id'].upper()
+        for collection in collections] == ['TCGA-READ']
+
+    assert [patient['id'].upper()
+        for collection in collections
+        for patient in collection['patients']].sort() == \
+       ['TCGA-CL-5917'].sort()
+
+
+def test_cohort_preview_patients(client, app):
+    # attributes = {
+    #     "collection_id": ["TCGA-READ"],
+    #     "Modality": ["CT", "MR"],
+    #     "race": ["WHITE"]}
+    # filterSet = {
+    #     "bioclin_version": "r9",
+    #     "imaging_version": "0",
+    #     "attributes": attributes}
+    filterSet = {
+        "idc_version": "1",
+        "filters": {
+            "collection_id": ["TCGA-READ"],
+            "Modality": ["CT", "MR"],
+            "race": ["WHITE"]}}
 
     cohortSpec = {"name": "testcohort",
                   "description": "Test description",
@@ -75,14 +129,12 @@ def test_cohort_preview_patients(client, app):
 
 
 def test_cohort_preview_studies(client, app):
-    attributes = {
-        "collection_id": ["TCGA-READ"],
-        "Modality": ["CT", "MR"],
-        "race": ["WHITE"]}
     filterSet = {
-        "bioclin_version": "r9",
-        "imaging_version": "0",
-        "attributes": attributes}
+        "idc_version": "1",
+        "filters": {
+            "collection_id": ["TCGA-READ"],
+            "Modality": ["CT", "MR"],
+            "race": ["WHITE"]}}
 
     cohortSpec = {"name": "testcohort",
                   "description": "Test description",
@@ -140,14 +192,12 @@ def test_cohort_preview_studies(client, app):
         'gs://gcs-public-data--healthcare-tcia-tcga-read/dicom/1.3.6.1.4.1.14519.5.2.1.8421.4018.304030957341830836628192929917'].sort()
 
 def test_cohort_preview_series(client, app):
-    attributes = {
-        "collection_id": ["TCGA-READ"],
-        "Modality": ["CT", "MR"],
-        "race": ["WHITE"]}
     filterSet = {
-        "bioclin_version": "r9",
-        "imaging_version": "0",
-        "attributes": attributes}
+        "idc_version": "1",
+        "filters": {
+            "collection_id": ["TCGA-READ"],
+            "Modality": ["CT", "MR"],
+            "race": ["WHITE"]}}
 
     cohortSpec = {"name": "testcohort",
                   "description": "Test description",
@@ -221,14 +271,12 @@ def test_cohort_preview_series(client, app):
 
 
 def test_cohort_preview_instances(client, app):
-    attributes = {
-        "collection_id": ["TCGA-READ"],
-        "Modality": ["CT", "MR"],
-        "race": ["WHITE"]}
     filterSet = {
-        "bioclin_version": "r9",
-        "imaging_version": "0",
-        "attributes": attributes}
+        "idc_version": "1",
+        "filters": {
+            "collection_id": ["TCGA-READ"],
+            "Modality": ["CT", "MR"],
+            "race": ["WHITE"]}}
 
     cohortSpec = {"name": "testcohort",
                   "description": "Test description",
@@ -320,14 +368,12 @@ def test_cohort_preview_instances(client, app):
 
 # Get the result in chunks
 def test_cohort_preview_instances_paged(client, app):
-    attributes = {
-        "collection_id": ["TCGA-READ"],
-        "Modality": ["CT", "MR"],
-        "race": ["WHITE"]}
     filterSet = {
-        "bioclin_version": "r9",
-        "imaging_version": "0",
-        "attributes": attributes}
+        "idc_version": "1",
+        "filters": {
+            "collection_id": ["TCGA-READ"],
+            "Modality": ["CT", "MR"],
+            "race": ["WHITE"]}}
 
     cohortSpec = {"name": "testcohort",
                   "description": "Test description",
