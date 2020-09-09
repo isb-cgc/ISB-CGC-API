@@ -61,37 +61,27 @@ def test_attributes(client, app):
     data = response.json['attributes']
     attributes = {attribute['name']: {key: attribute[key] for key in attribute.keys() if key != 'name'} for attribute in data}
     assert 'program_name' in attributes
-    assert attributes['program_name']['dataSetTypes'][0]['data_type'] == 'Clinical, Biospecimen, and Mutation Data'
-    assert attributes['program_name']['dataSetTypes'][0]['set_type'] == 'related_set'
+    # assert attributes['program_name']['dataSetTypes'][0]['data_type'] == 'Clinical, Biospecimen, and Mutation Data'
+    assert attributes['program_name']['dataSetTypes'][0] == 'Clinical, Biospecimen, and Mutation Data'
     assert 'days_to_collection' in attributes
     assert attributes['days_to_collection']['data_type'] == 'Continuous Numeric'
-    assert int(attributes['days_to_collection']['range'][0]['id']) == 25
-    assert attributes['days_to_collection']['range'][0]['type'] == 'Integer'
-    assert attributes['days_to_collection']['range'][0]['include_lower'] == True
-    assert attributes['days_to_collection']['range'][0]['include_upper'] == False
-    assert attributes['days_to_collection']['range'][0]['unbounded'] == True
-    assert attributes['days_to_collection']['range'][0]['first'] == '10'
-    assert attributes['days_to_collection']['range'][0]['last'] == '80'
-    assert attributes['days_to_collection']['range'][0]['gap'] == '10'
     assert 'Modality' in attributes
-    assert attributes['Modality']['dataSetTypes'][0]['data_type'] == 'Image Data'
-    assert attributes['Modality']['dataSetTypes'][0]['set_type'] == 'origin_set'
+    assert attributes['Modality']['dataSetTypes'][0] == 'Image Data'
     assert 'SegmentedPropertyCategoryCodeSequence' in attributes
-    assert attributes['SegmentedPropertyCategoryCodeSequence']['dataSetTypes'][0]['data_type'] == 'Derived Data'
-    assert attributes['SegmentedPropertyCategoryCodeSequence']['dataSetTypes'][0]['set_type'] == 'derived_set'
-    assert attributes['SegmentedPropertyCategoryCodeSequence']['IDCVersion'][0] == 1
+    assert attributes['SegmentedPropertyCategoryCodeSequence']['dataSetTypes'][0] == 'Derived Data'
+    assert attributes['SegmentedPropertyCategoryCodeSequence']['idc_versions'][0] == 1
 
-def test_write_attributes(client):
-    response = client.get('/v1/attributes')
-    assert response.status_code == 200
-    data = response.json['attributes']
-    # with open("attributes.json", "w") as f:
-    # attrs= json.dumps(data)
-    for a in data:
-        print(a)
-        # print("{}: id: {}, data_type:{}, preformatted_values: {}, range: {}, units: {}". \
-        #       format(a['name'], a['id'], a['data_type'], a['preformatted_values'], a['range'], a['units'] ))
-    pass
+# def test_write_attributes(client):
+#     response = client.get('/v1/attributes')
+#     assert response.status_code == 200
+#     data = response.json['attributes']
+#     # with open("attributes.json", "w") as f:
+#     # attrs= json.dumps(data)
+#     for a in data:
+#         print(a)
+#         # print("{}: id: {}, data_type:{}, preformatted_values: {}, range: {}, units: {}". \
+#         #       format(a['name'], a['id'], a['data_type'], a['preformatted_values'], a['range'], a['units'] ))
+#     pass
 
 
 def test_programs(client, app):
