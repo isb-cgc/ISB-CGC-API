@@ -67,7 +67,7 @@ def create_cohort(user):
 
     try:
         request_data = request.get_json()
-        schema_validate(request_data, COHORT_FILTER_SCHEMA)
+        schema_validate(request_data['filterSet'], COHORT_FILTER_SCHEMA)
 
         if 'name' not in request_data:
             cohort_info = {
@@ -109,12 +109,14 @@ def create_cohort(user):
         logger.warn("[WARNING] Received bad request - couldn't load JSON.")
         cohort_info = {
             'message': 'The JSON provided in this request appears to be improperly formatted.',
+            'code': 400
         }
 
     except ValidationError as e:
         logger.warn("[WARNING] Cohort information rejected for improper formatting: {}".format(e))
         cohort_info = {
-            'message': 'Cohort information was improperly formatted - cohort not edited.',
+            'message': 'Cohort information was improperly formatted - cohort not created.',
+            'code': 400
         }
 
     return cohort_info
@@ -177,19 +179,23 @@ def get_cohort_manifest(user, cohort_id):
     path_params['page'] = int(path_params['page'])
     if path_params["fetch_count"] > MAX_FETCH_COUNT:
         cohort_objects = {
-            "message": "Fetch count greater than {}".format(MAX_FETCH_COUNT)
+            "message": "Fetch count greater than {}".format(MAX_FETCH_COUNT),
+            "code": 400
         }
     if path_params["offset"] < 0:
         cohort_objects = {
-            "message": "Fetch offset {} must be non-negative integer".format(path_params['offset'])
+            "message": "Fetch offset {} must be non-negative integer".format(path_params['offset']),
+            'code': 400
         }
     if path_params['access_type'] not in access_types:
         cohort_objects = {
-            "message": "Invalid access type {}".format(path_params['access_type'])
+            "message": "Invalid access type {}".format(path_params['access_type']),
+            'code': 400
         }
     if path_params['region'] not in regions:
         cohort_objects = {
-            "message": "Invalid region {}".format(path_params['region'])
+            "message": "Invalid region {}".format(path_params['region']),
+            'code': 400
         }
     if cohort_objects == None:
         path_params["page"] = int(path_params['page'])
@@ -240,15 +246,18 @@ def get_cohort_objects(user, cohort_id):
         path_params[s] = path_params[s] in [True, 'True']
     if path_params["fetch_count"] > MAX_FETCH_COUNT:
         cohort_objects = {
-            "message": "Fetch count greater than {}".format(MAX_FETCH_COUNT)
+            "message": "Fetch count greater than {}".format(MAX_FETCH_COUNT),
+            'code': 400
         }
     if path_params["offset"] < 0:
         cohort_objects = {
-            "message": "Fetch offset {} must be non-negative integer".format(path_params['offset'])
+            "message": "Fetch offset {} must be non-negative integer".format(path_params['offset']),
+            'code': 400
         }
     if path_params['return_level'] not in return_levels:
         cohort_objects = {
-            "message": "Invalid return level {}".format(path_params['return_level'])
+            "message": "Invalid return level {}".format(path_params['return_level']),
+            'code': 400
         }
     if cohort_objects == None:
         path_params["page"] = int(path_params['page'])
@@ -289,7 +298,7 @@ def post_cohort_preview():
 
     try:
         request_data = request.get_json()
-        schema_validate(request_data, COHORT_FILTER_SCHEMA)
+        schema_validate(request_data['filterSet'], COHORT_FILTER_SCHEMA)
 
         if 'filterSet' not in request_data:
             cohort_objects = dict(message = 'No filters were provided; ensure that the request body contains a \'filters\' property.')
@@ -304,11 +313,17 @@ def post_cohort_preview():
             for s in ['return_objects', 'return_filter', 'return_DOIs', 'return_URLs', 'return_sql']:
                 path_params[s] = path_params[s] in [True, 'True']
             if path_params["fetch_count"] > MAX_FETCH_COUNT:
-                cohort_objects = dict(message = "Fetch count greater than {}".format(MAX_FETCH_COUNT))
+                cohort_objects = dict(
+                    message = "Fetch count greater than {}".format(MAX_FETCH_COUNT),
+                    code = 400)
             if path_params["offset"] < 0:
-                cohort_objects = dict(message = "Fetch offset {} must be non-negative integer".format(path_params['offset']))
+                cohort_objects = dict(
+                    message = "Fetch offset {} must be non-negative integer".format(path_params['offset']),
+                    code = 400)
             if path_params['return_level'] not in return_levels:
-                cohort_objects = dict(message = "Invalid return level {}".format(path_params['return_level']))
+                cohort_objects = dict(
+                    message = "Invalid return level {}".format(path_params['return_level']),
+                    code = 400)
             if cohort_objects == None:
                 try:
                     auth = get_auth()
@@ -324,13 +339,19 @@ def post_cohort_preview():
 
     except BadRequest as e:
         logger.warning("[WARNING] Received bad request - couldn't load JSON.")
-        cohort_objects = dict(message='The JSON provided in this request appears to be improperly formatted.')
+        cohort_objects = dict(
+            message='The JSON provided in this request appears to be improperly formatted.',
+            code = 400)
     except ValidationError as e:
         logger.warning('[WARNING] Filters rejected for improper formatting: {}'.format(e))
-        cohort_objects = dict(message= 'Filters were improperly formatted.')
+        cohort_objects = dict(
+            message= 'Filters were improperly formatted.',
+            code = 400)
     except Exception as e:
         logger.exception(e)
-        cohort_objects = dict(message = '[ERROR] Error trying to preview a cohort')
+        cohort_objects = dict(
+            message = '[ERROR] Error trying to preview a cohort',
+            code = 400)
 
     return cohort_objects
 

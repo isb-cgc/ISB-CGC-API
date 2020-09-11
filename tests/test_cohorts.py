@@ -22,6 +22,33 @@ from .cohort_utils import pretty_print_cohortObjects, merge, create_cohort, crea
 
 
 # Merge two sets of collection data.
+def test_create_cohort_schema_validation(client, app):
+    # Create a filter set
+    filterSet = {
+        "idc_version": "1",
+        "filters": {
+            "collection_id": ["TCGA-LUAD", "TCGA-KIRC"],
+            "Modalityx": ["CT", "MR"],
+            "race": ["WHITE"]}}
+
+    cohortSpec = {"name":"testcohort",
+                  "description":"Test description",
+                  "filterSet":filterSet}
+
+    mimetype = ' application/json'
+    headers = {
+        'Content-Type': mimetype,
+        'Accept': mimetype,
+    }
+
+    response = client.post('/v1/cohorts', data=json.dumps(cohortSpec), headers=headers)
+    assert response.content_type == 'application/json'
+    assert response.status_code == 400
+    cohortResponse = response.json
+    assert cohortResponse['message']=='Cohort information was improperly formatted - cohort not created.'
+
+
+# Merge two sets of collection data.
 def test_create_cohort(client, app):
     # Create a filter set
     filterSet = {

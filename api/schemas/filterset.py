@@ -2089,7 +2089,8 @@ COHORT_FILTER_SCHEMA={
             "type": "string"
           }
         }
-      }
+      },
+      "additionalProperties": False
     }
   },
   "$schema": "http://json-schema.org/schema#"

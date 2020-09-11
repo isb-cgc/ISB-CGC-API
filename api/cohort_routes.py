@@ -48,7 +48,10 @@ def cohort_manifest(cohort_id):
                     response = jsonify({
                         **result
                     })
-                    response.status_code = 500
+                    if 'code' in result:
+                        response.status_code = result['code']
+                    else:
+                        response.status_code = 500
                 else:
                     code = 200
                     response = jsonify({
@@ -182,7 +185,10 @@ def cohorts():
                     response = jsonify({
                         **result
                     })
-                    response.status_code = 500
+                    if 'code' in result:
+                        response.status_code = result['code']
+                    else:
+                        response.status_code = 500
                 else:
                     code = 200
                     response = jsonify({
@@ -287,7 +293,10 @@ def cohort_preview():
                 response = jsonify({
                     **result
                 })
-                response.status_code = 500
+                if 'code' in result:
+                    response.status_code = result['code']
+                else:
+                    response.status_code = 500
             else:
                 code = 200
                 response = jsonify({
