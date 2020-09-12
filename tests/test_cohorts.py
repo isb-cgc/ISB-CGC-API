@@ -23,7 +23,7 @@ from .cohort_utils import pretty_print_cohortObjects, merge, create_cohort, crea
 
 # Merge two sets of collection data.
 def test_create_cohort_schema_validation(client, app):
-    # Create a filter set
+    # Create an invalid filter set
     filterSet = {
         "idc_version": "1",
         "filters": {
@@ -46,6 +46,34 @@ def test_create_cohort_schema_validation(client, app):
     assert response.status_code == 400
     cohortResponse = response.json
     assert cohortResponse['message']=='Cohort information was improperly formatted - cohort not created.'
+
+    # Create an invalid filter set
+    filterSet = {
+        "idc_version": "1",
+        "filters": {
+            "collection_id": ["TCGA-LUAD", "TCGA-KIRC"],
+            "Modality": ["CT", "MR"],
+            "race": ["WHITE"]}}
+
+    cohortSpec = {"name":"testcohort",
+                  "description":"Test description",
+                  "filterSet":filterSet}
+
+    mimetype = ' application/json'
+    headers = {
+        'Content-Type': mimetype,
+        'Accept': mimetype,
+    }
+
+    data = json.dumps(cohortSpec)
+    # Corrupt the formatting
+    data = data.replace('["CT"', '"CT"')
+
+    response = client.post('/v1/cohorts', data=data, headers=headers)
+    assert response.content_type == 'application/json'
+    assert response.status_code == 400
+    cohortResponse = response.json
+    assert cohortResponse['message']=='The JSON provided in this request appears to be improperly formatted.'
 
 
 # Merge two sets of collection data.
