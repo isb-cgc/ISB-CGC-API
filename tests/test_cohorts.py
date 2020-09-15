@@ -115,12 +115,32 @@ def test_create_cohort(client, app):
     # Delete the cohort we just created
     delete_cohort(client, cohortResponse['cohort_id'])
 
-
 def test_get_cohort_manifest(client, app):
 
     (id, filterSet) = create_cohort_for_test_get_cohort_xxx(client)
 
     query_string = {
+        'access_class': 'doi',
+        'fetch_count': 5000,
+    }
+
+    # Get a manifest of the cohort's instances
+    response = client.get("{}/{}/manifest/".format('v1/cohorts', id),
+                query_string = query_string)
+    assert response.content_type == 'application/json'
+    assert response.status_code == 200
+    manifest = response.json['manifest']
+
+    assert manifest['cohort_id']==id
+
+
+    assert manifest['accessMethods']['type'] == 'gs'
+    assert manifest['accessMethods']['region'] == 'us'
+    assert len(manifest['accessMethods']['urls']) == 0
+    assert len(manifest['accessMethods']['dois']) == 0
+
+    query_string = {
+        'access_class': 'url',
         'fetch_count': 5000,
     }
 
@@ -137,7 +157,8 @@ def test_get_cohort_manifest(client, app):
     assert manifest['accessMethods']['type'] == 'gs'
     assert manifest['accessMethods']['region'] == 'us'
     assert len(manifest['accessMethods']['urls']) == 1638
-    assert 'gs://1.3.6.1.4.1.14519.5.2.1.3671.4018.768291480177931556369061239508/1.3.6.1.4.1.14519.5.2.1.3671.4018.183714953600569164837490663631/1.3.6.1.4.1.14519.5.2.1.3671.4018.101814896314793708382026281597' \
+    assert len(manifest['accessMethods']['dois']) == 0
+    assert 'gs://idc-tcia-tcga-read/dicom/1.3.6.1.4.1.14519.5.2.1.3671.4018.768291480177931556369061239508/1.3.6.1.4.1.14519.5.2.1.3671.4018.183714953600569164837490663631/1.3.6.1.4.1.14519.5.2.1.3671.4018.101814896314793708382026281597.dcm#1592638257658431' \
         in manifest['accessMethods']['urls']
 
     delete_cohort(client, id)
@@ -149,6 +170,7 @@ def test_get_cohort_patients(client, app):
     query_string = {
         'return_level': 'Patient',
         'fetch_count': 5000,
+        'return_sql': True
     }
 
     # Get the list of objects in the cohort
@@ -162,7 +184,7 @@ def test_get_cohort_patients(client, app):
     assert cohort['name']=="testcohort"
     assert cohort['description']=="Test description"
     assert cohort['filterSet'] == filterSet
-    assert cohort['cohortObjects']['totalRowsInCohort'] == 2
+    assert cohort['cohortObjects']['rowsReturned'] == 2
 
     collections = cohort['cohortObjects']['collections']
 
@@ -197,7 +219,7 @@ def test_get_cohort_studies(client, app):
     assert cohort['name']=="testcohort"
     assert cohort['description']=="Test description"
     assert cohort['filterSet'] == filterSet
-    assert cohort['cohortObjects']['totalRowsInCohort']==3
+    assert cohort['cohortObjects']['rowsReturned']==3
 
     collections = cohort['cohortObjects']['collections']
 
@@ -248,7 +270,7 @@ def test_get_cohort_series(client, app):
     assert cohort['name']=="testcohort"
     assert cohort['description']=="Test description"
     assert cohort['filterSet'] == filterSet
-    assert cohort['cohortObjects']['totalRowsInCohort']==31
+    assert cohort['cohortObjects']['rowsReturned']==31
 
     collections = cohort['cohortObjects']['collections']
 
@@ -314,7 +336,7 @@ def test_get_cohort_instances(client, app):
     assert cohort['name']=="testcohort"
     assert cohort['description']=="Test description"
     assert cohort['filterSet'] == filterSet
-    assert cohort['cohortObjects']['totalRowsInCohort']==1638
+    assert cohort['cohortObjects']['rowsReturned']==1638
     collections = cohort['cohortObjects']['collections']
 
     assert [collection['id'].upper()
@@ -426,7 +448,7 @@ def test_get_cohort_instances_paged(client, app):
         cohort = response.json['cohort']
 
         cohortObjects = cohort['cohortObjects']
-        rowsReturned = cohortObjects["totalRowsInCohort"]
+        rowsReturned = cohortObjects["rowsReturned"]
         totalRowsReturned += rowsReturned
         collections = cohortObjects["collections"]
         merge(collections, totalCollections, 0)

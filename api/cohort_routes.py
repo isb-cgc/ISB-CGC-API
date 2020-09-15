@@ -16,7 +16,7 @@
 import logging
 from flask import jsonify, request
 from . cohorts_views import create_cohort, get_cohort_objects, get_cohort_manifest, get_cohort_list, delete_cohort, \
-    delete_cohorts, post_cohort_preview  # get_file_manifest
+    delete_cohorts, post_cohort_preview, get_cohort_preview_manifest  # get_file_manifest
 from . auth import auth_info, UserValidationException
 from python_settings import settings
 
@@ -310,6 +310,46 @@ def cohort_preview():
             response = jsonify({
                 'code': 404,
                 'message': "Error trying to preview cohort."})
+            response.status_code = 500
+
+    except Exception as e:
+        logger.exception(e)
+        response = jsonify({
+            'code': 500,
+            'message': 'Encountered an error while attempting to retrieve this cohort\'s information.'
+        })
+        response.status_code = 500
+
+    return response
+
+
+@cohorts_bp.route('/cohorts/preview/manifest/', methods=['POST'], strict_slashes=False)
+def cohort_preview_manifest():
+    """
+    GET: Retrieve manifest for a previewed cohort
+    """
+    try:
+        result = get_cohort_preview_manifest()
+        if result:
+            if 'message' in result:
+                response = jsonify({
+                    **result
+                })
+                if 'code' in result:
+                    response.status_code = result['code']
+                else:
+                    response.status_code = 500
+            else:
+                code = 200
+                response = jsonify({
+                    'code': code,
+                    **result
+                })
+                response.status_code = code
+        else:
+            response = jsonify({
+                'code': 404,
+                'message': "Cohort ID {} was not found.".format(str(cohort_id))})
             response.status_code = 500
 
     except Exception as e:
