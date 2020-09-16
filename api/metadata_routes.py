@@ -18,7 +18,8 @@ import logging
 from flask import jsonify
 from python_settings import settings
 
-from . metadata_views import get_versions, get_attributes, get_programs, get_collections, get_collection_info
+from . metadata_views import get_versions, get_attributes, get_programs, get_program_collections, \
+    get_collections #, get_collection_info
 
 from flask import Blueprint
 
@@ -118,13 +119,13 @@ def programs():
 
 
 @metadata_bp.route('/programs/<program_name>', methods=['GET'], strict_slashes=False)
-def collections(program_name):
+def program_collections(program_name):
     """Retrieve the list of collections and versions in program <program_name>."""
     response = None
 
     try:
 
-        results = get_collections(program_name)
+        results = get_program_collections(program_name)
 
         if 'message' in results:
             response = jsonify(results)
@@ -147,39 +148,68 @@ def collections(program_name):
     return response
 
 
-@metadata_bp.route('/programs/<program_name>/<collection_name>/', methods=['GET'], strict_slashes=False)
-def collection(program_name, collection_name):
-    """"Get a list of the available fields for a specific version of a collection."""
+@metadata_bp.route('/collections/<idc_version>', methods=['GET'], strict_slashes=False)
+def collections(idc_version):
+    """Retrieve the list of collections in some IDC versions """
     response = None
 
     try:
-        results = get_collection_info(program_name, collection_name)
-        if results:
-            if 'message' in results:
-                response = jsonify(results)
-                response.status_code = 500
 
-            else:
-                code = 200
-                response = jsonify({
-                    'code': code,
-                    **results
-                })
-                response.status_code = 200
+        results = get_collections(idc_version)
+
+        if 'message' in results:
+            response = jsonify(results)
+            response.status_code = 500
         else:
             response = jsonify({
-                'code': 500,
-                'message': 'Encountered an error while retrieving the collection list.'
+                'code': 200,
+                **results
             })
-            response.status_code = 500
+            response.status_code = 200
     except Exception as e:
         logger.error("[ERROR] While retrieving collection information:")
         logger.exception(e)
         response = jsonify({
             'code': 500,
-            'message': 'Encountered an error while retrieving the collection metadata.'
+            'message': 'Encountered an error while retrieving the collection list.'
         })
         response.status_code = 500
 
     return response
+
+# @metadata_bp.route('/programs/<program_name>/<collection_name>/', methods=['GET'], strict_slashes=False)
+# def collection(program_name, collection_name):
+#     """"Get a list of the available fields for a specific version of a collection."""
+#     response = None
+#
+#     try:
+#         results = get_collection_info(program_name, collection_name)
+#         if results:
+#             if 'message' in results:
+#                 response = jsonify(results)
+#                 response.status_code = 500
+#
+#             else:
+#                 code = 200
+#                 response = jsonify({
+#                     'code': code,
+#                     **results
+#                 })
+#                 response.status_code = 200
+#         else:
+#             response = jsonify({
+#                 'code': 500,
+#                 'message': 'Encountered an error while retrieving the collection list.'
+#             })
+#             response.status_code = 500
+#     except Exception as e:
+#         logger.error("[ERROR] While retrieving collection information:")
+#         logger.exception(e)
+#         response = jsonify({
+#             'code': 500,
+#             'message': 'Encountered an error while retrieving the collection metadata.'
+#         })
+#         response.status_code = 500
+#
+#     return response
 

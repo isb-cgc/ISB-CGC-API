@@ -17,7 +17,7 @@
 import json
 
 
-def test_programs_get_collections(client, app):
+def test_get_programs_collections(client, app):
     response = client.get('/v1/programs/TCGA')
     assert response.status_code == 200
     data = response.json['collections']
@@ -39,6 +39,26 @@ def test_programs_get_collections(client, app):
     assert collection['supporting_data']=='Clinical Genomics'
     assert collection['IDC_versions'] == ["1"]
 
+    response = client.get('/v1/programs/ISPY')
+    assert response.status_code == 200
+    data = response.json['collections']
+    # One collection with id == "idc_thca"
+    collections = {collection['collection_id']: {key: collection[key] for key in collection.keys() if key != 'collection_id'} for collection
+                in data}
+    assert 'ispy1' in collections
+
+    assert len(list(filter(lambda collection: collection['collection_id'].lower() == "ispy1", data))) == 1
+    collection = collections['ispy1']
+    assert collection['active'] == True
+    assert collection['cancer_type']=='Breast Cancer'
+    assert collection['collection_type']=='Original'
+    assert '10.7937/K9/TCIA.2016.HdHpgJLK' in collection['doi']
+    assert collection['image_types']=='MR, SEG'
+    assert collection['location']=='Breast'
+    assert collection['species']=='Human'
+    assert collection['subject_count']==222
+    assert collection['supporting_data']=='Clinical, Image Analyses'
+    assert collection['IDC_versions'] == ["1"]
 
 def test_versions(client, app):
     response = client.get('/v1/versions')
@@ -71,19 +91,7 @@ def test_attributes(client, app):
     assert attributes['SegmentedPropertyCategoryCodeSequence']['dataSetTypes'][0] == 'Derived Data'
     assert attributes['SegmentedPropertyCategoryCodeSequence']['idc_versions'][0] == 1
 
-# def test_write_attributes(client):
-#     response = client.get('/v1/attributes')
-#     assert response.status_code == 200
-#     data = response.json['attributes']
-#     # with open("attributes.json", "w") as f:
-#     # attrs= json.dumps(data)
-#     for a in data:
-#         print(a)
-#         # print("{}: id: {}, data_type:{}, preformatted_values: {}, range: {}, units: {}". \
-#         #       format(a['name'], a['id'], a['data_type'], a['preformatted_values'], a['range'], a['units'] ))
-#     pass
-
-
+#
 def test_programs(client, app):
     response = client.get('/v1/programs')
     assert response.status_code == 200
@@ -91,8 +99,16 @@ def test_programs(client, app):
     programs = {program['short_name']: {key: program[key] for key in program.keys() if key != 'short_name'} for program in data}
     assert "TCGA" in programs
     assert programs["TCGA"]["name"] == "The Cancer Genome Atlas"
-    assert "ISPY1" in programs
+    assert "ISPY" in programs
     assert len(list(filter(lambda program: program['short_name'] == "TCGA", data))) == 1
     assert len(list(filter(lambda program: program['name'] == "The Cancer Genome Atlas", data))) == 1
 
 
+def test_collections(client, app):
+
+    idc_version = 1
+    response = client.get('/v1/collections/{}'.format(idc_version))
+    assert response.status_code == 200
+    data = response.json['collections']
+    collections = {program['name']: {key: collection[key] for key in collections.keys() if key != 'name'} for collection in data}
+    assert "TCGA" in programs

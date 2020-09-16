@@ -46,7 +46,7 @@ def get_programs():
     info = None
 
     try:
-        response = requests.get("{}/{}".format(DJANGO_URI, 'collections/api/public/'))
+        response = requests.get("{}/{}".format(DJANGO_URI, 'collections/api/programs/'))
         info = response.json()
     except Exception as e:
         logger.exception(e)
@@ -66,11 +66,11 @@ def get_attributes():
     return info
 
 
-def get_collections(program_name):
+def get_program_collections(program):
     info = None
 
     blacklist = re.compile(BLACKLIST_RE, re.UNICODE)
-    match = blacklist.search(str(program_name))
+    match = blacklist.search(str(program))
     if match:
         info = {
             "message": "Your program_name contains invalid characters; please edit and resubmit. " +
@@ -80,46 +80,68 @@ def get_collections(program_name):
         }
 
     try:
-        response = requests.get("{}/{}/{}/".format(DJANGO_URI, 'collections/api',program_name))
+        response = requests.get("{}/collections/api/programs/{}/".format(DJANGO_URI, program))
         info = response.json()
     except Exception as e:
         logger.exception(e)
 
     return info
 
-def get_collection_info(program_name, collection_name):
+def get_collections(idc_version):
     info = None
 
-    request_string = {}
-    for key in request.args.keys():
-        request_string[key] = request.args.get(key)
-    if "attribute_type" not in request_string:
-        info = {
-            "message": "An attribute_type was not specified. Collection details could not be provided.",
-            "code": 400,
-            "not_found": []
-        }
-        return info
-
     blacklist = re.compile(BLACKLIST_RE, re.UNICODE)
-    match = blacklist.search(str(request_string["attribute_type"]))
-    if not match and "version" in request_string:
-        match = blacklist.search(str(request_string["version"]))
+    match = blacklist.search(str(idc_version))
     if match:
         info = {
-            "message": "Your collections\'s attribute_type or version contain invalid characters; please edit them and resubmit. " +
+            "message": "Your program_name contains invalid characters; please edit and resubmit. " +
                        "[Saw {}]".format(str(match)),
             "code": 400,
             "not_found": []
         }
-    else:
-        try:
-            response = requests.get("{}/{}/{}/{}/".format(
-                DJANGO_URI, "collections/api",program_name, collection_name),
-                params=request_string)
-            info = response.json()
-        except Exception as e:
-            logger.exception(e)
+
+    try:
+        response = requests.get("{}/collections/api/{}/".format(DJANGO_URI, idc_version))
+        info = response.json()
+    except Exception as e:
+        logger.exception(e)
 
     return info
 
+
+# def get_collection_info(program_name, collection_name):
+#     info = None
+#
+#     request_string = {}
+#     for key in request.args.keys():
+#         request_string[key] = request.args.get(key)
+#     if "attribute_type" not in request_string:
+#         info = {
+#             "message": "An attribute_type was not specified. Collection details could not be provided.",
+#             "code": 400,
+#             "not_found": []
+#         }
+#         return info
+#
+#     blacklist = re.compile(BLACKLIST_RE, re.UNICODE)
+#     match = blacklist.search(str(request_string["attribute_type"]))
+#     if not match and "version" in request_string:
+#         match = blacklist.search(str(request_string["version"]))
+#     if match:
+#         info = {
+#             "message": "Your collections\'s attribute_type or version contain invalid characters; please edit them and resubmit. " +
+#                        "[Saw {}]".format(str(match)),
+#             "code": 400,
+#             "not_found": []
+#         }
+#     else:
+#         try:
+#             response = requests.get("{}/{}/{}/{}/".format(
+#                 DJANGO_URI, "collections/api",program_name, collection_name),
+#                 params=request_string)
+#             info = response.json()
+#         except Exception as e:
+#             logger.exception(e)
+#
+#     return info
+#

@@ -223,15 +223,19 @@ def get_cohort_objects(user, cohort_id):
 
     path_params = {
         "email": user,
-        "return_objects": True,
         "return_level": "Series",
-        "return_filter": True,
-        "return_DOIs": True,
-        "return_URLs": True,
-        # "return_sql": False,
         "fetch_count": 1000,
         "page": 1,
         "offset": 0}
+
+    # Several parameters that we are not making available to users
+    hidden_params= {
+        "return_objects": True,
+        "return_filter": True,
+        "return_DOIs": False,
+        "return_URLs": False,
+        # "return_sql": False,
+    }
 
     return_levels = [
         'Collection',
@@ -246,11 +250,18 @@ def get_cohort_objects(user, cohort_id):
     for key in request.args.keys():
         if key in path_params:
             path_params[key] = request.args.get(key)
+        else:
+            cohort_objects = {
+                "message": "Invalid key {}".format(key),
+                'code': 400
+            }
+            return cohort_objects
+
     path_params['fetch_count'] = int(path_params['fetch_count'])
     path_params['offset'] = int(path_params['offset'])
     path_params['page'] = int(path_params['page'])
-    for s in ['return_objects', 'return_filter', 'return_DOIs', 'return_URLs']: # , 'return_sql']:
-        path_params[s] = path_params[s] in [True, 'True']
+    # for s in ['return_objects', 'return_filter', 'return_DOIs', 'return_URLs']: # , 'return_sql']:
+    #     path_params[s] = path_params[s] in [True, 'True']
     if path_params["fetch_count"] > MAX_FETCH_COUNT:
         cohort_objects = {
             "message": "Fetch count greater than {}".format(MAX_FETCH_COUNT),
@@ -271,6 +282,7 @@ def get_cohort_objects(user, cohort_id):
 
         try:
             auth = get_auth()
+            path_params.update(hidden_params)
             results = requests.get("{}/{}/{}/".format(DJANGO_URI, 'cohorts/api',cohort_id),
                                 params = path_params, headers=auth)
             cohort_objects = results.json()
@@ -284,15 +296,19 @@ def post_cohort_preview():
     cohort_objects = None
 
     path_params = {
-        "return_objects": True,
         "return_level": "Series",
-        "return_filter": True,
-        "return_DOIs": True,
-        "return_URLs": True,
-        # "return_sql": False,
         "fetch_count": 1000,
         "page": 1,
         "offset": 0}
+
+    # Several parameters that we are not making available to users
+    hidden_params= {
+        "return_objects": True,
+        "return_filter": True,
+        "return_DOIs": False,
+        "return_URLs": False,
+        # "return_sql": False,
+    }
 
     return_levels = [
         'Collection',
@@ -308,17 +324,28 @@ def post_cohort_preview():
         schema_validate(request_data['filterSet'], COHORT_FILTER_SCHEMA)
 
         if 'filterSet' not in request_data:
-            cohort_objects = dict(message = 'No filters were provided; ensure that the request body contains a \'filters\' property.')
+            cohort_objects = dict(
+                message = 'No filters were provided; ensure that the request body contains a \'filters\' property.',
+                code = 400)
         else:
 
             # Get and validate parameters
+            # Get and validate parameters
             for key in request.args.keys():
-                path_params[key] = request.args.get(key)
+                if key in path_params:
+                    path_params[key] = request.args.get(key)
+                else:
+                    cohort_objects =dict(
+                        message = "Invalid key {}".format(key),
+                        code = 400
+                    )
+                    return cohort_objects
+
             path_params['fetch_count'] = int(path_params['fetch_count'])
             path_params['offset'] = int(path_params['offset'])
             path_params['page'] = int(path_params['page'])
-            for s in ['return_objects', 'return_filter', 'return_DOIs', 'return_URLs']: #, 'return_sql']:
-                path_params[s] = path_params[s] in [True, 'True']
+            # for s in ['return_objects', 'return_filter', 'return_DOIs', 'return_URLs']: #, 'return_sql']:
+            #     path_params[s] = path_params[s] in [True, 'True']
             if path_params["fetch_count"] > MAX_FETCH_COUNT:
                 cohort_objects = dict(
                     message = "Fetch count greater than {}".format(MAX_FETCH_COUNT),
@@ -335,6 +362,7 @@ def post_cohort_preview():
                 try:
                     auth = get_auth()
                     data = {"request_data": request_data}
+                    path_params.update(hidden_params)
                     results = requests.post("{}/{}/".format(DJANGO_URI, 'cohorts/api/preview'),
                                            params=path_params, json=data, headers=auth)
                     pass
@@ -370,12 +398,6 @@ def get_cohort_preview_manifest():
         "access_class": "doi",
         "access_type": "gs",
         "region": "us",
-        # "return_objects": True,
-        # "return_level": "Series",
-        # "return_filter": True,
-        # "return_DOIs": True,
-        # "return_URLs": True,
-        # "return_sql": False,
         "fetch_count": 1000,
         "page": 1,
         "offset": 0}

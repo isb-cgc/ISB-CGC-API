@@ -170,7 +170,6 @@ def test_get_cohort_patients(client, app):
     query_string = {
         'return_level': 'Patient',
         'fetch_count': 5000,
-        'return_sql': True
     }
 
     # Get the list of objects in the cohort
@@ -239,15 +238,15 @@ def test_get_cohort_studies(client, app):
         '1.3.6.1.4.1.14519.5.2.1.8421.4018.329305334176079996095294344892',
         '1.3.6.1.4.1.14519.5.2.1.8421.4018.304030957341830836628192929917'].sort()
 
-    assert [accessMethod['access_url']
-        for collection in collections
-        for patient in collection['patients']
-        for study in patient['studies']
-        for accessMethod in study['AccessMethods']].sort() == \
-       ['gs://gcs-public-data--healthcare-tcia-tcga-read/dicom/1.3.6.1.4.1.14519.5.2.1.3671.4018.768291480177931556369061239508',
-        'gs://gcs-public-data--healthcare-tcia-tcga-read/dicom/1.3.6.1.4.1.14519.5.2.1.8421.4018.329305334176079996095294344892',
-        'gs://gcs-public-data--healthcare-tcia-tcga-read/dicom/1.3.6.1.4.1.14519.5.2.1.8421.4018.304030957341830836628192929917'].sort()
-
+    # assert [accessMethod['access_url']
+    #     for collection in collections
+    #     for patient in collection['patients']
+    #     for study in patient['studies']
+    #     for accessMethod in study['AccessMethods']].sort() == \
+    #    ['gs://gcs-public-data--healthcare-tcia-tcga-read/dicom/1.3.6.1.4.1.14519.5.2.1.3671.4018.768291480177931556369061239508',
+    #     'gs://gcs-public-data--healthcare-tcia-tcga-read/dicom/1.3.6.1.4.1.14519.5.2.1.8421.4018.329305334176079996095294344892',
+    #     'gs://gcs-public-data--healthcare-tcia-tcga-read/dicom/1.3.6.1.4.1.14519.5.2.1.8421.4018.304030957341830836628192929917'].sort()
+    #
     delete_cohort(client, id)
 
 def test_get_cohort_series(client, app):
@@ -303,15 +302,15 @@ def test_get_cohort_series(client, app):
         for study in patient['studies']
         for series in study['series']]
 
-    assert 'gs://gcs-public-data--healthcare-tcia-tcga-read/dicom/' \
-       '1.3.6.1.4.1.14519.5.2.1.8421.4018.304030957341830836628192929917/' \
-       '1.3.6.1.4.1.14519.5.2.1.8421.4018.234350234633941492462148996523' in \
-        [accessMethod['access_url']
-        for collection in collections
-        for patient in collection['patients']
-        for study in patient['studies']
-        for series in study['series']
-        for accessMethod in series['AccessMethods']]
+    # assert 'gs://gcs-public-data--healthcare-tcia-tcga-read/dicom/' \
+    #    '1.3.6.1.4.1.14519.5.2.1.8421.4018.304030957341830836628192929917/' \
+    #    '1.3.6.1.4.1.14519.5.2.1.8421.4018.234350234633941492462148996523' in \
+    #     [accessMethod['access_url']
+    #     for collection in collections
+    #     for patient in collection['patients']
+    #     for study in patient['studies']
+    #     for series in study['series']
+    #     for accessMethod in series['AccessMethods']]
     # pretty_print_collections(collections)
     delete_cohort(client, id)
 
@@ -368,15 +367,15 @@ def test_get_cohort_instances(client, app):
         for study in patient['studies']
         for series in study['series']]
 
-    assert 'gs://gcs-public-data--healthcare-tcia-tcga-read/dicom/' \
-       '1.3.6.1.4.1.14519.5.2.1.8421.4018.304030957341830836628192929917/' \
-       '1.3.6.1.4.1.14519.5.2.1.8421.4018.234350234633941492462148996523' in \
-        [accessMethod['access_url']
-        for collection in collections
-        for patient in collection['patients']
-        for study in patient['studies']
-        for series in study['series']
-        for accessMethod in series['AccessMethods']]
+    # assert 'gs://gcs-public-data--healthcare-tcia-tcga-read/dicom/' \
+    #    '1.3.6.1.4.1.14519.5.2.1.8421.4018.304030957341830836628192929917/' \
+    #    '1.3.6.1.4.1.14519.5.2.1.8421.4018.234350234633941492462148996523' in \
+    #     [accessMethod['access_url']
+    #     for collection in collections
+    #     for patient in collection['patients']
+    #     for study in patient['studies']
+    #     for series in study['series']
+    #     for accessMethod in series['AccessMethods']]
 
     assert len([instance['id']
         for collection in collections
@@ -385,17 +384,17 @@ def test_get_cohort_instances(client, app):
         for series in study['series']
         for instance in series['instances']]) == 1638
 
-    assert 'gs://gcs-public-data--healthcare-tcia-tcga-read/dicom/' \
-       '1.3.6.1.4.1.14519.5.2.1.3671.4018.768291480177931556369061239508/' \
-       '1.3.6.1.4.1.14519.5.2.1.3671.4018.183714953600569164837490663631/' \
-       '1.3.6.1.4.1.14519.5.2.1.3671.4018.350542910477885137694058742820.dcm' in \
-        [accessMethod['access_url']
-        for collection in collections
-        for patient in collection['patients']
-        for study in patient['studies']
-        for series in study['series']
-        for instance in series['instances']
-        for accessMethod in instance['AccessMethods']]
+    # assert 'gs://gcs-public-data--healthcare-tcia-tcga-read/dicom/' \
+    #    '1.3.6.1.4.1.14519.5.2.1.3671.4018.768291480177931556369061239508/' \
+    #    '1.3.6.1.4.1.14519.5.2.1.3671.4018.183714953600569164837490663631/' \
+    #    '1.3.6.1.4.1.14519.5.2.1.3671.4018.350542910477885137694058742820.dcm' in \
+    #     [accessMethod['access_url']
+    #     for collection in collections
+    #     for patient in collection['patients']
+    #     for study in patient['studies']
+    #     for series in study['series']
+    #     for instance in series['instances']
+    #     for accessMethod in instance['AccessMethods']]
 
     delete_cohort(client, id)
 
@@ -410,9 +409,9 @@ def test_get_cohort_instances_paged(client, app):
         'return_level': 'Instance',
         'fetch_count': 5000,
         'offset': 0,
-        'return_DOIs': False,
-        'return_URLs': False,
-        'return_filter': False,
+        # 'return_DOIs': False,
+        # 'return_URLs': False,
+        # 'return_filter': False,
     }
     # Get the list of objects in the cohort
     response = client.get("{}/{}/".format('v1/cohorts', id),
@@ -435,9 +434,9 @@ def test_get_cohort_instances_paged(client, app):
             'return_level': 'Instance',
             'fetch_count': fetch_count,
             'offset': totalRowsReturned,
-            'return_DOIs': False,
-            'return_URLs': False,
-            'return_filter': False,
+            # 'return_DOIs': False,
+            # 'return_URLs': False,
+            # 'return_filter': False,
         }
 
         # Get the list of objects in the cohort
