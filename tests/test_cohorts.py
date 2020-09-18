@@ -25,7 +25,7 @@ from .cohort_utils import pretty_print_cohortObjects, merge, create_cohort, crea
 def test_create_cohort_schema_validation(client, app):
     # Create an invalid filter set
     filterSet = {
-        "idc_version": "1",
+        "idc_version": "1.0",
         "filters": {
             "collection_id": ["TCGA-LUAD", "TCGA-KIRC"],
             "Modalityx": ["CT", "MR"],
@@ -49,7 +49,7 @@ def test_create_cohort_schema_validation(client, app):
 
     # Create an invalid filter set
     filterSet = {
-        "idc_version": "1",
+        "idc_version": "1.0",
         "filters": {
             "collection_id": ["TCGA-LUAD", "TCGA-KIRC"],
             "Modality": ["CT", "MR"],
@@ -80,7 +80,7 @@ def test_create_cohort_schema_validation(client, app):
 def test_create_cohort(client, app):
     # Create a filter set
     filterSet = {
-        "idc_version": "1",
+        "idc_version": "1.0",
         "filters": {
             "collection_id": ["TCGA-LUAD", "TCGA-KIRC"],
             "Modality": ["CT", "MR"],
@@ -104,7 +104,7 @@ def test_create_cohort(client, app):
     assert cohortResponse['name']=="testcohort"
     assert cohortResponse['description']=="Test description"
     # assert len(cohortResponse['filterSet']) == 1
-    assert cohortResponse["filterSet"]["idc_version"]=="1"
+    assert cohortResponse["filterSet"]["idc_version"]=="1.0"
     assert 'race' in cohortResponse['filterSet']['filters'] and \
            cohortResponse['filterSet']['filters']['race'] == ['WHITE']
     assert 'Modality' in cohortResponse['filterSet']['filters'] and \

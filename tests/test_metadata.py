@@ -37,7 +37,7 @@ def test_get_programs_collections(client, app):
     assert collection['species']=='Human'
     assert collection['subject_count']==14
     assert collection['supporting_data']=='Clinical Genomics'
-    assert collection['IDC_versions'] == ["1"]
+    assert collection['IDC_versions'] == ["1.0"]
 
     response = client.get('/v1/programs/ISPY')
     assert response.status_code == 200
@@ -58,22 +58,19 @@ def test_get_programs_collections(client, app):
     assert collection['species']=='Human'
     assert collection['subject_count']==222
     assert collection['supporting_data']=='Clinical, Image Analyses'
-    assert collection['IDC_versions'] == ["1"]
+    assert collection['IDC_versions'] == ["1.0"]
 
 def test_versions(client, app):
     response = client.get('/v1/versions')
     assert response.status_code == 200
     data = response.json['versions']
-    versions = {version['version_id']: {key: version[key] for key in version.keys() if key != 'version_id'} for version in data}
+    versions = {version['version_number']: {key: version[key] for key in version.keys() if key != 'version_number'} for version in data}
     assert len(versions) == 1
-    assert "1" in versions
-    assert len(list(filter(lambda comp: comp['name'] == 'GDC Data Release 9', versions['1']['components']))) == 1
-    assert len(list(filter(lambda comp: comp['name'] == 'TCIA Image Data', versions['1']['components']))) == 1
-    assert len(list(filter(lambda comp: comp['name'] == 'TCIA Derived Data', versions['1']['components']))) == 1
-    assert list(filter(lambda comp: comp['name'] == 'GDC Data Release 9', versions['1']['components']))[0]['version'] == 'r9'
-    assert list(filter(lambda comp: comp['name'] == 'TCIA Image Data', versions['1']['components']))[0]['version'] == '1'
-    assert list(filter(lambda comp: comp['name'] == 'TCIA Derived Data', versions['1']['components']))[0]['version'] == '1'
-
+    assert "1.0" in versions
+    assert versions["1.0"]["active"] == True
+    assert versions["1.0"]['name'] == 'Imaging Data Commons Data Release'
+    assert versions["1.0"]["data_sources"] == \
+           [{'name': 'idc-dev-etl.idc_tcia_views_mvp_wave0.dicom_all'}, {'name': 'isb-cgc.TCGA_bioclin_v0.Biospecimen'}, {'name': 'isb-cgc.TCGA_bioclin_v0.clinical_v1'}, {'name': 'idc-dev-etl.idc_tcia_views_mvp_wave0.segmentations'}, {'name': 'idc-dev-etl.idc_tcia_views_mvp_wave0.qualitative_measurements'}, {'name': 'idc-dev-etl.idc_tcia_views_mvp_wave0.quantitative_measurements'}]
 
 def test_attributes(client, app):
     response = client.get('/v1/attributes')
@@ -104,11 +101,11 @@ def test_programs(client, app):
     assert len(list(filter(lambda program: program['name'] == "The Cancer Genome Atlas", data))) == 1
 
 
-def test_collections(client, app):
-
-    idc_version = 1
-    response = client.get('/v1/collections/{}'.format(idc_version))
-    assert response.status_code == 200
-    data = response.json['collections']
-    collections = {program['name']: {key: collection[key] for key in collections.keys() if key != 'name'} for collection in data}
-    assert "TCGA" in programs
+# def test_collections(client, app):
+#
+#     idc_version = 1
+#     response = client.get('/v1/collections/{}'.format(idc_version))
+#     assert response.status_code == 200
+#     data = response.json['collections']
+#     collections = {program['name']: {key: collection[key] for key in collections.keys() if key != 'name'} for collection in data}
+#     assert "TCGA" in programs

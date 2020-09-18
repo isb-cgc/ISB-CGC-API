@@ -27,7 +27,7 @@ levels = ["collections", "patients", "studies", "series", "instances"]
 
 def test_cohort_preview_patients_lte(client, app):
     filterSet = {
-        "idc_version": "1",
+        "idc_version": "1.0",
         "filters": {
             "collection_id": ["TCGA-READ"],
             "Modality": ["CT", "MR"],
@@ -76,7 +76,7 @@ def test_cohort_preview_patients_lte(client, app):
 def test_cohort_preview_manifest(client, app):
 
     filterSet = {
-        "idc_version": "1",
+        "idc_version": "",
         "filters": {
             "collection_id": ["TCGA-READ"],
             "Modality": ["CT", "MR"],
@@ -167,7 +167,7 @@ def test_cohort_preview_patients(client, app):
     #     "imaging_version": "0",
     #     "attributes": attributes}
     filterSet = {
-        "idc_version": "1",
+        "idc_version": "1.0",
         "filters": {
             "collection_id": ["TCGA-READ"],
             "Modality": ["CT", "MR"],
@@ -214,7 +214,7 @@ def test_cohort_preview_patients(client, app):
 
 def test_cohort_preview_studies(client, app):
     filterSet = {
-        "idc_version": "1",
+        "idc_version": "1.0",
         "filters": {
             "collection_id": ["TCGA-READ"],
             "Modality": ["CT", "MR"],
@@ -277,7 +277,7 @@ def test_cohort_preview_studies(client, app):
 
 def test_cohort_preview_series(client, app):
     filterSet = {
-        "idc_version": "1",
+        "idc_version": "1.0",
         "filters": {
             "collection_id": ["TCGA-READ"],
             "Modality": ["CT", "MR"],
@@ -356,7 +356,7 @@ def test_cohort_preview_series(client, app):
 
 def test_cohort_preview_instances(client, app):
     filterSet = {
-        "idc_version": "1",
+        "idc_version": "1.0",
         "filters": {
             "collection_id": ["TCGA-READ"],
             "Modality": ["CT", "MR"],
@@ -453,7 +453,7 @@ def test_cohort_preview_instances(client, app):
 # Get the result in chunks
 def test_cohort_preview_instances_paged(client, app):
     filterSet = {
-        "idc_version": "1",
+        "idc_version": "1.0",
         "filters": {
             "collection_id": ["TCGA-READ"],
             "Modality": ["CT", "MR"],
