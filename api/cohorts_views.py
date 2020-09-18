@@ -238,11 +238,11 @@ def get_cohort_objects(user, cohort_id):
     }
 
     return_levels = [
+        'None',
         'Collection',
-        'Instance',
-        'Series',
-        'Study',
         'Patient',
+        'Study',
+        'Series',
         'Instance'
     ]
 
@@ -311,11 +311,11 @@ def post_cohort_preview():
     }
 
     return_levels = [
+        'None',
         'Collection',
-        'Instance',
-        'Series',
-        'Study',
         'Patient',
+        'Study',
+        'Series',
         'Instance'
     ]
 
