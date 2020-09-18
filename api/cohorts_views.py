@@ -224,6 +224,7 @@ def get_cohort_objects(user, cohort_id):
     path_params = {
         "email": user,
         "return_level": "Series",
+        "return_sql": False,
         "fetch_count": 1000,
         "page": 1,
         "offset": 0}
@@ -234,7 +235,6 @@ def get_cohort_objects(user, cohort_id):
         "return_filter": True,
         "return_DOIs": False,
         "return_URLs": False,
-        # "return_sql": False,
     }
 
     return_levels = [
@@ -260,8 +260,9 @@ def get_cohort_objects(user, cohort_id):
     path_params['fetch_count'] = int(path_params['fetch_count'])
     path_params['offset'] = int(path_params['offset'])
     path_params['page'] = int(path_params['page'])
-    # for s in ['return_objects', 'return_filter', 'return_DOIs', 'return_URLs']: # , 'return_sql']:
-    #     path_params[s] = path_params[s] in [True, 'True']
+    for s in ['return_sql']: # 'return_objects', 'return_filter', 'return_DOIs', 'return_URLs']: # ,
+        if s in path_params:
+            path_params[s] = path_params[s] in [True, 'True']
     if path_params["fetch_count"] > MAX_FETCH_COUNT:
         cohort_objects = {
             "message": "Fetch count greater than {}".format(MAX_FETCH_COUNT),
@@ -297,6 +298,7 @@ def post_cohort_preview():
 
     path_params = {
         "return_level": "Series",
+        "return_sql": False,
         "fetch_count": 1000,
         "page": 1,
         "offset": 0}
@@ -307,7 +309,6 @@ def post_cohort_preview():
         "return_filter": True,
         "return_DOIs": False,
         "return_URLs": False,
-        # "return_sql": False,
     }
 
     return_levels = [
@@ -344,8 +345,9 @@ def post_cohort_preview():
             path_params['fetch_count'] = int(path_params['fetch_count'])
             path_params['offset'] = int(path_params['offset'])
             path_params['page'] = int(path_params['page'])
-            # for s in ['return_objects', 'return_filter', 'return_DOIs', 'return_URLs']: #, 'return_sql']:
-            #     path_params[s] = path_params[s] in [True, 'True']
+            for s in ['return_sql']: #'return_objects', 'return_filter', 'return_DOIs', 'return_URLs']:
+                if s in path_params:
+                    path_params[s] = path_params[s] in [True, 'True']
             if path_params["fetch_count"] > MAX_FETCH_COUNT:
                 cohort_objects = dict(
                     message = "Fetch count greater than {}".format(MAX_FETCH_COUNT),
