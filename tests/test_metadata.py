@@ -72,23 +72,124 @@ def test_versions(client, app):
     assert versions["1.0"]["data_sources"] == \
            [{'name': 'idc-dev-etl.idc_tcia_views_mvp_wave0.dicom_all'}, {'name': 'isb-cgc.TCGA_bioclin_v0.Biospecimen'}, {'name': 'isb-cgc.TCGA_bioclin_v0.clinical_v1'}, {'name': 'idc-dev-etl.idc_tcia_views_mvp_wave0.segmentations'}, {'name': 'idc-dev-etl.idc_tcia_views_mvp_wave0.qualitative_measurements'}, {'name': 'idc-dev-etl.idc_tcia_views_mvp_wave0.quantitative_measurements'}]
 
+def test_data_sources(client, app):
+    query_string = dict(
+        idc_version = 'ABC'
+    )
+
+    response = client.get('/v1/data_sources/',
+                          query_string = query_string)
+    assert response.status_code == 400
+    assert response.json['message'] == 'Invalid IDC version ABC'
+
+    query_string = dict(
+        idc_version = ''
+    )
+
+    response = client.get('/v1/data_sources/')
+    assert response.status_code == 200
+    data = response.json['data_sources']
+    data_sources = {data_source['name']: {key: data_source[key] for key in data_source.keys() if key != 'name'} for data_source in data}
+    assert len(data_sources) == 6
+    assert data_sources == {
+        'idc-dev-etl.idc_tcia_views_mvp_wave0.dicom_all': {'data_type': 'Image Data'},
+        'isb-cgc.TCGA_bioclin_v0.Biospecimen': {'data_type': 'Clinical, Biospecimen, and Mutation Data'},
+        'isb-cgc.TCGA_bioclin_v0.clinical_v1': {'data_type': 'Clinical, Biospecimen, and Mutation Data'},
+        'idc-dev-etl.idc_tcia_views_mvp_wave0.segmentations': {'data_type': 'Derived Data'},
+        'idc-dev-etl.idc_tcia_views_mvp_wave0.qualitative_measurements': {'data_type': 'Derived Data'},
+        'idc-dev-etl.idc_tcia_views_mvp_wave0.quantitative_measurements': {'data_type': 'Derived Data'}}
+
+
+    query_string = dict(
+        idc_version = '1.0'
+    )
+
+    response = client.get('/v1/data_sources/')
+    assert response.status_code == 200
+    data = response.json['data_sources']
+    data_sources = {data_source['name']: {key: data_source[key] for key in data_source.keys() if key != 'name'} for data_source in data}
+    assert len(data_sources) == 6
+    assert data_sources == {
+        'idc-dev-etl.idc_tcia_views_mvp_wave0.dicom_all': {'data_type': 'Image Data'},
+        'isb-cgc.TCGA_bioclin_v0.Biospecimen': {'data_type': 'Clinical, Biospecimen, and Mutation Data'},
+        'isb-cgc.TCGA_bioclin_v0.clinical_v1': {'data_type': 'Clinical, Biospecimen, and Mutation Data'},
+        'idc-dev-etl.idc_tcia_views_mvp_wave0.segmentations': {'data_type': 'Derived Data'},
+        'idc-dev-etl.idc_tcia_views_mvp_wave0.qualitative_measurements': {'data_type': 'Derived Data'},
+        'idc-dev-etl.idc_tcia_views_mvp_wave0.quantitative_measurements': {'data_type': 'Derived Data'}}
+
+
+    response = client.get('/v1/data_sources/')
+    assert response.status_code == 200
+    data = response.json['data_sources']
+    data_sources = {data_source['name']: {key: data_source[key] for key in data_source.keys() if key != 'name'} for data_source in data}
+    assert len(data_sources) == 6
+    assert data_sources == {
+        'idc-dev-etl.idc_tcia_views_mvp_wave0.dicom_all': {'data_type': 'Image Data'},
+        'isb-cgc.TCGA_bioclin_v0.Biospecimen': {'data_type': 'Clinical, Biospecimen, and Mutation Data'},
+        'isb-cgc.TCGA_bioclin_v0.clinical_v1': {'data_type': 'Clinical, Biospecimen, and Mutation Data'},
+        'idc-dev-etl.idc_tcia_views_mvp_wave0.segmentations': {'data_type': 'Derived Data'},
+        'idc-dev-etl.idc_tcia_views_mvp_wave0.qualitative_measurements': {'data_type': 'Derived Data'},
+        'idc-dev-etl.idc_tcia_views_mvp_wave0.quantitative_measurements': {'data_type': 'Derived Data'}}
+
+
 def test_attributes(client, app):
-    response = client.get('/v1/attributes')
+    query_string = dict(
+        idc_version = ''
+    )
+    response = client.get('/v1/attributes/idc-dev-etl.idc_tcia_views_mvp_wave0.dicom_all',
+                          query_string = query_string)
+    assert response.status_code == 200
+    data = response.json['attributes']
+    attributes = {attribute['name']: {key: attribute[key] for key in attribute.keys() if key != 'name'} for attribute in data}
+    assert 'Modality' in attributes
+    assert attributes['Modality'] == {'active': True, 'data_type': 'Categorical String', 'idc_version': '1.0', 'units': None}
+
+    response = client.get('/v1/attributes/isb-cgc.TCGA_bioclin_v0.Biospecimen',
+                          query_string = query_string)
     assert response.status_code == 200
     data = response.json['attributes']
     attributes = {attribute['name']: {key: attribute[key] for key in attribute.keys() if key != 'name'} for attribute in data}
     assert 'program_name' in attributes
     # assert attributes['program_name']['dataSetTypes'][0]['data_type'] == 'Clinical, Biospecimen, and Mutation Data'
-    assert attributes['program_name']['dataSetTypes'][0] == 'Clinical, Biospecimen, and Mutation Data'
-    assert 'days_to_collection' in attributes
-    assert attributes['days_to_collection']['data_type'] == 'Continuous Numeric'
-    assert 'Modality' in attributes
-    assert attributes['Modality']['dataSetTypes'][0] == 'Image Data'
-    assert 'SegmentedPropertyCategoryCodeSequence' in attributes
-    assert attributes['SegmentedPropertyCategoryCodeSequence']['dataSetTypes'][0] == 'Derived Data'
-    assert attributes['SegmentedPropertyCategoryCodeSequence']['idc_versions'][0] == 1
+    assert attributes['program_name'] == {'active': True, 'data_type': 'Categorical String', 'idc_version': '1.0', 'units': None}
 
-#
+    response = client.get('/v1/attributes/isb-cgc.TCGA_bioclin_v0.clinical_v1',
+                          query_string = query_string)
+    assert response.status_code == 200
+    data = response.json['attributes']
+    attributes = {attribute['name']: {key: attribute[key] for key in attribute.keys() if key != 'name'} for attribute in data}
+    assert 'program_name' in attributes
+    # assert attributes['program_name']['dataSetTypes'][0]['data_type'] == 'Clinical, Biospecimen, and Mutation Data'
+    assert attributes['program_name'] == {'active': True, 'data_type': 'Categorical String', 'idc_version': '1.0', 'units': None}
+
+    response = client.get('/v1/attributes/idc-dev-etl.idc_tcia_views_mvp_wave0.segmentations',
+                          query_string = query_string)
+    assert response.status_code == 200
+    data = response.json['attributes']
+    attributes = {attribute['name']: {key: attribute[key] for key in attribute.keys() if key != 'name'} for attribute in data}
+    assert 'AnatomicRegionSequence' in attributes
+    # assert attributes['program_name']['dataSetTypes'][0]['data_type'] == 'Clinical, Biospecimen, and Mutation Data'
+    assert attributes['AnatomicRegionSequence'] == {'active': True, 'data_type': 'Categorical String', 'idc_version': '1.0', 'units': None}
+
+    response = client.get('/v1/attributes/idc-dev-etl.idc_tcia_views_mvp_wave0.qualitative_measurements',
+                          query_string = query_string)
+    assert response.status_code == 200
+    data = response.json['attributes']
+    attributes = {attribute['name']: {key: attribute[key] for key in attribute.keys() if key != 'name'} for attribute in data}
+    assert 'Internal_structure' in attributes
+    # assert attributes['program_name']['dataSetTypes'][0]['data_type'] == 'Clinical, Biospecimen, and Mutation Data'
+    assert attributes['Internal_structure'] == {'active': True, 'data_type': 'Categorical String', 'idc_version': '1.0', 'units': None}
+
+    response = client.get('/v1/attributes/idc-dev-etl.idc_tcia_views_mvp_wave0.quantitative_measurements',
+                          query_string = query_string)
+    assert response.status_code == 200
+    data = response.json['attributes']
+    attributes = {attribute['name']: {key: attribute[key] for key in attribute.keys() if key != 'name'} for attribute in data}
+    assert 'SUVbw' in attributes
+    # assert attributes['program_name']['dataSetTypes'][0]['data_type'] == 'Clinical, Biospecimen, and Mutation Data'
+    assert attributes['SUVbw'] == {'active': True, 'data_type': 'Continuous Numeric', 'idc_version': '1.0', 'units': 'Standardized Uptake Value body weight'}
+
+
 def test_programs(client, app):
     response = client.get('/v1/programs')
     assert response.status_code == 200

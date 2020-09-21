@@ -185,7 +185,7 @@ def test_get_cohort_sql(client, app):
     assert cohort['description']=="Test description"
     assert cohort['filterSet'] == filterSet
 
-    assert cohort['cohortObjects']['sql'] == \
+    assert cohort['sql'] == \
 """	(
             #standardSQL
     
@@ -300,7 +300,6 @@ def test_get_cohort_studies(client, app):
     query_string = {
         'return_level': 'Study',
         'fetch_count': 5000
-
     }
 
     # Get the list of objects in the cohort
@@ -475,7 +474,6 @@ def test_get_cohort_instances_paged(client, app):
 
     #Now get the data in 500 row chunks
 
-    totalSchema = []
     totalCollections = []
     totalRowsReturned = 0
 
@@ -486,9 +484,6 @@ def test_get_cohort_instances_paged(client, app):
             'return_level': 'Instance',
             'fetch_count': fetch_count,
             'offset': totalRowsReturned,
-            # 'return_DOIs': False,
-            # 'return_URLs': False,
-            # 'return_filter': False,
         }
 
         # Get the list of objects in the cohort

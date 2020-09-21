@@ -104,7 +104,7 @@ def cohort(cohort_id):
                         response = jsonify({
                             **result
                         })
-                        response.status_code = 500
+                        response.status_code = results['code']
                     else:
                         code = 200
                         response = jsonify({
@@ -125,7 +125,7 @@ def cohort(cohort_id):
                         response = jsonify({
                             **results
                         })
-                        response.status_code = 500
+                        response.status_code = results['code']
                     else:
                         code = 200
                         response = jsonify({
@@ -221,64 +221,6 @@ def cohorts():
         response.status_code = 500
 
     return response
-
-# @cohorts_bp.route('/manifest/<int:cohort_id>/', methods=['POST', 'GET'], strict_slashes=False)
-# def cohort_file_manifest(cohort_id):
-#     """
-#     GET: Retrieve a cohort's file manifest
-#     POST: Retrieve a cohort's file manifest with applied filters
-#     """
-#
-#     response_obj = None
-#     code = None
-#
-#     try:
-#         user_info = auth_info()
-#         user = validate_user(user_info['email'], cohort_id)
-#
-#         if not user:
-#             response_obj = {
-#                 'message': 'Encountered an error while attempting to identify this user.'
-#             }
-#             code = 500
-#         else:
-#             file_manifest = get_file_manifest(cohort_id, user)
-#             if file_manifest:
-#                 # Presence of a message means something went wrong with our request
-#                 if 'message' in file_manifest:
-#                     response_obj = file_manifest
-#                     code = 400
-#                 else:
-#                     code = 200
-#                     response_obj = {
-#                         'data': file_manifest
-#                     }
-#             else:
-#                 response_obj = {
-#                     'message': "Error while attempting to retrieve file manifest for cohort {}.".format(str(cohort_id))
-#                 }
-#                 code = 500
-#
-#     except UserValidationException as e:
-#         response_obj = {
-#             'message': str(e)
-#         }
-#         code = 403
-#     except Exception as e:
-#         logger.exception(e)
-#         response_obj = {
-#             'message': 'Encountered an error while attempting to identify this user.'
-#         }
-#         code = 500
-#     finally:
-#         close_old_connections()
-#
-#     response_obj['code'] = code
-#     response = jsonify(response_obj)
-#     response.status_code = code
-#
-#     return response
-
 
 @cohorts_bp.route('/cohorts/preview/', methods=['POST'], strict_slashes=False)
 def cohort_preview():

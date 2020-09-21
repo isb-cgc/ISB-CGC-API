@@ -167,7 +167,7 @@ def test_cohort_preview_sql(client, app):
     assert cohort['description']=="Test description"
     assert cohort['filterSet'] == filterSet
     assert cohort['cohortObjects']['rowsReturned'] == 2
-    assert cohort['cohortObjects']['sql'] == \
+    assert cohort['sql'] == \
 """	(
             #standardSQL
     

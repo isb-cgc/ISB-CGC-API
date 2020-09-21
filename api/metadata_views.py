@@ -41,7 +41,6 @@ def get_versions():
     return info
 
 
-
 def get_programs():
     info = None
 
@@ -54,11 +53,76 @@ def get_programs():
     return info
 
 
-def get_attributes():
+def get_data_sources():
+    path_params = {
+        "idc_version": "",
+    }
+
+    blacklist = re.compile(BLACKLIST_RE, re.UNICODE)
     info = None
 
+    # Get and validate parameters
+    for key in request.args.keys():
+        match = blacklist.search(str(key))
+        if match:
+            return dict(
+                message="Argument {} contains invalid characters; please edit and resubmit. " +
+                        "[Saw {}]".format(str(key, match)),
+                code=400
+            )
+        if key in path_params:
+            path_params[key] = request.args.get(key)
+        else:
+            return dict(
+                message="Invalid argument {}".format((key)),
+                code=400
+            )
+
     try:
-        response = requests.get("{}/{}".format(DJANGO_URI, 'collections/api/attributes/'))
+        response = requests.get("{}/{}/".format(DJANGO_URI, 'collections/api/data_sources'),
+                                params=path_params)
+        info = response.json()
+    except Exception as e:
+        logger.exception(e)
+
+    return info
+
+
+def get_attributes(data_source):
+    blacklist = re.compile(BLACKLIST_RE, re.UNICODE)
+    info = None
+
+    path_params = {
+        "idc_version": "",
+    }
+
+    match = blacklist.search(data_source)
+    if match:
+        return dict(
+            message="Data source {} contains invalid characters; please edit and resubmit. " +
+                    "[Saw {}]".format(str(data_source, match)),
+            code=400
+        )
+    # Get and validate parameters
+    for key in request.args.keys():
+        match = blacklist.search(str(key))
+        if match:
+            return dict(
+                message="Argument {} contains invalid characters; please edit and resubmit. " +
+                        "[Saw {}]".format(str(key, match)),
+                code=400
+            )
+        if key in path_params:
+            path_params[key] = request.args.get(key)
+        else:
+            return dict(
+                message="Invalid argument {}".format((key)),
+                code=400
+            )
+
+    try:
+        response = requests.get("{}/{}/{}/".format(DJANGO_URI, 'collections/api/attributes', data_source),
+                                params=path_params)
         info = response.json()
     except Exception as e:
         logger.exception(e)
@@ -73,7 +137,7 @@ def get_program_collections(program):
     match = blacklist.search(str(program))
     if match:
         info = {
-            "message": "Your program_name contains invalid characters; please edit and resubmit. " +
+            "message": "Your program name contains invalid characters; please edit and resubmit. " +
                        "[Saw {}]".format(str(match)),
             "code": 400,
             "not_found": []
@@ -94,7 +158,7 @@ def get_collections(idc_version):
     match = blacklist.search(str(idc_version))
     if match:
         info = {
-            "message": "Your program_name contains invalid characters; please edit and resubmit. " +
+            "message": "Your idc_version contains invalid characters; please edit and resubmit. " +
                        "[Saw {}]".format(str(match)),
             "code": 400,
             "not_found": []

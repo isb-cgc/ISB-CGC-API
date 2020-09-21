@@ -157,6 +157,7 @@ def _delete_cohorts(user, cohort_ids):
 
 
 def get_cohort_manifest(user, cohort_id):
+    blacklist = re.compile(BLACKLIST_RE, re.UNICODE)
     cohort_objects = None
 
     path_params = {
@@ -174,36 +175,43 @@ def get_cohort_manifest(user, cohort_id):
 
     # Get and validate parameters
     for key in request.args.keys():
+        match = blacklist.search(str(key))
+        if match:
+            return dict(
+                message = "Key {} contains invalid characters; please edit and resubmit. " +
+                           "[Saw {}]".format(str(key, match)),
+                code = 400
+            )
         if key in path_params:
             path_params[key] = request.args.get(key)
     path_params['fetch_count'] = int(path_params['fetch_count'])
     path_params['offset'] = int(path_params['offset'])
     path_params['page'] = int(path_params['page'])
     if path_params["fetch_count"] > MAX_FETCH_COUNT:
-        cohort_objects = {
-            "message": "Fetch count greater than {}".format(MAX_FETCH_COUNT),
-            "code": 400
-        }
+        return dict(
+            message = "Fetch count greater than {}".format(MAX_FETCH_COUNT),
+            code = 400
+        )
     if path_params["offset"] < 0:
-        cohort_objects = {
-            "message": "Fetch offset {} must be non-negative integer".format(path_params['offset']),
-            'code': 400
-        }
+        return dict(
+            message = "Fetch offset {} must be non-negative integer".format(path_params['offset']),
+            code = 400
+        )
     if path_params["access_class"] not in access_classes:
-        cohort_objects = {
-            "message": "Invalid access class {}".format(path_params['access_class']),
-            'code': 400
-        }
+        return dict(
+            message = "Invalid access class {}".format(path_params['access_class']),
+            code = 400
+        )
     if path_params['access_type'] not in access_types:
-        cohort_objects = {
-            "message": "Invalid access type {}".format(path_params['access_type']),
-            'code': 400
-        }
+        return dict(
+            message = "Invalid access type {}".format(path_params['access_type']),
+            code = 400
+        )
     if path_params['region'] not in regions:
-        cohort_objects = {
-            "message": "Invalid region {}".format(path_params['region']),
-            'code': 400
-        }
+        return dict(
+            message = "Invalid region {}".format(path_params['region']),
+            code = 400
+        )
     if cohort_objects == None:
         path_params["page"] = int(path_params['page'])
 
@@ -219,6 +227,7 @@ def get_cohort_manifest(user, cohort_id):
 
 
 def get_cohort_objects(user, cohort_id):
+    blacklist = re.compile(BLACKLIST_RE, re.UNICODE)
     cohort_objects = None
 
     path_params = {
@@ -248,6 +257,13 @@ def get_cohort_objects(user, cohort_id):
 
     # Get and validate parameters
     for key in request.args.keys():
+        match = blacklist.search(str(key))
+        if match:
+            return dict(
+                message = "Key {} contains invalid characters; please edit and resubmit. " +
+                           "[Saw {}]".format(str(key, match)),
+                code = 400
+            )
         if key in path_params:
             path_params[key] = request.args.get(key)
         else:
@@ -264,20 +280,20 @@ def get_cohort_objects(user, cohort_id):
         if s in path_params:
             path_params[s] = path_params[s] in [True, 'True']
     if path_params["fetch_count"] > MAX_FETCH_COUNT:
-        cohort_objects = {
-            "message": "Fetch count greater than {}".format(MAX_FETCH_COUNT),
-            'code': 400
-        }
+        return dict(
+            message = "Fetch count greater than {}".format(MAX_FETCH_COUNT),
+            code = 400
+        )
     if path_params["offset"] < 0:
-        cohort_objects = {
-            "message": "Fetch offset {} must be non-negative integer".format(path_params['offset']),
-            'code': 400
-        }
+        return dict(
+            message = "Fetch offset {} must be non-negative integer".format(path_params['offset']),
+            code = 400
+        )
     if path_params['return_level'] not in return_levels:
-        cohort_objects = {
-            "message": "Invalid return level {}".format(path_params['return_level']),
-            'code': 400
-        }
+        return dict(
+            message = "Invalid return level {}".format(path_params['return_level']),
+            code = 400
+        )
     if cohort_objects == None:
         path_params["page"] = int(path_params['page'])
 
@@ -294,6 +310,7 @@ def get_cohort_objects(user, cohort_id):
 
 
 def post_cohort_preview():
+    blacklist = re.compile(BLACKLIST_RE, re.UNICODE)
     cohort_objects = None
 
     path_params = {
@@ -334,6 +351,13 @@ def post_cohort_preview():
             # Get and validate parameters
             for key in request.args.keys():
                 if key in path_params:
+                    match = blacklist.search(str(key))
+                    if match:
+                        return dict(
+                            message="Key {} contains invalid characters; please edit and resubmit. " +
+                                    "[Saw {}]".format(str(key, match)),
+                            code=400
+                        )
                     path_params[key] = request.args.get(key)
                 else:
                     cohort_objects =dict(
@@ -349,17 +373,20 @@ def post_cohort_preview():
                 if s in path_params:
                     path_params[s] = path_params[s] in [True, 'True']
             if path_params["fetch_count"] > MAX_FETCH_COUNT:
-                cohort_objects = dict(
-                    message = "Fetch count greater than {}".format(MAX_FETCH_COUNT),
-                    code = 400)
+                return dict(
+                    message="Fetch count greater than {}".format(MAX_FETCH_COUNT),
+                    code=400
+                )
             if path_params["offset"] < 0:
-                cohort_objects = dict(
-                    message = "Fetch offset {} must be non-negative integer".format(path_params['offset']),
-                    code = 400)
+                return dict(
+                    message="Fetch offset {} must be non-negative integer".format(path_params['offset']),
+                    code=400
+                )
             if path_params['return_level'] not in return_levels:
-                cohort_objects = dict(
-                    message = "Invalid return level {}".format(path_params['return_level']),
-                    code = 400)
+                return dict(
+                    message="Invalid return level {}".format(path_params['return_level']),
+                    code=400
+                )
             if cohort_objects == None:
                 try:
                     auth = get_auth()
@@ -394,6 +421,7 @@ def post_cohort_preview():
 
 
 def get_cohort_preview_manifest():
+    blacklist = re.compile(BLACKLIST_RE, re.UNICODE)
     cohort_objects = None
 
     path_params = {
@@ -420,6 +448,13 @@ def get_cohort_preview_manifest():
 
         # Get and validate parameters
         for key in request.args.keys():
+            match = blacklist.search(str(key))
+            if match:
+                return dict(
+                    message="Key {} contains invalid characters; please edit and resubmit. " +
+                            "[Saw {}]".format(str(key, match)),
+                    code=400
+                )
             if key in path_params:
                 path_params[key] = request.args.get(key)
             else:
@@ -431,30 +466,30 @@ def get_cohort_preview_manifest():
         path_params['offset'] = int(path_params['offset'])
         path_params['page'] = int(path_params['page'])
         if path_params["fetch_count"] > MAX_FETCH_COUNT:
-            cohort_objects = {
-                "message": "Fetch count greater than {}".format(MAX_FETCH_COUNT),
-                "code": 400
-            }
+            return dict(
+                message="Fetch count greater than {}".format(MAX_FETCH_COUNT),
+                code=400
+            )
         if path_params["offset"] < 0:
-            cohort_objects = {
-                "message": "Fetch offset {} must be non-negative integer".format(path_params['offset']),
-                'code': 400
-            }
+            return dict(
+                message="Fetch offset {} must be non-negative integer".format(path_params['offset']),
+                code=400
+            )
         if path_params["access_class"] not in access_classes:
-            cohort_objects = {
-                "message": "Invalid access class {}".format(path_params['access_class']),
-                'code': 400
-            }
+            return dict(
+                message="Invalid access class {}".format(path_params['access_class']),
+                code=400
+            )
         if path_params['access_type'] not in access_types:
-            cohort_objects = {
-                "message": "Invalid access type {}".format(path_params['access_type']),
-                'code': 400
-            }
+            return dict(
+                message="Invalid access type {}".format(path_params['access_type']),
+                code=400
+            )
         if path_params['region'] not in regions:
-            cohort_objects = {
-                "message": "Invalid region {}".format(path_params['region']),
-                'code': 400
-            }
+            return dict(
+                message="Invalid region {}".format(path_params['region']),
+                code=400
+            )
         if cohort_objects == None:
             try:
                 auth = get_auth()
@@ -499,57 +534,6 @@ def get_cohort_list(user):
         logger.exception(e)
 
     return cohort_list
-
-
-# def get_file_manifest(cohort_id, user):
-#     file_manifest = None
-#     inc_filters = {}
-#
-#     try:
-#         has_access = auth_dataset_whitelists_for_user(user.id)
-#
-#         params = {
-#             'limit': settings.MAX_FILE_LIST_REQUEST,
-#             'build': 'HG19',
-#             'access': has_access
-#         }
-#
-#         request_data = request.get_json()
-#
-#         param_set = {
-#             'offset': {'default': 0, 'type': int, 'name': 'offset'},
-#             'page': {'default': 1, 'type': int, 'name': 'page'},
-#             'fetch_count': {'default': 5000, 'type': int, 'name': 'limit'},
-#             'genomic_build': {'default': "HG19", 'type': str, 'name': 'build'}
-#         }
-#
-#         for param, parameter in param_set.items():
-#             default = parameter['default']
-#             param_type = parameter['type']
-#             name = parameter['name']
-#             params[name] = request_data[param] if (request_data and param in request_data) else request.args.get(param, default=default, type=param_type) if param in request.args else default
-#
-#             if request_data:
-#                 inc_filters = {
-#                     filter: request_data[filter]
-#                     for filter in request_data.keys()
-#                     if filter not in list(param_set.keys())
-#                 }
-#
-#         response = cohort_files(cohort_id, user=user, inc_filters=inc_filters, **params)
-#
-#         file_manifest = response['file_list'] if response and response['file_list'] else None
-#
-#     except BadRequest as e:
-#         logger.warn("[WARNING] Received bad request - couldn't load JSON.")
-#         file_manifest = {
-#             'message': 'The JSON provided in this request appears to be improperly formatted.',
-#         }
-#     except Exception as e:
-#         logger.error("[ERROR] File trieving the file manifest for Cohort {}:".format(str(cohort_id)))
-#         logger.exception(e)
-#
-#     return file_manifest
 
 
 

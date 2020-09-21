@@ -18,7 +18,7 @@ import logging
 from flask import jsonify
 from python_settings import settings
 
-from . metadata_views import get_versions, get_attributes, get_programs, get_program_collections, \
+from . metadata_views import get_versions, get_data_sources, get_attributes, get_programs, get_program_collections, \
     get_collections #, get_collection_info
 
 from flask import Blueprint
@@ -39,7 +39,7 @@ def versions():
 
         if 'message' in results:
             response = jsonify(results)
-            response.status_code = 500
+            response.status_code = results['code']
         else:
             response = jsonify({
                 'code': 200,
@@ -58,18 +58,48 @@ def versions():
     return response
 
 
-@metadata_bp.route('/attributes/', methods=['GET'], strict_slashes=False)
-def attributes():
+@metadata_bp.route('/data_sources/', methods=['GET'], strict_slashes=False)
+def data_sources():
     """Retrieve a list of IDC versions"""
 
     response = None
 
     try:
-        results = get_attributes()
+        results = get_data_sources()
 
         if 'message' in results:
             response = jsonify(results)
-            response.status_code = 500
+            response.status_code = results['code']
+        else:
+            response = jsonify({
+                'code': 200,
+                **results
+            })
+            response.status_code = 200
+    except Exception as e:
+        logger.error("[ERROR] While retrieving IDC versions:")
+        logger.exception(e)
+        response = jsonify({
+            'code': 500,
+            'message': 'Encountered an error while retrieving the program list.'
+        })
+        response.status_code = 500
+
+    return response
+
+
+@metadata_bp.route('/attributes/<data_source>', methods=['GET'], strict_slashes=False)
+def attributes(data_source):
+    """Retrieve a list of IDC versions"""
+
+    response = None
+
+    try:
+        results = get_attributes(data_source)
+
+        if 'message' in results:
+            response = jsonify(results)
+            response.status_code = results['code']
         else:
             response = jsonify({
                 'code': 200,
@@ -99,7 +129,7 @@ def programs():
 
         if 'message' in results:
             response = jsonify(results)
-            response.status_code = 500
+            response.status_code = results['code']
         else:
             response = jsonify({
                 'code': 200,
@@ -129,7 +159,7 @@ def program_collections(program_name):
 
         if 'message' in results:
             response = jsonify(results)
-            response.status_code = 500
+            response.status_code = results['code']
         else:
             response = jsonify({
                 'code': 200,
@@ -159,7 +189,7 @@ def collections(idc_version):
 
         if 'message' in results:
             response = jsonify(results)
-            response.status_code = 500
+            response.status_code = results['code']
         else:
             response = jsonify({
                 'code': 200,
