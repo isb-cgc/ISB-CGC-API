@@ -178,14 +178,13 @@ def program_collections(program_name):
     return response
 
 
-@metadata_bp.route('/collections/<idc_version>', methods=['GET'], strict_slashes=False)
-def collections(idc_version):
+@metadata_bp.route('/collections/', methods=['GET'], strict_slashes=False)
+def collections():
     """Retrieve the list of collections in some IDC versions """
     response = None
 
     try:
-
-        results = get_collections(idc_version)
+        results = get_collections()
 
         if 'message' in results:
             response = jsonify(results)

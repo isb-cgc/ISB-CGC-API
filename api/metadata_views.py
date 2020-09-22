@@ -151,21 +151,34 @@ def get_program_collections(program):
 
     return info
 
-def get_collections(idc_version):
-    info = None
+def get_collections():
+    path_params = {
+        "idc_version": "",
+    }
 
     blacklist = re.compile(BLACKLIST_RE, re.UNICODE)
-    match = blacklist.search(str(idc_version))
-    if match:
-        info = {
-            "message": "Your idc_version contains invalid characters; please edit and resubmit. " +
-                       "[Saw {}]".format(str(match)),
-            "code": 400,
-            "not_found": []
-        }
+    info = None
+
+    # Get and validate parameters
+    for key in request.args.keys():
+        match = blacklist.search(str(key))
+        if match:
+            return dict(
+                message="Argument {} contains invalid characters; please edit and resubmit. " +
+                        "[Saw {}]".format(str(key, match)),
+                code=400
+            )
+        if key in path_params:
+            path_params[key] = request.args.get(key)
+        else:
+            return dict(
+                message="Invalid argument {}".format((key)),
+                code=400
+            )
 
     try:
-        response = requests.get("{}/collections/api/{}/".format(DJANGO_URI, idc_version))
+        response = requests.get("{}/collections/api/".format(DJANGO_URI),
+                                params = path_params)
         info = response.json()
     except Exception as e:
         logger.exception(e)
