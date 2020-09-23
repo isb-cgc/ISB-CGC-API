@@ -21,11 +21,15 @@ levels = ["collections", "patients", "studies", "series", "instances"]
 def pretty_print_cohortObjects(cohortObjects, indent=4):
     print(json.dumps(cohortObjects, sort_keys=True, indent=indent))
 
+# This routine merges results from the /cohorts/{cohort_id} API with previously obtained results.
+# It is intended for use when that API is used in a paged manner.
 def merge(src, dst, level):
-  for src_item in src:
+    keys = ["collection_id", "patient_id", "StudyInstanceUID", "SeriesInstanceUID", "SOPInstanceUID"]
+    for src_item in src:
         found = False
         for dst_item in dst:
-            if src_item["id"] == dst_item["id"]:
+            # if src_item["id"] == dst_item["id"]:
+            if src_item[keys[level]] == dst_item[keys[level]]:
                 if not len(levels) == level+1:
                     merge(src_item[levels[level+1]], dst_item[levels[level+1]], level+1)
                 found = True

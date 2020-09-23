@@ -226,7 +226,7 @@ def test_get_cohort_none(client, app):
     assert cohort['name']=="testcohort"
     assert cohort['description']=="Test description"
     assert cohort['filterSet'] == filterSet
-    assert not 'cohortObjects' in cohort
+    assert cohort['cohortObjects']['collections'] == []
 
     delete_cohort(client, id)
 
@@ -254,7 +254,7 @@ def test_get_cohort_collections(client, app):
 
     collections = cohort['cohortObjects']['collections']
 
-    assert [collection['id'].upper()
+    assert [collection['collection_id'].upper()
         for collection in collections] == ['TCGA-READ']
 
     delete_cohort(client, id)
@@ -283,10 +283,10 @@ def test_get_cohort_patients(client, app):
 
     collections = cohort['cohortObjects']['collections']
 
-    assert [collection['id'].upper()
+    assert [collection['collection_id'].upper()
         for collection in collections] == ['TCGA-READ']
 
-    assert [patient['id'].upper()
+    assert [patient['patient_id'].upper()
         for collection in collections
         for patient in collection['patients']].sort() == \
        ['TCGA-CL-5917', 'TCGA-BM-6198'].sort()
@@ -317,15 +317,15 @@ def test_get_cohort_studies(client, app):
 
     collections = cohort['cohortObjects']['collections']
 
-    assert [collection['id'].upper()
+    assert [collection['collection_id'].upper()
             for collection in collections] == ['TCGA-READ']
 
-    assert [patient['id'].upper()
+    assert [patient['patient_id'].upper()
         for collection in collections
         for patient in collection['patients']].sort() == \
        ['TCGA-CL-5917', 'TCGA-BM-6198'].sort()
 
-    assert [study['id'].upper()
+    assert [study['StudyInstanceUID'].upper()
         for collection in collections
         for patient in collection['patients']
         for study in patient['studies']].sort() == \
@@ -359,15 +359,15 @@ def test_get_cohort_series(client, app):
 
     collections = cohort['cohortObjects']['collections']
 
-    assert [collection['id'].upper()
+    assert [collection['collection_id'].upper()
         for collection in collections] == ['TCGA-READ']
 
-    assert [patient['id'].upper()
+    assert [patient['patient_id'].upper()
         for collection in collections
         for patient in collection['patients']].sort() == \
         ['TCGA-CL-5917', 'TCGA-BM-6198'].sort()
 
-    assert [study['id']
+    assert [study['StudyInstanceUID']
         for collection in collections
         for patient in collection['patients']
         for study in patient['studies']].sort() == \
@@ -375,14 +375,14 @@ def test_get_cohort_series(client, app):
         '1.3.6.1.4.1.14519.5.2.1.8421.4018.329305334176079996095294344892',
         '1.3.6.1.4.1.14519.5.2.1.8421.4018.304030957341830836628192929917'].sort()
 
-    assert len([series['id']
+    assert len([series['SeriesInstanceUID']
         for collection in collections
         for patient in collection['patients']
         for study in patient['studies']
         for series in study['series']]) == 31
 
     assert '1.3.6.1.4.1.14519.5.2.1.3671.4018.322958037973582149511135969272' in \
-        [series['id']
+        [series['SeriesInstanceUID']
         for collection in collections
         for patient in collection['patients']
         for study in patient['studies']
@@ -414,15 +414,15 @@ def test_get_cohort_instances(client, app):
     assert cohort['cohortObjects']['rowsReturned']==1638
     collections = cohort['cohortObjects']['collections']
 
-    assert [collection['id'].upper()
+    assert [collection['collection_id'].upper()
         for collection in collections] == ['TCGA-READ']
 
-    assert [patient['id'].upper()
+    assert [patient['patient_id'].upper()
        for collection in collections
        for patient in collection['patients']].sort() == \
        ['TCGA-CL-5917', 'TCGA-BM-6198'].sort()
 
-    assert [study['id']
+    assert [study['StudyInstanceUID']
         for collection in collections
         for patient in collection['patients']
         for study in patient['studies']].sort() == \
@@ -430,20 +430,20 @@ def test_get_cohort_instances(client, app):
         '1.3.6.1.4.1.14519.5.2.1.8421.4018.329305334176079996095294344892',
         '1.3.6.1.4.1.14519.5.2.1.8421.4018.304030957341830836628192929917'].sort()
 
-    assert len([series['id']
+    assert len([series['SeriesInstanceUID']
         for collection in collections
         for patient in collection['patients']
         for study in patient['studies']
         for series in study['series']]) == 31
 
     assert '1.3.6.1.4.1.14519.5.2.1.3671.4018.322958037973582149511135969272' in \
-        [series['id']
+        [series['SeriesInstanceUID']
         for collection in collections
         for patient in collection['patients']
         for study in patient['studies']
         for series in study['series']]
 
-    assert len([instance['id']
+    assert len([instance['SOPInstanceUID']
         for collection in collections
         for patient in collection['patients']
         for study in patient['studies']
@@ -501,43 +501,43 @@ def test_get_cohort_instances_paged(client, app):
         if rowsReturned < fetch_count:
             break
 
-    allPatients = [patient['id'].upper()
+    allPatients = [patient['patient_id'].upper()
        for collection in allCollections
        for patient in collection['patients']].sort()
-    totalPatients = [patient['id'].upper()
+    totalPatients = [patient['patient_id'].upper()
        for collection in totalCollections
        for patient in collection['patients']].sort()
     assert allPatients == totalPatients
 
-    allStudies = [study['id']
+    allStudies = [study['StudyInstanceUID']
         for collection in allCollections
         for patient in collection['patients']
         for study in patient['studies']].sort()
-    totalStudies = [study['id']
+    totalStudies = [study['StudyInstanceUID']
         for collection in totalCollections
         for patient in collection['patients']
         for study in patient['studies']].sort()
     assert allStudies == totalStudies
 
-    allSeries = [series['id']
+    allSeries = [series['SeriesInstanceUID']
         for collection in allCollections
         for patient in collection['patients']
         for study in patient['studies']
         for series in study['series']].sort()
-    totalSeries = [series['id']
+    totalSeries = [series['SeriesInstanceUID']
         for collection in totalCollections
         for patient in collection['patients']
         for study in patient['studies']
         for series in study['series']].sort()
     assert allSeries == totalSeries
 
-    allInstances = [instance['id']
+    allInstances = [instance['SOPInstanceUID']
         for collection in allCollections
         for patient in collection['patients']
         for study in patient['studies']
         for series in study['series']
         for instance in series['instances']].sort()
-    totalInstances = [instance['id']
+    totalInstances = [instance['SOPInstanceUID']
         for collection in totalCollections
         for patient in collection['patients']
         for study in patient['studies']

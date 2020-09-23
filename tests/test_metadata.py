@@ -64,7 +64,7 @@ def test_versions(client, app):
     response = client.get('/v1/versions')
     assert response.status_code == 200
     data = response.json['versions']
-    versions = {version['version_number']: {key: version[key] for key in version.keys() if key != 'version_number'} for version in data}
+    versions = {version['idc_version']: {key: version[key] for key in version.keys() if key != 'version_number'} for version in data}
     assert len(versions) == 1
     assert "1.0" in versions
     assert versions["1.0"]["active"] == True

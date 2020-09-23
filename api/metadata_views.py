@@ -133,6 +133,10 @@ def get_attributes(data_source):
 def get_program_collections(program):
     info = None
 
+    path_params = {
+        "idc_version": "",
+    }
+
     blacklist = re.compile(BLACKLIST_RE, re.UNICODE)
     match = blacklist.search(str(program))
     if match:
@@ -143,8 +147,26 @@ def get_program_collections(program):
             "not_found": []
         }
 
+    # Get and validate parameters
+    for key in request.args.keys():
+        match = blacklist.search(str(key))
+        if match:
+            return dict(
+                message="Argument {} contains invalid characters; please edit and resubmit. " +
+                        "[Saw {}]".format(str(key, match)),
+                code=400
+            )
+        if key in path_params:
+            path_params[key] = request.args.get(key)
+        else:
+            return dict(
+                message="Invalid argument {}".format((key)),
+                code=400
+            )
+
     try:
-        response = requests.get("{}/collections/api/programs/{}/".format(DJANGO_URI, program))
+        response = requests.get("{}/collections/api/programs/{}/".format(DJANGO_URI, program),
+                                params=path_params)
         info = response.json()
     except Exception as e:
         logger.exception(e)

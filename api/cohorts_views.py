@@ -240,10 +240,10 @@ def get_cohort_objects(user, cohort_id):
 
     # Several parameters that we are not making available to users
     hidden_params= {
-        "return_objects": True,
+        # "return_objects": True,
         "return_filter": True,
-        "return_DOIs": False,
-        "return_URLs": False,
+        # "return_DOIs": False,
+        # "return_URLs": False,
     }
 
     return_levels = [
@@ -322,10 +322,10 @@ def post_cohort_preview():
 
     # Several parameters that we are not making available to users
     hidden_params= {
-        "return_objects": True,
+        # "return_objects": True,
         "return_filter": True,
-        "return_DOIs": False,
-        "return_URLs": False,
+        # "return_DOIs": False,
+        # "return_URLs": False,
     }
 
     return_levels = [
