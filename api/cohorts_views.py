@@ -394,7 +394,6 @@ def post_cohort_preview():
                     path_params.update(hidden_params)
                     results = requests.post("{}/{}/".format(DJANGO_URI, 'cohorts/api/preview'),
                                            params=path_params, json=data, headers=auth)
-                    pass
                     cohort_objects = results.json()
                 except Exception as e:
                     logger.exception(e)
