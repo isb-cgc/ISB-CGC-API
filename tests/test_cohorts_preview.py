@@ -220,10 +220,44 @@ def test_cohort_preview_patients_btw(client, app):
     assert response.status_code == 200
     cohort = response.json['cohort']
 
+#------------------------------------------------------------------
+
+    filterSet = {
+        "idc_version": "1.0",
+        "filters": {
+            "collection_id": ["TCGA-READ"],
+            "Modality": ["CT", "MR"],
+            "race": ["WHITE"],
+            "age_at_diagnosis_btw": [72,73]}}
+
+    cohortSpec = {"name": "testcohort",
+                  "description": "Test description",
+                  "filterSet": filterSet}
+
+    mimetype = ' application/json'
+    headers = {
+        'Content-Type': mimetype,
+        'Accept': mimetype
+    }
+    query_string = {
+        'return_level': 'Patient',
+        'return_sql': True,
+        'fetch_count': 5000,
+    }
+
+    # Get the list of objects in the cohort
+    response = client.post('v1/cohorts/preview',
+                           query_string=query_string,
+                           data=json.dumps(cohortSpec),
+                           headers=headers)
+    assert response.content_type == 'application/json'
+    assert response.status_code == 200
+    cohort = response.json['cohort']
+
     assert cohort['name']=="testcohort"
     assert cohort['description']=="Test description"
     assert cohort['filterSet'] == filterSet
-    assert cohort['cohortObjects']['rowsReturned'] == 2
+    assert cohort['cohortObjects']['rowsReturned'] == 1
 
     collections = cohort['cohortObjects']['collections']
 
@@ -235,6 +269,56 @@ def test_cohort_preview_patients_btw(client, app):
         for patient in collection['patients']].sort() == \
        ['TCGA-CL-5917'].sort()
 
+#------------------------------------------------------------------
+
+    filterSet = {
+        "idc_version": "1.0",
+        "filters": {
+            "collection_id": ["TCGA-READ"],
+            "Modality": ["CT", "MR"],
+            "race": ["WHITE"],
+            "age_at_diagnosis_btw": [73,74]}}
+
+    cohortSpec = {"name": "testcohort",
+                  "description": "Test description",
+                  "filterSet": filterSet}
+
+    mimetype = ' application/json'
+    headers = {
+        'Content-Type': mimetype,
+        'Accept': mimetype
+    }
+    query_string = {
+        'return_level': 'Patient',
+        'return_sql': True,
+        'fetch_count': 5000,
+    }
+
+    # Get the list of objects in the cohort
+    response = client.post('v1/cohorts/preview',
+                           query_string=query_string,
+                           data=json.dumps(cohortSpec),
+                           headers=headers)
+    assert response.content_type == 'application/json'
+    assert response.status_code == 200
+    cohort = response.json['cohort']
+
+    assert cohort['name']=="testcohort"
+    assert cohort['description']=="Test description"
+    assert cohort['filterSet'] == filterSet
+    assert cohort['cohortObjects']['rowsReturned'] == 1
+
+    collections = cohort['cohortObjects']['collections']
+
+    assert [collection['collection_id'].upper()
+        for collection in collections] == ['TCGA-READ']
+
+    assert [patient['patient_id'].upper()
+        for collection in collections
+        for patient in collection['patients']].sort() == \
+       ['TCGA-CL-5917'].sort()
+
+#--------------------------------------------------------------
 
     filterSet = {
         "idc_version": "1.0",
