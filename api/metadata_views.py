@@ -18,6 +18,7 @@
 import logging
 import re
 import os
+from os.path import join, dirname
 import requests
 
 from flask import request
@@ -29,11 +30,21 @@ logger = logging.getLogger(settings.LOGGER_NAME)
 BLACKLIST_RE = settings.BLACKLIST_RE
 DJANGO_URI = os.getenv('DJANGO_URI')
 
+def get_auth():
+    with open(
+            join(dirname(__file__), '../{}{}'.format(os.environ.get('SECURE_LOCAL_PATH'), "dev.api_token.json"))) as f:
+        api_token = f.read()
+    auth = {"Authorization": "APIToken {}".format(api_token)}
+    # auth = {"Authorization": "Token {}".format(api_token)}
+    return auth
+
+
 def get_versions():
     info = None
 
     try:
-        response = requests.get("{}/{}".format(DJANGO_URI, 'collections/api/versions/'))
+        auth = get_auth()
+        response = requests.get("{}/{}".format(DJANGO_URI, 'collections/api/versions/'), headers=auth)
         info = response.json()
     except Exception as e:
         logger.exception(e)
@@ -45,7 +56,8 @@ def get_programs():
     info = None
 
     try:
-        response = requests.get("{}/{}".format(DJANGO_URI, 'collections/api/programs/'))
+        auth = get_auth()
+        response = requests.get("{}/{}".format(DJANGO_URI, 'collections/api/programs/'), headers=auth)
         info = response.json()
     except Exception as e:
         logger.exception(e)
@@ -79,8 +91,9 @@ def get_data_sources():
             )
 
     try:
+        auth = get_auth()
         response = requests.get("{}/{}/".format(DJANGO_URI, 'collections/api/data_sources'),
-                                params=path_params)
+                                params=path_params, headers=auth)
         info = response.json()
     except Exception as e:
         logger.exception(e)
@@ -121,8 +134,9 @@ def get_attributes(data_source):
             )
 
     try:
+        auth = get_auth()
         response = requests.get("{}/{}/{}/".format(DJANGO_URI, 'collections/api/attributes', data_source),
-                                params=path_params)
+                                params=path_params, headers=auth)
         info = response.json()
     except Exception as e:
         logger.exception(e)
@@ -165,8 +179,9 @@ def get_program_collections(program):
             )
 
     try:
+        auth = get_auth()
         response = requests.get("{}/collections/api/programs/{}/".format(DJANGO_URI, program),
-                                params=path_params)
+                                params=path_params, headers=auth)
         info = response.json()
     except Exception as e:
         logger.exception(e)
@@ -199,8 +214,9 @@ def get_collections():
             )
 
     try:
+        auth = get_auth()
         response = requests.get("{}/collections/api/".format(DJANGO_URI),
-                                params = path_params)
+                                params = path_params, headers=auth)
         info = response.json()
     except Exception as e:
         logger.exception(e)
