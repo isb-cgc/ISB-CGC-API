@@ -358,7 +358,7 @@ def test_cohort_preview_manifest(client, app):
     filterSet = {
         "idc_version": "",
         "filters": {
-            "collection_id": ["TCGA-READ"],
+            "collection_id": ["tcga_read"],
             "Modality": ["CT", "MR"],
             "race": ["WHITE"]}}
 

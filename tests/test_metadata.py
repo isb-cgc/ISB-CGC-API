@@ -214,20 +214,19 @@ def test_collections(client, app):
                           query_string = query_string)
     assert response.status_code == 200
     data = response.json['collections']
-    collections = {collection['name']: {key: collection[key] for key in collection.keys() if key != 'name'} for collection in data}
+    collections = {collection['collection_id']: {key: collection[key] for key in collection.keys() if key != 'collection_id'} for collection in data}
     assert len(collections) == 29
-    assert "TCGA-PRAD" in collections
-    assert collections['TCGA-PRAD'] == \
-           {'IDC_versions': ['1.0'], 'active': True, 'cancer_type': 'Prostate Cancer', 'collection_id': 'tcga_prad',
+    assert "tcga_prad" in collections
+    assert collections['tcga_prad'] == \
+           {'IDC_versions': ['1.0'], 'active': True, 'cancer_type': 'Prostate Cancer',
             'collection_type': 'Original', 'date_updated': '2016-08-29',
             'description': '<div>\n\t<strong>Note:&nbsp;This collection has special restrictions on its usage. See <a href="https://wiki.cancerimagingarchive.net/x/c4hF" target="_blank">Data Usage Policies and Restrictions</a>.</strong></p>\n<div>\n\t&nbsp;</p>\n<div>\n\t<span>The <a href="http://imaging.cancer.gov/" target="_blank"><u>Cancer Imaging Program (CIP)</u></a></span><span>&thinsp;</span><span> is working directly with primary investigators from institutes participating in TCGA to obtain and load images relating to the genomic, clinical, and pathological data being stored within the <a href="http://tcga-data.nci.nih.gov/" target="_blank">TCGA Data Portal</a>.&nbsp;Currently this image collection of prostate adenocarcinoma (PRAD) patients can be matched by each unique case identifier with the extensive gene and expression data of the same case from The Cancer Genome Atlas Data Portal to research the link between clinical phenome and tissue genome.&nbsp;<br />\n\t</span></p>\n<div>\n\t&nbsp;</p>\n<div>\n\t<span>Please see the <span><a href="https://wiki.cancerimagingarchive.net/x/tgpp" target="_blank">TCGA-PRAD</a></span> wiki page to learn more about the images and to obtain any supporting metadata for this collection.</span></p>\n',
             'doi': '10.7937/K9/TCIA.2016.YXOGLM4Y', 'image_types': 'CT, PT, MR, Pathology', 'location': 'Prostate',
             'owner_id': 1, 'species': 'Human', 'subject_count': 14, 'supporting_data': 'Clinical Genomics'}
 
-    assert 'Standardized representation of the TCIA LIDC-IDRI annotations using DICOM' in collections
-    assert collections['Standardized representation of the TCIA LIDC-IDRI annotations using DICOM'] == \
-           {'IDC_versions': ['1.0'], 'active': True, 'cancer_type': 'Lung',
-            'collection_id': '10.7937/TCIA.2018.h7umfurq', 'collection_type': 'Analysis', 'date_updated': '2020-03-26',
+    assert '10.7937/TCIA.2018.h7umfurq' in collections
+    assert collections['10.7937/TCIA.2018.h7umfurq'] == \
+           {'IDC_versions': ['1.0'], 'active': True, 'cancer_type': 'Lung', 'collection_type': 'Analysis', 'date_updated': '2020-03-26',
             'description': '', 'doi': '10.7937/TCIA.2018.h7umfurq', 'image_types': '', 'location': 'Chest',
             'owner_id': 1, 'species': '', 'subject_count': 1010, 'supporting_data': ''}
 
