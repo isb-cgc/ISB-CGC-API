@@ -67,7 +67,36 @@ def create_cohort(client):
 def create_cohort_for_test_get_cohort_xxx(client):
     # Create a cohort to test against
     filters = {
-        "collection_id": ["TCGA-READ"],
+        "collection_id": ["tcga_read"],
+        "Modality": ["CT", "MR"],
+        "race": ["WHITE"]
+    }
+
+    filterSet = {
+        "idc_version": "1.0",
+        "filters": filters
+    }
+
+    cohortSpec = {"name": "testcohort",
+                  "description": "Test description",
+                  "filterSet": filterSet}
+
+    mimetype = ' application/json'
+    headers = {
+        'Content-Type': mimetype,
+        'Accept': mimetype
+    }
+    response = client.post('/v1/cohorts', data=json.dumps(cohortSpec), headers=headers)
+    assert response.status_code == 200
+    cohortResponse = response.json
+    id = cohortResponse['cohort_id']
+    return (id, filterSet)
+
+# Create a big cohort with filter as expected by the test_get_cohort_xxx() functions
+def create_big_cohort_for_test_get_cohort_xxx(client):
+    # Create a cohort to test against
+    filters = {
+        "collection_id": ["tcga_luad"],
         "Modality": ["CT", "MR"],
         "race": ["WHITE"]
     }

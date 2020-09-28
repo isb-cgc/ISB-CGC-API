@@ -165,9 +165,8 @@ def get_cohort_manifest(user, cohort_id):
         "access_class": "doi",
         "access_type": "gs",
         "region": "us",
-        "fetch_count": 1000,
-        "page": 1,
-        "offset": 0}
+        "job_reference": None,
+        "next_page": ""}
 
     access_classes = ["url", "doi"]
     access_types = ["gs"]
@@ -184,19 +183,6 @@ def get_cohort_manifest(user, cohort_id):
             )
         if key in path_params:
             path_params[key] = request.args.get(key)
-    path_params['fetch_count'] = int(path_params['fetch_count'])
-    path_params['offset'] = int(path_params['offset'])
-    path_params['page'] = int(path_params['page'])
-    if path_params["fetch_count"] > MAX_FETCH_COUNT:
-        return dict(
-            message = "Fetch count greater than {}".format(MAX_FETCH_COUNT),
-            code = 400
-        )
-    if path_params["offset"] < 0:
-        return dict(
-            message = "Fetch offset {} must be non-negative integer".format(path_params['offset']),
-            code = 400
-        )
     if path_params["access_class"] not in access_classes:
         return dict(
             message = "Invalid access class {}".format(path_params['access_class']),
@@ -213,7 +199,6 @@ def get_cohort_manifest(user, cohort_id):
             code = 400
         )
     if cohort_objects == None:
-        path_params["page"] = int(path_params['page'])
 
         try:
             auth = get_auth()
@@ -234,9 +219,8 @@ def get_cohort_objects(user, cohort_id):
         "email": user,
         "return_level": "Series",
         "return_sql": False,
-        "fetch_count": 1000,
-        "page": 1,
-        "offset": 0}
+        "job_reference": {},
+        "next_page": ""}
 
     # Several parameters that we are not making available to users
     hidden_params= {
@@ -273,29 +257,29 @@ def get_cohort_objects(user, cohort_id):
             }
             return cohort_objects
 
-    path_params['fetch_count'] = int(path_params['fetch_count'])
-    path_params['offset'] = int(path_params['offset'])
-    path_params['page'] = int(path_params['page'])
+    # path_params['fetch_count'] = int(path_params['fetch_count'])
+    # path_params['offset'] = int(path_params['offset'])
+    # path_params['page'] = int(path_params['page'])
     for s in ['return_sql']: # 'return_objects', 'return_filter', 'return_DOIs', 'return_URLs']: # ,
         if s in path_params:
             path_params[s] = path_params[s] in [True, 'True']
-    if path_params["fetch_count"] > MAX_FETCH_COUNT:
-        return dict(
-            message = "Fetch count greater than {}".format(MAX_FETCH_COUNT),
-            code = 400
-        )
-    if path_params["offset"] < 0:
-        return dict(
-            message = "Fetch offset {} must be non-negative integer".format(path_params['offset']),
-            code = 400
-        )
+    # if path_params["fetch_count"] > MAX_FETCH_COUNT:
+    #     return dict(
+    #         message = "Fetch count greater than {}".format(MAX_FETCH_COUNT),
+    #         code = 400
+    #     )
+    # if path_params["offset"] < 0:
+    #     return dict(
+    #         message = "Fetch offset {} must be non-negative integer".format(path_params['offset']),
+    #         code = 400
+    #     )
     if path_params['return_level'] not in return_levels:
         return dict(
             message = "Invalid return level {}".format(path_params['return_level']),
             code = 400
         )
     if cohort_objects == None:
-        path_params["page"] = int(path_params['page'])
+        # path_params["page"] = int(path_params['page'])
 
         try:
             auth = get_auth()
@@ -316,9 +300,11 @@ def post_cohort_preview():
     path_params = {
         "return_level": "Series",
         "return_sql": False,
-        "fetch_count": 1000,
-        "page": 1,
-        "offset": 0}
+        "job_reference": {},
+        "next_page": ""}
+        # "fetch_count": 1000,
+        # "page": 1,
+        # "offset": 0}
 
     # Several parameters that we are not making available to users
     hidden_params= {
@@ -366,22 +352,22 @@ def post_cohort_preview():
                     )
                     return cohort_objects
 
-            path_params['fetch_count'] = int(path_params['fetch_count'])
-            path_params['offset'] = int(path_params['offset'])
-            path_params['page'] = int(path_params['page'])
+            # path_params['fetch_count'] = int(path_params['fetch_count'])
+            # path_params['offset'] = int(path_params['offset'])
+            # path_params['page'] = int(path_params['page'])
             for s in ['return_sql']: #'return_objects', 'return_filter', 'return_DOIs', 'return_URLs']:
                 if s in path_params:
                     path_params[s] = path_params[s] in [True, 'True']
-            if path_params["fetch_count"] > MAX_FETCH_COUNT:
-                return dict(
-                    message="Fetch count greater than {}".format(MAX_FETCH_COUNT),
-                    code=400
-                )
-            if path_params["offset"] < 0:
-                return dict(
-                    message="Fetch offset {} must be non-negative integer".format(path_params['offset']),
-                    code=400
-                )
+            # if path_params["fetch_count"] > MAX_FETCH_COUNT:
+            #     return dict(
+            #         message="Fetch count greater than {}".format(MAX_FETCH_COUNT),
+            #         code=400
+            #     )
+            # if path_params["offset"] < 0:
+            #     return dict(
+            #         message="Fetch offset {} must be non-negative integer".format(path_params['offset']),
+            #         code=400
+            #     )
             if path_params['return_level'] not in return_levels:
                 return dict(
                     message="Invalid return level {}".format(path_params['return_level']),
@@ -427,9 +413,8 @@ def get_cohort_preview_manifest():
         "access_class": "doi",
         "access_type": "gs",
         "region": "us",
-        "fetch_count": 1000,
-        "page": 1,
-        "offset": 0}
+        "job_reference": None,
+        "next_page": ""}
 
     access_classes = ["url", "doi"]
     access_types = ["gs"]
@@ -461,19 +446,6 @@ def get_cohort_preview_manifest():
                     "message": "Invalid key {}".format(key),
                     'code': 400
                 }
-        path_params['fetch_count'] = int(path_params['fetch_count'])
-        path_params['offset'] = int(path_params['offset'])
-        path_params['page'] = int(path_params['page'])
-        if path_params["fetch_count"] > MAX_FETCH_COUNT:
-            return dict(
-                message="Fetch count greater than {}".format(MAX_FETCH_COUNT),
-                code=400
-            )
-        if path_params["offset"] < 0:
-            return dict(
-                message="Fetch offset {} must be non-negative integer".format(path_params['offset']),
-                code=400
-            )
         if path_params["access_class"] not in access_classes:
             return dict(
                 message="Invalid access class {}".format(path_params['access_class']),
