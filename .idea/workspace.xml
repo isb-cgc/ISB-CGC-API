@@ -2,8 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="ab95969b-5108-4199-9e3f-adad15095564" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/conftest.py" beforeDir="false" afterPath="$PROJECT_DIR$/tests/conftest.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tools/gen_filters_json.py" beforeDir="false" afterPath="$PROJECT_DIR$/tools/gen_filters_json.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -572,7 +571,7 @@
       <workItem from="1600104415915" duration="40266000" />
       <workItem from="1600305089679" duration="137650000" />
       <workItem from="1601069365740" duration="33992000" />
-      <workItem from="1601438927743" duration="5608000" />
+      <workItem from="1601438927743" duration="5928000" />
     </task>
     <task id="LOCAL-00001" summary="Revised API for programs, attributes.">
       <created>1598033000163</created>
@@ -728,7 +727,14 @@
       <option name="project" value="LOCAL" />
       <updated>1601329187958</updated>
     </task>
-    <option name="localTasksCounter" value="23" />
+    <task id="LOCAL-00023" summary="Removed legacy test_config.">
+      <created>1601496624638</created>
+      <option name="number" value="00023" />
+      <option name="presentableId" value="LOCAL-00023" />
+      <option name="project" value="LOCAL" />
+      <updated>1601496624638</updated>
+    </task>
+    <option name="localTasksCounter" value="24" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -763,7 +769,8 @@
     <MESSAGE value="Removed &quot;name&quot; from collection metadata" />
     <MESSAGE value="Redesigned paging of cohort and metadata returns." />
     <MESSAGE value="Move manifest tests into separate file and add paged versions of tests." />
-    <option name="LAST_COMMIT_MESSAGE" value="Move manifest tests into separate file and add paged versions of tests." />
+    <MESSAGE value="Removed legacy test_config." />
+    <option name="LAST_COMMIT_MESSAGE" value="Removed legacy test_config." />
   </component>
   <component name="WindowStateProjectService">
     <state x="2787" y="341" key="#Flask" timestamp="1594161253091">
@@ -849,10 +856,10 @@
     </state>
     <state x="2787" y="320" key="#test_metadata/0.23.1792.1017/1792.23.2560.1417@1792.23.2560.1417" timestamp="1597880346426" />
     <state x="2787" y="303" key="#test_metadata/0.23.1792.1097/1792.23.2560.1337@1792.23.2560.1337" timestamp="1598048312853" />
-    <state x="2681" y="296" width="1464" height="790" key="CommitChangelistDialog2" timestamp="1601329187834">
-      <screen x="1792" y="23" width="2560" height="1337" />
+    <state x="2681" y="312" width="1464" height="790" key="CommitChangelistDialog2" timestamp="1601496624460">
+      <screen x="1792" y="23" width="2560" height="1417" />
     </state>
-    <state x="2681" y="312" width="1464" height="790" key="CommitChangelistDialog2/0.23.1792.1017/1792.23.2560.1417@1792.23.2560.1417" timestamp="1601000439548" />
+    <state x="2681" y="312" width="1464" height="790" key="CommitChangelistDialog2/0.23.1792.1017/1792.23.2560.1417@1792.23.2560.1417" timestamp="1601496624460" />
     <state x="622" y="230" key="CommitChangelistDialog2/0.23.1792.1017@0.23.1792.1017" timestamp="1600200334247" />
     <state x="2681" y="296" key="CommitChangelistDialog2/0.23.1792.1097/1792.23.2560.1337@1792.23.2560.1337" timestamp="1601329187834" />
     <state x="1892" y="123" width="2360" height="1217" key="DiffContextDialog" timestamp="1600742842480">
@@ -938,10 +945,10 @@
     </state>
     <state x="3126" y="323" key="SettingsEditor/0.23.1792.1017/1792.23.2560.1417@1792.23.2560.1417" timestamp="1600986594391" />
     <state x="3126" y="306" key="SettingsEditor/0.23.1792.1097/1792.23.2560.1337@1792.23.2560.1337" timestamp="1598048832887" />
-    <state x="2672" y="433" key="Vcs.Push.Dialog.v2" timestamp="1601329215225">
-      <screen x="1792" y="23" width="2560" height="1337" />
+    <state x="2672" y="458" key="Vcs.Push.Dialog.v2" timestamp="1601496634078">
+      <screen x="1792" y="23" width="2560" height="1417" />
     </state>
-    <state x="2672" y="458" key="Vcs.Push.Dialog.v2/0.23.1792.1017/1792.23.2560.1417@1792.23.2560.1417" timestamp="1601000456505" />
+    <state x="2672" y="458" key="Vcs.Push.Dialog.v2/0.23.1792.1017/1792.23.2560.1417@1792.23.2560.1417" timestamp="1601496634078" />
     <state x="616" y="335" key="Vcs.Push.Dialog.v2/0.23.1792.1017@0.23.1792.1017" timestamp="1600200348245" />
     <state x="2672" y="433" key="Vcs.Push.Dialog.v2/0.23.1792.1097/1792.23.2560.1337@1792.23.2560.1337" timestamp="1601329215225" />
     <state width="1313" height="708" key="XDebugger.FullValuePopup" timestamp="1600924380335">
@@ -1016,7 +1023,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/tools/gen_filters_json.py</url>
-          <line>142</line>
+          <line>158</line>
           <option name="timeStamp" value="96" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
