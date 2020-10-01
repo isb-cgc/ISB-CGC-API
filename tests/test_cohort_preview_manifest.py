@@ -22,7 +22,7 @@ from tests.cohort_utils import merge, pretty_print_cohortObjects, create_cohort_
 def test_cohort_preview_manifest(client, app):
 
     filterSet = {
-        "idc_version": "",
+        "idc_data_version": "",
         "filters": {
             "collection_id": ["tcga_read"],
             "Modality": ["CT", "MR"],
@@ -86,7 +86,7 @@ def test_cohort_preview_manifest(client, app):
 def test_get_cohort_preview_manifest_paged_doi(client, app):
 
     filterSet = {
-        "idc_version": "",
+        "idc_data_version": "",
         "filters": {
             "collection_id": ["tcga_luad"],
             "Modality": ["CT", "MR"],
@@ -164,7 +164,7 @@ def test_get_cohort_preview_manifest_paged_doi(client, app):
 def test_get_cohort_manifest_paged_url(client, app):
 
     filterSet = {
-        "idc_version": "",
+        "idc_data_version": "",
         "filters": {
             "collection_id": ["tcga_luad"],
             "Modality": ["CT", "MR"],

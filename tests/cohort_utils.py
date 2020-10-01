@@ -41,7 +41,7 @@ def merge(src, dst, level):
 def create_cohort(client):
     # Create a filter set
     filterSet = {
-        "idc_version": "1.0",
+        "idc_data_version": "1.0",
         "filters": {
             "collection_id": ["TCGA-LUAD", "TCGA-KIRC"],
             "Modality": ["CT", "MR"],
@@ -73,7 +73,7 @@ def create_cohort_for_test_get_cohort_xxx(client):
     }
 
     filterSet = {
-        "idc_version": "1.0",
+        "idc_data_version": "1.0",
         "filters": filters
     }
 
@@ -102,7 +102,7 @@ def create_big_cohort_for_test_get_cohort_xxx(client):
     }
 
     filterSet = {
-        "idc_version": "1.0",
+        "idc_data_version": "1.0",
         "filters": filters
     }
 

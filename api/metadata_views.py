@@ -67,7 +67,7 @@ def get_programs():
 
 def get_data_sources():
     path_params = {
-        "idc_version": "",
+        "idc_data_version": "",
     }
 
     blacklist = re.compile(BLACKLIST_RE, re.UNICODE)
@@ -106,7 +106,7 @@ def get_attributes(data_source):
     info = None
 
     path_params = {
-        "idc_version": "",
+        "idc_data_version": "",
     }
 
     match = blacklist.search(data_source)
@@ -148,7 +148,7 @@ def get_program_collections(program):
     info = None
 
     path_params = {
-        "idc_version": "",
+        "idc_data_version": "",
     }
 
     blacklist = re.compile(BLACKLIST_RE, re.UNICODE)
@@ -190,7 +190,7 @@ def get_program_collections(program):
 
 def get_collections():
     path_params = {
-        "idc_version": "",
+        "idc_data_version": "",
     }
 
     blacklist = re.compile(BLACKLIST_RE, re.UNICODE)

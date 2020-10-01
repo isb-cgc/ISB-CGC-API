@@ -37,7 +37,7 @@ def test_get_programs_collections(client, app):
     assert collection['species']=='Human'
     assert collection['subject_count']==14
     assert collection['supporting_data']=='Clinical Genomics'
-    assert collection['IDC_versions'] == ["1.0"]
+    assert collection['idc_data_versions'] == ["1.0"]
 
     response = client.get('/v1/programs/ISPY')
     assert response.status_code == 200
@@ -58,13 +58,13 @@ def test_get_programs_collections(client, app):
     assert collection['species']=='Human'
     assert collection['subject_count']==222
     assert collection['supporting_data']=='Clinical, Image Analyses'
-    assert collection['IDC_versions'] == ["1.0"]
+    assert collection['idc_data_versions'] == ["1.0"]
 
 def test_versions(client, app):
     response = client.get('/v1/versions')
     assert response.status_code == 200
     data = response.json['versions']
-    versions = {version['idc_version']: {key: version[key] for key in version.keys() if key != 'version_number'} for version in data}
+    versions = {version['idc_data_version']: {key: version[key] for key in version.keys() if key != 'version_number'} for version in data}
     assert len(versions) == 1
     assert "1.0" in versions
     assert versions["1.0"]["active"] == True
@@ -74,7 +74,7 @@ def test_versions(client, app):
 
 def test_data_sources(client, app):
     query_string = dict(
-        idc_version = 'ABC'
+        idc_data_version = 'ABC'
     )
 
     response = client.get('/v1/data_sources/',
@@ -83,7 +83,7 @@ def test_data_sources(client, app):
     assert response.json['message'] == 'Invalid IDC version ABC'
 
     query_string = dict(
-        idc_version = ''
+        idc_data_version = ''
     )
 
     response = client.get('/v1/data_sources/',
@@ -102,7 +102,7 @@ def test_data_sources(client, app):
 
 
     query_string = dict(
-        idc_version = '1.0'
+        idc_data_version = '1.0'
     )
 
     response = client.get('/v1/data_sources/',
@@ -136,7 +136,7 @@ def test_data_sources(client, app):
 
 def test_attributes(client, app):
     query_string = dict(
-        idc_version = ''
+        idc_data_version = ''
     )
     response = client.get('/v1/attributes/idc-dev-etl.idc_tcia_views_mvp_wave0.dicom_all',
                           query_string = query_string)
@@ -144,7 +144,7 @@ def test_attributes(client, app):
     data = response.json['attributes']
     attributes = {attribute['name']: {key: attribute[key] for key in attribute.keys() if key != 'name'} for attribute in data}
     assert 'Modality' in attributes
-    assert attributes['Modality'] == {'active': True, 'data_type': 'Categorical String', 'idc_version': '1.0', 'units': None}
+    assert attributes['Modality'] == {'active': True, 'data_type': 'Categorical String', 'idc_data_version': '1.0', 'units': None}
 
     response = client.get('/v1/attributes/isb-cgc.TCGA_bioclin_v0.Biospecimen',
                           query_string = query_string)
@@ -153,7 +153,7 @@ def test_attributes(client, app):
     attributes = {attribute['name']: {key: attribute[key] for key in attribute.keys() if key != 'name'} for attribute in data}
     assert 'program_name' in attributes
     # assert attributes['program_name']['dataSetTypes'][0]['data_type'] == 'Clinical, Biospecimen, and Mutation Data'
-    assert attributes['program_name'] == {'active': True, 'data_type': 'Categorical String', 'idc_version': '1.0', 'units': None}
+    assert attributes['program_name'] == {'active': True, 'data_type': 'Categorical String', 'idc_data_version': '1.0', 'units': None}
 
     response = client.get('/v1/attributes/isb-cgc.TCGA_bioclin_v0.clinical_v1',
                           query_string = query_string)
@@ -162,7 +162,7 @@ def test_attributes(client, app):
     attributes = {attribute['name']: {key: attribute[key] for key in attribute.keys() if key != 'name'} for attribute in data}
     assert 'program_name' in attributes
     # assert attributes['program_name']['dataSetTypes'][0]['data_type'] == 'Clinical, Biospecimen, and Mutation Data'
-    assert attributes['program_name'] == {'active': True, 'data_type': 'Categorical String', 'idc_version': '1.0', 'units': None}
+    assert attributes['program_name'] == {'active': True, 'data_type': 'Categorical String', 'idc_data_version': '1.0', 'units': None}
 
     response = client.get('/v1/attributes/idc-dev-etl.idc_tcia_views_mvp_wave0.segmentations',
                           query_string = query_string)
@@ -171,7 +171,7 @@ def test_attributes(client, app):
     attributes = {attribute['name']: {key: attribute[key] for key in attribute.keys() if key != 'name'} for attribute in data}
     assert 'AnatomicRegionSequence' in attributes
     # assert attributes['program_name']['dataSetTypes'][0]['data_type'] == 'Clinical, Biospecimen, and Mutation Data'
-    assert attributes['AnatomicRegionSequence'] == {'active': True, 'data_type': 'Categorical String', 'idc_version': '1.0', 'units': None}
+    assert attributes['AnatomicRegionSequence'] == {'active': True, 'data_type': 'Categorical String', 'idc_data_version': '1.0', 'units': None}
 
     response = client.get('/v1/attributes/idc-dev-etl.idc_tcia_views_mvp_wave0.qualitative_measurements',
                           query_string = query_string)
@@ -180,7 +180,7 @@ def test_attributes(client, app):
     attributes = {attribute['name']: {key: attribute[key] for key in attribute.keys() if key != 'name'} for attribute in data}
     assert 'Internal_structure' in attributes
     # assert attributes['program_name']['dataSetTypes'][0]['data_type'] == 'Clinical, Biospecimen, and Mutation Data'
-    assert attributes['Internal_structure'] == {'active': True, 'data_type': 'Categorical String', 'idc_version': '1.0', 'units': None}
+    assert attributes['Internal_structure'] == {'active': True, 'data_type': 'Categorical String', 'idc_data_version': '1.0', 'units': None}
 
     response = client.get('/v1/attributes/idc-dev-etl.idc_tcia_views_mvp_wave0.quantitative_measurements',
                           query_string = query_string)
@@ -189,7 +189,7 @@ def test_attributes(client, app):
     attributes = {attribute['name']: {key: attribute[key] for key in attribute.keys() if key != 'name'} for attribute in data}
     assert 'SUVbw' in attributes
     # assert attributes['program_name']['dataSetTypes'][0]['data_type'] == 'Clinical, Biospecimen, and Mutation Data'
-    assert attributes['SUVbw'] == {'active': True, 'data_type': 'Continuous Numeric', 'idc_version': '1.0', 'units': 'Standardized Uptake Value body weight'}
+    assert attributes['SUVbw'] == {'active': True, 'data_type': 'Continuous Numeric', 'idc_data_version': '1.0', 'units': 'Standardized Uptake Value body weight'}
 
 
 def test_programs(client, app):
@@ -207,7 +207,7 @@ def test_programs(client, app):
 def test_collections(client, app):
 
     query_string = dict(
-        idc_version = "1.0"
+        idc_data_version = "1.0"
     )
 
     response = client.get('/v1/collections',
@@ -218,7 +218,7 @@ def test_collections(client, app):
     assert len(collections) == 29
     assert "tcga_prad" in collections
     assert collections['tcga_prad'] == \
-           {'IDC_versions': ['1.0'], 'active': True, 'cancer_type': 'Prostate Cancer',
+           {'idc_data_versions': ['1.0'], 'active': True, 'cancer_type': 'Prostate Cancer',
             'collection_type': 'Original', 'date_updated': '2016-08-29',
             'description': '<div>\n\t<strong>Note:&nbsp;This collection has special restrictions on its usage. See <a href="https://wiki.cancerimagingarchive.net/x/c4hF" target="_blank">Data Usage Policies and Restrictions</a>.</strong></p>\n<div>\n\t&nbsp;</p>\n<div>\n\t<span>The <a href="http://imaging.cancer.gov/" target="_blank"><u>Cancer Imaging Program (CIP)</u></a></span><span>&thinsp;</span><span> is working directly with primary investigators from institutes participating in TCGA to obtain and load images relating to the genomic, clinical, and pathological data being stored within the <a href="http://tcga-data.nci.nih.gov/" target="_blank">TCGA Data Portal</a>.&nbsp;Currently this image collection of prostate adenocarcinoma (PRAD) patients can be matched by each unique case identifier with the extensive gene and expression data of the same case from The Cancer Genome Atlas Data Portal to research the link between clinical phenome and tissue genome.&nbsp;<br />\n\t</span></p>\n<div>\n\t&nbsp;</p>\n<div>\n\t<span>Please see the <span><a href="https://wiki.cancerimagingarchive.net/x/tgpp" target="_blank">TCGA-PRAD</a></span> wiki page to learn more about the images and to obtain any supporting metadata for this collection.</span></p>\n',
             'doi': '10.7937/K9/TCIA.2016.YXOGLM4Y', 'image_types': 'CT, PT, MR, Pathology', 'location': 'Prostate',
@@ -226,7 +226,7 @@ def test_collections(client, app):
 
     assert '10.7937/TCIA.2018.h7umfurq' in collections
     assert collections['10.7937/TCIA.2018.h7umfurq'] == \
-           {'IDC_versions': ['1.0'], 'active': True, 'cancer_type': 'Lung', 'collection_type': 'Analysis', 'date_updated': '2020-03-26',
+           {'idc_data_versions': ['1.0'], 'active': True, 'cancer_type': 'Lung', 'collection_type': 'Analysis', 'date_updated': '2020-03-26',
             'description': '', 'doi': '10.7937/TCIA.2018.h7umfurq', 'image_types': '', 'location': 'Chest',
             'owner_id': 1, 'species': '', 'subject_count': 1010, 'supporting_data': ''}
 

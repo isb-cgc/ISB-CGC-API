@@ -1,7 +1,7 @@
 COHORT_FILTER_SCHEMA={
   "type": "object",
   "properties": {
-    "idc_version": {
+    "idc_data_version": {
       "type": "string"
     },
     "filters": {

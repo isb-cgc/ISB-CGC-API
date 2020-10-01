@@ -27,7 +27,7 @@ levels = ["collections", "patients", "studies", "series", "instances"]
 
 def test_cohort_preview_patients_eq(client, app):
     filterSet = {
-        "idc_version": "1.0",
+        "idc_data_version": "1.0",
         "filters": {
             "collection_id": ["TCGA-READ"],
             "Modality": ["CT", "MR"],
@@ -74,7 +74,7 @@ def test_cohort_preview_patients_eq(client, app):
 
     # Test that a _lte attribute can take more than one value
     filterSet = {
-        "idc_version": "1.0",
+        "idc_data_version": "1.0",
         "filters": {
             "collection_id": ["TCGA-READ"],
             "Modality": ["CT", "MR"],
@@ -107,7 +107,7 @@ def test_cohort_preview_patients_eq(client, app):
 
 def test_cohort_preview_patients_lte(client, app):
     filterSet = {
-        "idc_version": "1.0",
+        "idc_data_version": "1.0",
         "filters": {
             "collection_id": ["TCGA-READ"],
             "Modality": ["CT", "MR"],
@@ -153,7 +153,7 @@ def test_cohort_preview_patients_lte(client, app):
 
     # Test that a _lte attribute can take more than one value
     filterSet = {
-        "idc_version": "1.0",
+        "idc_data_version": "1.0",
         "filters": {
             "collection_id": ["TCGA-READ"],
             "Modality": ["CT", "MR"],
@@ -185,7 +185,7 @@ def test_cohort_preview_patients_lte(client, app):
 
 def test_cohort_preview_patients_btw(client, app):
     filterSet = {
-        "idc_version": "1.0",
+        "idc_data_version": "1.0",
         "filters": {
             "collection_id": ["TCGA-READ"],
             "Modality": ["CT", "MR"],
@@ -218,7 +218,7 @@ def test_cohort_preview_patients_btw(client, app):
 #------------------------------------------------------------------
 
     filterSet = {
-        "idc_version": "1.0",
+        "idc_data_version": "1.0",
         "filters": {
             "collection_id": ["TCGA-READ"],
             "Modality": ["CT", "MR"],
@@ -266,7 +266,7 @@ def test_cohort_preview_patients_btw(client, app):
 #------------------------------------------------------------------
 
     filterSet = {
-        "idc_version": "1.0",
+        "idc_data_version": "1.0",
         "filters": {
             "collection_id": ["TCGA-READ"],
             "Modality": ["CT", "MR"],
@@ -314,7 +314,7 @@ def test_cohort_preview_patients_btw(client, app):
 #--------------------------------------------------------------
 
     filterSet = {
-        "idc_version": "1.0",
+        "idc_data_version": "1.0",
         "filters": {
             "collection_id": ["TCGA-READ"],
             "Modality": ["CT", "MR"],
@@ -347,7 +347,7 @@ def test_cohort_preview_patients_btw(client, app):
 
 def test_cohort_preview_sql(client, app):
     filterSet = {
-        "idc_version": "1.0",
+        "idc_data_version": "1.0",
         "filters": {
             "collection_id": ["TCGA-READ"],
             "Modality": ["CT", "MR"],
@@ -402,7 +402,7 @@ def test_cohort_preview_sql(client, app):
 
 def test_cohort_preview_none(client, app):
     filterSet = {
-        "idc_version": "1.0",
+        "idc_data_version": "1.0",
         "filters": {
             "collection_id": ["TCGA-READ"],
             "Modality": ["CT", "MR"],
@@ -442,7 +442,7 @@ def test_cohort_preview_none(client, app):
 
 def test_cohort_preview_collections(client, app):
     filterSet = {
-        "idc_version": "1.0",
+        "idc_data_version": "1.0",
         "filters": {
             "collection_id": ["TCGA-READ"],
             "Modality": ["CT", "MR"],
@@ -485,7 +485,7 @@ def test_cohort_preview_collections(client, app):
 
 def test_cohort_preview_patients(client, app):
     filterSet = {
-        "idc_version": "1.0",
+        "idc_data_version": "1.0",
         "filters": {
             "collection_id": ["TCGA-READ"],
             "Modality": ["CT", "MR"],
@@ -533,7 +533,7 @@ def test_cohort_preview_patients(client, app):
 
 def test_cohort_preview_studies(client, app):
     filterSet = {
-        "idc_version": "1.0",
+        "idc_data_version": "1.0",
         "filters": {
             "collection_id": ["TCGA-READ"],
             "Modality": ["CT", "MR"],
@@ -589,7 +589,7 @@ def test_cohort_preview_studies(client, app):
 
 def test_cohort_preview_series(client, app):
     filterSet = {
-        "idc_version": "1.0",
+        "idc_data_version": "1.0",
         "filters": {
             "collection_id": ["TCGA-READ"],
             "Modality": ["CT", "MR"],
@@ -658,7 +658,7 @@ def test_cohort_preview_series(client, app):
 
 def test_cohort_preview_instances(client, app):
     filterSet = {
-        "idc_version": "1.0",
+        "idc_data_version": "1.0",
         "filters": {
             "collection_id": ["TCGA-READ"],
             "Modality": ["CT", "MR"],
@@ -735,7 +735,7 @@ def test_cohort_preview_instances(client, app):
 # Get the result in chunks
 def test_cohort_preview_instances_paged(client, app):
     filterSet = {
-        "idc_version": "1.0",
+        "idc_data_version": "1.0",
         "filters": {
             "collection_id": ["tcga_luad"],
             "Modality": ["CT", "MR"],
