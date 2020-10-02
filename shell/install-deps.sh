@@ -21,6 +21,8 @@ find . -type f -name '*.pyc' -delete
 
 export DEBIAN_FRONTEND=noninteractive
 
+apt-get update -qq
+
 # Install and update apt-get info
 echo "Preparing System..."
 apt-get -y install software-properties-common
@@ -74,9 +76,11 @@ if [ -z "${CI}" ] || [ ! -d "/usr/lib/google-cloud-sdk" ]; then
     echo "Installing Google Cloud SDK..."
     export CLOUDSDK_CORE_DISABLE_PROMPTS=1
     echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.cloud.google.com/apt cloud-sdk main" | sudo tee -a /etc/apt/sources.list.d/google-cloud-sdk.list
-    apt-get install apt-transport-https ca-certificates
+    apt-get -y install apt-transport-https ca-certificates
     curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key --keyring /usr/share/keyrings/cloud.google.gpg add -
-    apt-get update && apt-get -y --allow-downgrades install google-cloud-sdk=251.0.0-0
-    apt-get -y --allow-downgrades install google-cloud-sdk-app-engine-python=251.0.0-0
+    apt-get update -qq
+    apt-get -y install google-cloud-sdk
+    apt-get -y install google-cloud-sdk-app-engine-python
     echo "Google Cloud SDK Installed"
 fi
+
