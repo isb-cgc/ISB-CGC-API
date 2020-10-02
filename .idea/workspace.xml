@@ -2,23 +2,95 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="ab95969b-5108-4199-9e3f-adad15095564" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/.circleci/config.yml" beforeDir="false" afterPath="$PROJECT_DIR$/.circleci/config.yml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
     </list>
+    <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
+  <component name="FileEditorManager">
+    <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/.circleci/config.yml">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="153">
+              <caret line="134" column="53" selection-start-line="134" selection-start-column="53" selection-end-line="134" selection-end-column="53" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/shell/install-deps.sh">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="540">
+              <caret line="46" column="62" lean-forward="true" selection-start-line="46" selection-start-column="62" selection-end-line="46" selection-end-column="62" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+    </leaf>
+  </component>
   <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
     <option name="RECENT_BRANCH_BY_REPOSITORY">
       <map>
         <entry key="$PROJECT_DIR$" value="s7wc" />
       </map>
     </option>
-    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="IdeDocumentHistory">
+    <option name="CHANGED_PATHS">
+      <list>
+        <option value="$PROJECT_DIR$/.circleci/config.yml" />
+      </list>
+    </option>
+  </component>
+  <component name="ProjectFrameBounds" extendedState="6">
+    <option name="x" value="953" />
+    <option name="width" value="974" />
+    <option name="height" value="1057" />
   </component>
   <component name="ProjectId" id="1eK5tKgJzhyhjC06d4RhypdpdfR" />
   <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
+  <component name="ProjectView">
+    <navigator proportions="" version="1">
+      <foldersAlwaysOnTop value="true" />
+    </navigator>
+    <panes>
+      <pane id="Scope" />
+      <pane id="ProjectPane">
+        <subPane>
+          <expand>
+            <path>
+              <item name="IDC-API" type="b2602c69:ProjectViewProjectNode" />
+              <item name="IDC-API" type="47feb1d3:ProjectViewModuleNode" />
+            </path>
+            <path>
+              <item name="IDC-API" type="b2602c69:ProjectViewProjectNode" />
+              <item name="IDC-API" type="47feb1d3:ProjectViewModuleNode" />
+              <item name="IDC-API" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="IDC-API" type="b2602c69:ProjectViewProjectNode" />
+              <item name="IDC-API" type="47feb1d3:ProjectViewModuleNode" />
+              <item name="IDC-API" type="462c0819:PsiDirectoryNode" />
+              <item name=".circleci" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="IDC-API" type="b2602c69:ProjectViewProjectNode" />
+              <item name="IDC-API" type="47feb1d3:ProjectViewModuleNode" />
+              <item name="IDC-API" type="462c0819:PsiDirectoryNode" />
+              <item name="shell" type="462c0819:PsiDirectoryNode" />
+            </path>
+          </expand>
+          <select />
+        </subPane>
+      </pane>
+    </panes>
+  </component>
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showExcludedFiles" value="true" />
@@ -32,6 +104,7 @@
     <property name="WebServerToolWindowPanel.toolwindow.show.date" value="false" />
     <property name="WebServerToolWindowPanel.toolwindow.show.permissions" value="false" />
     <property name="WebServerToolWindowPanel.toolwindow.show.size" value="false" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/../IDC-WebApp" />
     <property name="node.js.detected.package.eslint" value="true" />
     <property name="node.js.detected.package.tslint" value="true" />
     <property name="node.js.path.for.package.eslint" value="project" />
@@ -40,8 +113,20 @@
     <property name="node.js.selected.package.tslint" value="(autodetect)" />
     <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
   </component>
+  <component name="RunDashboard">
+    <option name="ruleStates">
+      <list>
+        <RuleState>
+          <option name="name" value="ConfigurationTypeDashboardGroupingRule" />
+        </RuleState>
+        <RuleState>
+          <option name="name" value="StatusDashboardGroupingRule" />
+        </RuleState>
+      </list>
+    </option>
+  </component>
   <component name="RunManager" selected="Flask server.IDC API">
-    <configuration name="Flask trial" type="Python.FlaskServer">
+    <configuration name="Flask trial" type="Python.FlaskServer" factoryName="Flask server">
       <option name="additionalOptions" value="-h 0.0.0.0" />
       <option name="flaskDebug" value="true" />
       <module name="IDC-API" />
@@ -67,7 +152,7 @@
       <option name="launchJavascriptDebuger" value="false" />
       <method v="2" />
     </configuration>
-    <configuration name="Flask" type="Python.FlaskServer" nameIsGenerated="true">
+    <configuration name="Flask" type="Python.FlaskServer" factoryName="Flask server" nameIsGenerated="true">
       <option name="additionalOptions" value="-h 0.0.0.0" />
       <option name="application" value="api/__init__.py" />
       <option name="flaskDebug" value="true" />
@@ -93,7 +178,7 @@
       <option name="launchJavascriptDebuger" value="false" />
       <method v="2" />
     </configuration>
-    <configuration name="IDC API" type="Python.FlaskServer">
+    <configuration name="IDC API" type="Python.FlaskServer" factoryName="Flask server">
       <option name="additionalOptions" value="-h 0.0.0.0" />
       <option name="flaskDebug" value="true" />
       <module name="IDC-API" />
@@ -119,7 +204,7 @@
       <option name="launchJavascriptDebuger" value="false" />
       <method v="2" />
     </configuration>
-    <configuration default="true" type="Python.FlaskServer">
+    <configuration default="true" type="Python.FlaskServer" factoryName="Flask server">
       <option name="additionalOptions" value="-h 0.0.0.0" />
       <option name="flaskDebug" value="true" />
       <module name="IDC-API" />
@@ -415,8 +500,40 @@
       <workItem from="1594170355113" duration="2661000" />
       <workItem from="1594223527327" duration="17642000" />
       <workItem from="1594246863048" duration="800000" />
+      <workItem from="1594256687740" duration="641000" />
+      <workItem from="1601669090810" duration="1067000" />
     </task>
     <servers />
+  </component>
+  <component name="TimeTrackingManager">
+    <option name="totallyTimeSpent" value="1708000" />
+  </component>
+  <component name="ToolWindowManager">
+    <frame x="-8" y="-8" width="1936" height="1066" extended-state="6" />
+    <editor active="true" />
+    <layout>
+      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.25266525" />
+      <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
+      <window_info id="Favorites" order="2" side_tool="true" />
+      <window_info anchor="bottom" id="Message" order="0" />
+      <window_info anchor="bottom" id="Find" order="1" />
+      <window_info anchor="bottom" id="Run" order="2" />
+      <window_info anchor="bottom" id="Debug" order="3" weight="0.4" />
+      <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
+      <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
+      <window_info anchor="bottom" id="TODO" order="6" />
+      <window_info anchor="bottom" id="Docker" order="7" show_stripe_button="false" />
+      <window_info anchor="bottom" id="Version Control" order="8" visible="true" weight="0.3290461" />
+      <window_info anchor="bottom" id="Database Changes" order="9" />
+      <window_info anchor="bottom" id="Event Log" order="10" side_tool="true" />
+      <window_info anchor="bottom" id="Terminal" order="11" />
+      <window_info anchor="bottom" id="Python Console" order="12" />
+      <window_info anchor="right" id="Commander" order="0" weight="0.4" />
+      <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
+      <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
+      <window_info anchor="right" id="SciView" order="3" />
+      <window_info anchor="right" id="Database" order="4" />
+    </layout>
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="1" />
@@ -425,101 +542,61 @@
     <option featureType="com.intellij.fileTypeFactory" implementationName="requirements.txt" />
   </component>
   <component name="WindowStateProjectService">
-    <state x="2787" y="341" key="#Flask" timestamp="1594161253091">
-      <screen x="1792" y="23" width="2560" height="1337" />
-    </state>
-    <state x="2787" y="360" key="#Flask/0.23.1792.1017/1792.23.2560.1417@1792.23.2560.1417" timestamp="1594082093299" />
-    <state x="2787" y="341" key="#Flask/0.23.1792.1097/1792.23.2560.1337@1792.23.2560.1337" timestamp="1594161253091" />
-    <state x="2536" y="374" width="1071" height="677" key="#com.intellij.execution.impl.EditConfigurationsDialog" timestamp="1594250475564">
-      <screen x="1792" y="23" width="2560" height="1337" />
-    </state>
-    <state x="2536" y="395" width="1071" height="688" key="#com.intellij.execution.impl.EditConfigurationsDialog/0.23.1792.1017/1792.23.2560.1417@1792.23.2560.1417" timestamp="1594224127206" />
-    <state x="2536" y="374" width="1071" height="677" key="#com.intellij.execution.impl.EditConfigurationsDialog/0.23.1792.1097/1792.23.2560.1337@1792.23.2560.1337" timestamp="1594250475564" />
-    <state x="2809" y="493" key="#com.intellij.ide.util.TreeClassChooserDialog" timestamp="1594161118848">
-      <screen x="1792" y="23" width="2560" height="1337" />
-    </state>
-    <state x="2809" y="493" key="#com.intellij.ide.util.TreeClassChooserDialog/0.23.1792.1097/1792.23.2560.1337@1792.23.2560.1337" timestamp="1594161118848" />
-    <state x="2787" y="326" key="#pytest_for_test_cohorts.test_create_cohort" timestamp="1594154627067">
-      <screen x="1792" y="23" width="2560" height="1337" />
-    </state>
-    <state x="2787" y="326" key="#pytest_for_test_cohorts.test_create_cohort/0.23.1792.1097/1792.23.2560.1337@1792.23.2560.1337" timestamp="1594154627067" />
-    <state x="2681" y="296" key="CommitChangelistDialog2" timestamp="1594246637206">
-      <screen x="1792" y="23" width="2560" height="1337" />
-    </state>
-    <state x="2681" y="296" key="CommitChangelistDialog2/0.23.1792.1097/1792.23.2560.1337@1792.23.2560.1337" timestamp="1594246637206" />
-    <state x="1892" y="123" width="2360" height="1217" key="DiffContextDialog" timestamp="1594058281680">
-      <screen x="1792" y="23" width="2560" height="1417" />
-    </state>
-    <state x="1892" y="123" width="2360" height="1217" key="DiffContextDialog/0.23.1792.1017/1792.23.2560.1417@1792.23.2560.1417" timestamp="1594058281680" />
-    <state x="2167" y="176" width="1780" height="457" key="EnvironmentVariablesDialog" timestamp="1594224069660">
-      <screen x="1792" y="23" width="2560" height="1417" />
-    </state>
-    <state x="2167" y="176" width="1922" height="457" key="EnvironmentVariablesDialog/0.23.1792.1017/1792.23.2560.1417@1792.23.2560.1417" timestamp="1594224069660" />
-    <state x="2167" y="167" width="1780" height="457" key="EnvironmentVariablesDialog/0.23.1792.1097/1792.23.2560.1337@1792.23.2560.1337" timestamp="1594082580574" />
-    <state width="2518" height="460" key="GridCell.Tab.0.bottom" timestamp="1594250385475">
-      <screen x="1792" y="23" width="2560" height="1337" />
-    </state>
-    <state width="2518" height="460" key="GridCell.Tab.0.bottom/0.23.1792.1017/1792.23.2560.1417@1792.23.2560.1417" timestamp="1594224744498" />
-    <state width="2518" height="460" key="GridCell.Tab.0.bottom/0.23.1792.1097/1792.23.2560.1337@1792.23.2560.1337" timestamp="1594250385475" />
-    <state width="2518" height="460" key="GridCell.Tab.0.center" timestamp="1594250385474">
-      <screen x="1792" y="23" width="2560" height="1337" />
-    </state>
-    <state width="2518" height="460" key="GridCell.Tab.0.center/0.23.1792.1017/1792.23.2560.1417@1792.23.2560.1417" timestamp="1594224744497" />
-    <state width="2518" height="460" key="GridCell.Tab.0.center/0.23.1792.1097/1792.23.2560.1337@1792.23.2560.1337" timestamp="1594250385474" />
-    <state width="2518" height="460" key="GridCell.Tab.0.left" timestamp="1594250385474">
-      <screen x="1792" y="23" width="2560" height="1337" />
-    </state>
-    <state width="2518" height="460" key="GridCell.Tab.0.left/0.23.1792.1017/1792.23.2560.1417@1792.23.2560.1417" timestamp="1594224744496" />
-    <state width="2518" height="460" key="GridCell.Tab.0.left/0.23.1792.1097/1792.23.2560.1337@1792.23.2560.1337" timestamp="1594250385474" />
-    <state width="2518" height="460" key="GridCell.Tab.0.right" timestamp="1594250385474">
-      <screen x="1792" y="23" width="2560" height="1337" />
-    </state>
-    <state width="2518" height="460" key="GridCell.Tab.0.right/0.23.1792.1017/1792.23.2560.1417@1792.23.2560.1417" timestamp="1594224744497" />
-    <state width="2518" height="460" key="GridCell.Tab.0.right/0.23.1792.1097/1792.23.2560.1337@1792.23.2560.1337" timestamp="1594250385474" />
-    <state width="2518" height="460" key="GridCell.Tab.1.bottom" timestamp="1594250385475">
-      <screen x="1792" y="23" width="2560" height="1337" />
-    </state>
-    <state width="2518" height="460" key="GridCell.Tab.1.bottom/0.23.1792.1017/1792.23.2560.1417@1792.23.2560.1417" timestamp="1594224744436" />
-    <state width="2518" height="460" key="GridCell.Tab.1.bottom/0.23.1792.1097/1792.23.2560.1337@1792.23.2560.1337" timestamp="1594250385475" />
-    <state width="2518" height="460" key="GridCell.Tab.1.center" timestamp="1594250385475">
-      <screen x="1792" y="23" width="2560" height="1337" />
-    </state>
-    <state width="2518" height="460" key="GridCell.Tab.1.center/0.23.1792.1017/1792.23.2560.1417@1792.23.2560.1417" timestamp="1594224744436" />
-    <state width="2518" height="460" key="GridCell.Tab.1.center/0.23.1792.1097/1792.23.2560.1337@1792.23.2560.1337" timestamp="1594250385475" />
-    <state width="2518" height="460" key="GridCell.Tab.1.left" timestamp="1594250385475">
-      <screen x="1792" y="23" width="2560" height="1337" />
-    </state>
-    <state width="2518" height="460" key="GridCell.Tab.1.left/0.23.1792.1017/1792.23.2560.1417@1792.23.2560.1417" timestamp="1594224744435" />
-    <state width="2518" height="460" key="GridCell.Tab.1.left/0.23.1792.1097/1792.23.2560.1337@1792.23.2560.1337" timestamp="1594250385475" />
-    <state width="2518" height="460" key="GridCell.Tab.1.right" timestamp="1594250385475">
-      <screen x="1792" y="23" width="2560" height="1337" />
-    </state>
-    <state width="2518" height="460" key="GridCell.Tab.1.right/0.23.1792.1017/1792.23.2560.1417@1792.23.2560.1417" timestamp="1594224744436" />
-    <state width="2518" height="460" key="GridCell.Tab.1.right/0.23.1792.1097/1792.23.2560.1337@1792.23.2560.1337" timestamp="1594250385475" />
-    <state x="3126" y="306" key="SettingsEditor" timestamp="1594246268202">
-      <screen x="1792" y="23" width="2560" height="1337" />
-    </state>
-    <state x="3126" y="323" key="SettingsEditor/0.23.1792.1017/1792.23.2560.1417@1792.23.2560.1417" timestamp="1594224678321" />
-    <state x="3126" y="306" key="SettingsEditor/0.23.1792.1097/1792.23.2560.1337@1792.23.2560.1337" timestamp="1594246268202" />
-    <state width="1280" height="708" key="XDebugger.FullValuePopup" timestamp="1594072138976">
-      <screen x="1792" y="23" width="2560" height="1417" />
-    </state>
-    <state width="1280" height="708" key="XDebugger.FullValuePopup/0.23.1792.1017/1792.23.2560.1417@1792.23.2560.1417" timestamp="1594072138976" />
-    <state x="1892" y="117" width="2360" height="1149" key="com.intellij.history.integration.ui.views.FileHistoryDialog" timestamp="1594246516661">
-      <screen x="1792" y="23" width="2560" height="1337" />
-    </state>
-    <state x="1892" y="122" width="2360" height="1217" key="com.intellij.history.integration.ui.views.FileHistoryDialog/0.23.1792.1017/1792.23.2560.1417@1792.23.2560.1417" timestamp="1594224731968" />
-    <state x="1892" y="117" width="2360" height="1149" key="com.intellij.history.integration.ui.views.FileHistoryDialog/0.23.1792.1097/1792.23.2560.1337@1792.23.2560.1337" timestamp="1594246516661" />
-    <state x="2742" y="566" key="com.intellij.ide.util.TipDialog" timestamp="1594057713763">
-      <screen x="1792" y="23" width="2560" height="1417" />
-    </state>
-    <state x="2742" y="566" key="com.intellij.ide.util.TipDialog/0.23.1792.1017/1792.23.2560.1417@1792.23.2560.1417" timestamp="1594057713763" />
-    <state x="3212" y="85" width="645" height="472" key="find.popup" timestamp="1594244206336">
-      <screen x="1792" y="23" width="2560" height="1337" />
-    </state>
-    <state x="3212" y="67" width="645" height="509" key="find.popup/0.0.1792.1120/1792.0.2560.1440@1792.0.2560.1440" timestamp="1594161860654" />
-    <state x="3212" y="90" width="645" height="472" key="find.popup/0.23.1792.1017/1792.23.2560.1417@1792.23.2560.1417" timestamp="1594224814207" />
-    <state x="3212" y="85" width="645" height="472" key="find.popup/0.23.1792.1097/1792.23.2560.1337@1792.23.2560.1337" timestamp="1594244206336" />
+    <state x="2787" y="341" key="#Flask" />
+    <state x="2787" y="360" key="#Flask/0.23.1792.1017/1792.23.2560.1417@1792.23.2560.1417" />
+    <state x="2787" y="341" key="#Flask/0.23.1792.1097/1792.23.2560.1337@1792.23.2560.1337" />
+    <state x="2536" y="374" width="1071" height="677" key="#com.intellij.execution.impl.EditConfigurationsDialog" />
+    <state x="2536" y="395" width="1071" height="688" key="#com.intellij.execution.impl.EditConfigurationsDialog/0.23.1792.1017/1792.23.2560.1417@1792.23.2560.1417" />
+    <state x="2536" y="374" width="1071" height="677" key="#com.intellij.execution.impl.EditConfigurationsDialog/0.23.1792.1097/1792.23.2560.1337@1792.23.2560.1337" />
+    <state x="2809" y="493" key="#com.intellij.ide.util.TreeClassChooserDialog" />
+    <state x="2809" y="493" key="#com.intellij.ide.util.TreeClassChooserDialog/0.23.1792.1097/1792.23.2560.1337@1792.23.2560.1337" />
+    <state x="2787" y="326" key="#pytest_for_test_cohorts.test_create_cohort" />
+    <state x="2787" y="326" key="#pytest_for_test_cohorts.test_create_cohort/0.23.1792.1097/1792.23.2560.1337@1792.23.2560.1337" />
+    <state x="2681" y="296" key="CommitChangelistDialog2" />
+    <state x="2681" y="296" key="CommitChangelistDialog2/0.23.1792.1097/1792.23.2560.1337@1792.23.2560.1337" />
+    <state x="1892" y="123" width="2360" height="1217" key="DiffContextDialog" />
+    <state x="1892" y="123" width="2360" height="1217" key="DiffContextDialog/0.23.1792.1017/1792.23.2560.1417@1792.23.2560.1417" />
+    <state x="2167" y="176" width="1780" height="457" key="EnvironmentVariablesDialog" />
+    <state x="2167" y="176" width="1922" height="457" key="EnvironmentVariablesDialog/0.23.1792.1017/1792.23.2560.1417@1792.23.2560.1417" />
+    <state x="2167" y="167" width="1780" height="457" key="EnvironmentVariablesDialog/0.23.1792.1097/1792.23.2560.1337@1792.23.2560.1337" />
+    <state width="2518" height="460" key="GridCell.Tab.0.bottom" />
+    <state width="2518" height="460" key="GridCell.Tab.0.bottom/0.23.1792.1017/1792.23.2560.1417@1792.23.2560.1417" />
+    <state width="2518" height="460" key="GridCell.Tab.0.bottom/0.23.1792.1097/1792.23.2560.1337@1792.23.2560.1337" />
+    <state width="2518" height="460" key="GridCell.Tab.0.center" />
+    <state width="2518" height="460" key="GridCell.Tab.0.center/0.23.1792.1017/1792.23.2560.1417@1792.23.2560.1417" />
+    <state width="2518" height="460" key="GridCell.Tab.0.center/0.23.1792.1097/1792.23.2560.1337@1792.23.2560.1337" />
+    <state width="2518" height="460" key="GridCell.Tab.0.left" />
+    <state width="2518" height="460" key="GridCell.Tab.0.left/0.23.1792.1017/1792.23.2560.1417@1792.23.2560.1417" />
+    <state width="2518" height="460" key="GridCell.Tab.0.left/0.23.1792.1097/1792.23.2560.1337@1792.23.2560.1337" />
+    <state width="2518" height="460" key="GridCell.Tab.0.right" />
+    <state width="2518" height="460" key="GridCell.Tab.0.right/0.23.1792.1017/1792.23.2560.1417@1792.23.2560.1417" />
+    <state width="2518" height="460" key="GridCell.Tab.0.right/0.23.1792.1097/1792.23.2560.1337@1792.23.2560.1337" />
+    <state width="2518" height="460" key="GridCell.Tab.1.bottom" />
+    <state width="2518" height="460" key="GridCell.Tab.1.bottom/0.23.1792.1017/1792.23.2560.1417@1792.23.2560.1417" />
+    <state width="2518" height="460" key="GridCell.Tab.1.bottom/0.23.1792.1097/1792.23.2560.1337@1792.23.2560.1337" />
+    <state width="2518" height="460" key="GridCell.Tab.1.center" />
+    <state width="2518" height="460" key="GridCell.Tab.1.center/0.23.1792.1017/1792.23.2560.1417@1792.23.2560.1417" />
+    <state width="2518" height="460" key="GridCell.Tab.1.center/0.23.1792.1097/1792.23.2560.1337@1792.23.2560.1337" />
+    <state width="2518" height="460" key="GridCell.Tab.1.left" />
+    <state width="2518" height="460" key="GridCell.Tab.1.left/0.23.1792.1017/1792.23.2560.1417@1792.23.2560.1417" />
+    <state width="2518" height="460" key="GridCell.Tab.1.left/0.23.1792.1097/1792.23.2560.1337@1792.23.2560.1337" />
+    <state width="2518" height="460" key="GridCell.Tab.1.right" />
+    <state width="2518" height="460" key="GridCell.Tab.1.right/0.23.1792.1017/1792.23.2560.1417@1792.23.2560.1417" />
+    <state width="2518" height="460" key="GridCell.Tab.1.right/0.23.1792.1097/1792.23.2560.1337@1792.23.2560.1337" />
+    <state x="3126" y="306" key="SettingsEditor" />
+    <state x="3126" y="323" key="SettingsEditor/0.23.1792.1017/1792.23.2560.1417@1792.23.2560.1417" />
+    <state x="3126" y="306" key="SettingsEditor/0.23.1792.1097/1792.23.2560.1337@1792.23.2560.1337" />
+    <state width="1280" height="708" key="XDebugger.FullValuePopup" />
+    <state width="1280" height="708" key="XDebugger.FullValuePopup/0.23.1792.1017/1792.23.2560.1417@1792.23.2560.1417" />
+    <state x="1892" y="117" width="2360" height="1149" key="com.intellij.history.integration.ui.views.FileHistoryDialog" />
+    <state x="1892" y="122" width="2360" height="1217" key="com.intellij.history.integration.ui.views.FileHistoryDialog/0.23.1792.1017/1792.23.2560.1417@1792.23.2560.1417" />
+    <state x="1892" y="117" width="2360" height="1149" key="com.intellij.history.integration.ui.views.FileHistoryDialog/0.23.1792.1097/1792.23.2560.1337@1792.23.2560.1337" />
+    <state x="2742" y="566" key="com.intellij.ide.util.TipDialog" />
+    <state x="2742" y="566" key="com.intellij.ide.util.TipDialog/0.23.1792.1017/1792.23.2560.1417@1792.23.2560.1417" />
+    <state x="3212" y="85" width="645" height="472" key="find.popup" />
+    <state x="3212" y="67" width="645" height="509" key="find.popup/0.0.1792.1120/1792.0.2560.1440@1792.0.2560.1440" />
+    <state x="3212" y="90" width="645" height="472" key="find.popup/0.23.1792.1017/1792.23.2560.1417@1792.23.2560.1417" />
+    <state x="3212" y="85" width="645" height="472" key="find.popup/0.23.1792.1097/1792.23.2560.1337@1792.23.2560.1337" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -582,5 +659,21 @@
     <SUITE FILE_PATH="coverage/IDC_API$test_main_routes.coverage" NAME="test_main_routes Coverage Results" MODIFIED="1594071916223" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/tests" />
     <SUITE FILE_PATH="coverage/IDC_API$pytest_for_test_cohorts_preview.coverage" NAME="pytest for test_cohorts_preview Coverage Results" MODIFIED="1594235404612" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="" />
     <SUITE FILE_PATH="coverage/IDC_API$pytest_for_test_cohorts_preview_test_cohort_preview_patients.coverage" NAME="pytest for test_cohorts_preview.test_cohort_preview_patients Coverage Results" MODIFIED="1594235389550" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="" />
+  </component>
+  <component name="editorHistoryManager">
+    <entry file="file://$PROJECT_DIR$/.circleci/config.yml">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="153">
+          <caret line="134" column="53" selection-start-line="134" selection-start-column="53" selection-end-line="134" selection-end-column="53" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/shell/install-deps.sh">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="540">
+          <caret line="46" column="62" lean-forward="true" selection-start-line="46" selection-start-column="62" selection-end-line="46" selection-end-column="62" />
+        </state>
+      </provider>
+    </entry>
   </component>
 </project>
