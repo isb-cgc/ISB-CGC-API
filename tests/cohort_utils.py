@@ -59,7 +59,7 @@ def create_cohort(client):
     response = client.post('/v1/cohorts', data=json.dumps(cohortSpec), headers=headers)
     assert response.content_type == 'application/json'
     assert response.status_code == 200
-    cohortResponse = response.json
+    cohortResponse = response.json['cohort_properties']
 
     return cohortResponse
 
@@ -88,7 +88,7 @@ def create_cohort_for_test_get_cohort_xxx(client):
     }
     response = client.post('/v1/cohorts', data=json.dumps(cohortSpec), headers=headers)
     assert response.status_code == 200
-    cohortResponse = response.json
+    cohortResponse = response.json['cohort_properties']
     id = cohortResponse['cohort_id']
     return (id, filterSet)
 
@@ -117,7 +117,7 @@ def create_big_cohort_for_test_get_cohort_xxx(client):
     }
     response = client.post('/v1/cohorts', data=json.dumps(cohortSpec), headers=headers)
     assert response.status_code == 200
-    cohortResponse = response.json
+    cohortResponse = response.json['cohort_properties']
     id = cohortResponse['cohort_id']
     return (id, filterSet)
 

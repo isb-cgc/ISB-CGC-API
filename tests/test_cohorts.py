@@ -100,7 +100,7 @@ def test_create_cohort(client, app):
     response = client.post('/v1/cohorts', data=json.dumps(cohortSpec), headers=headers)
     assert response.content_type == 'application/json'
     assert response.status_code == 200
-    cohortResponse = response.json
+    cohortResponse = response.json['cohort_properties']
 
     assert cohortResponse['name']=="testcohort"
     assert cohortResponse['description']=="Test description"
