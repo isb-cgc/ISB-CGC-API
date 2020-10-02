@@ -35,7 +35,6 @@ def get_auth():
             join(dirname(__file__), '../{}{}'.format(os.environ.get('SECURE_LOCAL_PATH'), "dev.api_token.json"))) as f:
         api_token = f.read()
     auth = {"Authorization": "APIToken {}".format(api_token)}
-    # auth = {"Authorization": "Token {}".format(api_token)}
     return auth
 
 
@@ -52,26 +51,14 @@ def get_versions():
     return info
 
 
-def get_programs():
-    info = None
-
-    try:
-        auth = get_auth()
-        response = requests.get("{}/{}".format(DJANGO_URI, 'collections/api/programs/'), headers=auth)
-        info = response.json()
-    except Exception as e:
-        logger.exception(e)
-
-    return info
-
-
-def get_data_sources():
-    path_params = {
-        "idc_data_version": "",
-    }
-
+def get_attributes():
     blacklist = re.compile(BLACKLIST_RE, re.UNICODE)
     info = None
+
+    path_params = {
+        "idc_data_version": "",
+        "data_source": ""
+    }
 
     # Get and validate parameters
     for key in request.args.keys():
@@ -92,7 +79,7 @@ def get_data_sources():
 
     try:
         auth = get_auth()
-        response = requests.get("{}/{}/".format(DJANGO_URI, 'collections/api/data_sources'),
+        response = requests.get("{}/{}/".format(DJANGO_URI, 'collections/api/attributes'),
                                 params=path_params, headers=auth)
         info = response.json()
     except Exception as e:
@@ -100,101 +87,16 @@ def get_data_sources():
 
     return info
 
-
-def get_attributes(data_source):
-    blacklist = re.compile(BLACKLIST_RE, re.UNICODE)
-    info = None
-
-    path_params = {
-        "idc_data_version": "",
-    }
-
-    match = blacklist.search(data_source)
-    if match:
-        return dict(
-            message="Data source {} contains invalid characters; please edit and resubmit. " +
-                    "[Saw {}]".format(str(data_source, match)),
-            code=400
-        )
-    # Get and validate parameters
-    for key in request.args.keys():
-        match = blacklist.search(str(key))
-        if match:
-            return dict(
-                message="Argument {} contains invalid characters; please edit and resubmit. " +
-                        "[Saw {}]".format(str(key, match)),
-                code=400
-            )
-        if key in path_params:
-            path_params[key] = request.args.get(key)
-        else:
-            return dict(
-                message="Invalid argument {}".format((key)),
-                code=400
-            )
-
-    try:
-        auth = get_auth()
-        response = requests.get("{}/{}/{}/".format(DJANGO_URI, 'collections/api/attributes', data_source),
-                                params=path_params, headers=auth)
-        info = response.json()
-    except Exception as e:
-        logger.exception(e)
-
-    return info
-
-
-def get_program_collections(program):
-    info = None
-
-    path_params = {
-        "idc_data_version": "",
-    }
-
-    blacklist = re.compile(BLACKLIST_RE, re.UNICODE)
-    match = blacklist.search(str(program))
-    if match:
-        info = {
-            "message": "Your program name contains invalid characters; please edit and resubmit. " +
-                       "[Saw {}]".format(str(match)),
-            "code": 400,
-            "not_found": []
-        }
-
-    # Get and validate parameters
-    for key in request.args.keys():
-        match = blacklist.search(str(key))
-        if match:
-            return dict(
-                message="Argument {} contains invalid characters; please edit and resubmit. " +
-                        "[Saw {}]".format(str(key, match)),
-                code=400
-            )
-        if key in path_params:
-            path_params[key] = request.args.get(key)
-        else:
-            return dict(
-                message="Invalid argument {}".format((key)),
-                code=400
-            )
-
-    try:
-        auth = get_auth()
-        response = requests.get("{}/collections/api/programs/{}/".format(DJANGO_URI, program),
-                                params=path_params, headers=auth)
-        info = response.json()
-    except Exception as e:
-        logger.exception(e)
-
-    return info
 
 def get_collections():
+    info = None
+
     path_params = {
         "idc_data_version": "",
+        "program_name": "",
     }
 
     blacklist = re.compile(BLACKLIST_RE, re.UNICODE)
-    info = None
 
     # Get and validate parameters
     for key in request.args.keys():
@@ -216,47 +118,10 @@ def get_collections():
     try:
         auth = get_auth()
         response = requests.get("{}/collections/api/".format(DJANGO_URI),
-                                params = path_params, headers=auth)
+                                params=path_params, headers=auth)
         info = response.json()
     except Exception as e:
         logger.exception(e)
 
     return info
 
-
-# def get_collection_info(program_name, collection_name):
-#     info = None
-#
-#     request_string = {}
-#     for key in request.args.keys():
-#         request_string[key] = request.args.get(key)
-#     if "attribute_type" not in request_string:
-#         info = {
-#             "message": "An attribute_type was not specified. Collection details could not be provided.",
-#             "code": 400,
-#             "not_found": []
-#         }
-#         return info
-#
-#     blacklist = re.compile(BLACKLIST_RE, re.UNICODE)
-#     match = blacklist.search(str(request_string["attribute_type"]))
-#     if not match and "version" in request_string:
-#         match = blacklist.search(str(request_string["version"]))
-#     if match:
-#         info = {
-#             "message": "Your collections\'s attribute_type or version contain invalid characters; please edit them and resubmit. " +
-#                        "[Saw {}]".format(str(match)),
-#             "code": 400,
-#             "not_found": []
-#         }
-#     else:
-#         try:
-#             response = requests.get("{}/{}/{}/{}/".format(
-#                 DJANGO_URI, "collections/api",program_name, collection_name),
-#                 params=request_string)
-#             info = response.json()
-#         except Exception as e:
-#             logger.exception(e)
-#
-#     return info
-#
