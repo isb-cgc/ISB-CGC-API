@@ -71,6 +71,6 @@ ADD . /app
 RUN pip3 install -r /app/requirements.txt -t /app/lib/ --upgrade
 RUN pip3 install gunicorn==19.9.0
 
-ENV PYTHONPATH=/app:/app/apiv4:/app/lib:/app/IDC-Common:${PYTHONPATH}
+ENV PYTHONPATH=/app:/app/apiv1:/app/lib:/app/IDC-Common:${PYTHONPATH}
 
-CMD gunicorn -b :$PORT apiv4:app -w 3 -t 130
+CMD gunicorn -b :$PORT apiv1:app -w 3 -t 130
