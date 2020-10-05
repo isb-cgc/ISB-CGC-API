@@ -4,7 +4,7 @@ mkdir ./txt
 gsutil cp "gs://${DEPLOYMENT_BUCKET}/${ENV_FILE}" ./.env
 gsutil cp "gs://${DEPLOYMENT_BUCKET}/${API_RUNTIME_SA_KEY}" ./privatekey.json
 gsutil cp "gs://${DEPLOYMENT_BUCKET}/${OPEN_API_YAML}" ./openapi-appengine.yaml
-gsutil cp "gs://${DEPLOYMENT_BUCKET}/${OPEN_API_YAML}" ./apiv1/api.yaml
+gsutil cp "gs://${DEPLOYMENT_BUCKET}/${OPEN_API_YAML}" ./api/api.yaml
 gsutil cp "gs://${DEPLOYMENT_BUCKET}/${API_APP_YAML}" ./app.yaml
 gsutil cp "gs://${DEPLOYMENT_BUCKET}/${USER_GCP_KEY}" ./
 gsutil cp "gs://${DEPLOYMENT_BUCKET}/${DCF_SECRETS_FILE}" ./dcf_secrets.txt
