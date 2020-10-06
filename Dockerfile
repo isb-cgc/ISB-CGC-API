@@ -73,4 +73,4 @@ RUN pip3 install gunicorn==19.9.0
 
 ENV PYTHONPATH=/app:/app/api:/app/lib:/app/IDC-Common:${PYTHONPATH}
 
-CMD gunicorn -b :$PORT api:app -w 3 -t 130
+CMD gunicorn -b :$PORT "api:create_app()" -w 3 -t 130
