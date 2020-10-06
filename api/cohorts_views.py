@@ -67,7 +67,7 @@ def create_cohort(user):
 
     try:
         request_data = request.get_json()
-        schema_validate(request_data, COHORT_FILTER_SCHEMA)
+        schema_validate(request_data['filterSet'], COHORT_FILTER_SCHEMA)
 
         if 'name' not in request_data:
             cohort_info = {
@@ -109,12 +109,14 @@ def create_cohort(user):
         logger.warn("[WARNING] Received bad request - couldn't load JSON.")
         cohort_info = {
             'message': 'The JSON provided in this request appears to be improperly formatted.',
+            'code': 400
         }
 
     except ValidationError as e:
         logger.warn("[WARNING] Cohort information rejected for improper formatting: {}".format(e))
         cohort_info = {
-            'message': 'Cohort information was improperly formatted - cohort not edited.',
+            'message': 'Cohort information was improperly formatted - cohort not created.',
+            'code': 400
         }
 
     return cohort_info
@@ -154,55 +156,134 @@ def _delete_cohorts(user, cohort_ids):
     return cohort_list
 
 
-def get_cohort_objects(user, cohort_id):
+def get_cohort_manifest(user, cohort_id):
+    blacklist = re.compile(BLACKLIST_RE, re.UNICODE)
     cohort_objects = None
 
     path_params = {
         "email": user,
-        "return_objects": True,
+        "access_method": "doi",
+        "url_access_type": "gs",
+        "url_region": "us",
+        "job_reference": None,
+        "next_page": ""}
+
+    access_methodes = ["url", "doi"]
+    url_access_types = ["gs"]
+    url_regions = ["us"]
+
+    # Get and validate parameters
+    for key in request.args.keys():
+        match = blacklist.search(str(key))
+        if match:
+            return dict(
+                message = "Key {} contains invalid characters; please edit and resubmit. " +
+                           "[Saw {}]".format(str(key, match)),
+                code = 400
+            )
+        if key in path_params:
+            path_params[key] = request.args.get(key)
+    if path_params["access_method"] not in access_methodes:
+        return dict(
+            message = "Invalid access_method {}".format(path_params['access_method']),
+            code = 400
+        )
+    if path_params['url_access_type'] not in url_access_types:
+        return dict(
+            message = "Invalid url_access_type {}".format(path_params['url_access_type']),
+            code = 400
+        )
+    if path_params['url_region'] not in url_regions:
+        return dict(
+            message = "Invalid url_region {}".format(path_params['url_region']),
+            code = 400
+        )
+    if cohort_objects == None:
+
+        try:
+            auth = get_auth()
+            results = requests.get("{}/cohorts/api/{}/manifest/".format(DJANGO_URI, cohort_id),
+                                params = path_params, headers=auth)
+            cohort_objects = results.json()
+        except Exception as e:
+            logger.exception(e)
+
+    return cohort_objects
+
+
+def get_cohort_objects(user, cohort_id):
+    blacklist = re.compile(BLACKLIST_RE, re.UNICODE)
+    cohort_objects = None
+
+    path_params = {
+        "email": user,
         "return_level": "Series",
-        "return_filter": True,
-        "return_DOIs": True,
-        "return_URLs": True,
         "return_sql": False,
-        "fetch_count": 1000,
-        "page": 1,
-        "offset": 0}
+        "job_reference": {},
+        "next_page": ""}
+
+    # Several parameters that we are not making available to users
+    hidden_params= {
+        # "return_objects": True,
+        "return_filter": True,
+        # "return_DOIs": False,
+        # "return_URLs": False,
+    }
 
     return_levels = [
+        'None',
         'Collection',
-        'Instance',
-        'Series',
-        'Study',
         'Patient',
+        'Study',
+        'Series',
         'Instance'
     ]
 
     # Get and validate parameters
     for key in request.args.keys():
-        path_params[key] = request.args.get(key)
-    path_params['fetch_count'] = int(path_params['fetch_count'])
-    path_params['offset'] = int(path_params['offset'])
-    path_params['page'] = int(path_params['page'])
-    for s in ['return_objects', 'return_filter', 'return_DOIs', 'return_URLs', 'return_sql']:
-        path_params[s] = path_params[s] in [True, 'True']
-    if path_params["fetch_count"] > MAX_FETCH_COUNT:
-        cohort_objects = {
-            "message": "Fetch count greater than {}".format(MAX_FETCH_COUNT)
-        }
-    if path_params["offset"] < 0:
-        cohort_objects = {
-            "message": "Fetch offset {} must be non-negative integer".format(path_params['offset'])
-        }
+        match = blacklist.search(str(key))
+        if match:
+            return dict(
+                message = "Key {} contains invalid characters; please edit and resubmit. " +
+                           "[Saw {}]".format(str(key, match)),
+                code = 400
+            )
+        if key in path_params:
+            path_params[key] = request.args.get(key)
+        else:
+            cohort_objects = {
+                "message": "Invalid key {}".format(key),
+                'code': 400
+            }
+            return cohort_objects
+
+    # path_params['fetch_count'] = int(path_params['fetch_count'])
+    # path_params['offset'] = int(path_params['offset'])
+    # path_params['page'] = int(path_params['page'])
+    for s in ['return_sql']: # 'return_objects', 'return_filter', 'return_DOIs', 'return_URLs']: # ,
+        if s in path_params:
+            path_params[s] = path_params[s] in [True, 'True']
+    # if path_params["fetch_count"] > MAX_FETCH_COUNT:
+    #     return dict(
+    #         message = "Fetch count greater than {}".format(MAX_FETCH_COUNT),
+    #         code = 400
+    #     )
+    # if path_params["offset"] < 0:
+    #     return dict(
+    #         message = "Fetch offset {} must be non-negative integer".format(path_params['offset']),
+    #         code = 400
+    #     )
     if path_params['return_level'] not in return_levels:
-        cohort_objects = {
-            "message": "Invalid return level {}".format(path_params['return_level'])
-        }
+        return dict(
+            message = "Invalid return level {}".format(path_params['return_level']),
+            code = 400
+        )
     if cohort_objects == None:
-        path_params["page"] = int(path_params['page'])
+        # path_params["page"] = int(path_params['page'])
 
         try:
             auth = get_auth()
+            path_params.update(hidden_params)
             results = requests.get("{}/{}/{}/".format(DJANGO_URI, 'cohorts/api',cohort_id),
                                 params = path_params, headers=auth)
             cohort_objects = results.json()
@@ -213,57 +294,92 @@ def get_cohort_objects(user, cohort_id):
 
 
 def post_cohort_preview():
+    blacklist = re.compile(BLACKLIST_RE, re.UNICODE)
     cohort_objects = None
 
     path_params = {
-        "return_objects": True,
         "return_level": "Series",
-        "return_filter": True,
-        "return_DOIs": True,
-        "return_URLs": True,
         "return_sql": False,
-        "fetch_count": 1000,
-        "page": 1,
-        "offset": 0}
+        "job_reference": {},
+        "next_page": ""}
+        # "fetch_count": 1000,
+        # "page": 1,
+        # "offset": 0}
+
+    # Several parameters that we are not making available to users
+    hidden_params= {
+        # "return_objects": True,
+        "return_filter": True,
+        # "return_DOIs": False,
+        # "return_URLs": False,
+    }
 
     return_levels = [
+        'None',
         'Collection',
-        'Instance',
-        'Series',
-        'Study',
         'Patient',
+        'Study',
+        'Series',
         'Instance'
     ]
 
     try:
         request_data = request.get_json()
-        schema_validate(request_data, COHORT_FILTER_SCHEMA)
+        schema_validate(request_data['filterSet'], COHORT_FILTER_SCHEMA)
 
         if 'filterSet' not in request_data:
-            cohort_objects = dict(message = 'No filters were provided; ensure that the request body contains a \'filters\' property.')
+            cohort_objects = dict(
+                message = 'No filters were provided; ensure that the request body contains a \'filters\' property.',
+                code = 400)
         else:
 
             # Get and validate parameters
+            # Get and validate parameters
             for key in request.args.keys():
-                path_params[key] = request.args.get(key)
-            path_params['fetch_count'] = int(path_params['fetch_count'])
-            path_params['offset'] = int(path_params['offset'])
-            path_params['page'] = int(path_params['page'])
-            for s in ['return_objects', 'return_filter', 'return_DOIs', 'return_URLs', 'return_sql']:
-                path_params[s] = path_params[s] in [True, 'True']
-            if path_params["fetch_count"] > MAX_FETCH_COUNT:
-                cohort_objects = dict(message = "Fetch count greater than {}".format(MAX_FETCH_COUNT))
-            if path_params["offset"] < 0:
-                cohort_objects = dict(message = "Fetch offset {} must be non-negative integer".format(path_params['offset']))
+                if key in path_params:
+                    match = blacklist.search(str(key))
+                    if match:
+                        return dict(
+                            message="Key {} contains invalid characters; please edit and resubmit. " +
+                                    "[Saw {}]".format(str(key, match)),
+                            code=400
+                        )
+                    path_params[key] = request.args.get(key)
+                else:
+                    cohort_objects =dict(
+                        message = "Invalid key {}".format(key),
+                        code = 400
+                    )
+                    return cohort_objects
+
+            # path_params['fetch_count'] = int(path_params['fetch_count'])
+            # path_params['offset'] = int(path_params['offset'])
+            # path_params['page'] = int(path_params['page'])
+            for s in ['return_sql']: #'return_objects', 'return_filter', 'return_DOIs', 'return_URLs']:
+                if s in path_params:
+                    path_params[s] = path_params[s] in [True, 'True']
+            # if path_params["fetch_count"] > MAX_FETCH_COUNT:
+            #     return dict(
+            #         message="Fetch count greater than {}".format(MAX_FETCH_COUNT),
+            #         code=400
+            #     )
+            # if path_params["offset"] < 0:
+            #     return dict(
+            #         message="Fetch offset {} must be non-negative integer".format(path_params['offset']),
+            #         code=400
+            #     )
             if path_params['return_level'] not in return_levels:
-                cohort_objects = dict(message = "Invalid return level {}".format(path_params['return_level']))
+                return dict(
+                    message="Invalid return level {}".format(path_params['return_level']),
+                    code=400
+                )
             if cohort_objects == None:
                 try:
                     auth = get_auth()
                     data = {"request_data": request_data}
+                    path_params.update(hidden_params)
                     results = requests.post("{}/{}/".format(DJANGO_URI, 'cohorts/api/preview'),
                                            params=path_params, json=data, headers=auth)
-                    pass
                     cohort_objects = results.json()
                 except Exception as e:
                     logger.exception(e)
@@ -272,13 +388,106 @@ def post_cohort_preview():
 
     except BadRequest as e:
         logger.warning("[WARNING] Received bad request - couldn't load JSON.")
-        cohort_objects = dict(message='The JSON provided in this request appears to be improperly formatted.')
+        cohort_objects = dict(
+            message='The JSON provided in this request appears to be improperly formatted.',
+            code = 400)
     except ValidationError as e:
         logger.warning('[WARNING] Filters rejected for improper formatting: {}'.format(e))
-        cohort_objects = dict(message= 'Filters were improperly formatted.')
+        cohort_objects = dict(
+            message= 'Filters were improperly formatted.',
+            code = 400)
     except Exception as e:
         logger.exception(e)
-        cohort_objects = dict(message = '[ERROR] Error trying to preview a cohort')
+        cohort_objects = dict(
+            message = '[ERROR] Error trying to preview a cohort',
+            code = 400)
+
+    return cohort_objects
+
+
+def get_cohort_preview_manifest():
+    blacklist = re.compile(BLACKLIST_RE, re.UNICODE)
+    cohort_objects = None
+
+    path_params = {
+        "access_method": "doi",
+        "url_access_type": "gs",
+        "url_region": "us",
+        "job_reference": None,
+        "next_page": ""}
+
+    access_methods = ["url", "doi"]
+    url_access_types = ["gs"]
+    url_regions = ["us"]
+
+    try:
+        request_data = request.get_json()
+
+        if 'filterSet' not in request_data:
+            cohort_objects = dict(
+                message='No filters were provided; ensure that the request body contains a \'filters\' property.')
+        else:
+
+            schema_validate(request_data['filterSet'], COHORT_FILTER_SCHEMA)
+
+        # Get and validate parameters
+        for key in request.args.keys():
+            match = blacklist.search(str(key))
+            if match:
+                return dict(
+                    message="Key {} contains invalid characters; please edit and resubmit. " +
+                            "[Saw {}]".format(str(key, match)),
+                    code=400
+                )
+            if key in path_params:
+                path_params[key] = request.args.get(key)
+            else:
+                cohort_objects = {
+                    "message": "Invalid key {}".format(key),
+                    'code': 400
+                }
+        if path_params["access_method"] not in access_methods:
+            return dict(
+                message="Invalid access_method {}".format(path_params['access_method']),
+                code=400
+            )
+        if path_params['url_access_type'] not in url_access_types:
+            return dict(
+                message="Invalid url_access_type {}".format(path_params['url_access_type']),
+                code=400
+            )
+        if path_params['url_region'] not in url_regions:
+            return dict(
+                message="Invalid url_region {}".format(path_params['url_region']),
+                code=400
+            )
+        if cohort_objects == None:
+            try:
+                auth = get_auth()
+                data = {"request_data": request_data}
+                results = requests.post("{}/cohorts/api/preview/manifest/".format(DJANGO_URI),
+                                    params = path_params, json=data, headers=auth)
+                cohort_objects = results.json()
+            except Exception as e:
+                logger.exception(e)
+
+        return cohort_objects
+
+    except BadRequest as e:
+        logger.warning("[WARNING] Received bad request - couldn't load JSON.")
+        cohort_objects = dict(
+            message='The JSON provided in this request appears to be improperly formatted.',
+            code = 400)
+    except ValidationError as e:
+        logger.warning('[WARNING] Filters rejected for improper formatting: {}'.format(e))
+        cohort_objects = dict(
+            message= 'Filters were improperly formatted.',
+            code = 400)
+    except Exception as e:
+        logger.exception(e)
+        cohort_objects = dict(
+            message = '[ERROR] Error trying to preview a cohort',
+            code = 400)
 
     return cohort_objects
 
@@ -296,57 +505,6 @@ def get_cohort_list(user):
         logger.exception(e)
 
     return cohort_list
-
-
-# def get_file_manifest(cohort_id, user):
-#     file_manifest = None
-#     inc_filters = {}
-#
-#     try:
-#         has_access = auth_dataset_whitelists_for_user(user.id)
-#
-#         params = {
-#             'limit': settings.MAX_FILE_LIST_REQUEST,
-#             'build': 'HG19',
-#             'access': has_access
-#         }
-#
-#         request_data = request.get_json()
-#
-#         param_set = {
-#             'offset': {'default': 0, 'type': int, 'name': 'offset'},
-#             'page': {'default': 1, 'type': int, 'name': 'page'},
-#             'fetch_count': {'default': 5000, 'type': int, 'name': 'limit'},
-#             'genomic_build': {'default': "HG19", 'type': str, 'name': 'build'}
-#         }
-#
-#         for param, parameter in param_set.items():
-#             default = parameter['default']
-#             param_type = parameter['type']
-#             name = parameter['name']
-#             params[name] = request_data[param] if (request_data and param in request_data) else request.args.get(param, default=default, type=param_type) if param in request.args else default
-#
-#             if request_data:
-#                 inc_filters = {
-#                     filter: request_data[filter]
-#                     for filter in request_data.keys()
-#                     if filter not in list(param_set.keys())
-#                 }
-#
-#         response = cohort_files(cohort_id, user=user, inc_filters=inc_filters, **params)
-#
-#         file_manifest = response['file_list'] if response and response['file_list'] else None
-#
-#     except BadRequest as e:
-#         logger.warn("[WARNING] Received bad request - couldn't load JSON.")
-#         file_manifest = {
-#             'message': 'The JSON provided in this request appears to be improperly formatted.',
-#         }
-#     except Exception as e:
-#         logger.error("[ERROR] File trieving the file manifest for Cohort {}:".format(str(cohort_id)))
-#         logger.exception(e)
-#
-#     return file_manifest
 
 
 

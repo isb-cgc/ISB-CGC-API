@@ -21,11 +21,15 @@ levels = ["collections", "patients", "studies", "series", "instances"]
 def pretty_print_cohortObjects(cohortObjects, indent=4):
     print(json.dumps(cohortObjects, sort_keys=True, indent=indent))
 
+# This routine merges results from the /cohorts/{cohort_id} API with previously obtained results.
+# It is intended for use when that API is used in a paged manner.
 def merge(src, dst, level):
-  for src_item in src:
+    keys = ["collection_id", "patient_id", "StudyInstanceUID", "SeriesInstanceUID", "SOPInstanceUID"]
+    for src_item in src:
         found = False
         for dst_item in dst:
-            if src_item["id"] == dst_item["id"]:
+            # if src_item["id"] == dst_item["id"]:
+            if src_item[keys[level]] == dst_item[keys[level]]:
                 if not len(levels) == level+1:
                     merge(src_item[levels[level+1]], dst_item[levels[level+1]], level+1)
                 found = True
@@ -37,12 +41,11 @@ def merge(src, dst, level):
 def create_cohort(client):
     # Create a filter set
     filterSet = {
-        "bioclin_version": "r9",
-        "imaging_version": "0",
-        "attributes": {
+        "idc_data_version": "1.0",
+        "filters": {
             "collection_id": ["TCGA-LUAD", "TCGA-KIRC"],
             "Modality": ["CT", "MR"],
-            "Race": ["WHITE"]}}
+            "race": ["WHITE"]}}
 
     cohortSpec = {"name": "testcohort",
                   "description": "Test description",
@@ -56,21 +59,23 @@ def create_cohort(client):
     response = client.post('/v1/cohorts', data=json.dumps(cohortSpec), headers=headers)
     assert response.content_type == 'application/json'
     assert response.status_code == 200
-    cohortResponse = response.json
+    cohortResponse = response.json['cohort_properties']
 
     return cohortResponse
 
 # Create a cohort with filter as expected by the test_get_cohort_xxx() functions
 def create_cohort_for_test_get_cohort_xxx(client):
     # Create a cohort to test against
-    attributes = {
-        "collection_id": ["TCGA-READ"],
+    filters = {
+        "collection_id": ["tcga_read"],
         "Modality": ["CT", "MR"],
-        "race": ["WHITE"]}
+        "race": ["WHITE"]
+    }
+
     filterSet = {
-        "bioclin_version": "r9",
-        "imaging_version": "0",
-        "attributes": attributes}
+        "idc_data_version": "1.0",
+        "filters": filters
+    }
 
     cohortSpec = {"name": "testcohort",
                   "description": "Test description",
@@ -83,7 +88,36 @@ def create_cohort_for_test_get_cohort_xxx(client):
     }
     response = client.post('/v1/cohorts', data=json.dumps(cohortSpec), headers=headers)
     assert response.status_code == 200
-    cohortResponse = response.json
+    cohortResponse = response.json['cohort_properties']
+    id = cohortResponse['cohort_id']
+    return (id, filterSet)
+
+# Create a big cohort with filter as expected by the test_get_cohort_xxx() functions
+def create_big_cohort_for_test_get_cohort_xxx(client):
+    # Create a cohort to test against
+    filters = {
+        "collection_id": ["tcga_luad"],
+        "Modality": ["CT", "MR"],
+        "race": ["WHITE"]
+    }
+
+    filterSet = {
+        "idc_data_version": "1.0",
+        "filters": filters
+    }
+
+    cohortSpec = {"name": "testcohort",
+                  "description": "Test description",
+                  "filterSet": filterSet}
+
+    mimetype = ' application/json'
+    headers = {
+        'Content-Type': mimetype,
+        'Accept': mimetype
+    }
+    response = client.post('/v1/cohorts', data=json.dumps(cohortSpec), headers=headers)
+    assert response.status_code == 200
+    cohortResponse = response.json['cohort_properties']
     id = cohortResponse['cohort_id']
     return (id, filterSet)
 

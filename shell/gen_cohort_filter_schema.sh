@@ -8,4 +8,6 @@ openapi2jsonschema ../openapi-appengine.yaml --stand-alone -o ../api/schemas
 
 # Convert the filterset schema into a python file that can be imported
 sed '1s/.*/COHORT_FILTER_SCHEMA\=&/' ../api/schemas/filterset.json > ../api/schemas/filterset.py
+sed "-i" "" "-e" 's/"additionalProperties": false/"additionalProperties": False/' ../api/schemas/filterset.py
+
 rm ../api/schemas/*.json

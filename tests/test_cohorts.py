@@ -18,19 +18,74 @@ import json
 import re
 
 
-from .cohort_utils import pretty_print_cohortObjects, merge, create_cohort, create_cohort_for_test_get_cohort_xxx, delete_cohort
+from .cohort_utils import pretty_print_cohortObjects, merge, create_cohort, create_cohort_for_test_get_cohort_xxx, create_big_cohort_for_test_get_cohort_xxx, delete_cohort
+
+
+# Test filter schema validation
+def test_create_cohort_schema_validation(client, app):
+    # Create an invalid filter set
+    filterSet = {
+        "idc_data_version": "1.0",
+        "filters": {
+            "collection_id": ["TCGA-LUAD", "TCGA-KIRC"],
+            # Undefined attribute
+            "Modalityx": ["CT", "MR"],
+            "race": ["WHITE"]}}
+
+    cohortSpec = {"name":"testcohort",
+                  "description":"Test description",
+                  "filterSet":filterSet}
+
+    mimetype = ' application/json'
+    headers = {
+        'Content-Type': mimetype,
+        'Accept': mimetype,
+    }
+
+    response = client.post('/v1/cohorts', data=json.dumps(cohortSpec), headers=headers)
+    assert response.content_type == 'application/json'
+    assert response.status_code == 400
+    cohortResponse = response.json
+    assert cohortResponse['message']=='Cohort information was improperly formatted - cohort not created.'
+
+    # Create an invalid filter set
+    filterSet = {
+        "idc_data_version": "1.0",
+        "filters": {
+            "collection_id": ["TCGA-LUAD", "TCGA-KIRC"],
+            "Modality": ["CT", "MR"],
+            "race": ["WHITE"]}}
+
+    cohortSpec = {"name":"testcohort",
+                  "description":"Test description",
+                  "filterSet":filterSet}
+
+    mimetype = ' application/json'
+    headers = {
+        'Content-Type': mimetype,
+        'Accept': mimetype,
+    }
+
+    data = json.dumps(cohortSpec)
+    # Corrupt the formatting
+    data = data.replace('["CT"', '"CT"')
+
+    response = client.post('/v1/cohorts', data=data, headers=headers)
+    assert response.content_type == 'application/json'
+    assert response.status_code == 400
+    cohortResponse = response.json
+    assert cohortResponse['message']=='The JSON provided in this request appears to be improperly formatted.'
 
 
 # Merge two sets of collection data.
 def test_create_cohort(client, app):
     # Create a filter set
     filterSet = {
-        "bioclin_version": "r9",
-        "imaging_version": "0",
-        "attributes": {
+        "idc_data_version": "1.0",
+        "filters": {
             "collection_id": ["TCGA-LUAD", "TCGA-KIRC"],
             "Modality": ["CT", "MR"],
-            "Race": ["WHITE"]}}
+            "race": ["WHITE"]}}
 
     cohortSpec = {"name":"testcohort",
                   "description":"Test description",
@@ -45,26 +100,29 @@ def test_create_cohort(client, app):
     response = client.post('/v1/cohorts', data=json.dumps(cohortSpec), headers=headers)
     assert response.content_type == 'application/json'
     assert response.status_code == 200
-    # cohortResponse = json.loads(response.json['cohortSpec'])
-    cohortResponse = response.json
+    cohortResponse = response.json['cohort_properties']
 
     assert cohortResponse['name']=="testcohort"
     assert cohortResponse['description']=="Test description"
-    assert cohortResponse["filterSet"]["bioclin_version"]=="r9"
-    assert "Modality" in cohortResponse["filterSet"]["attributes"]
-    assert "TCGA-LUAD" in cohortResponse["filterSet"]["attributes"]["collection_id"]
+    # assert len(cohortResponse['filterSet']) == 1
+    assert cohortResponse["filterSet"]["idc_data_version"]=="1.0"
+    assert 'race' in cohortResponse['filterSet']['filters'] and \
+           cohortResponse['filterSet']['filters']['race'] == ['WHITE']
+    assert 'Modality' in cohortResponse['filterSet']['filters'] and \
+           cohortResponse['filterSet']['filters']['Modality'] == ['CT', 'MR']
+    assert 'collection_id' in cohortResponse['filterSet']['filters'] and \
+           cohortResponse['filterSet']['filters']['collection_id'] == ['TCGA-LUAD', 'TCGA-KIRC']
 
     # Delete the cohort we just created
     delete_cohort(client, cohortResponse['cohort_id'])
 
-
-def test_get_cohort_patients(client, app):
+def test_get_cohort_sql(client, app):
 
     (id, filterSet) = create_cohort_for_test_get_cohort_xxx(client)
 
     query_string = {
-        'return_level': 'Patient',
-        'fetch_count': 5000,
+        'return_level': 'Collection',
+        'return_sql': True,
     }
 
     # Get the list of objects in the cohort
@@ -78,14 +136,113 @@ def test_get_cohort_patients(client, app):
     assert cohort['name']=="testcohort"
     assert cohort['description']=="Test description"
     assert cohort['filterSet'] == filterSet
-    assert cohort['cohortObjects']['totalRowsInCohort'] == 1638
+
+    assert cohort['sql'] == \
+"""	(
+            #standardSQL
+    
+        SELECT dicom_all.collection_id
+        FROM `idc-dev-etl.idc_tcia_views_mvp_wave0.dicom_all` dicom_all 
+        
+        JOIN `isb-cgc.TCGA_bioclin_v0.clinical_v1` clinical_v1
+        ON dicom_all.PatientID = clinical_v1.case_barcode
+    
+        WHERE (dicom_all.Modality IN ('CT','MR')) AND (dicom_all.collection_id = 'tcga_read') AND (clinical_v1.race = 'WHITE')
+        GROUP BY dicom_all.collection_id
+        ORDER BY dicom_all.collection_id ASC
+        
+        
+    )
+	UNION ALL
+"""
+
+    delete_cohort(client, id)
+
+def test_get_cohort_none(client, app):
+
+    (id, filterSet) = create_cohort_for_test_get_cohort_xxx(client)
+
+    query_string = {
+        'return_level': 'None',
+    }
+
+    # Get the list of objects in the cohort
+    response = client.get("{}/{}/".format('v1/cohorts', id),
+                query_string = query_string)
+    assert response.content_type == 'application/json'
+    assert response.status_code == 200
+    cohort = response.json['cohort']
+
+    assert cohort['cohort_id']==id
+    assert cohort['name']=="testcohort"
+    assert cohort['description']=="Test description"
+    assert cohort['filterSet'] == filterSet
+    assert cohort['cohortObjects']['totalFound'] == 0
+    assert cohort['cohortObjects']['rowsReturned'] == 0
+    assert cohort['cohortObjects']['collections'] == []
+    assert cohort['cohortObjects']['next_page'] == None
+
+    delete_cohort(client, id)
+
+def test_get_cohort_collections(client, app):
+
+    (id, filterSet) = create_cohort_for_test_get_cohort_xxx(client)
+
+    query_string = {
+        'return_level': 'Collection',
+    }
+
+    # Get the list of objects in the cohort
+    response = client.get("{}/{}/".format('v1/cohorts', id),
+                query_string = query_string)
+    assert response.content_type == 'application/json'
+    assert response.status_code == 200
+    cohort = response.json['cohort']
+
+    assert cohort['cohort_id']==id
+    assert cohort['name']=="testcohort"
+    assert cohort['description']=="Test description"
+    assert cohort['filterSet'] == filterSet
+    assert cohort['cohortObjects']['totalFound'] == 1
+    assert cohort['cohortObjects']['rowsReturned'] == 1
+    assert cohort['cohortObjects']['next_page'] == None
 
     collections = cohort['cohortObjects']['collections']
 
-    assert [collection['id'].upper()
+    assert [collection['collection_id'].upper()
         for collection in collections] == ['TCGA-READ']
 
-    assert [patient['id'].upper()
+    delete_cohort(client, id)
+
+def test_get_cohort_patients(client, app):
+
+    (id, filterSet) = create_cohort_for_test_get_cohort_xxx(client)
+
+    query_string = {
+        'return_level': 'Patient',
+    }
+
+    # Get the list of objects in the cohort
+    response = client.get("{}/{}/".format('v1/cohorts', id),
+                query_string = query_string)
+    assert response.content_type == 'application/json'
+    assert response.status_code == 200
+    cohort = response.json['cohort']
+
+    assert cohort['cohort_id']==id
+    assert cohort['name']=="testcohort"
+    assert cohort['description']=="Test description"
+    assert cohort['filterSet'] == filterSet
+    assert cohort['cohortObjects']['totalFound'] == 2
+    assert cohort['cohortObjects']['rowsReturned'] == 2
+    assert cohort['cohortObjects']['next_page'] == None
+
+    collections = cohort['cohortObjects']['collections']
+
+    assert [collection['collection_id'].upper()
+        for collection in collections] == ['TCGA-READ']
+
+    assert [patient['patient_id'].upper()
         for collection in collections
         for patient in collection['patients']].sort() == \
        ['TCGA-CL-5917', 'TCGA-BM-6198'].sort()
@@ -98,8 +255,6 @@ def test_get_cohort_studies(client, app):
 
     query_string = {
         'return_level': 'Study',
-        'fetch_count': 5000
-
     }
 
     # Get the list of objects in the cohort
@@ -113,34 +268,27 @@ def test_get_cohort_studies(client, app):
     assert cohort['name']=="testcohort"
     assert cohort['description']=="Test description"
     assert cohort['filterSet'] == filterSet
-    assert cohort['cohortObjects']['totalRowsInCohort']==1638
+    assert cohort['cohortObjects']['totalFound']==3
+    assert cohort['cohortObjects']['rowsReturned']==3
+    assert cohort['cohortObjects']['next_page'] == None
 
     collections = cohort['cohortObjects']['collections']
 
-    assert [collection['id'].upper()
+    assert [collection['collection_id'].upper()
             for collection in collections] == ['TCGA-READ']
 
-    assert [patient['id'].upper()
+    assert [patient['patient_id'].upper()
         for collection in collections
         for patient in collection['patients']].sort() == \
        ['TCGA-CL-5917', 'TCGA-BM-6198'].sort()
 
-    assert [study['id'].upper()
+    assert [study['StudyInstanceUID'].upper()
         for collection in collections
         for patient in collection['patients']
         for study in patient['studies']].sort() == \
        ['1.3.6.1.4.1.14519.5.2.1.3671.4018.768291480177931556369061239508',
         '1.3.6.1.4.1.14519.5.2.1.8421.4018.329305334176079996095294344892',
         '1.3.6.1.4.1.14519.5.2.1.8421.4018.304030957341830836628192929917'].sort()
-
-    assert [accessMethod['access_url']
-        for collection in collections
-        for patient in collection['patients']
-        for study in patient['studies']
-        for accessMethod in study['AccessMethods']].sort() == \
-       ['gs://gcs-public-data--healthcare-tcia-tcga-read/dicom/1.3.6.1.4.1.14519.5.2.1.3671.4018.768291480177931556369061239508',
-        'gs://gcs-public-data--healthcare-tcia-tcga-read/dicom/1.3.6.1.4.1.14519.5.2.1.8421.4018.329305334176079996095294344892',
-        'gs://gcs-public-data--healthcare-tcia-tcga-read/dicom/1.3.6.1.4.1.14519.5.2.1.8421.4018.304030957341830836628192929917'].sort()
 
     delete_cohort(client, id)
 
@@ -150,7 +298,6 @@ def test_get_cohort_series(client, app):
 
     query_string = {
         'return_level': 'Series',
-        'fetch_count': 5000
     }
 
     # Get the list of objects in the cohort
@@ -164,19 +311,21 @@ def test_get_cohort_series(client, app):
     assert cohort['name']=="testcohort"
     assert cohort['description']=="Test description"
     assert cohort['filterSet'] == filterSet
-    assert cohort['cohortObjects']['totalRowsInCohort']==1638
+    assert cohort['cohortObjects']['totalFound']==31
+    assert cohort['cohortObjects']['rowsReturned']==31
+    assert cohort['cohortObjects']['next_page'] == None
 
     collections = cohort['cohortObjects']['collections']
 
-    assert [collection['id'].upper()
+    assert [collection['collection_id'].upper()
         for collection in collections] == ['TCGA-READ']
 
-    assert [patient['id'].upper()
+    assert [patient['patient_id'].upper()
         for collection in collections
         for patient in collection['patients']].sort() == \
         ['TCGA-CL-5917', 'TCGA-BM-6198'].sort()
 
-    assert [study['id']
+    assert [study['StudyInstanceUID']
         for collection in collections
         for patient in collection['patients']
         for study in patient['studies']].sort() == \
@@ -184,29 +333,19 @@ def test_get_cohort_series(client, app):
         '1.3.6.1.4.1.14519.5.2.1.8421.4018.329305334176079996095294344892',
         '1.3.6.1.4.1.14519.5.2.1.8421.4018.304030957341830836628192929917'].sort()
 
-    assert len([series['id']
+    assert len([series['SeriesInstanceUID']
         for collection in collections
         for patient in collection['patients']
         for study in patient['studies']
         for series in study['series']]) == 31
 
     assert '1.3.6.1.4.1.14519.5.2.1.3671.4018.322958037973582149511135969272' in \
-        [series['id']
+        [series['SeriesInstanceUID']
         for collection in collections
         for patient in collection['patients']
         for study in patient['studies']
         for series in study['series']]
 
-    assert 'gs://gcs-public-data--healthcare-tcia-tcga-read/dicom/' \
-       '1.3.6.1.4.1.14519.5.2.1.8421.4018.304030957341830836628192929917/' \
-       '1.3.6.1.4.1.14519.5.2.1.8421.4018.234350234633941492462148996523' in \
-        [accessMethod['access_url']
-        for collection in collections
-        for patient in collection['patients']
-        for study in patient['studies']
-        for series in study['series']
-        for accessMethod in series['AccessMethods']]
-    # pretty_print_collections(collections)
     delete_cohort(client, id)
 
 
@@ -216,7 +355,6 @@ def test_get_cohort_instances(client, app):
 
     query_string = {
         'return_level': 'Instance',
-        'fetch_count': 5000
     }
 
     # Get the list of objects in the cohort
@@ -230,18 +368,20 @@ def test_get_cohort_instances(client, app):
     assert cohort['name']=="testcohort"
     assert cohort['description']=="Test description"
     assert cohort['filterSet'] == filterSet
-    assert cohort['cohortObjects']['totalRowsInCohort']==1638
+    assert cohort['cohortObjects']['totalFound']==1638
+    assert cohort['cohortObjects']['rowsReturned']==1638
     collections = cohort['cohortObjects']['collections']
+    assert cohort['cohortObjects']['next_page'] == None
 
-    assert [collection['id'].upper()
+    assert [collection['collection_id'].upper()
         for collection in collections] == ['TCGA-READ']
 
-    assert [patient['id'].upper()
+    assert [patient['patient_id'].upper()
        for collection in collections
        for patient in collection['patients']].sort() == \
        ['TCGA-CL-5917', 'TCGA-BM-6198'].sort()
 
-    assert [study['id']
+    assert [study['StudyInstanceUID']
         for collection in collections
         for patient in collection['patients']
         for study in patient['studies']].sort() == \
@@ -249,47 +389,25 @@ def test_get_cohort_instances(client, app):
         '1.3.6.1.4.1.14519.5.2.1.8421.4018.329305334176079996095294344892',
         '1.3.6.1.4.1.14519.5.2.1.8421.4018.304030957341830836628192929917'].sort()
 
-    assert len([series['id']
+    assert len([series['SeriesInstanceUID']
         for collection in collections
         for patient in collection['patients']
         for study in patient['studies']
         for series in study['series']]) == 31
 
     assert '1.3.6.1.4.1.14519.5.2.1.3671.4018.322958037973582149511135969272' in \
-        [series['id']
+        [series['SeriesInstanceUID']
         for collection in collections
         for patient in collection['patients']
         for study in patient['studies']
         for series in study['series']]
 
-    assert 'gs://gcs-public-data--healthcare-tcia-tcga-read/dicom/' \
-       '1.3.6.1.4.1.14519.5.2.1.8421.4018.304030957341830836628192929917/' \
-       '1.3.6.1.4.1.14519.5.2.1.8421.4018.234350234633941492462148996523' in \
-        [accessMethod['access_url']
-        for collection in collections
-        for patient in collection['patients']
-        for study in patient['studies']
-        for series in study['series']
-        for accessMethod in series['AccessMethods']]
-
-    assert len([instance['id']
+    assert len([instance['SOPInstanceUID']
         for collection in collections
         for patient in collection['patients']
         for study in patient['studies']
         for series in study['series']
         for instance in series['instances']]) == 1638
-
-    assert 'gs://gcs-public-data--healthcare-tcia-tcga-read/dicom/' \
-       '1.3.6.1.4.1.14519.5.2.1.3671.4018.768291480177931556369061239508/' \
-       '1.3.6.1.4.1.14519.5.2.1.3671.4018.183714953600569164837490663631/' \
-       '1.3.6.1.4.1.14519.5.2.1.3671.4018.350542910477885137694058742820.dcm' in \
-        [accessMethod['access_url']
-        for collection in collections
-        for patient in collection['patients']
-        for study in patient['studies']
-        for series in study['series']
-        for instance in series['instances']
-        for accessMethod in instance['AccessMethods']]
 
     delete_cohort(client, id)
 
@@ -297,41 +415,39 @@ def test_get_cohort_instances(client, app):
 # Get the result in chunks
 def test_get_cohort_instances_paged(client, app):
 
-    (id, filterSet) = create_cohort_for_test_get_cohort_xxx(client)
+    (id, filterSet) = create_big_cohort_for_test_get_cohort_xxx(client)
 
-    # First get all the rows in one call
+    # Get the first page
     query_string = {
         'return_level': 'Instance',
-        'fetch_count': 5000,
-        'offset': 0,
-        'return_DOIs': False,
-        'return_URLs': False,
-        'return_filter': False,
     }
-    # Get the list of objects in the cohort
+
+    # Get the first page of objects in the cohort
     response = client.get("{}/{}/".format('v1/cohorts', id),
                 query_string = query_string)
     assert response.content_type == 'application/json'
     assert response.status_code == 200
-    cohortall= response.json['cohort']
-    allCollections = cohortall["cohortObjects"]["collections"]
+    cohort= response.json['cohort']
+    cohortObjects = cohort['cohortObjects']
+    allCollections = cohortObjects["collections"]
+    assert cohortObjects['totalFound']==21940
+    assert cohortObjects['rowsReturned']==5000
 
-    #Now get the data in 500 row chunks
+    job_reference = cohortObjects['job_reference']
+    next_page = cohortObjects['next_page']
+    assert job_reference
+    assert next_page
 
-    totalSchema = []
-    totalCollections = []
-    totalRowsReturned = 0
 
-    fetch_count = 500
-    while True:
+    #Now get the remaining pages
+    totalCollections = allCollections
+    totalRowsReturned = cohortObjects['rowsReturned']
 
+    while next_page:
         query_string = {
             'return_level': 'Instance',
-            'fetch_count': fetch_count,
-            'offset': totalRowsReturned,
-            'return_DOIs': False,
-            'return_URLs': False,
-            'return_filter': False,
+            'job_reference': job_reference,
+            'next_page': next_page
         }
 
         # Get the list of objects in the cohort
@@ -342,55 +458,58 @@ def test_get_cohort_instances_paged(client, app):
         cohort = response.json['cohort']
 
         cohortObjects = cohort['cohortObjects']
-        rowsReturned = cohortObjects["totalRowsInCohort"]
+        rowsReturned = cohortObjects["rowsReturned"]
         totalRowsReturned += rowsReturned
         collections = cohortObjects["collections"]
-        merge(collections, totalCollections, 0)
-        if rowsReturned < fetch_count:
-            break
+        merge(collections, allCollections, 0)
+        allCollections.extend(collections)
+        job_reference = cohortObjects['job_reference']
+        next_page = cohortObjects['next_page']
 
-    allPatients = [patient['id'].upper()
+    assert totalRowsReturned == cohortObjects['totalFound']
+
+    allPatients = set([patient['patient_id'].upper()
        for collection in allCollections
-       for patient in collection['patients']].sort()
-    totalPatients = [patient['id'].upper()
+       for patient in collection['patients']])
+    totalPatients = set([patient['patient_id'].upper()
        for collection in totalCollections
-       for patient in collection['patients']].sort()
+       for patient in collection['patients']])
     assert allPatients == totalPatients
 
-    allStudies = [study['id']
+    allStudies = set([study['StudyInstanceUID']
         for collection in allCollections
         for patient in collection['patients']
-        for study in patient['studies']].sort()
-    totalStudies = [study['id']
+        for study in patient['studies']])
+    totalStudies = set([study['StudyInstanceUID']
         for collection in totalCollections
         for patient in collection['patients']
-        for study in patient['studies']].sort()
+        for study in patient['studies']])
     assert allStudies == totalStudies
 
-    allSeries = [series['id']
+    allSeries = set([series['SeriesInstanceUID']
         for collection in allCollections
         for patient in collection['patients']
         for study in patient['studies']
-        for series in study['series']].sort()
-    totalSeries = [series['id']
+        for series in study['series']])
+    totalSeries = set([series['SeriesInstanceUID']
         for collection in totalCollections
         for patient in collection['patients']
         for study in patient['studies']
-        for series in study['series']].sort()
+        for series in study['series']])
     assert allSeries == totalSeries
 
-    allInstances = [instance['id']
+    allInstances = set([instance['SOPInstanceUID']
         for collection in allCollections
         for patient in collection['patients']
         for study in patient['studies']
         for series in study['series']
-        for instance in series['instances']].sort()
-    totalInstances = [instance['id']
+        for instance in series['instances']])
+    totalInstances = set([instance['SOPInstanceUID']
         for collection in totalCollections
         for patient in collection['patients']
         for study in patient['studies']
         for series in study['series']
-        for instance in series['instances']].sort()
+        for instance in series['instances']])
     assert allInstances == totalInstances
 
     delete_cohort(client, id)
