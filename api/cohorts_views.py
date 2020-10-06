@@ -162,15 +162,15 @@ def get_cohort_manifest(user, cohort_id):
 
     path_params = {
         "email": user,
-        "access_class": "doi",
-        "access_type": "gs",
-        "region": "us",
+        "access_method": "doi",
+        "url_access_type": "gs",
+        "url_region": "us",
         "job_reference": None,
         "next_page": ""}
 
-    access_classes = ["url", "doi"]
-    access_types = ["gs"]
-    regions = ["us"]
+    access_methodes = ["url", "doi"]
+    url_access_types = ["gs"]
+    url_regions = ["us"]
 
     # Get and validate parameters
     for key in request.args.keys():
@@ -183,19 +183,19 @@ def get_cohort_manifest(user, cohort_id):
             )
         if key in path_params:
             path_params[key] = request.args.get(key)
-    if path_params["access_class"] not in access_classes:
+    if path_params["access_method"] not in access_methodes:
         return dict(
-            message = "Invalid access class {}".format(path_params['access_class']),
+            message = "Invalid access_method {}".format(path_params['access_method']),
             code = 400
         )
-    if path_params['access_type'] not in access_types:
+    if path_params['url_access_type'] not in url_access_types:
         return dict(
-            message = "Invalid access type {}".format(path_params['access_type']),
+            message = "Invalid url_access_type {}".format(path_params['url_access_type']),
             code = 400
         )
-    if path_params['region'] not in regions:
+    if path_params['url_region'] not in url_regions:
         return dict(
-            message = "Invalid region {}".format(path_params['region']),
+            message = "Invalid url_region {}".format(path_params['url_region']),
             code = 400
         )
     if cohort_objects == None:
@@ -410,15 +410,15 @@ def get_cohort_preview_manifest():
     cohort_objects = None
 
     path_params = {
-        "access_class": "doi",
-        "access_type": "gs",
-        "region": "us",
+        "access_method": "doi",
+        "url_access_type": "gs",
+        "url_region": "us",
         "job_reference": None,
         "next_page": ""}
 
-    access_classes = ["url", "doi"]
-    access_types = ["gs"]
-    regions = ["us"]
+    access_methods = ["url", "doi"]
+    url_access_types = ["gs"]
+    url_regions = ["us"]
 
     try:
         request_data = request.get_json()
@@ -446,19 +446,19 @@ def get_cohort_preview_manifest():
                     "message": "Invalid key {}".format(key),
                     'code': 400
                 }
-        if path_params["access_class"] not in access_classes:
+        if path_params["access_method"] not in access_methods:
             return dict(
-                message="Invalid access class {}".format(path_params['access_class']),
+                message="Invalid access_method {}".format(path_params['access_method']),
                 code=400
             )
-        if path_params['access_type'] not in access_types:
+        if path_params['url_access_type'] not in url_access_types:
             return dict(
-                message="Invalid access type {}".format(path_params['access_type']),
+                message="Invalid url_access_type {}".format(path_params['url_access_type']),
                 code=400
             )
-        if path_params['region'] not in regions:
+        if path_params['url_region'] not in url_regions:
             return dict(
-                message="Invalid region {}".format(path_params['region']),
+                message="Invalid url_region {}".format(path_params['url_region']),
                 code=400
             )
         if cohort_objects == None:

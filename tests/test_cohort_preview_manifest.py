@@ -39,7 +39,7 @@ def test_cohort_preview_manifest(client, app):
     }
 
     query_string = {
-        'access_class': 'url',
+        'access_method': 'url',
     }
 
     response = client.post('v1/cohorts/preview/manifest',
@@ -50,8 +50,8 @@ def test_cohort_preview_manifest(client, app):
     assert response.content_type == 'application/json'
     assert response.status_code == 200
     manifest = response.json['manifest']
-    assert manifest['accessMethods']['type'] == 'gs'
-    assert manifest['accessMethods']['region'] == 'us'
+    assert manifest['accessMethods']['url_access_type'] == 'gs'
+    assert manifest['accessMethods']['url_region'] == 'us'
     assert len(manifest['accessMethods']['urls']) == 1638
     assert len(manifest['accessMethods']['dois']) == 0
     assert manifest['accessMethods']['totalFound'] == 1638
@@ -63,7 +63,7 @@ def test_cohort_preview_manifest(client, app):
         in manifest['accessMethods']['urls']
 
     query_string = {
-        'access_class': 'doi',
+        'access_method': 'doi',
     }
 
     response = client.post('v1/cohorts/preview/manifest',
@@ -74,8 +74,8 @@ def test_cohort_preview_manifest(client, app):
     assert response.content_type == 'application/json'
     assert response.status_code == 200
     manifest = response.json['manifest']
-    assert manifest['accessMethods']['type'] == 'gs'
-    assert manifest['accessMethods']['region'] == 'us'
+    assert manifest['accessMethods']['url_access_type'] == 'gs'
+    assert manifest['accessMethods']['url_region'] == 'us'
     assert len(manifest['accessMethods']['urls']) == 0
     assert len(manifest['accessMethods']['dois']) == 1638
     assert manifest['accessMethods']['totalFound'] == 1638
@@ -103,7 +103,7 @@ def test_get_cohort_preview_manifest_paged_doi(client, app):
     }
 
     query_string = {
-        'access_class': 'doi',
+        'access_method': 'doi',
     }
 
     response = client.post('v1/cohorts/preview/manifest',
@@ -115,8 +115,8 @@ def test_get_cohort_preview_manifest_paged_doi(client, app):
     manifest = response.json['manifest']
 
     accessMethods = manifest['accessMethods']
-    assert accessMethods['type'] == 'gs'
-    assert accessMethods['region'] == 'us'
+    assert accessMethods['url_access_type'] == 'gs'
+    assert accessMethods['url_region'] == 'us'
     assert len(accessMethods['urls']) == 0
     assert len(accessMethods['dois']) == 5000
     assert accessMethods['totalFound'] == 21940
@@ -133,7 +133,7 @@ def test_get_cohort_preview_manifest_paged_doi(client, app):
 
     while next_page:
         query_string = {
-            'access_class': 'doi',
+            'access_method': 'doi',
             'job_reference': job_reference,
             'next_page': next_page
         }
@@ -181,7 +181,7 @@ def test_get_cohort_manifest_paged_url(client, app):
     }
 
     query_string = {
-        'access_class': 'url',
+        'access_method': 'url',
     }
 
     response = client.post('v1/cohorts/preview/manifest',
@@ -194,8 +194,8 @@ def test_get_cohort_manifest_paged_url(client, app):
     manifest = response.json['manifest']
 
     accessMethods = manifest['accessMethods']
-    assert accessMethods['type'] == 'gs'
-    assert accessMethods['region'] == 'us'
+    assert accessMethods['url_access_type'] == 'gs'
+    assert accessMethods['url_region'] == 'us'
     assert len(accessMethods['urls']) == 5000
     assert len(accessMethods['dois']) == 0
     assert accessMethods['totalFound'] == 21940
@@ -212,7 +212,7 @@ def test_get_cohort_manifest_paged_url(client, app):
 
     while next_page:
         query_string = {
-            'access_class': 'url',
+            'access_method': 'url',
             'job_reference': job_reference,
             'next_page': next_page
         }

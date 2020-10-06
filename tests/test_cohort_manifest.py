@@ -24,7 +24,7 @@ def test_get_cohort_manifest(client, app):
     (id, filterSet) = create_cohort_for_test_get_cohort_xxx(client)
 
     query_string = {
-        'access_class': 'doi',
+        'access_method': 'doi',
     }
 
     # Get a manifest of the cohort's instances
@@ -37,8 +37,8 @@ def test_get_cohort_manifest(client, app):
     assert manifest['cohort_id']==id
 
 
-    assert manifest['accessMethods']['type'] == 'gs'
-    assert manifest['accessMethods']['region'] == 'us'
+    assert manifest['accessMethods']['url_access_type'] == 'gs'
+    assert manifest['accessMethods']['url_region'] == 'us'
     assert len(manifest['accessMethods']['urls']) == 0
     assert len(manifest['accessMethods']['dois']) == 1638
     assert manifest['accessMethods']['totalFound'] == 1638
@@ -46,7 +46,7 @@ def test_get_cohort_manifest(client, app):
     assert manifest['accessMethods']['next_page'] == None
 
     query_string = {
-        'access_class': 'url',
+        'access_method': 'url',
     }
 
     # Get a manifest of the cohort's instances
@@ -58,8 +58,8 @@ def test_get_cohort_manifest(client, app):
 
     assert manifest['cohort_id']==id
 
-    assert manifest['accessMethods']['type'] == 'gs'
-    assert manifest['accessMethods']['region'] == 'us'
+    assert manifest['accessMethods']['url_access_type'] == 'gs'
+    assert manifest['accessMethods']['url_region'] == 'us'
     assert len(manifest['accessMethods']['urls']) == 1638
     assert len(manifest['accessMethods']['dois']) == 0
     assert manifest['accessMethods']['totalFound'] == 1638
@@ -76,7 +76,7 @@ def test_get_cohort_manifest_paged_doi(client, app):
     (id, filterSet) = create_big_cohort_for_test_get_cohort_xxx(client)
 
     query_string = {
-        'access_class': 'doi',
+        'access_method': 'doi',
     }
 
     # Get a manifest of the cohort's instances
@@ -89,8 +89,8 @@ def test_get_cohort_manifest_paged_doi(client, app):
     assert manifest['cohort_id']==id
 
     accessMethods = manifest['accessMethods']
-    assert accessMethods['type'] == 'gs'
-    assert accessMethods['region'] == 'us'
+    assert accessMethods['url_access_type'] == 'gs'
+    assert accessMethods['url_region'] == 'us'
     assert len(accessMethods['urls']) == 0
     assert len(accessMethods['dois']) == 5000
     assert accessMethods['totalFound'] == 21940
@@ -107,7 +107,7 @@ def test_get_cohort_manifest_paged_doi(client, app):
 
     while next_page:
         query_string = {
-            'access_class': 'doi',
+            'access_method': 'doi',
             'job_reference': job_reference,
             'next_page': next_page
         }
@@ -140,7 +140,7 @@ def test_get_cohort_manifest_paged_url(client, app):
     (id, filterSet) = create_big_cohort_for_test_get_cohort_xxx(client)
 
     query_string = {
-        'access_class': 'url',
+        'access_method': 'url',
     }
 
     # Get a manifest of the cohort's instances
@@ -153,8 +153,8 @@ def test_get_cohort_manifest_paged_url(client, app):
     assert manifest['cohort_id']==id
 
     accessMethods = manifest['accessMethods']
-    assert accessMethods['type'] == 'gs'
-    assert accessMethods['region'] == 'us'
+    assert accessMethods['url_access_type'] == 'gs'
+    assert accessMethods['url_region'] == 'us'
     assert len(accessMethods['urls']) == 5000
     assert len(accessMethods['dois']) == 0
     assert accessMethods['totalFound'] == 21940
@@ -171,7 +171,7 @@ def test_get_cohort_manifest_paged_url(client, app):
 
     while next_page:
         query_string = {
-            'access_class': 'url',
+            'access_method': 'url',
             'job_reference': job_reference,
             'next_page': next_page
         }
