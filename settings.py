@@ -79,3 +79,9 @@ FILE_SIZE_UPLOAD_MAX = 1950000
 
 # Explicitly check for known items
 BLACKLIST_RE = r'((?i)<script>|(?i)</script>|!\[\]|!!\[\]|\[\]\[\".*\"\]|(?i)<iframe>|(?i)</iframe>)'
+
+# URL prefix for static files.
+# Example: "http://media.lawrence.com/static/"
+STATIC_URL = os.environ.get('STATIC_URL', '/static/')
+
+IS_DEV =os.environ.get('IS_DEV','')

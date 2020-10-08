@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="ab95969b-5108-4199-9e3f-adad15095564" name="Default Changelist" comment="Change to workaround workspaces.xml conflict">
+    <list default="true" id="ab95969b-5108-4199-9e3f-adad15095564" name="Default Changelist" comment="Some fixes suggested by Suzanne needed to work in deployed environment.">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/api/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/api/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/settings.py" beforeDir="false" afterPath="$PROJECT_DIR$/settings.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -64,7 +65,7 @@
       <recent name="$PROJECT_DIR$" />
     </key>
   </component>
-  <component name="RunManager" selected="Python tests.pytest in tests">
+  <component name="RunManager" selected="Flask server.IDC API">
     <configuration name="IDC API" type="Python.FlaskServer">
       <option name="additionalOptions" value="-h 0.0.0.0" />
       <option name="flaskDebug" value="true" />
@@ -76,7 +77,7 @@
       <envs>
         <env name="PYTHONPATH" value="$HOME/PycharmProjects/IDC-API:$HOME/PycharmProjects/IDC-API/api:$HOME/PycharmProjects/IDC-API/lib:$PYTHONPATH" />
         <env name="DJANGO_SETTINGS_MODULE" value="settings" />
-        <env name="SECURE_LOCAL_PATH" value="../secure_files/" />
+        <env name="SECURE_LOCAL_PATH" value="../secure_files/idc/" />
         <env name="FLASK_ENV" value="development" />
         <env name="FLASK_RUN_PORT" value="8095" />
         <env name="FLASK_APP" value="api" />
@@ -195,32 +196,6 @@
       <option name="_new_targetType" value="&quot;PYTHON&quot;" />
       <method v="2" />
     </configuration>
-    <configuration name="pytest for test_cohorts_preview.test_cohort_preview_collections" type="tests" factoryName="py.test" temporary="true" nameIsGenerated="true">
-      <module name="IDC-API" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="FLASK_ENV" value="development" />
-        <env name="FLASK_RUN_PORT" value="8095" />
-        <env name="SECURE_LOCAL_PATH" value="../secure_files/idc/" />
-        <env name="DJANGO_SETTINGS_MODULE" value="settings" />
-        <env name="FLASK_APP" value="api" />
-        <env name="PYTHONPATH" value="$HOME/PycharmProjects/IDC-API/:$HOME/PycharmProjects/IDC-API/api:$HOME/PycharmProjects/IDC-API/lib:$PYTHONPATH" />
-        <env name="FLASK_DEBUG" value="1" />
-        <env name="DJANGO_URI" value="http://localhost:8085" />
-      </envs>
-      <option name="SDK_HOME" value="$PROJECT_DIR$/venv/bin/python" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/tests" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="_new_keywords" value="&quot;&quot;" />
-      <option name="_new_additionalArguments" value="&quot;-s&quot;" />
-      <option name="_new_target" value="&quot;test_cohorts_preview.test_cohort_preview_collections&quot;" />
-      <option name="_new_targetType" value="&quot;PYTHON&quot;" />
-      <method v="2" />
-    </configuration>
     <configuration name="pytest for test_cohorts_preview.test_cohort_preview_patients" type="tests" factoryName="py.test" temporary="true" nameIsGenerated="true">
       <module name="IDC-API" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -270,6 +245,32 @@
       <option name="_new_keywords" value="&quot;test_create_cohort&quot;" />
       <option name="_new_additionalArguments" value="&quot;-s&quot;" />
       <option name="_new_target" value="&quot;test_cohorts.test_create_cohort&quot;" />
+      <option name="_new_targetType" value="&quot;PYTHON&quot;" />
+      <method v="2" />
+    </configuration>
+    <configuration name="pytest for test_main_routes.test_oauth2callback" type="tests" factoryName="py.test" temporary="true" nameIsGenerated="true">
+      <module name="IDC-API" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="FLASK_ENV" value="development" />
+        <env name="FLASK_RUN_PORT" value="8095" />
+        <env name="SECURE_LOCAL_PATH" value="../secure_files/idc/" />
+        <env name="DJANGO_SETTINGS_MODULE" value="settings" />
+        <env name="FLASK_APP" value="api" />
+        <env name="PYTHONPATH" value="$HOME/PycharmProjects/IDC-API/:$HOME/PycharmProjects/IDC-API/api:$HOME/PycharmProjects/IDC-API/lib:$PYTHONPATH" />
+        <env name="FLASK_DEBUG" value="1" />
+        <env name="DJANGO_URI" value="http://localhost:8085" />
+      </envs>
+      <option name="SDK_HOME" value="$PROJECT_DIR$/venv/bin/python" />
+      <option name="WORKING_DIRECTORY" value="" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="_new_keywords" value="&quot;test_oauth2callback&quot;" />
+      <option name="_new_additionalArguments" value="&quot;-s&quot;" />
+      <option name="_new_target" value="&quot;test_main_routes.test_oauth2callback&quot;" />
       <option name="_new_targetType" value="&quot;PYTHON&quot;" />
       <method v="2" />
     </configuration>
@@ -508,19 +509,19 @@
       <item itemvalue="Python tests.pytest in test_cohorts_preview.py" />
       <item itemvalue="Python tests.pytest for test_metadata.test_programs_get_collections" />
       <item itemvalue="Python tests.pytest in gen_filters_json.py" />
-      <item itemvalue="Python tests.pytest for test_cohorts_preview.test_cohort_preview_collections" />
       <item itemvalue="Python tests.pytest for test_cohorts_preview.test_cohort_preview_patients" />
       <item itemvalue="Python tests.pytest for test_cohorts_preview" />
       <item itemvalue="Python tests.pytest for test_cohort_manifest" />
       <item itemvalue="Python tests.pytest in test_cohort_manifest.py" />
+      <item itemvalue="Python tests.pytest for test_main_routes.test_oauth2callback" />
     </list>
     <recent_temporary>
       <list>
+        <item itemvalue="Python tests.pytest for test_main_routes.test_oauth2callback" />
         <item itemvalue="Python tests.pytest in test_cohort_manifest.py" />
         <item itemvalue="Python tests.pytest for test_cohort_manifest" />
         <item itemvalue="Python tests.pytest for test_cohorts_preview" />
         <item itemvalue="Python tests.pytest for test_cohorts_preview.test_cohort_preview_patients" />
-        <item itemvalue="Python tests.pytest for test_cohorts_preview.test_cohort_preview_collections" />
       </list>
     </recent_temporary>
   </component>
@@ -574,7 +575,7 @@
       <workItem from="1600305089679" duration="137650000" />
       <workItem from="1601069365740" duration="33992000" />
       <workItem from="1601438927743" duration="29941000" />
-      <workItem from="1601616427054" duration="38595000" />
+      <workItem from="1601616427054" duration="45437000" />
     </task>
     <task id="LOCAL-00001" summary="Revised API for programs, attributes.">
       <created>1598033000163</created>
@@ -800,7 +801,14 @@
       <option name="project" value="LOCAL" />
       <updated>1602026090200</updated>
     </task>
-    <option name="localTasksCounter" value="33" />
+    <task id="LOCAL-00033" summary="Some fixes suggested by Suzanne needed to work in deployed environment.">
+      <created>1602047009036</created>
+      <option name="number" value="00033" />
+      <option name="presentableId" value="LOCAL-00033" />
+      <option name="project" value="LOCAL" />
+      <updated>1602047009036</updated>
+    </task>
+    <option name="localTasksCounter" value="34" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -813,7 +821,6 @@
     <ignored-roots>
       <path value="$PROJECT_DIR$/.." />
     </ignored-roots>
-    <MESSAGE value="Some changes to the data returned by the /attributes API" />
     <MESSAGE value="Fixed schema validation: add &quot;additionProperties&quot;: True to filters schema. Had to post process json generation because it output &quot;true&quot; instead of &quot;True&quot;. Fix some error checking to return more specific error codes. Add a simple test to check that schema validation is working." />
     <MESSAGE value="Add another schema validation test." />
     <MESSAGE value="Added cohort manifest preview api" />
@@ -838,7 +845,8 @@
     <MESSAGE value="apiv1-&gt;api" />
     <MESSAGE value="Fixed names of manifest params" />
     <MESSAGE value="Change to workaround workspaces.xml conflict" />
-    <option name="LAST_COMMIT_MESSAGE" value="Change to workaround workspaces.xml conflict" />
+    <MESSAGE value="Some fixes suggested by Suzanne needed to work in deployed environment." />
+    <option name="LAST_COMMIT_MESSAGE" value="Some fixes suggested by Suzanne needed to work in deployed environment." />
   </component>
   <component name="WindowStateProjectService">
     <state x="2787" y="341" key="#Flask" timestamp="1594161253091">
@@ -846,11 +854,11 @@
     </state>
     <state x="2787" y="360" key="#Flask/0.23.1792.1017/1792.23.2560.1417@1792.23.2560.1417" timestamp="1594082093299" />
     <state x="2787" y="341" key="#Flask/0.23.1792.1097/1792.23.2560.1337@1792.23.2560.1337" timestamp="1594161253091" />
-    <state x="2536" y="374" width="1071" height="677" key="#com.intellij.execution.impl.EditConfigurationsDialog" timestamp="1602044894594">
-      <screen x="1792" y="23" width="2560" height="1337" />
+    <state x="2536" y="395" width="1071" height="677" key="#com.intellij.execution.impl.EditConfigurationsDialog" timestamp="1602119794864">
+      <screen x="1792" y="23" width="2560" height="1417" />
     </state>
-    <state x="2536" y="395" width="1071" height="688" key="#com.intellij.execution.impl.EditConfigurationsDialog/0.23.1792.1017/1792.23.2560.1417@1792.23.2560.1417" timestamp="1600296754315" />
-    <state x="2536" y="374" width="1071" height="677" key="#com.intellij.execution.impl.EditConfigurationsDialog/0.23.1792.1097/1792.23.2560.1337@1792.23.2560.1337" timestamp="1602044894594" />
+    <state x="2536" y="395" width="1071" height="688" key="#com.intellij.execution.impl.EditConfigurationsDialog/0.23.1792.1017/1792.23.2560.1417@1792.23.2560.1417" timestamp="1602119794864" />
+    <state x="2536" y="374" width="1071" height="677" key="#com.intellij.execution.impl.EditConfigurationsDialog/0.23.1792.1097/1792.23.2560.1337@1792.23.2560.1337" timestamp="1602086074261" />
     <state x="-5" y="23" width="1809" height="1017" maximized="true" key="#com.intellij.execution.junit2.states.ComparisonFailureState$DiffDialog" timestamp="1601603555241">
       <screen x="0" y="23" width="1792" height="1097" />
     </state>
@@ -924,89 +932,97 @@
     </state>
     <state x="2787" y="320" key="#test_metadata/0.23.1792.1017/1792.23.2560.1417@1792.23.2560.1417" timestamp="1597880346426" />
     <state x="2787" y="303" key="#test_metadata/0.23.1792.1097/1792.23.2560.1337@1792.23.2560.1337" timestamp="1598048312853" />
-    <state x="2681" y="296" width="1464" height="790" key="CommitChangelistDialog2" timestamp="1602026148248">
+    <state x="2681" y="296" width="1464" height="790" key="CommitChangelistDialog2" timestamp="1602047042319">
       <screen x="1792" y="23" width="2560" height="1337" />
     </state>
     <state x="2681" y="312" width="1464" height="790" key="CommitChangelistDialog2/0.23.1792.1017/1792.23.2560.1417@1792.23.2560.1417" timestamp="1601512069823" />
     <state x="622" y="230" key="CommitChangelistDialog2/0.23.1792.1017@0.23.1792.1017" timestamp="1600200334247" />
-    <state x="2681" y="296" key="CommitChangelistDialog2/0.23.1792.1097/1792.23.2560.1337@1792.23.2560.1337" timestamp="1602026148248" />
-    <state x="1797" y="27" width="2504" height="1315" maximized="true" key="DiffContextDialog" timestamp="1601744443094">
+    <state x="2681" y="296" key="CommitChangelistDialog2/0.23.1792.1097/1792.23.2560.1337@1792.23.2560.1337" timestamp="1602047042319" />
+    <state x="1797" y="27" width="2504" height="1315" maximized="true" key="DiffContextDialog" timestamp="1602046949415">
       <screen x="1792" y="23" width="2560" height="1337" />
     </state>
     <state x="1892" y="123" width="2360" height="1217" key="DiffContextDialog/0.23.1792.1017/1792.23.2560.1417@1792.23.2560.1417" timestamp="1600742842480" />
-    <state x="1797" y="27" width="2504" height="1315" maximized="true" key="DiffContextDialog/0.23.1792.1097/1792.23.2560.1337@1792.23.2560.1337" timestamp="1601744443094" />
+    <state x="1797" y="27" width="2504" height="1315" maximized="true" key="DiffContextDialog/0.23.1792.1097/1792.23.2560.1337@1792.23.2560.1337" timestamp="1602046949415" />
     <state x="3256" y="462" width="722" height="637" key="EditFileWatcherDialog" timestamp="1594327713446">
       <screen x="1792" y="23" width="2560" height="1337" />
     </state>
     <state x="3256" y="462" width="722" height="637" key="EditFileWatcherDialog/0.23.1792.1097/1792.23.2560.1337@1792.23.2560.1337" timestamp="1594327713446" />
-    <state x="2235" y="109" width="1780" height="499" key="EnvironmentVariablesDialog" timestamp="1602044890755">
-      <screen x="1792" y="23" width="2560" height="1337" />
+    <state x="2167" y="176" width="1780" height="499" key="EnvironmentVariablesDialog" timestamp="1602119792005">
+      <screen x="1792" y="23" width="2560" height="1417" />
     </state>
-    <state x="2167" y="176" width="1922" height="457" key="EnvironmentVariablesDialog/0.23.1792.1017/1792.23.2560.1417@1792.23.2560.1417" timestamp="1598912217171" />
-    <state x="2235" y="109" width="1780" height="499" key="EnvironmentVariablesDialog/0.23.1792.1097/1792.23.2560.1337@1792.23.2560.1337" timestamp="1602044890755" />
-    <state width="1259" height="316" key="GridCell.Tab.0.bottom" timestamp="1602044728022">
-      <screen x="1792" y="23" width="2560" height="1337" />
+    <state x="2167" y="176" width="1922" height="457" key="EnvironmentVariablesDialog/0.23.1792.1017/1792.23.2560.1417@1792.23.2560.1417" timestamp="1602119792005" />
+    <state x="2235" y="109" width="1780" height="499" key="EnvironmentVariablesDialog/0.23.1792.1097/1792.23.2560.1337@1792.23.2560.1337" timestamp="1602086071893" />
+    <state width="2518" height="284" key="GridCell.Tab.0.bottom" timestamp="1602120083921">
+      <screen x="1792" y="23" width="2560" height="1417" />
     </state>
+    <state width="2518" height="316" key="GridCell.Tab.0.bottom/0.0.1792.1120/1792.0.2560.1440@1792.0.2560.1440" timestamp="1602117215552" />
     <state width="2518" height="371" key="GridCell.Tab.0.bottom/0.23.1792.1017/1792.23.2560.1417@0.23.1792.1017" timestamp="1598917249909" />
-    <state width="2518" height="316" key="GridCell.Tab.0.bottom/0.23.1792.1017/1792.23.2560.1417@1792.23.2560.1417" timestamp="1601511954741" />
+    <state width="2518" height="284" key="GridCell.Tab.0.bottom/0.23.1792.1017/1792.23.2560.1417@1792.23.2560.1417" timestamp="1602120083921" />
     <state width="1750" height="316" key="GridCell.Tab.0.bottom/0.23.1792.1017@0.23.1792.1017" timestamp="1600285026719" />
-    <state width="1259" height="316" key="GridCell.Tab.0.bottom/0.23.1792.1097/1792.23.2560.1337@1792.23.2560.1337" timestamp="1602044728022" />
+    <state width="2518" height="316" key="GridCell.Tab.0.bottom/0.23.1792.1097/1792.23.2560.1337@1792.23.2560.1337" timestamp="1602087834020" />
     <state width="2518" height="316" key="GridCell.Tab.0.bottom/0.23.1792.1097/1792.23.2560.1417@1792.23.2560.1417" timestamp="1601329076184" />
-    <state width="1259" height="316" key="GridCell.Tab.0.center" timestamp="1602044728022">
-      <screen x="1792" y="23" width="2560" height="1337" />
+    <state width="2518" height="284" key="GridCell.Tab.0.center" timestamp="1602120083920">
+      <screen x="1792" y="23" width="2560" height="1417" />
     </state>
+    <state width="2518" height="316" key="GridCell.Tab.0.center/0.0.1792.1120/1792.0.2560.1440@1792.0.2560.1440" timestamp="1602117215551" />
     <state width="2518" height="371" key="GridCell.Tab.0.center/0.23.1792.1017/1792.23.2560.1417@0.23.1792.1017" timestamp="1598917249909" />
-    <state width="2518" height="316" key="GridCell.Tab.0.center/0.23.1792.1017/1792.23.2560.1417@1792.23.2560.1417" timestamp="1601511954741" />
+    <state width="2518" height="284" key="GridCell.Tab.0.center/0.23.1792.1017/1792.23.2560.1417@1792.23.2560.1417" timestamp="1602120083920" />
     <state width="1750" height="316" key="GridCell.Tab.0.center/0.23.1792.1017@0.23.1792.1017" timestamp="1600285026718" />
-    <state width="1259" height="316" key="GridCell.Tab.0.center/0.23.1792.1097/1792.23.2560.1337@1792.23.2560.1337" timestamp="1602044728022" />
+    <state width="2518" height="316" key="GridCell.Tab.0.center/0.23.1792.1097/1792.23.2560.1337@1792.23.2560.1337" timestamp="1602087834020" />
     <state width="2518" height="316" key="GridCell.Tab.0.center/0.23.1792.1097/1792.23.2560.1417@1792.23.2560.1417" timestamp="1601329076183" />
-    <state width="1259" height="316" key="GridCell.Tab.0.left" timestamp="1602044728021">
-      <screen x="1792" y="23" width="2560" height="1337" />
+    <state width="2518" height="284" key="GridCell.Tab.0.left" timestamp="1602120083919">
+      <screen x="1792" y="23" width="2560" height="1417" />
     </state>
+    <state width="2518" height="316" key="GridCell.Tab.0.left/0.0.1792.1120/1792.0.2560.1440@1792.0.2560.1440" timestamp="1602117215550" />
     <state width="2518" height="371" key="GridCell.Tab.0.left/0.23.1792.1017/1792.23.2560.1417@0.23.1792.1017" timestamp="1598917249908" />
-    <state width="2518" height="316" key="GridCell.Tab.0.left/0.23.1792.1017/1792.23.2560.1417@1792.23.2560.1417" timestamp="1601511954740" />
+    <state width="2518" height="284" key="GridCell.Tab.0.left/0.23.1792.1017/1792.23.2560.1417@1792.23.2560.1417" timestamp="1602120083919" />
     <state width="1750" height="316" key="GridCell.Tab.0.left/0.23.1792.1017@0.23.1792.1017" timestamp="1600285026718" />
-    <state width="1259" height="316" key="GridCell.Tab.0.left/0.23.1792.1097/1792.23.2560.1337@1792.23.2560.1337" timestamp="1602044728021" />
+    <state width="2518" height="316" key="GridCell.Tab.0.left/0.23.1792.1097/1792.23.2560.1337@1792.23.2560.1337" timestamp="1602087834019" />
     <state width="2518" height="316" key="GridCell.Tab.0.left/0.23.1792.1097/1792.23.2560.1417@1792.23.2560.1417" timestamp="1601329076181" />
-    <state width="1259" height="316" key="GridCell.Tab.0.right" timestamp="1602044728022">
-      <screen x="1792" y="23" width="2560" height="1337" />
+    <state width="2518" height="284" key="GridCell.Tab.0.right" timestamp="1602120083921">
+      <screen x="1792" y="23" width="2560" height="1417" />
     </state>
+    <state width="2518" height="316" key="GridCell.Tab.0.right/0.0.1792.1120/1792.0.2560.1440@1792.0.2560.1440" timestamp="1602117215552" />
     <state width="2518" height="371" key="GridCell.Tab.0.right/0.23.1792.1017/1792.23.2560.1417@0.23.1792.1017" timestamp="1598917249909" />
-    <state width="2518" height="316" key="GridCell.Tab.0.right/0.23.1792.1017/1792.23.2560.1417@1792.23.2560.1417" timestamp="1601511954741" />
+    <state width="2518" height="284" key="GridCell.Tab.0.right/0.23.1792.1017/1792.23.2560.1417@1792.23.2560.1417" timestamp="1602120083921" />
     <state width="1750" height="316" key="GridCell.Tab.0.right/0.23.1792.1017@0.23.1792.1017" timestamp="1600285026719" />
-    <state width="1259" height="316" key="GridCell.Tab.0.right/0.23.1792.1097/1792.23.2560.1337@1792.23.2560.1337" timestamp="1602044728022" />
+    <state width="2518" height="316" key="GridCell.Tab.0.right/0.23.1792.1097/1792.23.2560.1337@1792.23.2560.1337" timestamp="1602087834020" />
     <state width="2518" height="316" key="GridCell.Tab.0.right/0.23.1792.1097/1792.23.2560.1417@1792.23.2560.1417" timestamp="1601329076183" />
-    <state width="1259" height="316" key="GridCell.Tab.1.bottom" timestamp="1602044713261">
-      <screen x="1792" y="23" width="2560" height="1337" />
+    <state width="2518" height="284" key="GridCell.Tab.1.bottom" timestamp="1602120083869">
+      <screen x="1792" y="23" width="2560" height="1417" />
     </state>
+    <state width="2518" height="316" key="GridCell.Tab.1.bottom/0.0.1792.1120/1792.0.2560.1440@1792.0.2560.1440" timestamp="1602117215555" />
     <state width="2518" height="371" key="GridCell.Tab.1.bottom/0.23.1792.1017/1792.23.2560.1417@0.23.1792.1017" timestamp="1598917251981" />
-    <state width="2518" height="316" key="GridCell.Tab.1.bottom/0.23.1792.1017/1792.23.2560.1417@1792.23.2560.1417" timestamp="1601511954676" />
+    <state width="2518" height="284" key="GridCell.Tab.1.bottom/0.23.1792.1017/1792.23.2560.1417@1792.23.2560.1417" timestamp="1602120083869" />
     <state width="1750" height="316" key="GridCell.Tab.1.bottom/0.23.1792.1017@0.23.1792.1017" timestamp="1600285026661" />
-    <state width="1259" height="316" key="GridCell.Tab.1.bottom/0.23.1792.1097/1792.23.2560.1337@1792.23.2560.1337" timestamp="1602044713261" />
+    <state width="2518" height="316" key="GridCell.Tab.1.bottom/0.23.1792.1097/1792.23.2560.1337@1792.23.2560.1337" timestamp="1602087829893" />
     <state width="2518" height="316" key="GridCell.Tab.1.bottom/0.23.1792.1097/1792.23.2560.1417@1792.23.2560.1417" timestamp="1601329076065" />
-    <state width="1259" height="316" key="GridCell.Tab.1.center" timestamp="1602044713260">
-      <screen x="1792" y="23" width="2560" height="1337" />
+    <state width="2518" height="284" key="GridCell.Tab.1.center" timestamp="1602120083868">
+      <screen x="1792" y="23" width="2560" height="1417" />
     </state>
+    <state width="2518" height="316" key="GridCell.Tab.1.center/0.0.1792.1120/1792.0.2560.1440@1792.0.2560.1440" timestamp="1602117215554" />
     <state width="2518" height="371" key="GridCell.Tab.1.center/0.23.1792.1017/1792.23.2560.1417@0.23.1792.1017" timestamp="1598917251980" />
-    <state width="2518" height="316" key="GridCell.Tab.1.center/0.23.1792.1017/1792.23.2560.1417@1792.23.2560.1417" timestamp="1601511954676" />
+    <state width="2518" height="284" key="GridCell.Tab.1.center/0.23.1792.1017/1792.23.2560.1417@1792.23.2560.1417" timestamp="1602120083868" />
     <state width="1750" height="316" key="GridCell.Tab.1.center/0.23.1792.1017@0.23.1792.1017" timestamp="1600285026661" />
-    <state width="1259" height="316" key="GridCell.Tab.1.center/0.23.1792.1097/1792.23.2560.1337@1792.23.2560.1337" timestamp="1602044713260" />
+    <state width="2518" height="316" key="GridCell.Tab.1.center/0.23.1792.1097/1792.23.2560.1337@1792.23.2560.1337" timestamp="1602087829892" />
     <state width="2518" height="316" key="GridCell.Tab.1.center/0.23.1792.1097/1792.23.2560.1417@1792.23.2560.1417" timestamp="1601329076064" />
-    <state width="1259" height="316" key="GridCell.Tab.1.left" timestamp="1602044713260">
-      <screen x="1792" y="23" width="2560" height="1337" />
+    <state width="2518" height="284" key="GridCell.Tab.1.left" timestamp="1602120083867">
+      <screen x="1792" y="23" width="2560" height="1417" />
     </state>
+    <state width="2518" height="316" key="GridCell.Tab.1.left/0.0.1792.1120/1792.0.2560.1440@1792.0.2560.1440" timestamp="1602117215553" />
     <state width="2518" height="371" key="GridCell.Tab.1.left/0.23.1792.1017/1792.23.2560.1417@0.23.1792.1017" timestamp="1598917251979" />
-    <state width="2518" height="316" key="GridCell.Tab.1.left/0.23.1792.1017/1792.23.2560.1417@1792.23.2560.1417" timestamp="1601511954675" />
+    <state width="2518" height="284" key="GridCell.Tab.1.left/0.23.1792.1017/1792.23.2560.1417@1792.23.2560.1417" timestamp="1602120083867" />
     <state width="1750" height="316" key="GridCell.Tab.1.left/0.23.1792.1017@0.23.1792.1017" timestamp="1600285026661" />
-    <state width="1259" height="316" key="GridCell.Tab.1.left/0.23.1792.1097/1792.23.2560.1337@1792.23.2560.1337" timestamp="1602044713260" />
+    <state width="2518" height="316" key="GridCell.Tab.1.left/0.23.1792.1097/1792.23.2560.1337@1792.23.2560.1337" timestamp="1602087829892" />
     <state width="2518" height="316" key="GridCell.Tab.1.left/0.23.1792.1097/1792.23.2560.1417@1792.23.2560.1417" timestamp="1601329076064" />
-    <state width="1259" height="316" key="GridCell.Tab.1.right" timestamp="1602044713261">
-      <screen x="1792" y="23" width="2560" height="1337" />
+    <state width="2518" height="284" key="GridCell.Tab.1.right" timestamp="1602120083868">
+      <screen x="1792" y="23" width="2560" height="1417" />
     </state>
+    <state width="2518" height="316" key="GridCell.Tab.1.right/0.0.1792.1120/1792.0.2560.1440@1792.0.2560.1440" timestamp="1602117215555" />
     <state width="2518" height="371" key="GridCell.Tab.1.right/0.23.1792.1017/1792.23.2560.1417@0.23.1792.1017" timestamp="1598917251980" />
-    <state width="2518" height="316" key="GridCell.Tab.1.right/0.23.1792.1017/1792.23.2560.1417@1792.23.2560.1417" timestamp="1601511954676" />
+    <state width="2518" height="284" key="GridCell.Tab.1.right/0.23.1792.1017/1792.23.2560.1417@1792.23.2560.1417" timestamp="1602120083868" />
     <state width="1750" height="316" key="GridCell.Tab.1.right/0.23.1792.1017@0.23.1792.1017" timestamp="1600285026661" />
-    <state width="1259" height="316" key="GridCell.Tab.1.right/0.23.1792.1097/1792.23.2560.1337@1792.23.2560.1337" timestamp="1602044713261" />
+    <state width="2518" height="316" key="GridCell.Tab.1.right/0.23.1792.1097/1792.23.2560.1337@1792.23.2560.1337" timestamp="1602087829892" />
     <state width="2518" height="316" key="GridCell.Tab.1.right/0.23.1792.1097/1792.23.2560.1417@1792.23.2560.1417" timestamp="1601329076065" />
     <state x="2788" y="415" key="MultipleFileMergeDialog" timestamp="1601670805088">
       <screen x="1792" y="23" width="2560" height="1337" />
@@ -1017,12 +1033,12 @@
     </state>
     <state x="3126" y="323" key="SettingsEditor/0.23.1792.1017/1792.23.2560.1417@1792.23.2560.1417" timestamp="1600986594391" />
     <state x="3126" y="306" key="SettingsEditor/0.23.1792.1097/1792.23.2560.1337@1792.23.2560.1337" timestamp="1602044444190" />
-    <state x="2672" y="433" key="Vcs.Push.Dialog.v2" timestamp="1602026159171">
+    <state x="2672" y="433" key="Vcs.Push.Dialog.v2" timestamp="1602047054685">
       <screen x="1792" y="23" width="2560" height="1337" />
     </state>
     <state x="2672" y="458" key="Vcs.Push.Dialog.v2/0.23.1792.1017/1792.23.2560.1417@1792.23.2560.1417" timestamp="1601512077511" />
     <state x="616" y="335" key="Vcs.Push.Dialog.v2/0.23.1792.1017@0.23.1792.1017" timestamp="1600200348245" />
-    <state x="2672" y="433" key="Vcs.Push.Dialog.v2/0.23.1792.1097/1792.23.2560.1337@1792.23.2560.1337" timestamp="1602026159171" />
+    <state x="2672" y="433" key="Vcs.Push.Dialog.v2/0.23.1792.1097/1792.23.2560.1337@1792.23.2560.1337" timestamp="1602047054685" />
     <state width="1280" height="669" key="XDebugger.FullValuePopup" timestamp="1601602284758">
       <screen x="1792" y="23" width="2560" height="1337" />
     </state>
@@ -1040,17 +1056,17 @@
     </state>
     <state x="2742" y="566" key="com.intellij.ide.util.TipDialog/0.23.1792.1017/1792.23.2560.1417@1792.23.2560.1417" timestamp="1601441697906" />
     <state x="2742" y="535" key="com.intellij.ide.util.TipDialog/0.23.1792.1097/1792.23.2560.1337@1792.23.2560.1337" timestamp="1598047577254" />
-    <state x="2660" y="69" width="790" height="538" key="find.popup" timestamp="1602044081114">
-      <screen x="1792" y="23" width="2560" height="1337" />
+    <state x="3212" y="67" width="645" height="509" key="find.popup" timestamp="1602089726231">
+      <screen x="1792" y="0" width="2560" height="1440" />
     </state>
-    <state x="3212" y="67" width="645" height="509" key="find.popup/0.0.1792.1120/1792.0.2560.1440@1792.0.2560.1440" timestamp="1594161860654" />
+    <state x="3212" y="67" width="645" height="509" key="find.popup/0.0.1792.1120/1792.0.2560.1440@1792.0.2560.1440" timestamp="1602089726231" />
     <state x="3207" y="171" width="790" height="1065" key="find.popup/0.23.1792.1017/1792.23.2560.1417@1792.23.2560.1417" timestamp="1601511107906" />
     <state x="2660" y="69" width="790" height="538" key="find.popup/0.23.1792.1097/1792.23.2560.1337@1792.23.2560.1337" timestamp="1602044081114" />
-    <state x="2733" y="465" key="git4idea.merge.GitPullDialog" timestamp="1602026134562">
+    <state x="2733" y="465" key="git4idea.merge.GitPullDialog" timestamp="1602047029795">
       <screen x="1792" y="23" width="2560" height="1337" />
     </state>
     <state x="2733" y="491" key="git4idea.merge.GitPullDialog/0.23.1792.1017/1792.23.2560.1417@1792.23.2560.1417" timestamp="1599617262080" />
-    <state x="2733" y="465" key="git4idea.merge.GitPullDialog/0.23.1792.1097/1792.23.2560.1337@1792.23.2560.1337" timestamp="1602026134562" />
+    <state x="2733" y="465" key="git4idea.merge.GitPullDialog/0.23.1792.1097/1792.23.2560.1337@1792.23.2560.1337" timestamp="1602047029795" />
     <state x="2737" y="328" width="670" height="676" key="search.everywhere.popup" timestamp="1600710576813">
       <screen x="1792" y="23" width="2560" height="1417" />
     </state>
@@ -1081,12 +1097,12 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/api/__init__.py</url>
-          <line>135</line>
+          <line>136</line>
           <option name="timeStamp" value="44" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/api/__init__.py</url>
-          <line>123</line>
+          <line>124</line>
           <option name="timeStamp" value="48" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
@@ -1103,6 +1119,11 @@
           <url>file://$PROJECT_DIR$/api/user_routes.py</url>
           <line>36</line>
           <option name="timeStamp" value="102" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/api/main_routes.py</url>
+          <line>53</line>
+          <option name="timeStamp" value="105" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
@@ -1126,6 +1147,7 @@
     <SUITE FILE_PATH="coverage/IDC_API$pytest_for_test_cohorts_test_list_cohorts.coverage" NAME="pytest for test_cohorts.test_list_cohorts Coverage Results" MODIFIED="1600387936218" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="" />
     <SUITE FILE_PATH="coverage/IDC_API$pytest_for_test_cohorts_preview_test_cohort_preview_patients_eq.coverage" NAME="pytest for test_cohorts_preview.test_cohort_preview_patients_eq Coverage Results" MODIFIED="1600980097554" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/tests" />
     <SUITE FILE_PATH="coverage/IDC_API$pytest_for_tests_test_cohorts_test_get_cohort_manifest__1_.coverage" NAME="pytest for tests.test_cohorts.test_get_cohort_manifest (1) Coverage Results" MODIFIED="1600187275897" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/IDC_API$pytest_for_test_main_routes_test_oauth2callback.coverage" NAME="pytest for test_main_routes.test_oauth2callback Coverage Results" MODIFIED="1602089169282" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="" />
     <SUITE FILE_PATH="coverage/IDC_API$pytest_for_test_cohort_preview_manifest_test_cohort_preview_manifest.coverage" NAME="pytest for test_cohort_preview_manifest.test_cohort_preview_manifest Coverage Results" MODIFIED="1601270330591" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/tests" />
     <SUITE FILE_PATH="coverage/IDC_API$pytest_for_tests_test_cohorts_test_delete_a_cohort.coverage" NAME="pytest for tests.test_cohorts.test_delete_a_cohort Coverage Results" MODIFIED="1599089469516" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/IDC_API$pytest_for_test_cohorts_preview.coverage" NAME="pytest for test_cohorts_preview Coverage Results" MODIFIED="1601743827342" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/tests" />
@@ -1139,7 +1161,7 @@
     <SUITE FILE_PATH="coverage/IDC_API$pytest_for_tests_test_cohorts.coverage" NAME="pytest for tests.test_cohorts Coverage Results" MODIFIED="1601253775007" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/IDC_API$pytest_for_test_cohorts_preview_test_cohort_preview_instances.coverage" NAME="pytest for test_cohorts_preview.test_cohort_preview_instances Coverage Results" MODIFIED="1600794436918" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="" />
     <SUITE FILE_PATH="coverage/IDC_API$pytest_in_test_programs_py.coverage" NAME="pytest in test_metadata.py Coverage Results" MODIFIED="1597899191333" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="" />
-    <SUITE FILE_PATH="coverage/IDC_API$IDC_API.coverage" NAME="IDC API Coverage Results" MODIFIED="1602044498589" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/IDC_API$IDC_API.coverage" NAME="IDC API Coverage Results" MODIFIED="1602120083843" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/IDC_API$pytest_for_test_cohorts_test_get_cohort_sql.coverage" NAME="pytest for test_cohorts.test_get_cohort_sql Coverage Results" MODIFIED="1600819327899" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="" />
     <SUITE FILE_PATH="coverage/IDC_API$pytest_for_test_cohorts__1_.coverage" NAME="pytest for test_cohorts (1) Coverage Results" MODIFIED="1601263415350" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="" />
     <SUITE FILE_PATH="coverage/IDC_API$pytest_for_tests_test_cohorts_test_delete_cohorts.coverage" NAME="pytest for tests.test_cohorts.test_delete_cohorts Coverage Results" MODIFIED="1599089580440" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
@@ -1172,7 +1194,7 @@
     <SUITE FILE_PATH="coverage/IDC_API$pytest_for_tests_test_cohort_manifest_test_get_cohort_manifest_paged_doi.coverage" NAME="pytest for tests.test_cohort_manifest.test_get_cohort_manifest_paged_doi Coverage Results" MODIFIED="1601270090505" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/IDC_API$pytest_for_tests_test_cohorts_test_create_cohort_schema_validation.coverage" NAME="pytest for tests.test_cohorts.test_create_cohort_schema_validation Coverage Results" MODIFIED="1599867248715" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/IDC_API$pytest_for_test_cohort_manifest.coverage" NAME="pytest for test_cohort_manifest Coverage Results" MODIFIED="1601961346529" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="" />
-    <SUITE FILE_PATH="coverage/IDC_API$pytest_in_tests.coverage" NAME="pytest in tests Coverage Results" MODIFIED="1602044710211" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="" />
+    <SUITE FILE_PATH="coverage/IDC_API$pytest_in_tests.coverage" NAME="pytest in tests Coverage Results" MODIFIED="1602086202850" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="" />
     <SUITE FILE_PATH="coverage/IDC_API$pytest_for_tests_test_cohorts_test_get_cohort_patients.coverage" NAME="pytest for tests.test_cohorts.test_get_cohort_patients Coverage Results" MODIFIED="1600452250583" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/IDC_API$pytest_for_test_metadata.coverage" NAME="pytest for test_metadata Coverage Results" MODIFIED="1600737709860" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/tests" />
     <SUITE FILE_PATH="coverage/IDC_API$pytest_for_tests_test_cohorts_test_get_cohort_manifest_urls.coverage" NAME="pytest for tests.test_cohorts.test_get_cohort_manifest_urls Coverage Results" MODIFIED="1600187806116" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
