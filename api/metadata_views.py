@@ -32,7 +32,8 @@ DJANGO_URI = os.getenv('DJANGO_URI')
 
 def get_auth():
     with open(
-            join(dirname(__file__), '../{}{}'.format(os.environ.get('SECURE_LOCAL_PATH'), "dev.api_token.json"))) as f:
+            # join(dirname(__file__), '../{}{}'.format(os.environ.get('SECURE_LOCAL_PATH'), "dev.api_token.json"))) as f:
+            join(dirname(__file__), '../{}{}'.format(settings.SECURE_LOCAL_PATH, "dev.api_token.json"))) as f:
         api_token = f.read()
     auth = {"Authorization": "APIToken {}".format(api_token)}
     return auth
