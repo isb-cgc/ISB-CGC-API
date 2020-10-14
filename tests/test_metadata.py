@@ -98,124 +98,124 @@ def test_collections(client, app):
             'supporting_data': 'Clinical, Image Analyses'}
 
 
-def test_attributes(client, app):
+def test_facets(client, app):
     query_string = dict(
         idc_data_version = '',
         data_source = 'idc-dev-etl.idc_tcia_views_mvp_wave0.dicom_all'
     )
-    response = client.get('/v1/attributes',
+    response = client.get('/v1/facets',
                           query_string = query_string)
     assert response.status_code == 200
     data = response.json['data_sources']
     data_sources = {data_source['data_source']: {key: data_source[key] for key in data_source.keys() if key != 'data_source'} for data_source in data}
-    attributes = {attribute['name']: {key: attribute[key] for key in attribute.keys() if key != 'name'} for attribute in data_sources[query_string['data_source']]['attributes']}
-    assert 'Modality' in attributes
-    assert attributes['Modality'] == {'active': True, 'data_type': 'Categorical String', 'idc_data_version': '1.0', 'units': None}
+    facets = {facet['name']: {key: facet[key] for key in facet.keys() if key != 'name'} for facet in data_sources[query_string['data_source']]['facets']}
+    assert 'Modality' in facets
+    assert facets['Modality'] == {'active': True, 'data_type': 'Categorical String', 'idc_data_version': '1.0', 'units': None}
 
     query_string = dict(
         idc_data_version='',
         data_source = 'isb-cgc.TCGA_bioclin_v0.Biospecimen'
     )
-    response = client.get('/v1/attributes',
+    response = client.get('/v1/facets',
                           query_string = query_string)
     assert response.status_code == 200
     data = response.json['data_sources']
     data_sources = {data_source['data_source']: {key: data_source[key] for key in data_source.keys() if key != 'data_source'} for data_source in data}
-    attributes = {attribute['name']: {key: attribute[key] for key in attribute.keys() if key != 'name'} for attribute in data_sources[query_string['data_source']]['attributes']}
-    assert 'program_name' in attributes
-    # assert attributes['program_name']['dataSetTypes'][0]['data_type'] == 'Clinical, Biospecimen, and Mutation Data'
-    assert attributes['program_name'] == {'active': True, 'data_type': 'Categorical String', 'idc_data_version': '1.0', 'units': None}
+    facets = {facet['name']: {key: facet[key] for key in facet.keys() if key != 'name'} for facet in data_sources[query_string['data_source']]['facets']}
+    assert 'program_name' in facets
+    # assert facets['program_name']['dataSetTypes'][0]['data_type'] == 'Clinical, Biospecimen, and Mutation Data'
+    assert facets['program_name'] == {'active': True, 'data_type': 'Categorical String', 'idc_data_version': '1.0', 'units': None}
 
     query_string = dict(
         idc_data_version='',
     data_source = 'isb-cgc.TCGA_bioclin_v0.clinical_v1'
     )
-    response = client.get('/v1/attributes',
+    response = client.get('/v1/facets',
                           query_string = query_string)
     assert response.status_code == 200
     data = response.json['data_sources']
     data_sources = {data_source['data_source']: {key: data_source[key] for key in data_source.keys() if key != 'data_source'} for data_source in data}
-    attributes = {attribute['name']: {key: attribute[key] for key in attribute.keys() if key != 'name'} for attribute in data_sources[query_string['data_source']]['attributes']}
-    assert 'program_name' in attributes
-    # assert attributes['program_name']['dataSetTypes'][0]['data_type'] == 'Clinical, Biospecimen, and Mutation Data'
-    assert attributes['program_name'] == {'active': True, 'data_type': 'Categorical String', 'idc_data_version': '1.0', 'units': None}
+    facets = {facet['name']: {key: facet[key] for key in facet.keys() if key != 'name'} for facet in data_sources[query_string['data_source']]['facets']}
+    assert 'program_name' in facets
+    # assert facets['program_name']['dataSetTypes'][0]['data_type'] == 'Clinical, Biospecimen, and Mutation Data'
+    assert facets['program_name'] == {'active': True, 'data_type': 'Categorical String', 'idc_data_version': '1.0', 'units': None}
 
     query_string = dict(
         idc_data_version='',
     data_source = 'idc-dev-etl.idc_tcia_views_mvp_wave0.segmentations'
     )
-    response = client.get('/v1/attributes/',
+    response = client.get('/v1/facets/',
                           query_string = query_string)
     assert response.status_code == 200
     data = response.json['data_sources']
     data_sources = {data_source['data_source']: {key: data_source[key] for key in data_source.keys() if key != 'data_source'} for data_source in data}
-    attributes = {attribute['name']: {key: attribute[key] for key in attribute.keys() if key != 'name'} for attribute in data_sources[query_string['data_source']]['attributes']}
-    assert 'AnatomicRegionSequence' in attributes
-    # assert attributes['program_name']['dataSetTypes'][0]['data_type'] == 'Clinical, Biospecimen, and Mutation Data'
-    assert attributes['AnatomicRegionSequence'] == {'active': True, 'data_type': 'Categorical String', 'idc_data_version': '1.0', 'units': None}
+    facets = {facet['name']: {key: facet[key] for key in facet.keys() if key != 'name'} for facet in data_sources[query_string['data_source']]['facets']}
+    assert 'AnatomicRegionSequence' in facets
+    # assert facets['program_name']['dataSetTypes'][0]['data_type'] == 'Clinical, Biospecimen, and Mutation Data'
+    assert facets['AnatomicRegionSequence'] == {'active': True, 'data_type': 'Categorical String', 'idc_data_version': '1.0', 'units': None}
 
     query_string = dict(
         idc_data_version='',
     data_source = 'idc-dev-etl.idc_tcia_views_mvp_wave0.qualitative_measurements'
     )
-    response = client.get('/v1/attributes',
+    response = client.get('/v1/facets',
                           query_string = query_string)
     assert response.status_code == 200
     data = response.json['data_sources']
     data_sources = {data_source['data_source']: {key: data_source[key] for key in data_source.keys() if key != 'data_source'} for data_source in data}
-    attributes = {attribute['name']: {key: attribute[key] for key in attribute.keys() if key != 'name'} for attribute in data_sources[query_string['data_source']]['attributes']}
-    assert 'Internal_structure' in attributes
-    # assert attributes['program_name']['dataSetTypes'][0]['data_type'] == 'Clinical, Biospecimen, and Mutation Data'
-    assert attributes['Internal_structure'] == {'active': True, 'data_type': 'Categorical String', 'idc_data_version': '1.0', 'units': None}
+    facets = {facet['name']: {key: facet[key] for key in facet.keys() if key != 'name'} for facet in data_sources[query_string['data_source']]['facets']}
+    assert 'Internal_structure' in facets
+    # assert facets['program_name']['dataSetTypes'][0]['data_type'] == 'Clinical, Biospecimen, and Mutation Data'
+    assert facets['Internal_structure'] == {'active': True, 'data_type': 'Categorical String', 'idc_data_version': '1.0', 'units': None}
 
     query_string = dict(
         idc_data_version='',
     data_source = 'idc-dev-etl.idc_tcia_views_mvp_wave0.quantitative_measurements'
     )
-    response = client.get('/v1/attributes',
+    response = client.get('/v1/facets',
                           query_string = query_string)
     assert response.status_code == 200
     data = response.json['data_sources']
     data_sources = {data_source['data_source']: {key: data_source[key] for key in data_source.keys() if key != 'data_source'} for data_source in data}
-    attributes = {attribute['name']: {key: attribute[key] for key in attribute.keys() if key != 'name'} for attribute in data_sources[query_string['data_source']]['attributes']}
-    assert 'SUVbw' in attributes
-    # assert attributes['program_name']['dataSetTypes'][0]['data_type'] == 'Clinical, Biospecimen, and Mutation Data'
-    assert attributes['SUVbw'] == {'active': True, 'data_type': 'Continuous Numeric', 'idc_data_version': '1.0', 'units': 'Standardized Uptake Value body weight'}
+    facets = {facet['name']: {key: facet[key] for key in facet.keys() if key != 'name'} for facet in data_sources[query_string['data_source']]['facets']}
+    assert 'SUVbw' in facets
+    # assert facets['program_name']['dataSetTypes'][0]['data_type'] == 'Clinical, Biospecimen, and Mutation Data'
+    assert facets['SUVbw'] == {'active': True, 'data_type': 'Continuous Numeric', 'idc_data_version': '1.0', 'units': 'Standardized Uptake Value body weight'}
 
 
-def test_attributes_all_data_sources(client, app):
+def test_facets_all_data_sources(client, app):
     query_string = dict(
         idc_data_version = '',
         data_source = ''
     )
-    response = client.get('/v1/attributes',
+    response = client.get('/v1/facets',
                           query_string = query_string)
     assert response.status_code == 200
     data = response.json['data_sources']
     data_sources = {data_source['data_source']: {key: data_source[key] for key in data_source.keys() if key != 'data_source'} for data_source in data}
     for data_source in data_sources:
-        attributes = {attribute['name']: {key: attribute[key] for key in attribute.keys() if key != 'name'} for attribute in data_sources[data_source]['attributes']}
+        facets = {facet['name']: {key: facet[key] for key in facet.keys() if key != 'name'} for facet in data_sources[data_source]['facets']}
         if data_source == 'idc-dev-etl.idc_tcia_views_mvp_wave0.dicom_all':
-            assert 'Modality' in attributes
-            assert attributes['Modality'] == {'active': True, 'data_type': 'Categorical String', 'idc_data_version': '1.0', 'units': None}
+            assert 'Modality' in facets
+            assert facets['Modality'] == {'active': True, 'data_type': 'Categorical String', 'idc_data_version': '1.0', 'units': None}
         elif data_source == 'isb-cgc.TCGA_bioclin_v0.Biospecimen':
-            assert 'program_name' in attributes
-            # assert attributes['program_name']['dataSetTypes'][0]['data_type'] == 'Clinical, Biospecimen, and Mutation Data'
-            assert attributes['program_name'] == {'active': True, 'data_type': 'Categorical String',
+            assert 'program_name' in facets
+            # assert facets['program_name']['dataSetTypes'][0]['data_type'] == 'Clinical, Biospecimen, and Mutation Data'
+            assert facets['program_name'] == {'active': True, 'data_type': 'Categorical String',
                                                   'idc_data_version': '1.0', 'units': None}
         elif data_source == 'isb-cgc.TCGA_bioclin_v0.clinical_v1':
-            assert 'program_name' in attributes
-            # assert attributes['program_name']['dataSetTypes'][0]['data_type'] == 'Clinical, Biospecimen, and Mutation Data'
-            assert attributes['program_name'] == {'active': True, 'data_type': 'Categorical String', 'idc_data_version': '1.0', 'units': None}
+            assert 'program_name' in facets
+            # assert facets['program_name']['dataSetTypes'][0]['data_type'] == 'Clinical, Biospecimen, and Mutation Data'
+            assert facets['program_name'] == {'active': True, 'data_type': 'Categorical String', 'idc_data_version': '1.0', 'units': None}
         elif data_source == 'idc-dev-etl.idc_tcia_views_mvp_wave0.segmentations':
-            assert 'AnatomicRegionSequence' in attributes
-            assert attributes['AnatomicRegionSequence'] == {'active': True, 'data_type': 'Categorical String', 'idc_data_version': '1.0', 'units': None}
+            assert 'AnatomicRegionSequence' in facets
+            assert facets['AnatomicRegionSequence'] == {'active': True, 'data_type': 'Categorical String', 'idc_data_version': '1.0', 'units': None}
         elif data_source == 'idc-dev-etl.idc_tcia_views_mvp_wave0.qualitative_measurements':
-            assert 'Internal_structure' in attributes
-            assert attributes['Internal_structure'] == {'active': True, 'data_type': 'Categorical String', 'idc_data_version': '1.0', 'units': None}
+            assert 'Internal_structure' in facets
+            assert facets['Internal_structure'] == {'active': True, 'data_type': 'Categorical String', 'idc_data_version': '1.0', 'units': None}
         elif data_source == 'idc-dev-etl.idc_tcia_views_mvp_wave0.quantitative_measurements':
-            assert 'SUVbw' in attributes
-            assert attributes['SUVbw'] == {'active': True, 'data_type': 'Continuous Numeric', 'idc_data_version': '1.0', 'units': 'Standardized Uptake Value body weight'}
+            assert 'SUVbw' in facets
+            assert facets['SUVbw'] == {'active': True, 'data_type': 'Continuous Numeric', 'idc_data_version': '1.0', 'units': 'Standardized Uptake Value body weight'}
         else:
             assert 0==1
 
