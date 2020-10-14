@@ -210,13 +210,15 @@ def get_objects(return_level, cohort_info, maxResults):
 
 
 # Get a list of GCS URLs or CRDC DOIs of the instances in the cohort
-def get_manifest(access_method, manifest_info, maxResults):
+def get_manifest(manifest_info, maxResults):
 
     results = BigQuerySupport.get_job_result_page(job_ref=manifest_info['job_reference'],
                                                   page_token=manifest_info['next_page'], maxResults=maxResults)
     # rows holds the actual data
     rows = form_rows(results['current_page_rows'])
     rowsReturned = len(results["current_page_rows"])
+
+    access_method = 'doi' if results['schema']['fields'][0]['name'] =='crdc_instance_uuid' else 'url'
 
     manifest_info["manifest"] = dict(
                 totalFound = int(results['totalFound']),

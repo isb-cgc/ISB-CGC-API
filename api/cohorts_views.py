@@ -310,7 +310,7 @@ def get_cohort_manifest(user, cohort_id):
                 # job_reference = cohort_data['job_reference']
                 manifest_info['next_page'] = None
 
-            manifest_info = get_manifest(path_params['access_method'], manifest_info, local_params['page_size'])
+            manifest_info = get_manifest(manifest_info, local_params['page_size'])
             # We don't return the project ID to the user
             manifest_info['job_reference'].pop('projectId')
 
@@ -579,7 +579,7 @@ def get_cohort_preview_manifest():
                     # job_reference = cohort_data['job_reference']
                     manifest_info['next_page'] = None
 
-                manifest_info = get_manifest(path_params['access_method'], manifest_info, local_params['page_size'])
+                manifest_info = get_manifest(manifest_info, local_params['page_size'])
                 # We don't return the project ID to the user
                 manifest_info['job_reference'].pop('projectId')
 
