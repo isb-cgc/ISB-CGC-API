@@ -19,7 +19,7 @@ import json
 
 from tests.cohort_utils import merge, pretty_print_cohortObjects, create_cohort_for_test_get_cohort_xxx, delete_cohort
 
-def test_cohort_preview_manifest(client, app):
+def test_cohort_preview_manifest_url(client, app):
 
     filterSet = {
         "idc_data_version": "",
@@ -49,18 +49,43 @@ def test_cohort_preview_manifest(client, app):
 
     assert response.content_type == 'application/json'
     assert response.status_code == 200
+    cohort = response.json['cohort']
     manifest = response.json['manifest']
-    assert manifest['accessMethods']['url_access_type'] == 'gs'
-    assert manifest['accessMethods']['url_region'] == 'us'
-    assert len(manifest['accessMethods']['urls']) == 1638
-    assert len(manifest['accessMethods']['dois']) == 0
-    assert manifest['accessMethods']['totalFound'] == 1638
-    assert manifest['accessMethods']['rowsReturned'] ==1638
-    assert manifest['accessMethods']['next_page'] == None
+    job_reference = response.json['job_reference']
+    next_page = response.json['next_page']
 
+    assert cohort['name'] == cohortSpec['name']
+    assert cohort['description'] == cohortSpec['description']
+    assert cohort['filterSet']['filters'] == cohortSpec['filterSet']['filters']
 
+    assert manifest['url_access_type'] == 'gs'
+    assert manifest['url_region'] == 'us'
+    assert len(manifest['urls']) == 1638
+    assert len(manifest['dois']) == 0
+    assert manifest['totalFound'] == 1638
+    assert manifest['rowsReturned'] ==1638
     assert 'gs://idc-tcia-tcga-read/dicom/1.3.6.1.4.1.14519.5.2.1.3671.4018.768291480177931556369061239508/1.3.6.1.4.1.14519.5.2.1.3671.4018.183714953600569164837490663631/1.3.6.1.4.1.14519.5.2.1.3671.4018.101814896314793708382026281597.dcm#1592638257658431' \
-        in manifest['accessMethods']['urls']
+        in manifest['urls']
+
+    assert next_page == None
+
+def test_cohort_preview_manifest_doi(client, app):
+    filterSet = {
+        "idc_data_version": "",
+        "filters": {
+            "collection_id": ["tcga_read"],
+            "Modality": ["CT", "MR"],
+            "race": ["WHITE"]}}
+
+    cohortSpec = {"name": "testcohort",
+                  "description": "Test description",
+                  "filterSet": filterSet}
+
+    mimetype = ' application/json'
+    headers = {
+        'Content-Type': mimetype,
+        'Accept': mimetype
+    }
 
     query_string = {
         'access_method': 'doi',
@@ -73,14 +98,24 @@ def test_cohort_preview_manifest(client, app):
 
     assert response.content_type == 'application/json'
     assert response.status_code == 200
+    cohort = response.json['cohort']
     manifest = response.json['manifest']
-    assert manifest['accessMethods']['url_access_type'] == 'gs'
-    assert manifest['accessMethods']['url_region'] == 'us'
-    assert len(manifest['accessMethods']['urls']) == 0
-    assert len(manifest['accessMethods']['dois']) == 1638
-    assert manifest['accessMethods']['totalFound'] == 1638
-    assert manifest['accessMethods']['rowsReturned'] ==1638
-    assert manifest['accessMethods']['next_page'] == None
+    job_reference = response.json['job_reference']
+    next_page = response.json['next_page']
+
+    assert cohort['name'] == cohortSpec['name']
+    assert cohort['description'] == cohortSpec['description']
+    assert cohort['filterSet']['filters'] == cohortSpec['filterSet']['filters']
+
+    assert manifest['url_access_type'] == 'gs'
+    assert manifest['url_region'] == 'us'
+    assert len(manifest['urls']) == 0
+    assert len(manifest['dois']) == 1638
+    assert manifest['totalFound'] == 1638
+    assert manifest['rowsReturned'] ==1638
+    assert 'dg.4DFC/0013f110-0928-4d66-ba61-7c3e80b48a68' in manifest['dois']
+
+    assert next_page == None
 
 
 def test_get_cohort_preview_manifest_paged_doi(client, app):
@@ -104,6 +139,7 @@ def test_get_cohort_preview_manifest_paged_doi(client, app):
 
     query_string = {
         'access_method': 'doi',
+        'page_size': 5000
     }
 
     response = client.post('v1/cohorts/preview/manifest',
@@ -112,30 +148,35 @@ def test_get_cohort_preview_manifest_paged_doi(client, app):
                             headers=headers)
 
     assert response.status_code == 200
+    cohort = response.json['cohort']
     manifest = response.json['manifest']
+    job_reference = response.json['job_reference']
+    next_page = response.json['next_page']
 
-    accessMethods = manifest['accessMethods']
-    assert accessMethods['url_access_type'] == 'gs'
-    assert accessMethods['url_region'] == 'us'
-    assert len(accessMethods['urls']) == 0
-    assert len(accessMethods['dois']) == 5000
-    assert accessMethods['totalFound'] == 21940
-    assert accessMethods['rowsReturned'] ==5000
+    assert cohort['name'] == cohortSpec['name']
+    assert cohort['description'] == cohortSpec['description']
+    assert cohort['filterSet']['filters'] == cohortSpec['filterSet']['filters']
 
-    job_reference = accessMethods['job_reference']
-    next_page = accessMethods['next_page']
+    assert manifest['url_access_type'] == 'gs'
+    assert manifest['url_region'] == 'us'
+    assert len(manifest['urls']) == 0
+    assert len(manifest['dois']) == 5000
+    assert manifest['totalFound'] == 21940
+    assert manifest['rowsReturned'] ==5000
+
     assert job_reference
     assert next_page
 
     #Now get the remaining pages
-    totaldois= accessMethods['dois']
-    totalRowsReturned = accessMethods['rowsReturned']
+    totaldois= manifest['dois']
+    totalRowsReturned = manifest['rowsReturned']
 
     while next_page:
         query_string = {
             'access_method': 'doi',
             'job_reference': job_reference,
-            'next_page': next_page
+            'next_page': next_page,
+            'page_size': 5000
         }
 
         # Get the list of objects in the cohort
@@ -146,19 +187,19 @@ def test_get_cohort_preview_manifest_paged_doi(client, app):
 
         assert response.content_type == 'application/json'
         assert response.status_code == 200
+        cohort = response.json['cohort']
         manifest = response.json['manifest']
+        job_reference = response.json['job_reference']
+        next_page = response.json['next_page']
 
-        accessMethods = manifest['accessMethods']
-        rowsReturned = accessMethods["rowsReturned"]
+        rowsReturned = manifest["rowsReturned"]
         totalRowsReturned += rowsReturned
-        dois = accessMethods["dois"]
+        dois = manifest["dois"]
         totaldois.extend(dois)
-        job_reference = accessMethods['job_reference']
-        next_page = accessMethods['next_page']
 
     assert 'dg.4DFC/0009e98e-bca2-4a68-ada1-62e0a8b2dbaf' in totaldois
-    assert totalRowsReturned == accessMethods['totalFound']
-    assert accessMethods['totalFound'] == len(set(totaldois))
+    assert totalRowsReturned == manifest['totalFound']
+    assert manifest['totalFound'] == len(set(totaldois))
 
 
 def test_get_cohort_manifest_paged_url(client, app):
@@ -182,6 +223,7 @@ def test_get_cohort_manifest_paged_url(client, app):
 
     query_string = {
         'access_method': 'url',
+        'page_size': 5000
     }
 
     response = client.post('v1/cohorts/preview/manifest',
@@ -191,30 +233,35 @@ def test_get_cohort_manifest_paged_url(client, app):
 
     assert response.content_type == 'application/json'
     assert response.status_code == 200
+    cohort = response.json['cohort']
     manifest = response.json['manifest']
+    job_reference = response.json['job_reference']
+    next_page = response.json['next_page']
 
-    accessMethods = manifest['accessMethods']
-    assert accessMethods['url_access_type'] == 'gs'
-    assert accessMethods['url_region'] == 'us'
-    assert len(accessMethods['urls']) == 5000
-    assert len(accessMethods['dois']) == 0
-    assert accessMethods['totalFound'] == 21940
-    assert accessMethods['rowsReturned'] ==5000
+    assert cohort['name'] == cohortSpec['name']
+    assert cohort['description'] == cohortSpec['description']
+    assert cohort['filterSet']['filters'] == cohortSpec['filterSet']['filters']
 
-    job_reference = accessMethods['job_reference']
-    next_page = accessMethods['next_page']
+    assert manifest['url_access_type'] == 'gs'
+    assert manifest['url_region'] == 'us'
+    assert len(manifest['urls']) == 5000
+    assert len(manifest['dois']) == 0
+    assert manifest['totalFound'] == 21940
+    assert manifest['rowsReturned'] ==5000
+
     assert job_reference
     assert next_page
 
     #Now get the remaining pages
-    totalurls= accessMethods['urls']
-    totalRowsReturned = accessMethods['rowsReturned']
+    totalurls= manifest['urls']
+    totalRowsReturned = manifest['rowsReturned']
 
     while next_page:
         query_string = {
             'access_method': 'url',
             'job_reference': job_reference,
-            'next_page': next_page
+            'next_page': next_page,
+            'page_size': 5000
         }
 
         # Get the list of objects in the cohort
@@ -225,17 +272,17 @@ def test_get_cohort_manifest_paged_url(client, app):
 
         assert response.content_type == 'application/json'
         assert response.status_code == 200
+        cohort = response.json['cohort']
         manifest = response.json['manifest']
+        job_reference = response.json['job_reference']
+        next_page = response.json['next_page']
 
-        accessMethods = manifest['accessMethods']
-        rowsReturned = accessMethods["rowsReturned"]
+        rowsReturned = manifest["rowsReturned"]
         totalRowsReturned += rowsReturned
-        urls = accessMethods["urls"]
+        urls = manifest["urls"]
         totalurls.extend(urls)
-        job_reference = accessMethods['job_reference']
-        next_page = accessMethods['next_page']
 
     assert 'gs://idc-tcia-tcga-luad/dicom/1.3.6.1.4.1.14519.5.2.1.3983.9002.107656215131152599944682699489/1.3.6.1.4.1.14519.5.2.1.3983.9002.169653067901690682811265889199/1.3.6.1.4.1.14519.5.2.1.3983.9002.139964879860094005134659511427.dcm#1592637570041744' \
         in totalurls
-    assert totalRowsReturned == accessMethods['totalFound']
-    assert accessMethods['totalFound'] == len(set(totalurls))
+    assert totalRowsReturned == manifest['totalFound']
+    assert manifest['totalFound'] == len(set(totalurls))

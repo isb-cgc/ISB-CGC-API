@@ -16,8 +16,7 @@
 
 import logging
 import re
-import os
-from os.path import join, dirname
+import json
 import requests
 
 from flask import request
@@ -27,6 +26,7 @@ from python_settings import settings
 
 from jsonschema import validate as schema_validate, ValidationError
 from . schemas.filterset import COHORT_FILTER_SCHEMA
+from . cohort_utils import get_objects, get_manifest
 
 BLACKLIST_RE = settings.BLACKLIST_RE
 
@@ -116,6 +116,211 @@ def create_cohort(user):
     return cohort_info
 
 
+def get_cohort_list(user):
+    cohort_list = None
+
+    try:
+        auth = get_auth()
+        path_params = {'email': user}
+        results = requests.get("{}/{}/".format(settings.BASE_URL, 'cohorts/api'),
+            params=path_params, headers=auth)
+        cohort_list = results.json()
+    except Exception as e:
+        logger.exception(e)
+
+    return cohort_list
+
+
+
+def get_cohort_objects(user, cohort_id):
+    blacklist = re.compile(BLACKLIST_RE, re.UNICODE)
+    cohort_objects = None
+
+    path_params = {
+        "email": user,
+        "return_level": "Series",
+        "return_sql": False,
+     }
+
+    local_params = {
+        "job_reference": {},
+        "next_page": "",
+        "page_size": 10000
+    }
+
+    return_levels = [
+        'None',
+        'Collection',
+        'Patient',
+        'Study',
+        'Series',
+        'Instance'
+    ]
+
+    # Get and validate parameters
+    for key in request.args.keys():
+        match = blacklist.search(str(key))
+        if match:
+            return dict(
+                message="Key {} contains invalid characters; please edit and resubmit. " +
+                        "[Saw {}]".format(str(key, match)),
+                code=400
+            )
+        if key in path_params:
+            path_params[key] = request.args.get(key)
+        elif key in local_params:
+            local_params[key] = request.args.get(key)
+        else:
+            cohort_objects =dict(
+                message = "Invalid key {}".format(key),
+                code = 400
+            )
+            return cohort_objects
+
+    local_params['page_size'] = int(local_params['page_size'])
+    for s in ['return_sql']: #'return_objects', 'return_filter', 'return_DOIs', 'return_URLs']:
+        if s in path_params:
+            path_params[s] = path_params[s] in [True, 'True']
+    if path_params['return_level'] not in return_levels:
+        return dict(
+            message="Invalid return level {}".format(path_params['return_level']),
+            code=400
+        )
+    if cohort_objects == None:
+        try:
+            if local_params["job_reference"] and local_params['next_page']:
+                job_reference = json.loads(local_params["job_reference"].replace("'",'"'))
+                # We don't return the project ID to the user
+                job_reference['projectId'] = settings.BIGQUERY_PROJECT_ID
+                next_page = local_params['next_page']
+                cohort_objects = dict(
+                    cohort = {},
+                    job_reference = job_reference,
+                    next_page = next_page
+                )
+            else:
+                auth = get_auth()
+                results = requests.get("{}/{}/{}/".format(settings.BASE_URL, 'cohorts/api', cohort_id),
+                                       params=path_params, headers=auth)
+                cohort_objects = results.json()
+
+                if "message" in cohort_objects:
+                    return cohort_objects
+
+                # job_reference = cohort_data['job_reference']
+                cohort_objects['next_page'] = None
+
+            if path_params['return_level']!= 'None':
+                cohort_objects = get_objects(path_params['return_level'], cohort_objects, local_params['page_size'])
+                # We don't return the project ID to the user
+                cohort_objects['job_reference'].pop('projectId')
+            else:
+                cohort_objects['cohortObjects'] = dict(
+                    totalFound = 0,
+                    rowsReturned = 0,
+                    collections = [],
+                )
+        except Exception as e:
+            logger.exception(e)
+
+
+    return cohort_objects
+
+
+def get_cohort_manifest(user, cohort_id):
+    blacklist = re.compile(BLACKLIST_RE, re.UNICODE)
+    manifest_info = None
+
+    path_params = {
+        "email": user,
+        "access_method": "doi",
+        "url_access_type": "gs",
+        "url_region": "us",
+    }
+
+    local_params = {
+        "job_reference": None,
+        "next_page": "",
+        "page_size": 10000
+    }
+
+    access_methods = ["url", "doi"]
+    url_access_types = ["gs"]
+    url_regions = ["us"]
+
+    # Get and validate parameters
+    for key in request.args.keys():
+        match = blacklist.search(str(key))
+        if match:
+            return dict(
+                message = "Key {} contains invalid characters; please edit and resubmit. " +
+                           "[Saw {}]".format(str(key, match)),
+                code = 400
+            )
+        if key in path_params:
+            path_params[key] = request.args.get(key)
+        elif key in local_params:
+            local_params[key] = request.args.get(key)
+
+        else:
+            manifest_info = dict(
+                message="Invalid key {}".format(key),
+                code=400
+            )
+            return manifest_info
+
+    local_params['page_size'] = int(local_params['page_size'])
+    if path_params["access_method"] not in access_methods:
+        return dict(
+            message = "Invalid access_method {}".format(path_params['access_method']),
+            code = 400
+        )
+    if path_params['url_access_type'] not in url_access_types:
+        return dict(
+            message = "Invalid url_access_type {}".format(path_params['url_access_type']),
+            code = 400
+        )
+    if path_params['url_region'] not in url_regions:
+        return dict(
+            message = "Invalid url_region {}".format(path_params['url_region']),
+            code = 400
+        )
+    if manifest_info == None:
+
+        try:
+            if local_params["job_reference"] and local_params['next_page']:
+                job_reference = json.loads(local_params["job_reference"].replace("'",'"'))
+                # We don't return the project ID to the user
+                job_reference['projectId'] = settings.BIGQUERY_PROJECT_ID
+                next_page = local_params['next_page']
+                manifest_info = dict(
+                    cohort = {},
+                    job_reference = job_reference,
+                    next_page = next_page
+                )
+            else:
+                auth = get_auth()
+                results = requests.get("{}/cohorts/api/{}/manifest/".format(settings.BASE_URL, cohort_id),
+                                       params=path_params, headers=auth)
+                manifest_info = results.json()
+
+                if "message" in manifest_info:
+                    return manifest_info
+
+                # job_reference = cohort_data['job_reference']
+                manifest_info['next_page'] = None
+
+            manifest_info = get_manifest(path_params['access_method'], manifest_info, local_params['page_size'])
+            # We don't return the project ID to the user
+            manifest_info['job_reference'].pop('projectId')
+
+
+        except Exception as e:
+            logger.exception(e)
+
+    return manifest_info
+
+
 def delete_cohort(user, cohort_id):
     cohort_ids = [cohort_id]
 
@@ -130,6 +335,7 @@ def delete_cohorts(user):
     cohort_list = _delete_cohorts(user, request_data)
 
     return cohort_list
+
 
 def _delete_cohorts(user, cohort_ids):
     cohort_list = None
@@ -150,143 +356,6 @@ def _delete_cohorts(user, cohort_ids):
     return cohort_list
 
 
-def get_cohort_manifest(user, cohort_id):
-    blacklist = re.compile(BLACKLIST_RE, re.UNICODE)
-    cohort_objects = None
-
-    path_params = {
-        "email": user,
-        "access_method": "doi",
-        "url_access_type": "gs",
-        "url_region": "us",
-        "job_reference": None,
-        "next_page": ""}
-
-    access_methodes = ["url", "doi"]
-    url_access_types = ["gs"]
-    url_regions = ["us"]
-
-    # Get and validate parameters
-    for key in request.args.keys():
-        match = blacklist.search(str(key))
-        if match:
-            return dict(
-                message = "Key {} contains invalid characters; please edit and resubmit. " +
-                           "[Saw {}]".format(str(key, match)),
-                code = 400
-            )
-        if key in path_params:
-            path_params[key] = request.args.get(key)
-    if path_params["access_method"] not in access_methodes:
-        return dict(
-            message = "Invalid access_method {}".format(path_params['access_method']),
-            code = 400
-        )
-    if path_params['url_access_type'] not in url_access_types:
-        return dict(
-            message = "Invalid url_access_type {}".format(path_params['url_access_type']),
-            code = 400
-        )
-    if path_params['url_region'] not in url_regions:
-        return dict(
-            message = "Invalid url_region {}".format(path_params['url_region']),
-            code = 400
-        )
-    if cohort_objects == None:
-
-        try:
-            auth = get_auth()
-            results = requests.get("{}/cohorts/api/{}/manifest/".format(settings.BASE_URL, cohort_id),
-                                params = path_params, headers=auth)
-            cohort_objects = results.json()
-        except Exception as e:
-            logger.exception(e)
-
-    return cohort_objects
-
-
-def get_cohort_objects(user, cohort_id):
-    blacklist = re.compile(BLACKLIST_RE, re.UNICODE)
-    cohort_objects = None
-
-    path_params = {
-        "email": user,
-        "return_level": "Series",
-        "return_sql": False,
-        "job_reference": {},
-        "next_page": ""}
-
-    # Several parameters that we are not making available to users
-    hidden_params= {
-        # "return_objects": True,
-        "return_filter": True,
-        # "return_DOIs": False,
-        # "return_URLs": False,
-    }
-
-    return_levels = [
-        'None',
-        'Collection',
-        'Patient',
-        'Study',
-        'Series',
-        'Instance'
-    ]
-
-    # Get and validate parameters
-    for key in request.args.keys():
-        match = blacklist.search(str(key))
-        if match:
-            return dict(
-                message = "Key {} contains invalid characters; please edit and resubmit. " +
-                           "[Saw {}]".format(str(key, match)),
-                code = 400
-            )
-        if key in path_params:
-            path_params[key] = request.args.get(key)
-        else:
-            cohort_objects = {
-                "message": "Invalid key {}".format(key),
-                'code': 400
-            }
-            return cohort_objects
-
-    # path_params['fetch_count'] = int(path_params['fetch_count'])
-    # path_params['offset'] = int(path_params['offset'])
-    # path_params['page'] = int(path_params['page'])
-    for s in ['return_sql']: # 'return_objects', 'return_filter', 'return_DOIs', 'return_URLs']: # ,
-        if s in path_params:
-            path_params[s] = path_params[s] in [True, 'True']
-    # if path_params["fetch_count"] > MAX_FETCH_COUNT:
-    #     return dict(
-    #         message = "Fetch count greater than {}".format(MAX_FETCH_COUNT),
-    #         code = 400
-    #     )
-    # if path_params["offset"] < 0:
-    #     return dict(
-    #         message = "Fetch offset {} must be non-negative integer".format(path_params['offset']),
-    #         code = 400
-    #     )
-    if path_params['return_level'] not in return_levels:
-        return dict(
-            message = "Invalid return level {}".format(path_params['return_level']),
-            code = 400
-        )
-    if cohort_objects == None:
-        # path_params["page"] = int(path_params['page'])
-
-        try:
-            auth = get_auth()
-            path_params.update(hidden_params)
-            results = requests.get("{}/{}/{}/".format(settings.BASE_URL, 'cohorts/api',cohort_id),
-                                params = path_params, headers=auth)
-            cohort_objects = results.json()
-        except Exception as e:
-            logger.exception(e)
-
-    return cohort_objects
-
-
 def post_cohort_preview():
     blacklist = re.compile(BLACKLIST_RE, re.UNICODE)
     cohort_objects = None
@@ -294,18 +363,12 @@ def post_cohort_preview():
     path_params = {
         "return_level": "Series",
         "return_sql": False,
-        "job_reference": {},
-        "next_page": ""}
-        # "fetch_count": 1000,
-        # "page": 1,
-        # "offset": 0}
+     }
 
-    # Several parameters that we are not making available to users
-    hidden_params= {
-        # "return_objects": True,
-        "return_filter": True,
-        # "return_DOIs": False,
-        # "return_URLs": False,
+    local_params = {
+        "job_reference": {},
+        "next_page": "",
+        "page_size": 10000
     }
 
     return_levels = [
@@ -339,6 +402,14 @@ def post_cohort_preview():
                             code=400
                         )
                     path_params[key] = request.args.get(key)
+                elif key in local_params:
+                    if match:
+                        return dict(
+                            message="Key {} contains invalid characters; please edit and resubmit. " +
+                                    "[Saw {}]".format(str(key, match)),
+                            code=400
+                        )
+                    local_params[key] = request.args.get(key)
                 else:
                     cohort_objects =dict(
                         message = "Invalid key {}".format(key),
@@ -346,22 +417,10 @@ def post_cohort_preview():
                     )
                     return cohort_objects
 
-            # path_params['fetch_count'] = int(path_params['fetch_count'])
-            # path_params['offset'] = int(path_params['offset'])
-            # path_params['page'] = int(path_params['page'])
+            local_params['page_size'] = int(local_params['page_size'])
             for s in ['return_sql']: #'return_objects', 'return_filter', 'return_DOIs', 'return_URLs']:
                 if s in path_params:
                     path_params[s] = path_params[s] in [True, 'True']
-            # if path_params["fetch_count"] > MAX_FETCH_COUNT:
-            #     return dict(
-            #         message="Fetch count greater than {}".format(MAX_FETCH_COUNT),
-            #         code=400
-            #     )
-            # if path_params["offset"] < 0:
-            #     return dict(
-            #         message="Fetch offset {} must be non-negative integer".format(path_params['offset']),
-            #         code=400
-            #     )
             if path_params['return_level'] not in return_levels:
                 return dict(
                     message="Invalid return level {}".format(path_params['return_level']),
@@ -369,14 +428,43 @@ def post_cohort_preview():
                 )
             if cohort_objects == None:
                 try:
-                    auth = get_auth()
-                    data = {"request_data": request_data}
-                    path_params.update(hidden_params)
-                    results = requests.post("{}/{}/".format(settings.BASE_URL, 'cohorts/api/preview'),
-                                           params=path_params, json=data, headers=auth)
-                    cohort_objects = results.json()
+                    if local_params["job_reference"] and local_params['next_page']:
+                        job_reference = json.loads(local_params["job_reference"].replace("'",'"'))
+                        # We don't return the project ID to the user
+                        job_reference['projectId'] = settings.BIGQUERY_PROJECT_ID
+                        next_page = local_params['next_page']
+                        cohort_objects = dict(
+                            cohort = {},
+                            job_reference = job_reference,
+                            next_page = next_page
+                        )
+                    else:
+                        auth = get_auth()
+                        data = {"request_data": request_data}
+                        results = requests.post("{}/{}/".format(settings.BASE_URL, 'cohorts/api/preview'),
+                                               params=path_params, json=data, headers=auth)
+                        cohort_objects = results.json()
+
+                        if "message" in cohort_objects:
+                            return cohort_objects
+
+                        # job_reference = cohort_data['job_reference']
+                        cohort_objects['next_page'] = None
+
+                    if path_params['return_level']!= 'None':
+                        cohort_objects = get_objects(path_params['return_level'], cohort_objects, local_params['page_size'])
+                        # We don't return the project ID to the user
+                        cohort_objects['job_reference'].pop('projectId')
+                    else:
+                        cohort_objects['cohortObjects'] = dict(
+                            totalFound = 0,
+                            rowsReturned = 0,
+                            collections = [],
+                        )
                 except Exception as e:
                     logger.exception(e)
+
+
 
         return cohort_objects
 
@@ -401,14 +489,19 @@ def post_cohort_preview():
 
 def get_cohort_preview_manifest():
     blacklist = re.compile(BLACKLIST_RE, re.UNICODE)
-    cohort_objects = None
+    manifest_info = None
 
     path_params = {
         "access_method": "doi",
         "url_access_type": "gs",
         "url_region": "us",
+    }
+
+    local_params = {
         "job_reference": None,
-        "next_page": ""}
+        "next_page": "",
+        "page_size": 10000
+    }
 
     access_methods = ["url", "doi"]
     url_access_types = ["gs"]
@@ -421,7 +514,6 @@ def get_cohort_preview_manifest():
             cohort_objects = dict(
                 message='No filters were provided; ensure that the request body contains a \'filters\' property.')
         else:
-
             schema_validate(request_data['filterSet'], COHORT_FILTER_SCHEMA)
 
         # Get and validate parameters
@@ -429,43 +521,73 @@ def get_cohort_preview_manifest():
             match = blacklist.search(str(key))
             if match:
                 return dict(
-                    message="Key {} contains invalid characters; please edit and resubmit. " +
-                            "[Saw {}]".format(str(key, match)),
-                    code=400
+                    message = "Key {} contains invalid characters; please edit and resubmit. " +
+                               "[Saw {}]".format(str(key, match)),
+                    code = 400
                 )
             if key in path_params:
                 path_params[key] = request.args.get(key)
+            elif key in local_params:
+                local_params[key] = request.args.get(key)
+
             else:
-                cohort_objects = {
-                    "message": "Invalid key {}".format(key),
-                    'code': 400
-                }
+                manifest_info = dict(
+                    message="Invalid key {}".format(key),
+                    code=400
+                )
+                return manifest_info
+
+        local_params['page_size'] = int(local_params['page_size'])
         if path_params["access_method"] not in access_methods:
             return dict(
-                message="Invalid access_method {}".format(path_params['access_method']),
-                code=400
+                message = "Invalid access_method {}".format(path_params['access_method']),
+                code = 400
             )
         if path_params['url_access_type'] not in url_access_types:
             return dict(
-                message="Invalid url_access_type {}".format(path_params['url_access_type']),
-                code=400
+                message = "Invalid url_access_type {}".format(path_params['url_access_type']),
+                code = 400
             )
         if path_params['url_region'] not in url_regions:
             return dict(
-                message="Invalid url_region {}".format(path_params['url_region']),
-                code=400
+                message = "Invalid url_region {}".format(path_params['url_region']),
+                code = 400
             )
-        if cohort_objects == None:
+        if manifest_info == None:
+
             try:
-                auth = get_auth()
-                data = {"request_data": request_data}
-                results = requests.post("{}/cohorts/api/preview/manifest/".format(settings.BASE_URL),
-                                    params = path_params, json=data, headers=auth)
-                cohort_objects = results.json()
+                if local_params["job_reference"] and local_params['next_page']:
+                    job_reference = json.loads(local_params["job_reference"].replace("'",'"'))
+                    # We don't return the project ID to the user
+                    job_reference['projectId'] = settings.BIGQUERY_PROJECT_ID
+                    next_page = local_params['next_page']
+                    manifest_info = dict(
+                        cohort = {},
+                        job_reference = job_reference,
+                        next_page = next_page
+                    )
+                else:
+                    auth = get_auth()
+                    data = {"request_data": request_data}
+                    results = requests.post("{}/cohorts/api/preview/manifest/".format(settings.BASE_URL),
+                                            params=path_params, json=data, headers=auth)
+                    manifest_info = results.json()
+
+                    if "message" in manifest_info:
+                        return manifest_info
+
+                    # job_reference = cohort_data['job_reference']
+                    manifest_info['next_page'] = None
+
+                manifest_info = get_manifest(path_params['access_method'], manifest_info, local_params['page_size'])
+                # We don't return the project ID to the user
+                manifest_info['job_reference'].pop('projectId')
+
             except Exception as e:
                 logger.exception(e)
-
-        return cohort_objects
+                cohort_objects = dict(
+                    message='[ERROR] Error trying to preview a cohort',
+                    code=400)
 
     except BadRequest as e:
         logger.warning("[WARNING] Received bad request - couldn't load JSON.")
@@ -477,28 +599,11 @@ def get_cohort_preview_manifest():
         cohort_objects = dict(
             message= 'Filters were improperly formatted.',
             code = 400)
-    except Exception as e:
-        logger.exception(e)
-        cohort_objects = dict(
-            message = '[ERROR] Error trying to preview a cohort',
-            code = 400)
-
-    return cohort_objects
 
 
-def get_cohort_list(user):
-    cohort_list = None
+    return manifest_info
 
-    try:
-        auth = get_auth()
-        path_params = {'email': user}
-        results = requests.get("{}/{}/".format(settings.BASE_URL, 'cohorts/api'),
-            params=path_params, headers=auth)
-        cohort_list = results.json()
-    except Exception as e:
-        logger.exception(e)
 
-    return cohort_list
 
 
 

@@ -48,6 +48,8 @@ LOGGER_NAME = os.environ.get('API_LOGGER_NAME', 'main_logger')
 BASE_URL                = os.environ.get('BASE_URL', 'https://idc-dev.appspot.com')
 BASE_API_URL            = os.environ.get('BASE_API_URL', 'https://api-dot-idc-dev.appspot.com')
 
+# Make this unique, and don't share it with anybody.
+SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', '')
 
 
 GOOGLE_APPLICATION_CREDENTIALS  = join(dirname(__file__), SECURE_LOCAL_PATH, os.environ.get('GOOGLE_APPLICATION_CREDENTIALS', ''))
@@ -66,16 +68,29 @@ except Exception:
 #   MAXes to prevent size-limited events from causing errors
 ##############################################################
 
+##############################################################
+#   MAXes to prevent size-limited events from causing errors
+##############################################################
+
 # Google App Engine has a response size limit of 32M. ~65k entries from the cohort_filelist view will
 # equal just under the 32M limit. If each individual listing is ever lengthened or shortened this
 # number should be adjusted
 MAX_FILE_LIST_REQUEST = 65000
+MAX_BQ_RECORD_RESULT = int(os.environ.get('MAX_BQ_RECORD_RESULT', '5000'))
 
-# IGV limit to prevent users from trying ot open dozens of files
+# Rough max file size to allow for eg. barcode list upload, to prevent triggering RequestDataTooBig
+FILE_SIZE_UPLOAD_MAX = 1950000
+
+# IGV limit to prevent users from trying to open dozens of files
 MAX_FILES_IGV = 5
 
-# Rough max file size to allow for eg. barcode list upload, to revent triggering RequestDataTooBig
-FILE_SIZE_UPLOAD_MAX = 1950000
+BQ_MAX_ATTEMPTS             = int(os.environ.get('BQ_MAX_ATTEMPTS', '10'))
+MAX_BQ_INSERT                        = int(os.environ.get('MAX_BQ_INSERT', '500'))
+
+GCLOUD_PROJECT_ID              = os.environ.get('GCLOUD_PROJECT_ID', '')
+GCLOUD_PROJECT_NUMBER          = os.environ.get('GCLOUD_PROJECT_NUMBER', '')
+BIGQUERY_PROJECT_ID            = os.environ.get('BIGQUERY_PROJECT_ID', GCLOUD_PROJECT_ID)
+BIGQUERY_DATA_PROJECT_ID       = os.environ.get('BIGQUERY_DATA_PROJECT_ID', GCLOUD_PROJECT_ID)
 
 
 # Explicitly check for known items
