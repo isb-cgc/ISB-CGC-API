@@ -85,4 +85,4 @@ BLACKLIST_RE = r'((?i)<script>|(?i)</script>|!\[\]|!!\[\]|\[\]\[\".*\"\]|(?i)<if
 # Example: "http://media.lawrence.com/static/"
 STATIC_URL = os.environ.get('STATIC_URL', '/static/')
 
-IS_DEV =os.environ.get('IS_DEV','')
+IS_DEV = (os.environ.get('IS_DEV', 'False') == 'True')
