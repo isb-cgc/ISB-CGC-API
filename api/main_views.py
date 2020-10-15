@@ -24,18 +24,16 @@ logger = logging.getLogger(settings.LOGGER_NAME)
 
 
 def get_privacy():
-    DJANGO_URI = os.getenv('DJANGO_URI')
     try:
-        result = requests.get("{}/{}".format(DJANGO_URI, 'privacy/'))
+        result = requests.get("{}/{}".format(settings.BASE_URL, 'privacy/'))
     except:
         if result.status_code != 200:
            raise Exception("oops!")
     return result
 
 def get_help():
-    DJANGO_URI = os.getenv('DJANGO_URI')
     try:
-        result = requests.get("{}/{}".format(DJANGO_URI, 'help/'))
+        result = requests.get("{}/{}".format(settings.BASE_URL, 'help/'))
     except:
         if result.status_code != 200:
            raise Exception("oops!")

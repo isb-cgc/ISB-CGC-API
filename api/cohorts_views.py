@@ -32,8 +32,6 @@ BLACKLIST_RE = settings.BLACKLIST_RE
 
 logger = logging.getLogger(settings.LOGGER_NAME)
 
-DJANGO_URI = os.getenv('DJANGO_URI')
-
 MAX_FETCH_COUNT = 5000
 
 def convert_to_bool(s):
@@ -95,7 +93,7 @@ def create_cohort(user):
             try:
                 auth = get_auth()
                 data = {"request_data": request_data}
-                response = requests.post("{}/{}/".format(DJANGO_URI, 'cohorts/api/save_cohort'),
+                response = requests.post("{}/{}/".format(settings.BASE_URL, 'cohorts/api/save_cohort'),
                                 params=path_params, json=data, headers=auth)
                 cohort_info = response.json()
             except Exception as e:
@@ -143,7 +141,7 @@ def _delete_cohorts(user, cohort_ids):
         auth = get_auth()
         path_params = {'email': user}
         data = {"cohort_ids": cohort_ids}
-        results = requests.delete("{}/{}/".format(DJANGO_URI, 'cohorts/api/delete_cohort'),
+        results = requests.delete("{}/{}/".format(settings.BASE_URL, 'cohorts/api/delete_cohort'),
                     params=path_params, json=data, headers=auth)
         cohort_list = results.json()
     except Exception as e:
@@ -198,7 +196,7 @@ def get_cohort_manifest(user, cohort_id):
 
         try:
             auth = get_auth()
-            results = requests.get("{}/cohorts/api/{}/manifest/".format(DJANGO_URI, cohort_id),
+            results = requests.get("{}/cohorts/api/{}/manifest/".format(settings.BASE_URL, cohort_id),
                                 params = path_params, headers=auth)
             cohort_objects = results.json()
         except Exception as e:
@@ -280,7 +278,7 @@ def get_cohort_objects(user, cohort_id):
         try:
             auth = get_auth()
             path_params.update(hidden_params)
-            results = requests.get("{}/{}/{}/".format(DJANGO_URI, 'cohorts/api',cohort_id),
+            results = requests.get("{}/{}/{}/".format(settings.BASE_URL, 'cohorts/api',cohort_id),
                                 params = path_params, headers=auth)
             cohort_objects = results.json()
         except Exception as e:
@@ -374,7 +372,7 @@ def post_cohort_preview():
                     auth = get_auth()
                     data = {"request_data": request_data}
                     path_params.update(hidden_params)
-                    results = requests.post("{}/{}/".format(DJANGO_URI, 'cohorts/api/preview'),
+                    results = requests.post("{}/{}/".format(settings.BASE_URL, 'cohorts/api/preview'),
                                            params=path_params, json=data, headers=auth)
                     cohort_objects = results.json()
                 except Exception as e:
@@ -461,7 +459,7 @@ def get_cohort_preview_manifest():
             try:
                 auth = get_auth()
                 data = {"request_data": request_data}
-                results = requests.post("{}/cohorts/api/preview/manifest/".format(DJANGO_URI),
+                results = requests.post("{}/cohorts/api/preview/manifest/".format(settings.BASE_URL),
                                     params = path_params, json=data, headers=auth)
                 cohort_objects = results.json()
             except Exception as e:
@@ -494,7 +492,7 @@ def get_cohort_list(user):
     try:
         auth = get_auth()
         path_params = {'email': user}
-        results = requests.get("{}/{}/".format(DJANGO_URI, 'cohorts/api'),
+        results = requests.get("{}/{}/".format(settings.BASE_URL, 'cohorts/api'),
             params=path_params, headers=auth)
         cohort_list = results.json()
     except Exception as e:

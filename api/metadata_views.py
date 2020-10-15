@@ -28,7 +28,6 @@ from python_settings import settings
 logger = logging.getLogger(settings.LOGGER_NAME)
 
 BLACKLIST_RE = settings.BLACKLIST_RE
-DJANGO_URI = os.getenv('DJANGO_URI')
 
 def get_auth():
     auth = {"Authorization": "APIToken {}".format(settings.API_AUTH_TOKEN)}
@@ -40,7 +39,7 @@ def get_versions():
 
     try:
         auth = get_auth()
-        response = requests.get("{}/{}".format(DJANGO_URI, 'collections/api/versions/'), headers=auth)
+        response = requests.get("{}/{}".format(settings.BASE_URL, 'collections/api/versions/'), headers=auth)
         info = response.json()
     except Exception as e:
         logger.exception(e)
@@ -76,7 +75,7 @@ def get_attributes():
 
     try:
         auth = get_auth()
-        response = requests.get("{}/{}/".format(DJANGO_URI, 'collections/api/attributes'),
+        response = requests.get("{}/{}/".format(settings.BASE_URL, 'collections/api/attributes'),
                                 params=path_params, headers=auth)
         info = response.json()
     except Exception as e:
@@ -114,7 +113,7 @@ def get_collections():
 
     try:
         auth = get_auth()
-        response = requests.get("{}/collections/api/".format(DJANGO_URI),
+        response = requests.get("{}/collections/api/".format(settings.BASE_URL),
                                 params=path_params, headers=auth)
         info = response.json()
     except Exception as e:
