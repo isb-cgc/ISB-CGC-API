@@ -73,13 +73,17 @@ def get_attributes():
                 code=400
             )
 
-    try:
-        auth = get_auth()
-        response = requests.get("{}/{}/".format(settings.BASE_URL, 'collections/api/attributes'),
-                                params=path_params, headers=auth)
-        info = response.json()
-    except Exception as e:
-        logger.exception(e)
+    # try:
+    #     auth = get_auth()
+    #     response = requests.get("{}/{}/".format(settings.BASE_URL, 'collections/api/attributes'),
+    #                             params=path_params, headers=auth)
+    #     info = response.json()
+    # except Exception as e:
+    #     logger.exception(e)
+    auth = get_auth()
+    response = requests.get("{}/{}/".format(settings.BASE_URL, 'collections/api/attributes'),
+                            params=path_params, headers=auth)
+    info = response.json()
 
     return info
 
