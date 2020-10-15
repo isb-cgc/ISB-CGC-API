@@ -37,12 +37,14 @@ def get_auth():
 def get_versions():
     info = None
 
-    try:
-        auth = get_auth()
-        response = requests.get("{}/{}".format(settings.BASE_URL, 'collections/api/versions/'), headers=auth)
-        info = response.json()
-    except Exception as e:
-        logger.exception(e)
+    # try:
+    auth = get_auth()
+    print("BASE_URL={}".format(settings.BASE_URL))
+    response = requests.get("{}/{}".format(settings.BASE_URL, 'collections/api/versions/'), headers=auth)
+    info = response.json()
+    # except Exception as e:
+    #     logger.exception(e)
+    #     print("***Exception: {}".format(e))
 
     return info
 
@@ -73,6 +75,12 @@ def get_attributes():
                 code=400
             )
 
+    auth = get_auth()
+    response = requests.get("{}/{}/".format(settings.BASE_URL, 'collections/api/attributes'),
+                            params=path_params, headers=auth)
+    info = response.json()
+
+    return info
     # try:
     #     auth = get_auth()
     #     response = requests.get("{}/{}/".format(settings.BASE_URL, 'collections/api/attributes'),
@@ -80,12 +88,6 @@ def get_attributes():
     #     info = response.json()
     # except Exception as e:
     #     logger.exception(e)
-    auth = get_auth()
-    response = requests.get("{}/{}/".format(settings.BASE_URL, 'collections/api/attributes'),
-                            params=path_params, headers=auth)
-    info = response.json()
-
-    return info
 
 
 def get_collections():
@@ -115,13 +117,13 @@ def get_collections():
                 code=400
             )
 
-    try:
-        auth = get_auth()
-        response = requests.get("{}/collections/api/".format(settings.BASE_URL),
-                                params=path_params, headers=auth)
-        info = response.json()
-    except Exception as e:
-        logger.exception(e)
+    # try:
+    auth = get_auth()
+    response = requests.get("{}/collections/api/".format(settings.BASE_URL),
+                            params=path_params, headers=auth)
+    info = response.json()
+    # except Exception as e:
+    #     logger.exception(e)
 
     return info
 
