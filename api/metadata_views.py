@@ -40,7 +40,8 @@ def get_versions():
     # try:
     auth = get_auth()
     print("BASE_URL={}".format(settings.BASE_URL))
-    response = requests.get("{}/{}".format(settings.BASE_URL, 'collections/api/versions/'), headers=auth)
+    # response = requests.get("{}/{}".format(settings.BASE_URL, 'collections/api/versions/'), headers=auth)
+    response = requests.get('https://idc-dev.appspot.com/collections/api/versions/', headers=auth)
     info = response.json()
     # except Exception as e:
     #     logger.exception(e)
