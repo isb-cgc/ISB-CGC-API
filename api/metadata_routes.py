@@ -48,7 +48,6 @@ def versions():
     except Exception as e:
         logger.error("[ERROR] While retrieving IDC versions:")
         logger.exception(e)
-        print("***Exception: {}".format(e))
         response = jsonify({
             'code': 500,
             'message': 'Encountered an error while retrieving the versions list.'
