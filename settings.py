@@ -46,6 +46,8 @@ print("[STATUS] DEBUG mode is "+str(DEBUG))
 LOGGER_NAME = os.environ.get('API_LOGGER_NAME', 'main_logger')
 
 BASE_URL                = os.environ.get('BASE_URL', 'https://idc-dev.appspot.com')
+print(">>>BASE_URL env: {}".format(os.environ.get('BASE_URL')))
+print(">>>BASE_URL setting: {}".format(os.environ.get('BASE_URL', 'https://idc-dev.appspot.com')))
 BASE_API_URL            = os.environ.get('BASE_API_URL', 'https://api-dot-idc-dev.appspot.com')
 
 
@@ -64,7 +66,8 @@ except Exception:
 
 ##############################################################
 #   MAXes to prevent size-limited events from causing errors
-##############################################################
+# These are really here to satisfy some definitions in the bq_helpers.py
+# dependency chain.
 
 # Google App Engine has a response size limit of 32M. ~65k entries from the cohort_filelist view will
 # equal just under the 32M limit. If each individual listing is ever lengthened or shortened this
@@ -76,6 +79,7 @@ MAX_FILES_IGV = 5
 
 # Rough max file size to allow for eg. barcode list upload, to revent triggering RequestDataTooBig
 FILE_SIZE_UPLOAD_MAX = 1950000
+##############################################################
 
 
 # Explicitly check for known items
