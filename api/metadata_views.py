@@ -45,8 +45,8 @@ def get_versions():
         info = response.json()
         if response.status_code != 200:
             logger.error("[ERROR] Error code in response from web app: {}".format(response.status_code))
+            logger.error("[ERROR] auth: {}".format(auth))
             logger.error("[ERROR] Content: {}".format(response.content))
-            logger.exception(e)
             return dict(
                 message="Encountered an error while retrieving the versions list: {}".format(response.content),
                 code=response.status_code
@@ -97,8 +97,8 @@ def get_attributes():
         info = response.json()
         if response.status_code != 200:
             logger.error("[ERROR] Error code in response from web app: {}".format(response.status_code))
+            logger.error("[ERROR] auth: {}".format(auth))
             logger.error("[ERROR] Content: {}".format(response.content))
-            logger.exception(e)
             return dict(
                 message="Encountered an error while retrieving the attributes list: {}".format(response.content),
                 code=response.status_code
@@ -151,8 +151,8 @@ def get_collections():
         info = response.json()
         if response.status_code != 200:
             logger.error("[ERROR] Error code in response from web app: {}".format(response.status_code))
+            logger.error("[ERROR] auth: {}".format(auth))
             logger.error("[ERROR] Content: {}".format(response.content))
-            logger.exception(e)
             return dict(
                 message="Encountered an error while retrieving the collections list: {}".format(response.content),
                 code=response.status_code
