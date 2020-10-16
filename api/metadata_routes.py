@@ -48,6 +48,7 @@ def versions():
     except Exception as e:
         logger.error("[ERROR] While retrieving IDC versions:")
         logger.exception(e)
+        print("***Exception: {}".format(e))
         response = jsonify({
             'code': 500,
             'message': 'Encountered an error while retrieving the program list.'
@@ -110,7 +111,7 @@ def attributes():
         logger.exception(e)
         response = jsonify({
             'code': 500,
-            'message': 'Encountered an error while retrieving the program list.'
+            'message': 'Encountered an error while retrieving the attributes.'
         })
         response.status_code = 500
 
