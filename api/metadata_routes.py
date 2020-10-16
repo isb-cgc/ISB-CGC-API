@@ -51,7 +51,7 @@ def versions():
         print("***Exception: {}".format(e))
         response = jsonify({
             'code': 500,
-            'message': 'Encountered an error while retrieving the program list.'
+            'message': 'Encountered an error while retrieving the versions list.'
         })
         response.status_code = 500
 
