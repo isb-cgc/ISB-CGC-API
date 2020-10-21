@@ -35,6 +35,7 @@ load_dotenv(dotenv_path=join(dirname(__file__), SECURE_LOCAL_PATH, '.env'))
 
 APP_ENGINE_FLEX = 'aef-'
 APP_ENGINE = 'Google App Engine/'
+API_VERSION = 'v1'
 
 BASE_DIR                = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir)) + os.sep
 

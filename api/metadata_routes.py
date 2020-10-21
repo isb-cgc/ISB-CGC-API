@@ -22,7 +22,7 @@ from . metadata_views import get_versions, get_attributes, get_collections
 
 from flask import Blueprint
 
-metadata_bp = Blueprint('metadata_bp', __name__, url_prefix='/v1')
+metadata_bp = Blueprint('metadata_bp', __name__, url_prefix='/{}'.format(settings.API_VERSION))
 
 logger = logging.getLogger(settings.LOGGER_NAME)
 
