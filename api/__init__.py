@@ -118,8 +118,7 @@ def create_app(test_config=None):
             load_spec=load_spec,
             static_uri= '' if settings.IS_DEV else (settings.STATIC_URL.replace('/static/', '')),
             api_base_uri=settings.BASE_API_URL,
-            api_version=settings.API_VERSION,
-            ouath2_callback_path="oauth2callback",
+            ouath2_callback_path="{}/oauth2callback".format(settings.API_VERSION),
             api_client_id=settings.API_CLIENT_ID
         )
 
