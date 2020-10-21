@@ -24,7 +24,7 @@ logger = logging.getLogger(settings.LOGGER_NAME)
 
 from flask import Blueprint
 
-cohorts_bp = Blueprint('cohorts_bp', __name__, url_prefix='/v1')
+cohorts_bp = Blueprint('cohorts_bp', __name__, url_prefix='/{}'.format(settings.API_VERSION))
 
 
 @cohorts_bp.route('/cohorts/<int:cohort_id>/manifest/', methods=['GET'], strict_slashes=False)

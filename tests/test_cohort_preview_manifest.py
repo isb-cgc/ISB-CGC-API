@@ -19,7 +19,7 @@ import json
 
 from tests.cohort_utils import merge, pretty_print_cohortObjects, create_cohort_for_test_get_cohort_xxx, delete_cohort
 
-def test_cohort_preview_manifest(client, app):
+def test_cohort_preview_manifest_uri(client, app):
 
     filterSet = {
         "idc_data_version": "",
@@ -61,6 +61,24 @@ def test_cohort_preview_manifest(client, app):
 
     assert 'gs://idc-tcia-tcga-read/dicom/1.3.6.1.4.1.14519.5.2.1.3671.4018.768291480177931556369061239508/1.3.6.1.4.1.14519.5.2.1.3671.4018.183714953600569164837490663631/1.3.6.1.4.1.14519.5.2.1.3671.4018.101814896314793708382026281597.dcm#1592638257658431' \
         in manifest['accessMethods']['urls']
+
+def test_cohort_preview_manifest_doi(client, app):
+    filterSet = {
+        "idc_data_version": "",
+        "filters": {
+            "collection_id": ["tcga_read"],
+            "Modality": ["CT", "MR"],
+            "race": ["WHITE"]}}
+
+    cohortSpec = {"name": "testcohort",
+                  "description": "Test description",
+                  "filterSet": filterSet}
+
+    mimetype = ' application/json'
+    headers = {
+        'Content-Type': mimetype,
+        'Accept': mimetype
+    }
 
     query_string = {
         'access_method': 'doi',
