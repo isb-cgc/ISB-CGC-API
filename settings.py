@@ -35,6 +35,7 @@ load_dotenv(dotenv_path=join(dirname(__file__), SECURE_LOCAL_PATH, '.env'))
 
 APP_ENGINE_FLEX = 'aef-'
 APP_ENGINE = 'Google App Engine/'
+API_VERSION = 'v1'
 
 
 BASE_DIR                = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir)) + os.sep
@@ -67,7 +68,8 @@ API_VERSION = 'v1'
 
 ##############################################################
 #   MAXes to prevent size-limited events from causing errors
-##############################################################
+# These are really here to satisfy some definitions in the bq_helpers.py
+# dependency chain.
 
 # Google App Engine has a response size limit of 32M. ~65k entries from the cohort_filelist view will
 # equal just under the 32M limit. If each individual listing is ever lengthened or shortened this
@@ -80,6 +82,7 @@ MAX_FILES_IGV = 5
 
 # Rough max file size to allow for eg. barcode list upload, to revent triggering RequestDataTooBig
 FILE_SIZE_UPLOAD_MAX = 1950000
+##############################################################
 
 # IGV limit to prevent users from trying to open dozens of files
 MAX_FILES_IGV = 5

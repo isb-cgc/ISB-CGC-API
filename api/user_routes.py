@@ -22,7 +22,7 @@ from python_settings import settings
 
 from flask import Blueprint
 
-user_bp = Blueprint('user_bp', __name__, url_prefix='/v1')
+user_bp = Blueprint('user_bp', __name__, url_prefix='/{}'.format(settings.API_VERSION))
 
 logger = logging.getLogger(settings.LOGGER_NAME)
 

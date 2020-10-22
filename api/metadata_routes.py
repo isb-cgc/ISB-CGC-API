@@ -22,7 +22,7 @@ from . metadata_views import get_versions, get_attributes, get_collections
 
 from flask import Blueprint
 
-metadata_bp = Blueprint('metadata_bp', __name__, url_prefix='/v1')
+metadata_bp = Blueprint('metadata_bp', __name__, url_prefix='/{}'.format(settings.API_VERSION))
 
 logger = logging.getLogger(settings.LOGGER_NAME)
 
@@ -50,7 +50,7 @@ def versions():
         logger.exception(e)
         response = jsonify({
             'code': 500,
-            'message': 'Encountered an error while retrieving the program list.'
+            'message': 'Encountered an error while retrieving the versions list.'
         })
         response.status_code = 500
 
@@ -110,7 +110,7 @@ def attributes():
         logger.exception(e)
         response = jsonify({
             'code': 500,
-            'message': 'Encountered an error while retrieving the program list.'
+            'message': 'Encountered an error while retrieving the attributes.'
         })
         response.status_code = 500
 

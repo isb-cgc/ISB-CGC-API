@@ -23,7 +23,7 @@ from python_settings import settings
 from . main_views import get_privacy, get_help
 from flask import Blueprint
 
-main_bp = Blueprint('main_bp', __name__, url_prefix='/v1')
+main_bp = Blueprint('main_bp', __name__, url_prefix='/{}'.format(settings.API_VERSION))
 
 logger = logging.getLogger(settings.LOGGER_NAME)
 
@@ -35,8 +35,8 @@ def about():
     """Base response"""
     response = jsonify({
         'code': 200,
-        'message': 'Welcome to the NCI IDC API, Version 1.',
-        'documentation': 'SwaggerUI interface available at <{}/v1/swagger/>.'.format(settings.BASE_API_URL) +
+        'message': 'Welcome to the NCI IDC API, Version {}'.format(settings.API_VERSION[1:]),
+        'documentation': 'SwaggerUI interface available at <{}/{}/swagger/>.'.format(settings.BASE_API_URL, settings.API_VERSION) +
              'Documentation available at <https://https://app.gitbook.com/login/imagingdatacommons/idc-user-guide>'
     })
     response.status_code = 200
@@ -52,36 +52,3 @@ def swagger():
 @main_bp.route('/oauth2callback/', strict_slashes=False)
 def oauth2callback():
     return render_template('swagger/oauth2-redirect.html')
-
-
-# This will likely be deleted at some point. It's here just to be able to test an API entrypoint that can be
-# satisfied by the webapp.
-@main_bp.route('/help/', methods=['GET'], strict_slashes=False)
-def help():
-    try:
-        help_info = get_help()
-
-        if help_info:
-            response = jsonify({
-                'code': 200,
-                'data': help_info.text
-            })
-            response.status_code = 200
-        else:
-            response = jsonify({
-                'code': 500,
-                'message': 'Encountered an error while retrieving the help info.'
-            })
-            response.status_code = 500
-    except Exception as e:
-        logger.error("[ERROR] While retrieving help information:")
-        logger.exception(e)
-        response = jsonify({
-            'code': 500,
-            'message': 'Encountered an error while retrieving the help list.'
-        })
-        response.status_code = 500
-
-    return response
-
-

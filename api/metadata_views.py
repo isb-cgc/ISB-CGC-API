@@ -37,12 +37,30 @@ def get_auth():
 def get_versions():
     info = None
 
+    # try:
+    auth = get_auth()
+    logger.debug("BASE_URL={}".format(settings.BASE_URL))
+    response = requests.get("{}/{}".format(settings.BASE_URL, 'collections/api/versions/'), headers=auth)
     try:
-        auth = get_auth()
-        response = requests.get("{}/{}".format(settings.BASE_URL, 'collections/api/versions/'), headers=auth)
         info = response.json()
+        if response.status_code != 200:
+            logger.error("[ERROR] Error code in response from web app: {}".format(response.status_code))
+            logger.error("[ERROR] auth: {}".format(auth))
+            logger.error("[ERROR] Request headers: {}".format(response.request.headers))
+            logger.error("[ERROR] Content: {}".format(response.content))
+            return dict(
+                message="Encountered an error while retrieving the versions list: {}".format(response.content),
+                code=response.status_code
+            )
+
     except Exception as e:
+        logger.error("[ERROR] No content in response from web app")
+        logger.error("[ERROR] status_code: {}".format(response.status_code))
         logger.exception(e)
+        return dict(
+            message="Encountered an error while retrieving the versions list.",
+            code=response.status_code
+        )
 
     return info
 
@@ -73,13 +91,29 @@ def get_attributes():
                 code=400
             )
 
+    auth = get_auth()
+    response = requests.get("{}/{}/".format(settings.BASE_URL, 'collections/api/attributes'),
+                            params=path_params, headers=auth)
     try:
-        auth = get_auth()
-        response = requests.get("{}/{}/".format(settings.BASE_URL, 'collections/api/attributes'),
-                                params=path_params, headers=auth)
         info = response.json()
+        if response.status_code != 200:
+            logger.error("[ERROR] Error code in response from web app: {}".format(response.status_code))
+            logger.error("[ERROR] auth: {}".format(auth))
+            logger.error("[ERROR] Request headers: {}".format(response.request.headers))
+            logger.error("[ERROR] Content: {}".format(response.content))
+            return dict(
+                message="Encountered an error while retrieving the attributes list: {}".format(response.content),
+                code=response.status_code
+            )
+
     except Exception as e:
+        logger.error("[ERROR] No content in response from web app")
+        logger.error("[ERROR] status_code: {}".format(response.status_code))
         logger.exception(e)
+        return dict(
+            message="Encountered an error while retrieving the attributes list.",
+            code=response.status_code
+        )
 
     return info
 
@@ -111,13 +145,29 @@ def get_collections():
                 code=400
             )
 
+    # try:
+    auth = get_auth()
+    response = requests.get("{}/collections/api/".format(settings.BASE_URL),
+                            params=path_params, headers=auth)
     try:
-        auth = get_auth()
-        response = requests.get("{}/collections/api/".format(settings.BASE_URL),
-                                params=path_params, headers=auth)
         info = response.json()
+        if response.status_code != 200:
+            logger.error("[ERROR] Error code in response from web app: {}".format(response.status_code))
+            logger.error("[ERROR] auth: {}".format(auth))
+            logger.error("[ERROR] Request headers: {}".format(response.request.headers))
+            logger.error("[ERROR] Content: {}".format(response.content))
+            return dict(
+                message="Encountered an error while retrieving the collections list: {}".format(response.content),
+                code=response.status_code
+            )
     except Exception as e:
+        logger.error("[ERROR] No content in response from web app")
+        logger.error("[ERROR] status_code: {}".format(response.status_code))
         logger.exception(e)
+        return dict(
+            message="Encountered an error while retrieving the collections list.",
+            code=response.status_code
+        )
 
     return info
 
