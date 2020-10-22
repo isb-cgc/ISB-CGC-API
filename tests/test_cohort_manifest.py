@@ -19,7 +19,7 @@ import re
 
 from .cohort_utils import pretty_print_cohortObjects, merge, create_cohort, create_cohort_for_test_get_cohort_xxx, create_big_cohort_for_test_get_cohort_xxx, delete_cohort
 
-def test_get_cohort_manifest(client, app):
+def test_get_cohort_manifest_doi(client, app):
 
     (id, filterSet) = create_cohort_for_test_get_cohort_xxx(client)
 
@@ -46,6 +46,14 @@ def test_get_cohort_manifest(client, app):
     assert manifest['totalFound'] == 1638
     assert manifest['rowsReturned'] ==1638
     assert next_page == None
+
+    query_string = {
+        'access_method': 'url',
+    }
+
+def test_get_cohort_manifest_url(client, app):
+
+    (id, filterSet) = create_cohort_for_test_get_cohort_xxx(client)
 
     query_string = {
         'access_method': 'url',

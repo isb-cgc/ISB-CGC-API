@@ -89,6 +89,7 @@ def test_cohort_preview_manifest_doi(client, app):
 
     query_string = {
         'access_method': 'doi',
+        'return_sql': True,
     }
 
     response = client.post('v1/cohorts/preview/manifest',
@@ -106,6 +107,24 @@ def test_cohort_preview_manifest_doi(client, app):
     assert cohort['name'] == cohortSpec['name']
     assert cohort['description'] == cohortSpec['description']
     assert cohort['filterSet']['filters'] == cohortSpec['filterSet']['filters']
+    assert cohort['sql'] == \
+"""	(
+            #standardSQL
+    
+        SELECT dicom_pivot_wave0.crdc_instance_uuid
+        FROM `idc-dev.metadata.dicom_pivot_wave0` dicom_pivot_wave0 
+        
+        JOIN `isb-cgc.TCGA_bioclin_v0.clinical_v1` clinical_v1
+        ON dicom_pivot_wave0.PatientID = clinical_v1.case_barcode
+    
+        WHERE (dicom_pivot_wave0.collection_id = 'tcga_read') AND (dicom_pivot_wave0.Modality IN ('CT','MR')) AND (clinical_v1.race = 'WHITE')
+        GROUP BY dicom_pivot_wave0.crdc_instance_uuid
+        ORDER BY dicom_pivot_wave0.crdc_instance_uuid ASC
+        
+        
+    )
+	UNION ALL
+"""
 
     assert manifest['url_access_type'] == 'gs'
     assert manifest['url_region'] == 'us'

@@ -47,7 +47,7 @@ def get_versions():
     return info
 
 
-def get_facets():
+def get_attributes():
     blacklist = re.compile(BLACKLIST_RE, re.UNICODE)
     info = None
 
@@ -75,7 +75,7 @@ def get_facets():
 
     try:
         auth = get_auth()
-        response = requests.get("{}/{}/".format(settings.BASE_URL, 'collections/api/facets'),
+        response = requests.get("{}/{}/".format(settings.BASE_URL, 'collections/api/attributes'),
                                 params=path_params, headers=auth)
         info = response.json()
     except Exception as e:

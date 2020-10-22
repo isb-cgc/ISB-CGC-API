@@ -18,7 +18,7 @@ import logging
 from flask import jsonify
 from python_settings import settings
 
-from . metadata_views import get_versions, get_facets, get_collections
+from . metadata_views import get_versions, get_attributes, get_collections
 
 from flask import Blueprint
 
@@ -87,14 +87,14 @@ def versions():
 #     return response
 
 
-@metadata_bp.route('/facets', methods=['GET'], strict_slashes=False)
-def facets():
+@metadata_bp.route('/attributes', methods=['GET'], strict_slashes=False)
+def attributes():
     """Retrieve a list of IDC versions"""
 
     response = None
 
     try:
-        results = get_facets()
+        results = get_attributes()
 
         if 'message' in results:
             response = jsonify(results)

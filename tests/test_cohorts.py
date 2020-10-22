@@ -141,15 +141,15 @@ def test_get_cohort_sql(client, app):
 """	(
             #standardSQL
     
-        SELECT dicom_all.collection_id
-        FROM `idc-dev-etl.idc_tcia_views_mvp_wave0.dicom_all` dicom_all 
+        SELECT dicom_pivot_wave0.collection_id
+        FROM `idc-dev.metadata.dicom_pivot_wave0` dicom_pivot_wave0 
         
         JOIN `isb-cgc.TCGA_bioclin_v0.clinical_v1` clinical_v1
-        ON dicom_all.PatientID = clinical_v1.case_barcode
+        ON dicom_pivot_wave0.PatientID = clinical_v1.case_barcode
     
-        WHERE (dicom_all.Modality IN ('CT','MR')) AND (dicom_all.collection_id = 'tcga_read') AND (clinical_v1.race = 'WHITE')
-        GROUP BY dicom_all.collection_id
-        ORDER BY dicom_all.collection_id ASC
+        WHERE (dicom_pivot_wave0.Modality IN ('CT','MR')) AND (dicom_pivot_wave0.collection_id = 'tcga_read') AND (clinical_v1.race = 'WHITE')
+        GROUP BY dicom_pivot_wave0.collection_id
+        ORDER BY dicom_pivot_wave0.collection_id ASC
         
         
     )

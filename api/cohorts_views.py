@@ -178,7 +178,7 @@ def get_cohort_objects(user, cohort_id):
             return cohort_objects
 
     local_params['page_size'] = int(local_params['page_size'])
-    for s in ['return_sql']: #'return_objects', 'return_filter', 'return_DOIs', 'return_URLs']:
+    for s in ['return_sql']:
         if s in path_params:
             path_params[s] = path_params[s] in [True, 'True']
     if path_params['return_level'] not in return_levels:
@@ -236,6 +236,7 @@ def get_cohort_manifest(user, cohort_id):
         "access_method": "doi",
         "url_access_type": "gs",
         "url_region": "us",
+        "return_sql": False,
     }
 
     local_params = {
@@ -270,6 +271,9 @@ def get_cohort_manifest(user, cohort_id):
             return manifest_info
 
     local_params['page_size'] = int(local_params['page_size'])
+    for s in ['return_sql']:
+        if s in path_params:
+            path_params[s] = path_params[s] in [True, 'True']
     if path_params["access_method"] not in access_methods:
         return dict(
             message = "Invalid access_method {}".format(path_params['access_method']),
@@ -495,6 +499,7 @@ def get_cohort_preview_manifest():
         "access_method": "doi",
         "url_access_type": "gs",
         "url_region": "us",
+        "return_sql": False,
     }
 
     local_params = {
@@ -538,6 +543,9 @@ def get_cohort_preview_manifest():
                 return manifest_info
 
         local_params['page_size'] = int(local_params['page_size'])
+        for s in ['return_sql']:  # 'return_objects', 'return_filter', 'return_DOIs', 'return_URLs']:
+            if s in path_params:
+                path_params[s] = path_params[s] in [True, 'True']
         if path_params["access_method"] not in access_methods:
             return dict(
                 message = "Invalid access_method {}".format(path_params['access_method']),
