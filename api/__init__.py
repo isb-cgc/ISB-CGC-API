@@ -81,8 +81,6 @@ def create_app(test_config=None):
     app.register_blueprint(main_routes.main_bp)
     from . cohort_routes import cohorts_bp
     app.register_blueprint(cohort_routes.cohorts_bp)
-    from . file_routes import file_bp
-    app.register_blueprint(file_routes.file_bp)
     from . user_routes import user_bp
     app.register_blueprint(user_routes.user_bp)
     from . metadata_routes import metadata_bp
@@ -120,7 +118,7 @@ def create_app(test_config=None):
             load_spec=load_spec,
             static_uri= '' if settings.IS_DEV else (settings.STATIC_URL.replace('/static/', '')),
             api_base_uri=settings.BASE_API_URL,
-            ouath2_callback_path="oauth2callback",
+            ouath2_callback_path="{}/oauth2callback".format(settings.API_VERSION),
             api_client_id=settings.API_CLIENT_ID
         )
 
