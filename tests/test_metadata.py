@@ -28,10 +28,8 @@ def test_versions(client, app):
     # assert versions["1.0"]['name'] == 'Imaging Data Commons Data Release'
     assert versions["1.0"]["data_sources"] == \
            [{'data_type': 'Image Data', 'name': 'idc-dev.metadata.dicom_pivot_wave0'},
-            {'data_type': 'Clinical, Biospecimen, and Mutation Data',
-             'name': 'isb-cgc.TCGA_bioclin_v0.Biospecimen'},
-            {'data_type': 'Clinical, Biospecimen, and Mutation Data',
-             'name': 'isb-cgc.TCGA_bioclin_v0.clinical_v1'}]
+            {'data_type': 'Clinical, Biospecimen, and Mutation Data', 'name': 'isb-cgc.TCGA_bioclin_v0.Biospecimen'},
+            {'data_type': 'Clinical, Biospecimen, and Mutation Data', 'name': 'isb-cgc.TCGA_bioclin_v0.clinical_v1'}]
     programs = {program['short_name']: {key: program[key] for key in program.keys() if key != 'short_name'} for program in versions["1.0"]["programs"]}
     assert "TCGA" in programs
     assert programs["TCGA"]["name"] == "The Cancer Genome Atlas"
@@ -138,6 +136,7 @@ def test_attributes(client, app):
     assert 'program_name' in attributes
     # assert attributes['program_name']['dataSetTypes'][0]['data_type'] == 'Clinical, Biospecimen, and Mutation Data'
     assert attributes['program_name'] == {'active': True, 'data_type': 'Categorical String', 'idc_data_version': '1.0', 'units': None}
+
 
 
 def test_attributes_all_data_sources(client, app):

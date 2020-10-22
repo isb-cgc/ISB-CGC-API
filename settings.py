@@ -37,6 +37,7 @@ APP_ENGINE_FLEX = 'aef-'
 APP_ENGINE = 'Google App Engine/'
 API_VERSION = 'v1'
 
+
 BASE_DIR                = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir)) + os.sep
 
 DEBUG                   = (os.environ.get('DEBUG', 'False') == 'True')
@@ -49,7 +50,8 @@ LOGGER_NAME = os.environ.get('API_LOGGER_NAME', 'main_logger')
 BASE_URL                = os.environ.get('BASE_URL', 'https://idc-dev.appspot.com')
 BASE_API_URL            = os.environ.get('BASE_API_URL', 'https://api-dot-idc-dev.appspot.com')
 
-
+# Make this unique, and don't share it with anybody.
+SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', '')
 
 GOOGLE_APPLICATION_CREDENTIALS  = join(dirname(__file__), SECURE_LOCAL_PATH, os.environ.get('GOOGLE_APPLICATION_CREDENTIALS', ''))
 OAUTH2_CLIENT_ID                = os.environ.get('OAUTH2_CLIENT_ID', '')
@@ -62,6 +64,7 @@ try:
         API_AUTH_TOKEN = filehandle.read()
 except Exception:
     print("[ERROR] Failed to load API auth token - authorized endpoints may fail!")
+API_VERSION = 'v1'
 
 ##############################################################
 #   MAXes to prevent size-limited events from causing errors
@@ -72,6 +75,7 @@ except Exception:
 # equal just under the 32M limit. If each individual listing is ever lengthened or shortened this
 # number should be adjusted
 MAX_FILE_LIST_REQUEST = 65000
+MAX_BQ_RECORD_RESULT = int(os.environ.get('MAX_BQ_RECORD_RESULT', '5000'))
 
 # IGV limit to prevent users from trying ot open dozens of files
 MAX_FILES_IGV = 5
@@ -79,6 +83,17 @@ MAX_FILES_IGV = 5
 # Rough max file size to allow for eg. barcode list upload, to revent triggering RequestDataTooBig
 FILE_SIZE_UPLOAD_MAX = 1950000
 ##############################################################
+
+# IGV limit to prevent users from trying to open dozens of files
+MAX_FILES_IGV = 5
+
+BQ_MAX_ATTEMPTS             = int(os.environ.get('BQ_MAX_ATTEMPTS', '10'))
+MAX_BQ_INSERT                        = int(os.environ.get('MAX_BQ_INSERT', '500'))
+
+GCLOUD_PROJECT_ID              = os.environ.get('GCLOUD_PROJECT_ID', '')
+GCLOUD_PROJECT_NUMBER          = os.environ.get('GCLOUD_PROJECT_NUMBER', '')
+BIGQUERY_PROJECT_ID            = os.environ.get('BIGQUERY_PROJECT_ID', GCLOUD_PROJECT_ID)
+BIGQUERY_DATA_PROJECT_ID       = os.environ.get('BIGQUERY_DATA_PROJECT_ID', GCLOUD_PROJECT_ID)
 
 
 # Explicitly check for known items

@@ -26,23 +26,29 @@ from flask import Blueprint
 
 cohorts_bp = Blueprint('cohorts_bp', __name__, url_prefix='/{}'.format(settings.API_VERSION))
 
+@cohorts_bp.route('/cohorts/', methods=('GET', 'POST', 'DELETE'), strict_slashes=False)
+def cohorts():
+    """
+    GET: Retrieve a user's list of cohorts
+    POST: Add a new cohort
+    DELETE: Delete a list of cohorts
+    """
 
-@cohorts_bp.route('/cohorts/<int:cohort_id>/manifest/', methods=['GET'], strict_slashes=False)
-def cohort_manifest(cohort_id):
-    """
-    GET: Retrieve extended information for a specific cohort
-    DELETE: Delete a cohort
-    """
     try:
         user_info = auth_info()
         if not user_info:
             response = jsonify({
-                'code': 500,
+                'code': 403,
                 'message': 'Encountered an error while attempting to identify this user.'
             })
             response.status_code = 500
         else:
-            result = get_cohort_manifest(user_info["email"], cohort_id)
+            if request.method == 'GET':
+                result = get_cohort_list(user_info["email"])
+            elif request.method == 'POST':
+                result = create_cohort(user_info["email"])
+            else:
+                result = delete_cohorts(user_info["email"])
             if result:
                 if 'message' in result:
                     response = jsonify({
@@ -61,10 +67,12 @@ def cohort_manifest(cohort_id):
                     response.status_code = code
             else:
                 response = jsonify({
-                    'code': 404,
-                    'message': "Cohort ID {} was not found.".format(str(cohort_id))})
+                    'code': 500,
+                    'message': "Error while attempting to {}.".format(
+                        'retrieve the cohort list' if request.method == 'GET' else 'create this cohort'
+                    )
+                })
                 response.status_code = 500
-
     except UserValidationException as e:
         response = jsonify({
             'code': 403,
@@ -75,7 +83,9 @@ def cohort_manifest(cohort_id):
         logger.exception(e)
         response = jsonify({
             'code': 500,
-            'message': 'Encountered an error while attempting to retrieve this cohort\'s information.'
+            'message': 'Encountered an error while attempting to {}.'.format(
+                "retrieve a list of cohorts" if request.method == 'GET' else "create this cohort"
+            )
         })
         response.status_code = 500
 
@@ -157,29 +167,22 @@ def cohort(cohort_id):
     return response
 
 
-@cohorts_bp.route('/cohorts/', methods=('GET', 'POST', 'DELETE'), strict_slashes=False)
-def cohorts():
+@cohorts_bp.route('/cohorts/<int:cohort_id>/manifest/', methods=['GET'], strict_slashes=False)
+def cohort_manifest(cohort_id):
     """
-    GET: Retrieve a user's list of cohorts
-    POST: Add a new cohort
-    DELETE: Delete a list of cohorts
+    GET: Retrieve extended information for a specific cohort
+    DELETE: Delete a cohort
     """
-
     try:
         user_info = auth_info()
         if not user_info:
             response = jsonify({
-                'code': 403,
+                'code': 500,
                 'message': 'Encountered an error while attempting to identify this user.'
             })
             response.status_code = 500
         else:
-            if request.method == 'GET':
-                result = get_cohort_list(user_info["email"])
-            elif request.method == 'POST':
-                result = create_cohort(user_info["email"])
-            else:
-                result = delete_cohorts(user_info["email"])
+            result = get_cohort_manifest(user_info["email"], cohort_id)
             if result:
                 if 'message' in result:
                     response = jsonify({
@@ -198,12 +201,10 @@ def cohorts():
                     response.status_code = code
             else:
                 response = jsonify({
-                    'code': 500,
-                    'message': "Error while attempting to {}.".format(
-                        'retrieve the cohort list' if request.method == 'GET' else 'create this cohort'
-                    )
-                })
+                    'code': 404,
+                    'message': "Cohort ID {} was not found.".format(str(cohort_id))})
                 response.status_code = 500
+
     except UserValidationException as e:
         response = jsonify({
             'code': 403,
@@ -214,13 +215,12 @@ def cohorts():
         logger.exception(e)
         response = jsonify({
             'code': 500,
-            'message': 'Encountered an error while attempting to {}.'.format(
-                "retrieve a list of cohorts" if request.method == 'GET' else "create this cohort"
-            )
+            'message': 'Encountered an error while attempting to retrieve this cohort\'s information.'
         })
         response.status_code = 500
 
     return response
+
 
 @cohorts_bp.route('/cohorts/preview/', methods=['POST'], strict_slashes=False)
 def cohort_preview():
