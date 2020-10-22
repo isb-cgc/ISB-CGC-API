@@ -36,6 +36,7 @@ load_dotenv(dotenv_path=join(dirname(__file__), SECURE_LOCAL_PATH, '.env'))
 APP_ENGINE_FLEX = 'aef-'
 APP_ENGINE = 'Google App Engine/'
 
+
 BASE_DIR                = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir)) + os.sep
 
 DEBUG                   = (os.environ.get('DEBUG', 'False') == 'True')
@@ -51,7 +52,6 @@ BASE_API_URL            = os.environ.get('BASE_API_URL', 'https://api-dot-idc-de
 # Make this unique, and don't share it with anybody.
 SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', '')
 
-
 GOOGLE_APPLICATION_CREDENTIALS  = join(dirname(__file__), SECURE_LOCAL_PATH, os.environ.get('GOOGLE_APPLICATION_CREDENTIALS', ''))
 OAUTH2_CLIENT_ID                = os.environ.get('OAUTH2_CLIENT_ID', '')
 OAUTH2_CLIENT_SECRET            = os.environ.get('OAUTH2_CLIENT_SECRET', '')
@@ -63,10 +63,7 @@ try:
         API_AUTH_TOKEN = filehandle.read()
 except Exception:
     print("[ERROR] Failed to load API auth token - authorized endpoints may fail!")
-
-##############################################################
-#   MAXes to prevent size-limited events from causing errors
-##############################################################
+API_VERSION = 'v1'
 
 ##############################################################
 #   MAXes to prevent size-limited events from causing errors
@@ -78,7 +75,10 @@ except Exception:
 MAX_FILE_LIST_REQUEST = 65000
 MAX_BQ_RECORD_RESULT = int(os.environ.get('MAX_BQ_RECORD_RESULT', '5000'))
 
-# Rough max file size to allow for eg. barcode list upload, to prevent triggering RequestDataTooBig
+# IGV limit to prevent users from trying ot open dozens of files
+MAX_FILES_IGV = 5
+
+# Rough max file size to allow for eg. barcode list upload, to revent triggering RequestDataTooBig
 FILE_SIZE_UPLOAD_MAX = 1950000
 
 # IGV limit to prevent users from trying to open dozens of files
@@ -100,4 +100,4 @@ BLACKLIST_RE = r'((?i)<script>|(?i)</script>|!\[\]|!!\[\]|\[\]\[\".*\"\]|(?i)<if
 # Example: "http://media.lawrence.com/static/"
 STATIC_URL = os.environ.get('STATIC_URL', '/static/')
 
-IS_DEV =os.environ.get('IS_DEV','')
+IS_DEV = (os.environ.get('IS_DEV', 'False') == 'True')
