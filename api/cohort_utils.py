@@ -28,6 +28,9 @@ from google_helpers.bigquery.bq_support import BigQuerySupport
 logger = logging.getLogger('main_logger')
 BLACKLIST_RE = settings.BLACKLIST_RE
 
+def submit_BQ_job(sql_string, params):
+    results = BigQuerySupport.execute_query_and_fetch_results(sql_string, params, no_results=True)
+    return results
 
 def build_collections(objects, dois, urls):
     collections = []

@@ -221,7 +221,7 @@ def test_get_cohort_preview_manifest_paged_doi(client, app):
     assert manifest['totalFound'] == len(set(totaldois))
 
 
-def test_get_cohort_manifest_paged_url(client, app):
+def test_get_cohort_preview_manifest_paged_url(client, app):
 
     filterSet = {
         "idc_data_version": "",
