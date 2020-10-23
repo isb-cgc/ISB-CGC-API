@@ -26,7 +26,7 @@ from python_settings import settings
 
 from jsonschema import validate as schema_validate, ValidationError
 from . schemas.filterset import COHORT_FILTER_SCHEMA
-from . cohort_utils import get_objects, get_manifest
+from . cohort_utils import submit_BQ_job, get_objects, get_manifest
 
 BLACKLIST_RE = settings.BLACKLIST_RE
 
@@ -207,6 +207,14 @@ def get_cohort_objects(user, cohort_id):
                 if "message" in cohort_objects:
                     return cohort_objects
 
+                # Get the BQ SQL string and params from the webapp
+                if path_params['return_level'] != 'None':
+                    cohort_objects['job_reference'] = submit_BQ_job(cohort_objects['query']['sql_string'],
+                                                                    cohort_objects['query']['params'])
+
+                # Don't return the query in this form
+                cohort_objects.pop('query')
+
                 # job_reference = cohort_data['job_reference']
                 cohort_objects['next_page'] = None
 
@@ -310,6 +318,12 @@ def get_cohort_manifest(user, cohort_id):
 
                 if "message" in manifest_info:
                     return manifest_info
+
+                # Get the BQ SQL string and params from the webapp
+                manifest_info['job_reference'] = submit_BQ_job(manifest_info['query']['sql_string'],
+                                                                manifest_info['query']['params'])
+                # Don't return the query in this form
+                manifest_info.pop('query')
 
                 # job_reference = cohort_data['job_reference']
                 manifest_info['next_page'] = None
@@ -452,6 +466,13 @@ def post_cohort_preview():
                         if "message" in cohort_objects:
                             return cohort_objects
 
+                        # Get the BQ SQL string and params from the webapp
+                        if path_params['return_level'] != 'None':
+                            cohort_objects['job_reference'] = submit_BQ_job(cohort_objects['query']['sql_string'],
+                                                                        cohort_objects['query']['params'])
+                        # Don't return the query in this form
+                        cohort_objects.pop('query')
+
                         # job_reference = cohort_data['job_reference']
                         cohort_objects['next_page'] = None
 
@@ -516,7 +537,7 @@ def get_cohort_preview_manifest():
         request_data = request.get_json()
 
         if 'filterSet' not in request_data:
-            cohort_objects = dict(
+            manifest_info = dict(
                 message='No filters were provided; ensure that the request body contains a \'filters\' property.')
         else:
             schema_validate(request_data['filterSet'], COHORT_FILTER_SCHEMA)
@@ -584,6 +605,12 @@ def get_cohort_preview_manifest():
                     if "message" in manifest_info:
                         return manifest_info
 
+                    # Get the BQ SQL string and params from the webapp
+                    manifest_info['job_reference'] = submit_BQ_job(manifest_info['query']['sql_string'],
+                                                                    manifest_info['query']['params'])
+                    # Don't return the query in this form
+                    manifest_info.pop('query')
+
                     # job_reference = cohort_data['job_reference']
                     manifest_info['next_page'] = None
 
@@ -593,18 +620,18 @@ def get_cohort_preview_manifest():
 
             except Exception as e:
                 logger.exception(e)
-                cohort_objects = dict(
+                manifest_info = dict(
                     message='[ERROR] Error trying to preview a cohort',
                     code=400)
 
     except BadRequest as e:
         logger.warning("[WARNING] Received bad request - couldn't load JSON.")
-        cohort_objects = dict(
+        manifest_info = dict(
             message='The JSON provided in this request appears to be improperly formatted.',
             code = 400)
     except ValidationError as e:
         logger.warning('[WARNING] Filters rejected for improper formatting: {}'.format(e))
-        cohort_objects = dict(
+        manifest_info = dict(
             message= 'Filters were improperly formatted.',
             code = 400)
 
