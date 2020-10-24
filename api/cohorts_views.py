@@ -462,6 +462,7 @@ def post_cohort_preview():
                         results = requests.post("{}/{}/".format(settings.BASE_URL, 'cohorts/api/preview'),
                                                params=path_params, json=data, headers=auth)
                         cohort_objects = results.json()
+                        logger.debug(("cohort_objects with sql_string and params: {}").format(cohort_objects))
 
                         if "message" in cohort_objects:
                             return cohort_objects
@@ -470,6 +471,7 @@ def post_cohort_preview():
                         if path_params['return_level'] != 'None':
                             cohort_objects['job_reference'] = submit_BQ_job(cohort_objects['query']['sql_string'],
                                                                         cohort_objects['query']['params'])
+                            logger.debug(("cohort_objects with job_ref: {}").format(cohort_objects))
                         # Don't return the query in this form
                         cohort_objects.pop('query')
 
