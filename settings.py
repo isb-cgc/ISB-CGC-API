@@ -40,8 +40,7 @@ API_VERSION = 'v1'
 
 BASE_DIR                = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir)) + os.sep
 
-# DEBUG                   = (os.environ.get('DEBUG', 'False') == 'True')
-DEBUG = 'True'
+DEBUG                   = (os.environ.get('DEBUG', 'False') == 'True')
 
 print("[STATUS] DEBUG mode is "+str(DEBUG))
 
