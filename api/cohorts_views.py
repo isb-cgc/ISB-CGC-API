@@ -360,7 +360,7 @@ def _delete_cohorts(user, cohort_ids):
 
     try:
         # Validate the list of ids
-        for id in cohort_ids:
+        for id in cohort_ids['cohorts']:
             assert type(id) == int
         auth = get_auth()
         path_params = {'email': user}
