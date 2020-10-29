@@ -138,7 +138,7 @@ def test_get_cohort_sql(client, app):
     assert cohort['filterSet'] == filterSet
 
     assert cohort['sql'] == \
-"""	(
+"""
             #standardSQL
     
         SELECT dicom_pivot_wave0.collection_id
@@ -152,9 +152,7 @@ def test_get_cohort_sql(client, app):
         ORDER BY dicom_pivot_wave0.collection_id ASC
         
         
-    )
-	UNION ALL
-"""
+    """
 
     delete_cohort(client, id)
 
@@ -579,7 +577,7 @@ def test_delete_cohorts(client, app):
     cohort1 = create_cohort(client)['cohort_id']
 
     # Delete the cohorts that we just created
-    cohortIDs = [cohort0, cohort1]
+    cohortIDs = {"cohorts": [cohort0, cohort1]}
     mimetype = ' application/json'
     headers = {
         'Content-Type': mimetype,
@@ -620,7 +618,7 @@ def test_delete_all_cohorts(client,app):
     assert response.status_code == 200
     cohorts = response.json['cohorts']
 
-    cohortIDs = [cohort['cohort_id'] for cohort in cohorts]
+    cohortIDs = {"cohorts":[cohort['cohort_id'] for cohort in cohorts]}
     mimetype = ' application/json'
     headers = {
         'Content-Type': mimetype,

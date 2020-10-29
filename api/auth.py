@@ -27,6 +27,10 @@ logger = logging.getLogger(settings.LOGGER_NAME)
 class UserValidationException(Exception):
     pass
 
+def get_auth():
+    auth = {"Authorization": "APIToken {}".format(settings.API_AUTH_TOKEN)}
+    return auth
+
 
 def _base64_decode(encoded_str):
     # Add paddings manually if necessary.
@@ -48,8 +52,10 @@ def auth_info():
     elif os.getenv("DEBUG"):
         logger.info("[STATUS] Using debug API user info")
         user_info = {
-            'id' : os.getenv('DEBUG_API_ID'),
-            'email' : os.getenv('DEBUG_API_EMAIL')
+            'id' : settings.DEBUG_API_ID,
+            'email' : settings.DEBUG_API_EMAIL
+            # 'id': os.getenv('DEBUG_API_ID'),
+            # 'email': os.getenv('DEBUG_API_EMAIL')
         }
     else:
         logger.info("[STATUS] No user encoded info found.")

@@ -15,26 +15,49 @@
 #
 
 import logging
+import json
+import requests
+
+from flask import request
+from werkzeug.exceptions import BadRequest
+
+import datetime
 
 from python_settings import settings
-from . auth import UserValidationException
+
+from python_settings import settings
+from . auth import UserValidationException, get_auth
 
 logger = logging.getLogger(settings.LOGGER_NAME)
 
-
 def get_account_details(user):
-    accounts_details = None
+    account_details = None
 
+    path_params = {'email': user}
     try:
-        accounts_details = {}
+        auth = get_auth()
+        response = requests.get("{}/users/api/".format(settings.BASE_URL),
+                                 params=path_params, headers=auth)
+        account_details = response.json()
+
+        account_details['user_details']['date_joined'] = datetime.datetime.fromtimestamp(
+            int(account_details['user_details']['date_joined']))
+        account_details['user_details']['last_login'] = datetime.datetime.fromtimestamp(
+            int(account_details['user_details']['last_login']))
+    except BadRequest as e:
+        logger.warn("[WARNING] Received bad request - couldn't load JSON.")
+        account_details = {
+            'message': 'The JSON provided in this request appears to be improperly formatted.',
+            'code': 400
+        }
 
     except UserValidationException as u:
         logger.warning(u)
-        accounts_details = {'message': str(u)}
+        account_details = {'message': str(u)}
 
     except Exception as e:
         logger.error("[ERROR] Encountered an error while retrieving user account details:")
         logger.exception(e)
-        accounts_details = {'message': "Encountered an error while retrieving account details for {}.".format(user.email)}
+        account_details = {'message': "Encountered an error while retrieving account details for {}.".format(user.email)}
 
-    return accounts_details
+    return account_details
