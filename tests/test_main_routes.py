@@ -14,6 +14,7 @@
 # limitations under the License.
 #
 
+from python_settings import settings
 
 def test_about(client, app):
     response = client.get('/v1/about')
@@ -24,3 +25,11 @@ def test_about(client, app):
 def test_oauth2callback(client, app):
     response = client.get('v1/oauth2callback')
     print(response)
+
+
+def test_user_info(client, app):
+    response = client.get('v1/users/account_details')
+    assert response.status_code == 200
+    user_details = response.json['user_details']
+
+    assert user_details['email'] == settings.DEBUG_API_EMAIL

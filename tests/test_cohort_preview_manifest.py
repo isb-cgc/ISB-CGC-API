@@ -108,7 +108,7 @@ def test_cohort_preview_manifest_doi(client, app):
     assert cohort['description'] == cohortSpec['description']
     assert cohort['filterSet']['filters'] == cohortSpec['filterSet']['filters']
     assert cohort['sql'] == \
-"""	(
+"""
             #standardSQL
     
         SELECT dicom_pivot_wave0.crdc_instance_uuid
@@ -122,9 +122,7 @@ def test_cohort_preview_manifest_doi(client, app):
         ORDER BY dicom_pivot_wave0.crdc_instance_uuid ASC
         
         
-    )
-	UNION ALL
-"""
+    """
 
     assert manifest['url_access_type'] == 'gs'
     assert manifest['url_region'] == 'us'

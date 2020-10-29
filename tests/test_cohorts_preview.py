@@ -381,7 +381,7 @@ def test_cohort_preview_sql(client, app):
     assert cohort['filterSet'] == filterSet
     assert response.json['cohortObjects']['rowsReturned'] == 2
     assert cohort['sql'] == \
-"""	(
+"""
             #standardSQL
     
         SELECT dicom_pivot_wave0.collection_id,dicom_pivot_wave0.PatientID
@@ -395,9 +395,7 @@ def test_cohort_preview_sql(client, app):
         ORDER BY dicom_pivot_wave0.PatientID ASC
         
         
-    )
-	UNION ALL
-"""
+    """
 
 
 def test_cohort_preview_none(client, app):

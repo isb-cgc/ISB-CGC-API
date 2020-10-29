@@ -27,6 +27,7 @@ from python_settings import settings
 from jsonschema import validate as schema_validate, ValidationError
 from . schemas.filterset import COHORT_FILTER_SCHEMA
 from . cohort_utils import submit_BQ_job, get_objects, get_manifest
+from .auth import get_auth
 
 BLACKLIST_RE = settings.BLACKLIST_RE
 
@@ -40,11 +41,6 @@ def convert_to_bool(s):
     elif s in ['False']:
         s = False
     return s
-
-
-def get_auth():
-    auth = {"Authorization": "APIToken {}".format(settings.API_AUTH_TOKEN)}
-    return auth
 
 
 def get_params(param_defaults):
@@ -340,7 +336,7 @@ def get_cohort_manifest(user, cohort_id):
 
 
 def delete_cohort(user, cohort_id):
-    cohort_ids = [cohort_id]
+    cohort_ids = {"cohorts": [cohort_id]}
 
     cohort_list = _delete_cohorts(user, cohort_ids)
 
