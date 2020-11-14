@@ -27,16 +27,19 @@ def test_versions(client, app):
     assert versions["1.0"]["active"] == True
     # assert versions["1.0"]['name'] == 'Imaging Data Commons Data Release'
     assert versions["1.0"]["data_sources"] == \
-           [{'data_type': 'Image Data', 'name': 'idc-dev.metadata.dicom_pivot_wave0'},
-            {'data_type': 'Clinical, Biospecimen, and Mutation Data', 'name': 'isb-cgc.TCGA_bioclin_v0.Biospecimen'},
-            {'data_type': 'Clinical, Biospecimen, and Mutation Data', 'name': 'isb-cgc.TCGA_bioclin_v0.clinical_v1'}]
+           [{'data_type': 'Clinical, Biospecimen, and Mutation Data',
+             'name': 'isb-cgc.TCGA_bioclin_v0.Biospecimen'},
+            {'data_type': 'Clinical, Biospecimen, and Mutation Data',
+             'name': 'isb-cgc.TCGA_bioclin_v0.clinical_v1'},
+            {'data_type': 'Image Data', 'name': 'idc-dev.metadata.dicom_pivot_wave1'}]
     programs = {program['short_name']: {key: program[key] for key in program.keys() if key != 'short_name'} for program in versions["1.0"]["programs"]}
     assert "TCGA" in programs
     assert programs["TCGA"]["name"] == "The Cancer Genome Atlas"
     assert "ISPY" in programs
     assert "LIDC" in programs
     assert "QIN" in programs
-    assert len(programs) == 4
+    assert "NSCLCR" in programs
+    assert len(programs) == 5
 
 
 def test_collections(client, app):
@@ -98,7 +101,7 @@ def test_collections(client, app):
 def test_attributes(client, app):
     query_string = dict(
         idc_data_version = '',
-        data_source = 'idc-dev.metadata.dicom_pivot_wave0'
+        data_source = 'idc-dev.metadata.dicom_pivot_wave1'
     )
     response = client.get('/v1/attributes',
                           query_string = query_string)
@@ -151,7 +154,7 @@ def test_attributes_all_data_sources(client, app):
     data_sources = {data_source['data_source']: {key: data_source[key] for key in data_source.keys() if key != 'data_source'} for data_source in data}
     for data_source in data_sources:
         attributes = {attribute['name']: {key: attribute[key] for key in attribute.keys() if key != 'name'} for attribute in data_sources[data_source]['attributes']}
-        if data_source == 'idc-dev.metadata.dicom_pivot_wave0':
+        if data_source == 'idc-dev.metadata.dicom_pivot_wave1':
             assert 'Modality' in attributes
             assert attributes['Modality'] == {'active': True, 'data_type': 'Categorical String', 'idc_data_version': '1.0', 'units': None}
         elif data_source == 'isb-cgc.TCGA_bioclin_v0.Biospecimen':
@@ -163,6 +166,9 @@ def test_attributes_all_data_sources(client, app):
             assert 'program_name' in attributes
             # assert attributes['program_name']['dataSetTypes'][0]['data_type'] == 'Clinical, Biospecimen, and Mutation Data'
             assert attributes['program_name'] == {'active': True, 'data_type': 'Categorical String', 'idc_data_version': '1.0', 'units': None}
+        elif data_source == 'idc-dev.metadata.dicom_pivot_wave1':
+            assert 'Modality' in attributes
+            assert attributes['Modality'] == {'active': True, 'data_type': 'Categorical String', 'idc_data_version': '1.0', 'units': None}
         else:
             assert 0==1
 
