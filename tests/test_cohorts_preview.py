@@ -384,15 +384,15 @@ def test_cohort_preview_sql(client, app):
 """
             #standardSQL
     
-        SELECT dicom_pivot_wave0.collection_id,dicom_pivot_wave0.PatientID
-        FROM `idc-dev.metadata.dicom_pivot_wave0` dicom_pivot_wave0 
+        SELECT dicom_pivot_wave1.collection_id,dicom_pivot_wave1.PatientID
+        FROM `idc-dev.metadata.dicom_pivot_wave1` dicom_pivot_wave1 
         
         JOIN `isb-cgc.TCGA_bioclin_v0.clinical_v1` clinical_v1
-        ON dicom_pivot_wave0.PatientID = clinical_v1.case_barcode
+        ON dicom_pivot_wave1.PatientID = clinical_v1.case_barcode
     
-        WHERE (dicom_pivot_wave0.collection_id = 'tcga_read') AND (dicom_pivot_wave0.Modality IN ('CT','MR')) AND (clinical_v1.race = 'WHITE')
-        GROUP BY dicom_pivot_wave0.collection_id, dicom_pivot_wave0.PatientID
-        ORDER BY dicom_pivot_wave0.PatientID ASC
+        WHERE (dicom_pivot_wave1.collection_id = 'tcga_read') AND (dicom_pivot_wave1.Modality IN ('CT','MR')) AND (clinical_v1.race = 'WHITE')
+        GROUP BY dicom_pivot_wave1.collection_id, dicom_pivot_wave1.PatientID
+        ORDER BY dicom_pivot_wave1.PatientID ASC
         
         
     """
