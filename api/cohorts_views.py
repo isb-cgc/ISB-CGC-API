@@ -232,105 +232,10 @@ def get_cohort_objects(user, cohort_id):
 
 
 def get_cohort_manifest(user, cohort_id):
-    blacklist = re.compile(BLACKLIST_RE, re.UNICODE)
-    manifest_info = None
-
-    path_params = {
-        "email": user,
-        "access_method": "doi",
-        "url_access_type": "gs",
-        "url_region": "us",
-        "return_sql": False,
-    }
-
-    local_params = {
-        "job_reference": None,
-        "next_page": "",
-        "page_size": 10000
-    }
-
-    access_methods = ["url", "doi"]
-    url_access_types = ["gs"]
-    url_regions = ["us"]
-
-    # Get and validate parameters
-    for key in request.args.keys():
-        match = blacklist.search(str(key))
-        if match:
-            return dict(
-                message = "Key {} contains invalid characters; please edit and resubmit. " +
-                           "[Saw {}]".format(str(key, match)),
-                code = 400
-            )
-        if key in path_params:
-            path_params[key] = request.args.get(key)
-        elif key in local_params:
-            local_params[key] = request.args.get(key)
-
-        else:
-            manifest_info = dict(
-                message="Invalid key {}".format(key),
-                code=400
-            )
-            return manifest_info
-
-    local_params['page_size'] = int(local_params['page_size'])
-    for s in ['return_sql']:
-        if s in path_params:
-            path_params[s] = path_params[s] in [True, 'True']
-    if path_params["access_method"] not in access_methods:
-        return dict(
-            message = "Invalid access_method {}".format(path_params['access_method']),
-            code = 400
-        )
-    if path_params['url_access_type'] not in url_access_types:
-        return dict(
-            message = "Invalid url_access_type {}".format(path_params['url_access_type']),
-            code = 400
-        )
-    if path_params['url_region'] not in url_regions:
-        return dict(
-            message = "Invalid url_region {}".format(path_params['url_region']),
-            code = 400
-        )
-    if manifest_info == None:
-
-        try:
-            if local_params["job_reference"] and local_params['next_page']:
-                job_reference = json.loads(local_params["job_reference"].replace("'",'"'))
-                # We don't return the project ID to the user
-                job_reference['projectId'] = settings.BIGQUERY_PROJECT_ID
-                next_page = local_params['next_page']
-                manifest_info = dict(
-                    cohort = {},
-                    job_reference = job_reference,
-                    next_page = next_page
-                )
-            else:
-                auth = get_auth()
-                results = requests.get("{}/cohorts/api/{}/manifest/".format(settings.BASE_URL, cohort_id),
-                                       params=path_params, headers=auth)
-                manifest_info = results.json()
-
-                if "message" in manifest_info:
-                    return manifest_info
-
-                # Get the BQ SQL string and params from the webapp
-                manifest_info['job_reference'] = submit_BQ_job(manifest_info['query']['sql_string'],
-                                                                manifest_info['query']['params'])
-                # Don't return the query in this form
-                manifest_info.pop('query')
-
-                # job_reference = cohort_data['job_reference']
-                manifest_info['next_page'] = None
-
-            manifest_info = get_manifest(manifest_info, local_params['page_size'])
-            # We don't return the project ID to the user
-            manifest_info['job_reference'].pop('projectId')
-
-
-        except Exception as e:
-            logger.exception(e)
+    manifest_info = get_manifest(request,
+                                 func=requests.get,
+                                 url="{}/cohorts/api/{}/manifest/".format(settings.BASE_URL, cohort_id),
+                                 user=user)
 
     return manifest_info
 
@@ -511,26 +416,6 @@ def post_cohort_preview():
 
 
 def get_cohort_preview_manifest():
-    blacklist = re.compile(BLACKLIST_RE, re.UNICODE)
-    manifest_info = None
-
-    path_params = {
-        "access_method": "doi",
-        "url_access_type": "gs",
-        "url_region": "us",
-        "return_sql": False,
-    }
-
-    local_params = {
-        "job_reference": None,
-        "next_page": "",
-        "page_size": 10000
-    }
-
-    access_methods = ["url", "doi"]
-    url_access_types = ["gs"]
-    url_regions = ["us"]
-
     try:
         request_data = request.get_json()
 
@@ -539,100 +424,24 @@ def get_cohort_preview_manifest():
                 message='No filters were provided; ensure that the request body contains a \'filters\' property.')
         else:
             schema_validate(request_data['filterSet'], COHORT_FILTER_SCHEMA)
+        data = {"request_data": request_data}
 
-        # Get and validate parameters
-        for key in request.args.keys():
-            match = blacklist.search(str(key))
-            if match:
-                return dict(
-                    message = "Key {} contains invalid characters; please edit and resubmit. " +
-                               "[Saw {}]".format(str(key, match)),
-                    code = 400
-                )
-            if key in path_params:
-                path_params[key] = request.args.get(key)
-            elif key in local_params:
-                local_params[key] = request.args.get(key)
-
-            else:
-                manifest_info = dict(
-                    message="Invalid key {}".format(key),
-                    code=400
-                )
-                return manifest_info
-
-        local_params['page_size'] = int(local_params['page_size'])
-        for s in ['return_sql']:  # 'return_objects', 'return_filter', 'return_DOIs', 'return_URLs']:
-            if s in path_params:
-                path_params[s] = path_params[s] in [True, 'True']
-        if path_params["access_method"] not in access_methods:
-            return dict(
-                message = "Invalid access_method {}".format(path_params['access_method']),
-                code = 400
-            )
-        if path_params['url_access_type'] not in url_access_types:
-            return dict(
-                message = "Invalid url_access_type {}".format(path_params['url_access_type']),
-                code = 400
-            )
-        if path_params['url_region'] not in url_regions:
-            return dict(
-                message = "Invalid url_region {}".format(path_params['url_region']),
-                code = 400
-            )
-        if manifest_info == None:
-
-            try:
-                if local_params["job_reference"] and local_params['next_page']:
-                    job_reference = json.loads(local_params["job_reference"].replace("'",'"'))
-                    # We don't return the project ID to the user
-                    job_reference['projectId'] = settings.BIGQUERY_PROJECT_ID
-                    next_page = local_params['next_page']
-                    manifest_info = dict(
-                        cohort = {},
-                        job_reference = job_reference,
-                        next_page = next_page
-                    )
-                else:
-                    auth = get_auth()
-                    data = {"request_data": request_data}
-                    results = requests.post("{}/cohorts/api/preview/manifest/".format(settings.BASE_URL),
-                                            params=path_params, json=data, headers=auth)
-                    manifest_info = results.json()
-
-                    if "message" in manifest_info:
-                        return manifest_info
-
-                    # Get the BQ SQL string and params from the webapp
-                    manifest_info['job_reference'] = submit_BQ_job(manifest_info['query']['sql_string'],
-                                                                    manifest_info['query']['params'])
-                    # Don't return the query in this form
-                    manifest_info.pop('query')
-
-                    # job_reference = cohort_data['job_reference']
-                    manifest_info['next_page'] = None
-
-                manifest_info = get_manifest(manifest_info, local_params['page_size'])
-                # We don't return the project ID to the user
-                manifest_info['job_reference'].pop('projectId')
-
-            except Exception as e:
-                logger.exception(e)
-                manifest_info = dict(
-                    message='[ERROR] Error trying to preview a cohort',
-                    code=400)
+        manifest_info = get_manifest(request,
+                             func=requests.post,
+                             url="{}/cohorts/api/preview/manifest/".format(settings.BASE_URL),
+                             data=data)
 
     except BadRequest as e:
         logger.warning("[WARNING] Received bad request - couldn't load JSON.")
         manifest_info = dict(
             message='The JSON provided in this request appears to be improperly formatted.',
             code = 400)
+
     except ValidationError as e:
         logger.warning('[WARNING] Filters rejected for improper formatting: {}'.format(e))
         manifest_info = dict(
             message= 'Filters were improperly formatted.',
             code = 400)
-
 
     return manifest_info
 

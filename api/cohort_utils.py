@@ -16,8 +16,11 @@
 from __future__ import absolute_import
 
 import logging
-import copy
+import re
 import json
+import requests
+
+from .auth import get_auth
 
 from django.conf import settings
 # from idc_collections.models import ImagingDataCommonsVersion
@@ -212,8 +215,120 @@ def get_objects(return_level, cohort_info, maxResults):
     return cohort_info
 
 
+def get_manifest(request, func, url, data=None, user=None):
+    blacklist = re.compile(BLACKLIST_RE, re.UNICODE)
+    manifest_info = None
+
+    path_params = {
+        "access_method": "doi",
+        "url_access_type": "gs",
+        "url_region": "us",
+        "return_sql": False,
+    }
+
+    if user:
+        path_params["email"] = user
+
+    local_params = {
+        "job_reference": None,
+        "next_page": "",
+        "page_size": 10000
+    }
+
+    access_methods = ["url", "doi"]
+    url_access_types = ["gs"]
+    url_regions = ["us"]
+
+
+    # Get and validate parameters
+    for key in request.args.keys():
+        match = blacklist.search(str(key))
+        if match:
+            return dict(
+                message = "Key {} contains invalid characters; please edit and resubmit. " +
+                           "[Saw {}]".format(str(key, match)),
+                code = 400
+            )
+        if key in path_params:
+            path_params[key] = request.args.get(key)
+        elif key in local_params:
+            local_params[key] = request.args.get(key)
+
+        else:
+            manifest_info = dict(
+                message="Invalid key {}".format(key),
+                code=400
+            )
+            return manifest_info
+
+    local_params['page_size'] = int(local_params['page_size'])
+    for s in ['return_sql']:  # 'return_objects', 'return_filter', 'return_DOIs', 'return_URLs']:
+        if s in path_params:
+            path_params[s] = path_params[s] in [True, 'True']
+    if path_params["access_method"] not in access_methods:
+        return dict(
+            message = "Invalid access_method {}".format(path_params['access_method']),
+            code = 400
+        )
+    if path_params['url_access_type'] not in url_access_types:
+        return dict(
+            message = "Invalid url_access_type {}".format(path_params['url_access_type']),
+            code = 400
+        )
+    if path_params['url_region'] not in url_regions:
+        return dict(
+            message = "Invalid url_region {}".format(path_params['url_region']),
+            code = 400
+        )
+    if manifest_info == None:
+
+        try:
+            if local_params["job_reference"] and local_params['next_page']:
+                job_reference = json.loads(local_params["job_reference"].replace("'",'"'))
+                # We don't return the project ID to the user
+                job_reference['projectId'] = settings.BIGQUERY_PROJECT_ID
+                next_page = local_params['next_page']
+                manifest_info = dict(
+                    cohort = {},
+                    job_reference = job_reference,
+                    next_page = next_page
+                )
+            else:
+                auth = get_auth()
+                if func == requests.post:
+                    results = func(url, params=path_params, json=data, headers=auth)
+                else:
+                    results = func(url, params=path_params, headers=auth)
+
+                manifest_info = results.json()
+
+                if "message" in manifest_info:
+                    return manifest_info
+
+                # Get the BQ SQL string and params from the webapp
+                manifest_info['job_reference'] = submit_BQ_job(manifest_info['query']['sql_string'],
+                                                                manifest_info['query']['params'])
+                # Don't return the query in this form
+                manifest_info.pop('query')
+
+                # job_reference = cohort_data['job_reference']
+                manifest_info['next_page'] = None
+
+            manifest_info = get_job_results(manifest_info, local_params['page_size'])
+            # We don't return the project ID to the user
+            manifest_info['job_reference'].pop('projectId')
+
+        except Exception as e:
+            logger.exception(e)
+            manifest_info = dict(
+                message='[ERROR] Error trying to preview a cohort',
+                code=400)
+
+    return manifest_info
+
+
 # Get a list of GCS URLs or CRDC DOIs of the instances in the cohort
-def get_manifest(manifest_info, maxResults):
+def get_job_results(manifest_info, maxResults):
 
     results = BigQuerySupport.get_job_result_page(job_ref=manifest_info['job_reference'],
                                                   page_token=manifest_info['next_page'], maxResults=maxResults)
