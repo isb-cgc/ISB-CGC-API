@@ -16,8 +16,11 @@
 from __future__ import absolute_import
 
 import logging
-import copy
+import re
 import json
+import requests
+
+from .auth import get_auth
 
 from django.conf import settings
 # from idc_collections.models import ImagingDataCommonsVersion
@@ -154,12 +157,6 @@ def build_hierarchy(objects, rows, return_level, reorder):
             objects[row[0]][row[1]][row[2]][row[3]].append(row[4])
     return objects
 
-def form_rows(data):
-    rows = []
-    for row in data:
-        if  row['f'][0]['v'] != None:
-           rows.append(row['f'][0]['v'])
-    return rows
 
 def get_objects(return_level, cohort_info, maxResults):
 
@@ -212,28 +209,173 @@ def get_objects(return_level, cohort_info, maxResults):
     return cohort_info
 
 
-# Get a list of GCS URLs or CRDC DOIs of the instances in the cohort
-def get_manifest(manifest_info, maxResults):
+def get_manifest(request, func, url, data=None, user=None):
+    blacklist = re.compile(BLACKLIST_RE, re.UNICODE)
+    manifest_info = None
 
-    results = BigQuerySupport.get_job_result_page(job_ref=manifest_info['job_reference'],
-                                                  page_token=manifest_info['next_page'], maxResults=maxResults)
-    # rows holds the actual data
-    rows = form_rows(results['current_page_rows'])
-    rowsReturned = len(results["current_page_rows"])
+    path_params = {
+        "sql": False,
+        "Collection_IDs": False,
+        "Patient_IDs": False,
+        "StudyInstanceUIDs": False,
+        "SeriesInstanceUIDs": False,
+        "SOPInstanceUIDs": False,
+        "Collection_DOIs": False,
+        "access_method": "doi",
+    }
 
-    access_method = 'doi' if results['schema']['fields'][0]['name'] =='crdc_instance_uuid' else 'url'
+    if user:
+        path_params["email"] = user
 
-    manifest_info["manifest"] = dict(
-                totalFound = int(results['totalFound']),
-                rowsReturned = rowsReturned,
-                url_access_type = "gs",
-                url_region = "us",
-                urls = rows if access_method == 'url' else [],
-                dois = rows if access_method != 'url' else [],
-    )
-    manifest_info['next_page'] = results['next_page']
+    local_params = {
+        "format": "json",
+        "job_reference": None,
+        "next_page": "",
+        "page_size": 10000
+    }
 
+    access_methods = ["url", "doi"]
+    formats = ['json', 'csv', 'tsv']
+
+    # Get and validate parameters
+    for key in request.args.keys():
+        match = blacklist.search(str(key))
+        if match:
+            return dict(
+                message = "Key {} contains invalid characters; please edit and resubmit. " +
+                           "[Saw {}]".format(str(key, match)),
+                code = 400
+            )
+        if key in path_params:
+            path_params[key] = request.args.get(key)
+        elif key in local_params:
+            local_params[key] = request.args.get(key)
+
+        else:
+            manifest_info = dict(
+                message="Invalid key {}".format(key),
+                code=400
+            )
+            return manifest_info
+
+    local_params['page_size'] = int(local_params['page_size'])
+    for s in ['sql', 'Collection_IDs', 'Patient_IDs', 'StudyInstanceUIDs',
+              'SeriesInstanceUIDs', 'SOPInstanceUIDs', 'Collection_DOIs']:
+        if s in path_params:
+            path_params[s] = path_params[s] in [True, 'True']
+    if path_params["access_method"] not in access_methods:
+        return dict(
+            message = "Invalid access_method {}".format(path_params['access_method']),
+            code = 400
+        )
+    if local_params["format"] not in formats:
+        return dict(
+            message = "Invalid format {}".format(path_params['format']),
+            code = 400
+        )
+    if manifest_info == None:
+
+        try:
+            if local_params["job_reference"] and local_params['next_page']:
+                job_reference = json.loads(local_params["job_reference"].replace("'",'"'))
+                # We don't return the project ID to the user
+                job_reference['projectId'] = settings.BIGQUERY_PROJECT_ID
+                next_page = local_params['next_page']
+                manifest_info = dict(
+                    cohort = {},
+                    job_reference = job_reference,
+                    next_page = next_page
+                )
+            else:
+                auth = get_auth()
+                if func == requests.post:
+                    results = func(url, params=path_params, json=data, headers=auth)
+                else:
+                    results = func(url, params=path_params, headers=auth)
+
+                manifest_info = results.json()
+
+                if "message" in manifest_info:
+                    return manifest_info
+
+                # Get the BQ SQL string and params from the webapp
+                manifest_info['job_reference'] = submit_BQ_job(manifest_info['query']['sql_string'],
+                                                                manifest_info['query']['params'])
+                # Don't return the query in this form
+                manifest_info.pop('query')
+
+                # job_reference = cohort_data['job_reference']
+                manifest_info['next_page'] = None
+
+            manifest_info = get_job_results(manifest_info,
+                                maxResults=local_params['page_size'], format=local_params['format'],
+                                first=local_params['next_page'] in [None,''])
+            # We don't return the project ID to the user
+            manifest_info['job_reference'].pop('projectId')
+
+        except Exception as e:
+            logger.exception(e)
+            manifest_info = dict(
+                message='[ERROR] Error trying to preview a cohort',
+                code=400)
 
     return manifest_info
 
+
+# Get a list of GCS URLs or CRDC DOIs of the instances in the cohort
+def get_job_results(manifest_info, maxResults, format, first):
+
+    results = BigQuerySupport.get_job_result_page(job_ref=manifest_info['job_reference'],
+                                                  page_token=manifest_info['next_page'], maxResults=maxResults)
+    manifest_info['next_page'] = results['next_page']
+
+    schema_names = ['doi' if field['name'] == 'crdc_instance_uuid' else 'url' if field['name'] == 'gcs_url' else field['name'] for field in results['schema']['fields']]
+
+    manifest_info["manifest"] = dict(
+                totalFound = int(results['totalFound']),
+                rowsReturned = len(results["current_page_rows"])
+    )
+    if format == 'json':
+        rows = form_rows_json(results['current_page_rows'], schema_names)
+        manifest_info["manifest"]['json_manifest'] = rows
+    elif format == 'csv':
+        rows = form_rows_csv(results['current_page_rows'], schema_names, first)
+        manifest_info["manifest"]['csv_manifest'] = rows
+    else:
+        rows = form_rows_tsv(results['current_page_rows'], schema_names, first)
+        manifest_info["manifest"]['tsv_manifest'] = rows
+
+    # rowsReturned = len(results["current_page_rows"])
+    return manifest_info
+
+
+def form_rows_json(data, schema_names):
+    rows = []
+    for row in data:
+        row_vals = [ val['v'] for val in row['f']]
+        rows.append(dict(zip(schema_names,row_vals)))
+
+    return rows
+
+
+def form_rows_csv(data, schema_names, first):
+    rows = []
+    if first:
+        rows.append(','.join(schema_names))
+    for row in data:
+        rows.append(','.join([val['v'] for val in row['f']]))
+    table = '\n'.join(rows)
+
+    return table
+
+
+def form_rows_tsv(data, schema_names, first):
+    rows = []
+    if first:
+        rows.append('\t'.join(schema_names))
+    for row in data:
+        rows.append('\t'.join([val['v'] for val in row['f']]))
+    table = '\n'.join(rows)
+
+    return table
 

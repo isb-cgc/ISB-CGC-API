@@ -122,7 +122,7 @@ def test_get_cohort_sql(client, app):
 
     query_string = {
         'return_level': 'Collection',
-        'return_sql': True,
+        'sql': True,
     }
 
     # Get the list of objects in the cohort

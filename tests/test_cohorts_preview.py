@@ -45,7 +45,7 @@ def test_cohort_preview_patients_eq(client, app):
     }
     query_string = {
         'return_level': 'Patient',
-        'return_sql': True,
+        'sql': True,
     }
 
     # Get the list of objects in the cohort
@@ -92,7 +92,7 @@ def test_cohort_preview_patients_eq(client, app):
     }
     query_string = {
         'return_level': 'Patient',
-        'return_sql': True,
+        'sql': True,
     }
 
     # Get the list of objects in the cohort
@@ -203,7 +203,7 @@ def test_cohort_preview_patients_btw(client, app):
     }
     query_string = {
         'return_level': 'Patient',
-        'return_sql': True,
+        'sql': True,
     }
 
     # Get the list of objects in the cohort
@@ -236,7 +236,7 @@ def test_cohort_preview_patients_btw(client, app):
     }
     query_string = {
         'return_level': 'Patient',
-        'return_sql': True,
+        'sql': True,
     }
 
     # Get the list of objects in the cohort
@@ -284,7 +284,7 @@ def test_cohort_preview_patients_btw(client, app):
     }
     query_string = {
         'return_level': 'Patient',
-        'return_sql': True,
+        'sql': True,
     }
 
     # Get the list of objects in the cohort
@@ -332,7 +332,7 @@ def test_cohort_preview_patients_btw(client, app):
     }
     query_string = {
         'return_level': 'Patient',
-        'return_sql': True,
+        'sql': True,
     }
 
     # Get the list of objects in the cohort
@@ -363,7 +363,7 @@ def test_cohort_preview_sql(client, app):
         'Accept': mimetype
     }
     query_string = {
-        'return_sql': True,
+        'sql': True,
         'return_level': 'Patient',
     }
 
