@@ -157,12 +157,6 @@ def build_hierarchy(objects, rows, return_level, reorder):
             objects[row[0]][row[1]][row[2]][row[3]].append(row[4])
     return objects
 
-def form_rows(data):
-    rows = []
-    for row in data:
-        if  row['f'][0]['v'] != None:
-           rows.append(row['f'][0]['v'])
-    return rows
 
 def get_objects(return_level, cohort_info, maxResults):
 
@@ -220,25 +214,28 @@ def get_manifest(request, func, url, data=None, user=None):
     manifest_info = None
 
     path_params = {
+        "sql": False,
+        "Collection_IDs": False,
+        "Patient_IDs": False,
+        "StudyInstanceUIDs": False,
+        "SeriesInstanceUIDs": False,
+        "SOPInstanceUIDs": False,
+        "Collection_DOIs": False,
         "access_method": "doi",
-        "url_access_type": "gs",
-        "url_region": "us",
-        "return_sql": False,
     }
 
     if user:
         path_params["email"] = user
 
     local_params = {
+        "format": "json",
         "job_reference": None,
         "next_page": "",
         "page_size": 10000
     }
 
     access_methods = ["url", "doi"]
-    url_access_types = ["gs"]
-    url_regions = ["us"]
-
+    formats = ['json', 'csv', 'tsv']
 
     # Get and validate parameters
     for key in request.args.keys():
@@ -262,7 +259,8 @@ def get_manifest(request, func, url, data=None, user=None):
             return manifest_info
 
     local_params['page_size'] = int(local_params['page_size'])
-    for s in ['return_sql']:  # 'return_objects', 'return_filter', 'return_DOIs', 'return_URLs']:
+    for s in ['sql', 'Collection_IDs', 'Patient_IDs', 'StudyInstanceUIDs',
+              'SeriesInstanceUIDs', 'SOPInstanceUIDs', 'Collection_DOIs']:
         if s in path_params:
             path_params[s] = path_params[s] in [True, 'True']
     if path_params["access_method"] not in access_methods:
@@ -270,14 +268,9 @@ def get_manifest(request, func, url, data=None, user=None):
             message = "Invalid access_method {}".format(path_params['access_method']),
             code = 400
         )
-    if path_params['url_access_type'] not in url_access_types:
+    if local_params["format"] not in formats:
         return dict(
-            message = "Invalid url_access_type {}".format(path_params['url_access_type']),
-            code = 400
-        )
-    if path_params['url_region'] not in url_regions:
-        return dict(
-            message = "Invalid url_region {}".format(path_params['url_region']),
+            message = "Invalid format {}".format(path_params['format']),
             code = 400
         )
     if manifest_info == None:
@@ -314,7 +307,9 @@ def get_manifest(request, func, url, data=None, user=None):
                 # job_reference = cohort_data['job_reference']
                 manifest_info['next_page'] = None
 
-            manifest_info = get_job_results(manifest_info, local_params['page_size'])
+            manifest_info = get_job_results(manifest_info,
+                                maxResults=local_params['page_size'], format=local_params['format'],
+                                first=local_params['next_page'] in [None,''])
             # We don't return the project ID to the user
             manifest_info['job_reference'].pop('projectId')
 
@@ -328,27 +323,59 @@ def get_manifest(request, func, url, data=None, user=None):
 
 
 # Get a list of GCS URLs or CRDC DOIs of the instances in the cohort
-def get_job_results(manifest_info, maxResults):
+def get_job_results(manifest_info, maxResults, format, first):
 
     results = BigQuerySupport.get_job_result_page(job_ref=manifest_info['job_reference'],
                                                   page_token=manifest_info['next_page'], maxResults=maxResults)
-    # rows holds the actual data
-    rows = form_rows(results['current_page_rows'])
-    rowsReturned = len(results["current_page_rows"])
+    manifest_info['next_page'] = results['next_page']
 
-    access_method = 'doi' if results['schema']['fields'][0]['name'] =='crdc_instance_uuid' else 'url'
+    schema_names = ['doi' if field['name'] == 'crdc_instance_uuid' else 'url' if field['name'] == 'gcs_url' else field['name'] for field in results['schema']['fields']]
 
     manifest_info["manifest"] = dict(
                 totalFound = int(results['totalFound']),
-                rowsReturned = rowsReturned,
-                url_access_type = "gs",
-                url_region = "us",
-                urls = rows if access_method == 'url' else [],
-                dois = rows if access_method != 'url' else [],
+                rowsReturned = len(results["current_page_rows"])
     )
-    manifest_info['next_page'] = results['next_page']
+    if format == 'json':
+        rows = form_rows_json(results['current_page_rows'], schema_names)
+        manifest_info["manifest"]['json_manifest'] = rows
+    elif format == 'csv':
+        rows = form_rows_csv(results['current_page_rows'], schema_names, first)
+        manifest_info["manifest"]['csv_manifest'] = rows
+    else:
+        rows = form_rows_tsv(results['current_page_rows'], schema_names, first)
+        manifest_info["manifest"]['tsv_manifest'] = rows
 
-
+    # rowsReturned = len(results["current_page_rows"])
     return manifest_info
 
+
+def form_rows_json(data, schema_names):
+    rows = []
+    for row in data:
+        row_vals = [ val['v'] for val in row['f']]
+        rows.append(dict(zip(schema_names,row_vals)))
+
+    return rows
+
+
+def form_rows_csv(data, schema_names, first):
+    rows = []
+    if first:
+        rows.append(','.join(schema_names))
+    for row in data:
+        rows.append(','.join([val['v'] for val in row['f']]))
+    table = '\n'.join(rows)
+
+    return table
+
+
+def form_rows_tsv(data, schema_names, first):
+    rows = []
+    if first:
+        rows.append('\t'.join(schema_names))
+    for row in data:
+        rows.append('\t'.join([val['v'] for val in row['f']]))
+    table = '\n'.join(rows)
+
+    return table
 

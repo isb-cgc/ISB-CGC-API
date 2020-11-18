@@ -135,7 +135,7 @@ def get_cohort_objects(user, cohort_id):
     path_params = {
         "email": user,
         "return_level": "Series",
-        "return_sql": False,
+        "sql": False,
      }
 
     local_params = {
@@ -174,7 +174,7 @@ def get_cohort_objects(user, cohort_id):
             return cohort_objects
 
     local_params['page_size'] = int(local_params['page_size'])
-    for s in ['return_sql']:
+    for s in ['sql']:
         if s in path_params:
             path_params[s] = path_params[s] in [True, 'True']
     if path_params['return_level'] not in return_levels:
@@ -281,7 +281,7 @@ def post_cohort_preview():
 
     path_params = {
         "return_level": "Series",
-        "return_sql": False,
+        "sql": False,
      }
 
     local_params = {
@@ -337,7 +337,7 @@ def post_cohort_preview():
                     return cohort_objects
 
             local_params['page_size'] = int(local_params['page_size'])
-            for s in ['return_sql']: #'return_objects', 'return_filter', 'return_DOIs', 'return_URLs']:
+            for s in ['sql']: #'return_objects', 'return_filter', 'return_DOIs', 'return_URLs']:
                 if s in path_params:
                     path_params[s] = path_params[s] in [True, 'True']
             if path_params['return_level'] not in return_levels:
