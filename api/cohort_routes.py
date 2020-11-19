@@ -258,7 +258,7 @@ def cohort_preview():
         logger.exception(e)
         response = jsonify({
             'code': 500,
-            'message': 'Encountered an error while attempting to retrieve this cohort\'s information.'
+            'message': 'Encountered an error while attempting to preview this cohort\'s information.'
         })
         response.status_code = 500
 
@@ -291,14 +291,14 @@ def cohort_preview_manifest():
         else:
             response = jsonify({
                 'code': 404,
-                'message': "Cohort ID {} was not found.".format(str(cohort_id))})
+                'message': "Error trying to preview cohort manifest"})
             response.status_code = 500
 
     except Exception as e:
         logger.exception(e)
         response = jsonify({
             'code': 500,
-            'message': 'Encountered an error while attempting to retrieve this cohort\'s information.'
+            'message': 'Encountered an error while attempting to retrieve this cohort\'s manifest.'
         })
         response.status_code = 500
 
