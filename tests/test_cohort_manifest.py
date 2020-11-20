@@ -118,7 +118,7 @@ def test_doi_tsv(client, app):
     delete_cohort(client, id)
 
 
-def test_doi_json(client, app):
+def test_url_json(client, app):
 
     (id, filterSet) = create_cohort_for_test_get_cohort_xxx(client)
 

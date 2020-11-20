@@ -54,8 +54,6 @@ def test_doi_json(client, app):
     manifest = response.json['manifest']
     job_reference = response.json['job_reference']
 
-    assert cohort['cohort_id']==id
-
     assert manifest['rowsReturned'] == 1638
 
     next_page = response.json['next_page']
@@ -161,7 +159,7 @@ def test_doi_tsv(client, app):
     assert 'dg.4DFC/0013f110-0928-4d66-ba61-7c3e80b48a68' in [row for row in tsv_manifest[1:]]
 
 
-def test_doi_json(client, app):
+def test_url_json(client, app):
 
     filterSet = {
         "idc_data_version": "",
