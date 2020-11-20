@@ -57,20 +57,18 @@ def create_cohort(user):
 
     try:
         request_data = request.get_json()
+        if 'filterSet' not in request_data:
+            return dict(
+                message = 'No filters were provided; ensure that the request body contains a \'filterSet\' property.',
+                code = 400)
+
         schema_validate(request_data['filterSet'], COHORT_FILTER_SCHEMA)
 
         if 'name' not in request_data:
-            cohort_info = {
-                'message': 'A name was not provided for this cohort. The cohort was not made.',
-            }
-            return cohort_info
-
-        if 'filterSet' not in request_data:
-            cohort_info = {
-                'message': 'Filters were not provided; at least one filter must be provided for a cohort to be valid.' +
-                       ' The cohort was not made.',
-            }
-            return cohort_info
+            return dict(
+                message = 'A name was not provided for this cohort. The cohort was not made.',
+                code = 400
+            )
 
         blacklist = re.compile(BLACKLIST_RE, re.UNICODE)
         match = blacklist.search(str(request_data['name']))
@@ -79,31 +77,31 @@ def create_cohort(user):
             match = blacklist.search(str(request_data['description']))
 
         if match:
-            cohort_info = {
-                'message': 'Your cohort\'s name or description contains invalid characters; please edit them and resubmit. ' +
-                    '[Saw {}]'.format(str(match)),
-            }
+            return dict(
+                message = "Your cohort's name or description contains invalid characters; " +
+                            "please edit them and resubmit. [Saw {}]".format(str(match)),
+                code = 400
+            )
 
-        else:
-            path_params = {'email': user}
-            try:
-                auth = get_auth()
-                data = {"request_data": request_data}
-                response = requests.post("{}/{}/".format(settings.BASE_URL, 'cohorts/api/save_cohort'),
-                                params=path_params, json=data, headers=auth)
-                cohort_info = response.json()
-            except Exception as e:
-                logger.exception(e)
+        path_params = {'email': user}
+        try:
+            auth = get_auth()
+            data = {"request_data": request_data}
+            response = requests.post("{}/{}/".format(settings.BASE_URL, 'cohorts/api/save_cohort'),
+                            params=path_params, json=data, headers=auth)
+            cohort_info = response.json()
+        except Exception as e:
+            logger.exception(e)
 
     except BadRequest as e:
-        logger.warn("[WARNING] Received bad request - couldn't load JSON.")
+        logger.warning("[WARNING] Received bad request - couldn't load JSON.")
         cohort_info = {
             'message': 'The JSON provided in this request appears to be improperly formatted.',
             'code': 400
         }
 
     except ValidationError as e:
-        logger.warn("[WARNING] Cohort information rejected for improper formatting: {}".format(e))
+        logger.warning("[WARNING] Cohort information rejected for improper formatting: {}".format(e))
         cohort_info = {
             'message': 'Cohort information was improperly formatted - cohort not created.',
             'code': 400
@@ -203,10 +201,32 @@ def get_cohort_objects(user, cohort_id):
                 if "message" in cohort_objects:
                     return cohort_objects
 
-                # Get the BQ SQL string and params from the webapp
+                # Start the BQ job, but don't get any data results, just the job info.
                 if path_params['return_level'] != 'None':
-                    cohort_objects['job_reference'] = submit_BQ_job(cohort_objects['query']['sql_string'],
-                                                                    cohort_objects['query']['params'])
+                    job_is_done = submit_BQ_job(cohort_objects['query']['sql_string'],
+                                                cohort_objects['query']['params'])
+                    if job_is_done and job_is_done['status']['state'] == 'DONE':
+                        if 'status' in job_is_done and 'errors' in job_is_done['status']:
+                            job_id = job_is_done['jobReference']['jobId']
+                            logger.error("[ERROR] During query job {}: {}".format(job_id, str(
+                                job_is_done['status']['errors'])))
+                            logger.error("[ERROR] Error'd out query: {}".format(cohort_objects['query']['sql_string']))
+                            return dict(
+                                message="[ERROR] During query job {}: {}".format(job_id, str(
+                                    job_is_done['status']['errors'])),
+                                code=500)
+                        else:
+                            cohort_objects['job_reference'] = job_is_done['jobReference']
+                    else:
+                        logger.error("[ERROR] API query took longer than the allowed time to execute. " +
+                                     "Retry the query.")
+                        logger.error("[ERROR] Timed out on query: {}".format(cohort_objects['query']['sql_string']))
+                        return dict(
+                            message="[ERROR] API query took longer than the allowed time to execute. " +
+                                    "Retry the query",
+                            code=503)
+
+                    print(("[STATUS] cohort_objects with job_ref: {}").format(cohort_objects))
 
                 # Don't return the query in this form
                 cohort_objects.pop('query')
@@ -301,98 +321,129 @@ def post_cohort_preview():
 
     try:
         request_data = request.get_json()
+        if 'filterSet' not in request_data:
+            return dict(
+                message = 'No filters were provided; ensure that the request body contains a \'filterSet\' property.',
+                code = 400)
+
+        # Validate the filter
         schema_validate(request_data['filterSet'], COHORT_FILTER_SCHEMA)
 
-        if 'filterSet' not in request_data:
-            cohort_objects = dict(
-                message = 'No filters were provided; ensure that the request body contains a \'filters\' property.',
-                code = 400)
-        else:
+        if 'name' not in request_data:
+            return dict(
+                message = 'A name was not provided for this cohort. The cohort was not made.',
+                code = 400
+            )
 
-            # Get and validate parameters
-            # Get and validate parameters
-            for key in request.args.keys():
-                if key in path_params:
-                    match = blacklist.search(str(key))
-                    if match:
-                        return dict(
-                            message="Key {} contains invalid characters; please edit and resubmit. " +
-                                    "[Saw {}]".format(str(key, match)),
-                            code=400
-                        )
-                    path_params[key] = request.args.get(key)
-                elif key in local_params:
-                    if match:
-                        return dict(
-                            message="Key {} contains invalid characters; please edit and resubmit. " +
-                                    "[Saw {}]".format(str(key, match)),
-                            code=400
-                        )
-                    local_params[key] = request.args.get(key)
-                else:
-                    cohort_objects =dict(
-                        message = "Invalid key {}".format(key),
-                        code = 400
-                    )
-                    return cohort_objects
+        blacklist = re.compile(BLACKLIST_RE, re.UNICODE)
+        match = blacklist.search(str(request_data['name']))
 
-            local_params['page_size'] = int(local_params['page_size'])
-            for s in ['sql']: #'return_objects', 'return_filter', 'return_DOIs', 'return_URLs']:
-                if s in path_params:
-                    path_params[s] = path_params[s] in [True, 'True']
-            if path_params['return_level'] not in return_levels:
+        if not match and 'description' in request_data:
+            match = blacklist.search(str(request_data['description']))
+
+        if match:
+            return dict(
+                message = "Your cohort's name or description contains invalid characters; " +
+                            "please edit them and resubmit. [Saw {}]".format(str(match)),
+                code = 400
+            )
+
+        # Get and validate parameters
+        for key in request.args.keys():
+            match = blacklist.search(str(key))
+            if match:
                 return dict(
-                    message="Invalid return level {}".format(path_params['return_level']),
+                    message="Key {} contains invalid characters; please edit and resubmit. " +
+                            "[Saw {}]".format(str(key, match)),
                     code=400
                 )
-            if cohort_objects == None:
-                try:
-                    if local_params["job_reference"] and local_params['next_page']:
-                        job_reference = json.loads(local_params["job_reference"].replace("'",'"'))
-                        # We don't return the project ID to the user
-                        job_reference['projectId'] = settings.BIGQUERY_PROJECT_ID
-                        next_page = local_params['next_page']
-                        cohort_objects = dict(
-                            cohort = {},
-                            job_reference = job_reference,
-                            next_page = next_page
-                        )
-                    else:
-                        auth = get_auth()
-                        data = {"request_data": request_data}
-                        results = requests.post("{}/{}/".format(settings.BASE_URL, 'cohorts/api/preview'),
-                                               params=path_params, json=data, headers=auth)
-                        cohort_objects = results.json()
-                        print(("[STATUS] cohort_objects with sql_string and params: {}").format(cohort_objects))
+            if key in path_params:
+                path_params[key] = request.args.get(key)
+            elif key in local_params:
+                local_params[key] = request.args.get(key)
+            else:
+                return dict(
+                    message = "Invalid key {}".format(key),
+                    code = 400
+                )
 
-                        if "message" in cohort_objects:
-                            return cohort_objects
+        local_params['page_size'] = int(local_params['page_size'])
+        for s in ['sql']: #'return_objects', 'return_filter', 'return_DOIs', 'return_URLs']:
+            if s in path_params:
+                path_params[s] = path_params[s] in [True, 'True']
+        if path_params['return_level'] not in return_levels:
+            return dict(
+                message="Invalid return level {}".format(path_params['return_level']),
+                code=400
+            )
+        if cohort_objects == None:
+            try:
+                if local_params["job_reference"] and local_params['next_page']:
+                    job_reference = json.loads(local_params["job_reference"].replace("'",'"'))
+                    # We don't return the project ID to the user
+                    job_reference['projectId'] = settings.BIGQUERY_PROJECT_ID
+                    next_page = local_params['next_page']
+                    cohort_objects = dict(
+                        cohort = {},
+                        job_reference = job_reference,
+                        next_page = next_page
+                    )
+                else:
+                    auth = get_auth()
+                    data = {"request_data": request_data}
+                    results = requests.post("{}/{}/".format(settings.BASE_URL, 'cohorts/api/preview'),
+                                           params=path_params, json=data, headers=auth)
+                    cohort_objects = results.json()
+                    print(("[STATUS] cohort_objects with sql_string and params: {}").format(cohort_objects))
 
-                        # Get the BQ SQL string and params from the webapp
-                        if path_params['return_level'] != 'None':
-                            cohort_objects['job_reference'] = submit_BQ_job(cohort_objects['query']['sql_string'],
-                                                                        cohort_objects['query']['params'])
-                            print(("[STATUS] cohort_objects with job_ref: {}").format(cohort_objects))
-                        # Don't return the query in this form
-                        cohort_objects.pop('query')
+                    if "message" in cohort_objects:
+                        return cohort_objects
 
-                        # job_reference = cohort_data['job_reference']
-                        cohort_objects['next_page'] = None
+                    # Start the BQ job, but don't get any data results, just the job info.
+                    if path_params['return_level'] != 'None':
+                        job_is_done = submit_BQ_job(cohort_objects['query']['sql_string'],
+                                                                    cohort_objects['query']['params'])
+                        if job_is_done and job_is_done['status']['state'] == 'DONE':
+                            if 'status' in job_is_done and 'errors' in job_is_done['status']:
+                                job_id = job_is_done['jobReference']['jobId']
+                                logger.error("[ERROR] During query job {}: {}".format(job_id, str(
+                                    job_is_done['status']['errors'])))
+                                logger.error("[ERROR] Error'd out query: {}".format(cohort_objects['query']['sql_string']))
+                                return dict(
+                                    message = "[ERROR] During query job {}: {}".format(job_id, str(
+                                    job_is_done['status']['errors'])),
+                                    code = 500)
+                            else:
+                                cohort_objects['job_reference'] = job_is_done['jobReference']
+                        else:
+                            logger.error("[ERROR] API query took longer than the allowed time to execute. " +
+                                         "Retry the query.")
+                            logger.error("[ERROR] Timed out on query: {}".format(cohort_objects['query']['sql_string']))
+                            return dict(
+                                message="[ERROR] API query took longer than the allowed time to execute. " +
+                                         "Retry the query",
+                                code=503)
 
-                    if path_params['return_level']!= 'None':
-                        cohort_objects = get_objects(path_params['return_level'], cohort_objects, local_params['page_size'])
-                        # We don't return the project ID to the user
-                        cohort_objects['job_reference'].pop('projectId')
-                    else:
-                        cohort_objects['cohortObjects'] = dict(
-                            totalFound = 0,
-                            rowsReturned = 0,
-                            collections = [],
-                        )
-                except Exception as e:
-                    logger.exception(e)
+                        print(("[STATUS] cohort_objects with job_ref: {}").format(cohort_objects))
 
+                    # Don't return the query in this form
+                    cohort_objects.pop('query')
 
+                    # job_reference = cohort_data['job_reference']
+                    cohort_objects['next_page'] = None
+
+                if path_params['return_level']!= 'None':
+                    cohort_objects = get_objects(path_params['return_level'], cohort_objects, local_params['page_size'])
+                    # We don't return the project ID to the user
+                    cohort_objects['job_reference'].pop('projectId')
+                else:
+                    cohort_objects['cohortObjects'] = dict(
+                        totalFound = 0,
+                        rowsReturned = 0,
+                        collections = [],
+                    )
+            except Exception as e:
+                logger.exception(e)
 
         return cohort_objects
 
@@ -420,10 +471,31 @@ def get_cohort_preview_manifest():
         request_data = request.get_json()
 
         if 'filterSet' not in request_data:
-            manifest_info = dict(
-                message='No filters were provided; ensure that the request body contains a \'filters\' property.')
-        else:
-            schema_validate(request_data['filterSet'], COHORT_FILTER_SCHEMA)
+            return dict(
+                message = 'No filters were provided; ensure that the request body contains a \'filterSet\' property.',
+                code = 400)
+
+        schema_validate(request_data['filterSet'], COHORT_FILTER_SCHEMA)
+
+        if 'name' not in request_data:
+            return dict(
+                message = 'A name was not provided for this cohort. The cohort was not made.',
+                code = 400
+            )
+
+        blacklist = re.compile(BLACKLIST_RE, re.UNICODE)
+        match = blacklist.search(str(request_data['name']))
+
+        if not match and 'description' in request_data:
+            match = blacklist.search(str(request_data['description']))
+
+        if match:
+            return dict(
+                message = "Your cohort's name or description contains invalid characters; " +
+                            "please edit them and resubmit. [Saw {}]".format(str(match)),
+                code = 400
+            )
+
         data = {"request_data": request_data}
 
         manifest_info = get_manifest(request,

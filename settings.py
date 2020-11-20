@@ -90,7 +90,7 @@ FILE_SIZE_UPLOAD_MAX = 1950000
 # IGV limit to prevent users from trying to open dozens of files
 MAX_FILES_IGV = 5
 
-BQ_MAX_ATTEMPTS             = int(os.environ.get('BQ_MAX_ATTEMPTS', '10'))
+BQ_MAX_ATTEMPTS             = int(os.environ.get('BQ_MAX_ATTEMPTS', '30'))
 MAX_BQ_INSERT                        = int(os.environ.get('MAX_BQ_INSERT', '500'))
 
 GCLOUD_PROJECT_ID              = os.environ.get('GCLOUD_PROJECT_ID', '')
