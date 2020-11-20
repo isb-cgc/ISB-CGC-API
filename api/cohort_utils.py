@@ -298,9 +298,32 @@ def get_manifest(request, func, url, data=None, user=None):
                 if "message" in manifest_info:
                     return manifest_info
 
-                # Get the BQ SQL string and params from the webapp
-                manifest_info['job_reference'] = submit_BQ_job(manifest_info['query']['sql_string'],
-                                                                manifest_info['query']['params'])
+                # Start the BQ job, but don't get any data results, just the job info.
+                job_is_done = submit_BQ_job(manifest_info['query']['sql_string'],
+                                            manifest_info['query']['params'])
+                if job_is_done and job_is_done['status']['state'] == 'DONE':
+                    if 'status' in job_is_done and 'errors' in job_is_done['status']:
+                        job_id = job_is_done['jobReference']['jobId']
+                        logger.error("[ERROR] During query job {}: {}".format(job_id, str(
+                            job_is_done['status']['errors'])))
+                        logger.error("[ERROR] Error'd out query: {}".format(manifest_info['query']['sql_string']))
+                        return dict(
+                            message="[ERROR] During query job {}: {}".format(job_id, str(
+                                job_is_done['status']['errors'])),
+                            code=500)
+                    else:
+                        manifest_info['job_reference'] = job_is_done['jobReference']
+                else:
+                    logger.error("[ERROR] API query took longer than the allowed time to execute. " +
+                                 "Retry the query.")
+                    logger.error("[ERROR] Timed out on query: {}".format(manifest_info['query']['sql_string']))
+                    return dict(
+                        message="[ERROR] API query took longer than the allowed time to execute. " +
+                                "Retry the query",
+                        code=503)
+
+                print(("[STATUS] manifest_info with job_ref: {}").format(manifest_info))
+
                 # Don't return the query in this form
                 manifest_info.pop('query')
 
@@ -316,7 +339,7 @@ def get_manifest(request, func, url, data=None, user=None):
         except Exception as e:
             logger.exception(e)
             manifest_info = dict(
-                message='[ERROR] Error trying to preview a cohort',
+                message='[ERROR] get_manifest(): Error trying to preview a cohort',
                 code=400)
 
     return manifest_info
@@ -335,15 +358,8 @@ def get_job_results(manifest_info, maxResults, format, first):
                 totalFound = int(results['totalFound']),
                 rowsReturned = len(results["current_page_rows"])
     )
-    if format == 'json':
-        rows = form_rows_json(results['current_page_rows'], schema_names)
-        manifest_info["manifest"]['json_manifest'] = rows
-    elif format == 'csv':
-        rows = form_rows_csv(results['current_page_rows'], schema_names, first)
-        manifest_info["manifest"]['csv_manifest'] = rows
-    else:
-        rows = form_rows_tsv(results['current_page_rows'], schema_names, first)
-        manifest_info["manifest"]['tsv_manifest'] = rows
+    rows = form_rows_json(results['current_page_rows'], schema_names)
+    manifest_info["manifest"]['json_manifest'] = rows
 
     # rowsReturned = len(results["current_page_rows"])
     return manifest_info
