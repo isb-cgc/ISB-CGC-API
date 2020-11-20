@@ -358,15 +358,8 @@ def get_job_results(manifest_info, maxResults, format, first):
                 totalFound = int(results['totalFound']),
                 rowsReturned = len(results["current_page_rows"])
     )
-    if format == 'json':
-        rows = form_rows_json(results['current_page_rows'], schema_names)
-        manifest_info["manifest"]['json_manifest'] = rows
-    elif format == 'csv':
-        rows = form_rows_csv(results['current_page_rows'], schema_names, first)
-        manifest_info["manifest"]['csv_manifest'] = rows
-    else:
-        rows = form_rows_tsv(results['current_page_rows'], schema_names, first)
-        manifest_info["manifest"]['tsv_manifest'] = rows
+    rows = form_rows_json(results['current_page_rows'], schema_names)
+    manifest_info["manifest"]['json_manifest'] = rows
 
     # rowsReturned = len(results["current_page_rows"])
     return manifest_info
