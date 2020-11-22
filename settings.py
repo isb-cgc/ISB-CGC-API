@@ -106,5 +106,3 @@ BLACKLIST_RE = r'((?i)<script>|(?i)</script>|!\[\]|!!\[\]|\[\]\[\".*\"\]|(?i)<if
 STATIC_URL = os.environ.get('STATIC_URL', '/static/')
 
 IS_DEV = (os.environ.get('IS_DEV', 'False') == 'True')
-
-PAGE_TOKEN_KEY                  = os.environ.get('PAGE_TOKEN_KEY', '')

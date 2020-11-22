@@ -156,32 +156,6 @@ def test_get_cohort_sql(client, app):
 
     delete_cohort(client, id)
 
-def test_get_cohort_none(client, app):
-
-    (id, filterSet) = create_cohort_for_test_get_cohort_xxx(client)
-
-    query_string = {
-        'return_level': 'None',
-    }
-
-    # Get the list of objects in the cohort
-    response = client.get("{}/{}/".format('v1/cohorts', id),
-                query_string = query_string)
-    assert response.content_type == 'application/json'
-    assert response.status_code == 200
-    cohort = response.json['cohort']
-
-    assert cohort['cohort_id']==id
-    assert cohort['name']=="testcohort"
-    assert cohort['description']=="Test description"
-    assert cohort['filterSet'] == filterSet
-    assert response.json['cohortObjects']['totalFound'] == 0
-    assert response.json['cohortObjects']['rowsReturned'] == 0
-    assert response.json['cohortObjects']['collections'] == []
-    assert response.json['next_page'] == ""
-
-    delete_cohort(client, id)
-
 def test_get_cohort_collections(client, app):
 
     (id, filterSet) = create_cohort_for_test_get_cohort_xxx(client)
@@ -353,6 +327,7 @@ def test_get_cohort_instances(client, app):
 
     query_string = {
         'return_level': 'Instance',
+        'page_size': 2000,
     }
 
     # Get the list of objects in the cohort

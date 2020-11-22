@@ -32,7 +32,8 @@ from google_helpers.bigquery.bq_support import BigQuerySupport
 logger = logging.getLogger('main_logger')
 BLACKLIST_RE = settings.BLACKLIST_RE
 
-cipher_suite = Fernet(settings.PAGE_TOKEN_KEY)
+page_token_key = Fernet.generate_key()
+cipher_suite = Fernet(page_token_key)
 
 def encrypt_pageToken(email, jobReference, next_page):
     # cipher_suite = Fernet(settings.PAGE_TOKEN_KEY)
@@ -190,54 +191,50 @@ def build_hierarchy(objects, rows, return_level, reorder):
     return objects
 
 
-def get_cohort_job_results(return_level, cohort_info, maxResults, jobReference, next_page):
+def get_cohort_job_results(cohort_info, maxResults, jobReference, next_page):
 
-    levels = {'Instance': ['collection_id', 'PatientID', 'StudyInstanceUID', 'SeriesInstanceUID', 'SOPInstanceUID'],
-              'Series': ['collection_id', 'PatientID', 'StudyInstanceUID', 'SeriesInstanceUID'],
-              'Study': ['collection_id', 'PatientID', 'StudyInstanceUID'],
-              'Patient': ['collection_id', 'PatientID'],
-              'Collection': ['collection_id'],
-              'None': []
-              }
-
-    return_level = return_level
-    select = levels[return_level]
-
+    collection_id_map = {
+        "collection_id": "Collection",
+        "PatientID": "Patient",
+        "StudyInstanceUID": "Study",
+        "SeriesInstanceUID": "Series",
+        "SOPInstanceUID": "Instance"
+    }
     objects = {}
 
-    if return_level:
-        # results = BigQuerySupport.get_job_result_page(job_ref=cohort_info['job_reference'], page_token=cohort_info['next_page'], maxResults=maxResults)
-        results = BigQuerySupport.get_job_result_page(job_ref=jobReference, page_token=next_page, maxResults=maxResults)
-        rowsReturned = len(results["current_page_rows"])
+    results = BigQuerySupport.get_job_result_page(job_ref=jobReference, page_token=next_page, maxResults=maxResults)
+    select = [level['name'] for level in results['schema']['fields']]
+    return_level = collection_id_map[select[-1]]
+    rowsReturned = len(results["current_page_rows"])
 
-        # Create a list of the fields in the returned schema
-        fields = [field['name'] for field in results['schema']['fields']]
-        # Build a list of indices into fields that tells build_hierarchy how to reorder
-        reorder = [fields.index(x) for x in select]
+    # Create a list of the fields in the returned schema
+    fields = [field['name'] for field in results['schema']['fields']]
+    # Build a list of indices into fields that tells build_hierarchy how to reorder
+    reorder = [fields.index(x) for x in select]
 
-        # rows holds the actual data
-        rows = results['current_page_rows']
+    # rows holds the actual data
+    rows = results['current_page_rows']
 
-        # We first build a tree of just the object IDS: collection_ids, PatientIDs, StudyInstanceUID,...
-        objects = build_hierarchy(
-            objects=objects,
-            rows=rows,
-            reorder=reorder,
-            return_level=return_level)
+    # We first build a tree of just the object IDS: collection_ids, PatientIDs, StudyInstanceUID,...
+    objects = build_hierarchy(
+        objects=objects,
+        rows=rows,
+        reorder=reorder,
+        return_level=return_level)
 
-        # Then we add the details such as DOI, URL, etc. about each object
-        # dois = request.GET['return_DOIs'] in ['True', True]
-        # urls = request.GET['return_URLs'] in ['True', True]
-        dois = False
-        urls = False
-        collections = build_collections(objects, dois, urls)
+    # Then we add the details such as DOI, URL, etc. about each object
+    # dois = request.GET['return_DOIs'] in ['True', True]
+    # urls = request.GET['return_URLs'] in ['True', True]
+    dois = False
+    urls = False
+    collections = build_collections(objects, dois, urls)
 
-        cohort_info["cohortObjects"] = {
-            "totalFound": int(results['totalFound']),
-            "rowsReturned": rowsReturned,
-            "collections": collections,
-        }
-        # cohort_info['next_page'] = results['next_page']
+    cohort_info["cohortObjects"] = {
+        "totalFound": int(results['totalFound']),
+        "rowsReturned": rowsReturned,
+        "collections": collections,
+    }
+    # cohort_info['next_page'] = results['next_page']
 
     return cohort_info, results['next_page']
 
@@ -362,6 +359,126 @@ def get_manifest(request, func, url, data=None, user=None):
     return manifest_info
 
 
+def get_cohort(request, func, url, data=None, user=None):
+    cohort_objects = None
+
+    path_params = {
+        "email": user,
+        "return_level": "Series",
+        "sql": False,
+     }
+    path_booleans =  ['sql']
+    path_integers = []
+
+    local_params = {
+        "page_size": 1000
+    }
+    local_booleans = []
+    local_integers = ["page_size"]
+
+    jobReference = {}
+    next_page = ""
+
+    return_levels = [
+        'Collection',
+        'Patient',
+        'Study',
+        'Series',
+        'Instance'
+    ]
+
+    try:
+        if 'next_page' in request.args and \
+            not request.args.get('next_page') in ["", None]:
+            # We have a non-empty next_page token
+            jobDescription = decrypt_pageToken(user, request.args.get('next_page'))
+            if jobDescription == {}:
+                cohort_objects = dict(
+                    message="Invalid next_page token {}".format(request.args.get('next_page')),
+                    code=400
+                )
+                return cohort_objects
+            else:
+                jobReference = jobDescription['jobReference']
+                next_page = jobDescription['next_page']
+
+            # If next_page is empty, then we timed out on the previous pass
+            if not next_page:
+                job_status = BigQuerySupport.wait_for_done(query_job={'jobReference':jobReference})
+
+                # Decide how to proceed depending on job status (DONE, RUNNING, ERRORS)
+                cohort_objects = is_job_done(job_status, cohort_objects, jobReference, user)
+                if "message" in cohort_objects:
+                    return cohort_objects
+            cohort_objects = dict(
+                cohort = {},
+            )
+        else:
+            # Validate most params only on initial request; ignore on next_page requests
+            cohort_objects = validate_keys(request, cohort_objects, {**path_params, **local_params})
+
+            cohort_objects = validate_parameters(request, cohort_objects, path_params, path_booleans, path_integers, user)
+
+            if path_params["return_level"] not in return_levels:
+                cohort_objects = dict(
+                    message="Invalid return_level {}".format(path_params['return_level']),
+                    code=400
+                )
+
+            if cohort_objects:
+                return cohort_objects
+
+            auth = get_auth()
+            if func == requests.post:
+                results = func(url, params=path_params, json=data, headers=auth)
+            else:
+                results = func(url, params=path_params, headers=auth)
+
+            cohort_objects = results.json()
+
+            if "message" in cohort_objects:
+                return cohort_objects
+
+            # Start the BQ job, but don't get any data results, just the job info.
+            job_status = submit_BQ_job(cohort_objects['query']['sql_string'],
+                                        cohort_objects['query']['params'])
+
+            jobReference = job_status['jobReference']
+
+            # Decide how to proceed depending on job status (DONE, RUNNING, ERRORS)
+            cohort_objects = is_job_done(job_status, cohort_objects, jobReference, user)
+            if "message" in cohort_objects:
+                return cohort_objects
+
+
+        # print(("[STATUS] cohort_objects with job_ref: {}").format(cohort_objects))
+
+        # Validate "local" params on initial and next_page requests
+        cohort_objects = validate_parameters(request, cohort_objects, local_params, local_booleans, local_integers, None)
+
+        if "message" in cohort_objects:
+            return cohort_objects
+
+        cohort_objects, next_page = get_cohort_job_results(cohort_objects,
+                                                           local_params['page_size'],
+                                                           jobReference, next_page)
+        if next_page:
+            cipher_pageToken = encrypt_pageToken(user, jobReference,
+                                                 next_page)
+        else:
+            cipher_pageToken = ""
+        cohort_objects['next_page'] = cipher_pageToken
+
+    except Exception as e:
+        logger.exception(e)
+        cohort_objects = dict(
+            message='[ERROR] get_manifest(): Error trying to preview a cohort',
+            code=400)
+
+    return cohort_objects
+
+
+
 def is_job_done(job_is_done, manifest_info, jobReference, user):
     if job_is_done and job_is_done['status']['state'] == 'DONE':
         if 'status' in job_is_done and 'errors' in job_is_done['status']:
@@ -472,25 +589,4 @@ def form_rows_json(data, schema_names):
 
     return rows
 
-
-def form_rows_csv(data, schema_names, first):
-    rows = []
-    if first:
-        rows.append(','.join(schema_names))
-    for row in data:
-        rows.append(','.join([val['v'] for val in row['f']]))
-    table = '\n'.join(rows)
-
-    return table
-
-
-def form_rows_tsv(data, schema_names, first):
-    rows = []
-    if first:
-        rows.append('\t'.join(schema_names))
-    for row in data:
-        rows.append('\t'.join([val['v'] for val in row['f']]))
-    table = '\n'.join(rows)
-
-    return table
 
