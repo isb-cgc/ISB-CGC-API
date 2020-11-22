@@ -26,7 +26,7 @@ from python_settings import settings
 
 from jsonschema import validate as schema_validate, ValidationError
 from . schemas.filterset import COHORT_FILTER_SCHEMA
-from . cohort_utils import submit_BQ_job, get_objects, get_manifest
+from . cohort_utils import submit_BQ_job, get_cohort_job_results, get_manifest, encrypt_pageToken, decrypt_pageToken
 from .auth import get_auth
 
 BLACKLIST_RE = settings.BLACKLIST_RE
@@ -137,10 +137,11 @@ def get_cohort_objects(user, cohort_id):
      }
 
     local_params = {
-        "job_reference": {},
-        "next_page": "",
-        "page_size": 10000
+        "page_size": 1000
     }
+
+    jobReference = {}
+    next_page = ""
 
     return_levels = [
         'None',
@@ -164,6 +165,18 @@ def get_cohort_objects(user, cohort_id):
             path_params[key] = request.args.get(key)
         elif key in local_params:
             local_params[key] = request.args.get(key)
+        elif key == 'next_page':
+            cipher_pageToken = request.args.get(key)
+            if not cipher_pageToken in ["", None]:
+                jobDescription = decrypt_pageToken(user, cipher_pageToken)
+                if  jobDescription == {}:
+                    return dict(
+                        message = "Invalid next_page value {}".format(cipher_pageToken),
+                        code = 400
+                    )
+                else:
+                    jobReference = jobDescription['jobReference']
+                    next_page = jobDescription['next_page']
         else:
             cohort_objects =dict(
                 message = "Invalid key {}".format(key),
@@ -182,16 +195,14 @@ def get_cohort_objects(user, cohort_id):
         )
     if cohort_objects == None:
         try:
-            if local_params["job_reference"] and local_params['next_page']:
-                job_reference = json.loads(local_params["job_reference"].replace("'",'"'))
-                # We don't return the project ID to the user
-                job_reference['projectId'] = settings.BIGQUERY_PROJECT_ID
-                next_page = local_params['next_page']
+            if jobReference:
+                # job_reference = json.loads(local_params["job_reference"].replace("'",'"'))
+                # # We don't return the project ID to the user
+                # job_reference['projectId'] = settings.BIGQUERY_PROJECT_ID
+                # next_page = local_params['next_page']
                 cohort_objects = dict(
                     cohort = {},
-                    job_reference = job_reference,
-                    next_page = next_page
-                )
+               )
             else:
                 auth = get_auth()
                 results = requests.get("{}/{}/{}/".format(settings.BASE_URL, 'cohorts/api', cohort_id),
@@ -216,29 +227,46 @@ def get_cohort_objects(user, cohort_id):
                                     job_is_done['status']['errors'])),
                                 code=500)
                         else:
-                            cohort_objects['job_reference'] = job_is_done['jobReference']
+                            # Don't return the query in this form
+                            cohort_objects.pop('query')
+
+                            jobReference = job_is_done['jobReference']
                     else:
+                        # Don't return the query in this form
+                        cohort_objects.pop('query')
+
                         logger.error("[ERROR] API query took longer than the allowed time to execute. " +
-                                     "Retry the query.")
-                        logger.error("[ERROR] Timed out on query: {}".format(cohort_objects['query']['sql_string']))
+                                     "Retry the query using the next_page token.")
+                        cipher_pageToken = encrypt_pageToken(user, jobReference, "")
+                        cohort_objects['next_page'] = cipher_pageToken
+                        cohort_objects["cohortObjects"] = {
+                            "totalFound": 0,
+                            "rowsReturned": 0,
+                            "collections": [],
+                        }
                         return dict(
                             message="[ERROR] API query took longer than the allowed time to execute. " +
-                                    "Retry the query",
-                            code=503)
+                                    "Retry the query using the next_page token.",
+                            cohort_objects=cohort_objects,
+                            code=202)
 
                     print(("[STATUS] cohort_objects with job_ref: {}").format(cohort_objects))
 
-                # Don't return the query in this form
-                cohort_objects.pop('query')
-
                 # job_reference = cohort_data['job_reference']
-                cohort_objects['next_page'] = None
+                # cohort_objects['next_page'] = None
 
             if path_params['return_level']!= 'None':
-                cohort_objects = get_objects(path_params['return_level'], cohort_objects, local_params['page_size'])
-                # We don't return the project ID to the user
-                cohort_objects['job_reference'].pop('projectId')
+                cohort_objects, next_page = get_cohort_job_results(path_params['return_level'], cohort_objects,
+                                                                   local_params['page_size'],
+                                                                   jobReference, next_page)
+                if next_page:
+                    cipher_pageToken = encrypt_pageToken(user, jobReference,
+                                                         next_page)
+                else:
+                    cipher_pageToken = ""
+                cohort_objects['next_page'] = cipher_pageToken
             else:
+                cohort_objects['next_page'] = ""
                 cohort_objects['cohortObjects'] = dict(
                     totalFound = 0,
                     rowsReturned = 0,
@@ -305,10 +333,11 @@ def post_cohort_preview():
      }
 
     local_params = {
-        "job_reference": {},
-        "next_page": "",
-        "page_size": 10000
+        "page_size": 1000
     }
+
+    jobReference = {}
+    next_page = ""
 
     return_levels = [
         'None',
@@ -319,8 +348,11 @@ def post_cohort_preview():
         'Instance'
     ]
 
+    user = ""
+
     try:
         request_data = request.get_json()
+
         if 'filterSet' not in request_data:
             return dict(
                 message = 'No filters were provided; ensure that the request body contains a \'filterSet\' property.',
@@ -361,6 +393,18 @@ def post_cohort_preview():
                 path_params[key] = request.args.get(key)
             elif key in local_params:
                 local_params[key] = request.args.get(key)
+            elif key == 'next_page':
+                cipher_pageToken = request.args.get(key)
+                if not cipher_pageToken in ["", None]:
+                    jobDescription = decrypt_pageToken(user, cipher_pageToken)
+                    if  jobDescription == {}:
+                        return dict(
+                            message = "Invalid next_page value {}".format(cipher_pageToken),
+                            code = 400
+                        )
+                    else:
+                        jobReference = jobDescription['jobReference']
+                        next_page = jobDescription['next_page']
             else:
                 return dict(
                     message = "Invalid key {}".format(key),
@@ -378,15 +422,15 @@ def post_cohort_preview():
             )
         if cohort_objects == None:
             try:
-                if local_params["job_reference"] and local_params['next_page']:
-                    job_reference = json.loads(local_params["job_reference"].replace("'",'"'))
+                if jobReference:
+                    # job_reference = json.loads(local_params["job_reference"].replace("'",'"'))
                     # We don't return the project ID to the user
-                    job_reference['projectId'] = settings.BIGQUERY_PROJECT_ID
-                    next_page = local_params['next_page']
+                    # job_reference['projectId'] = settings.BIGQUERY_PROJECT_ID
+                    # next_page = local_params['next_page']
                     cohort_objects = dict(
                         cohort = {},
-                        job_reference = job_reference,
-                        next_page = next_page
+                        # job_reference = job_reference,
+                        # next_page = next_page
                     )
                 else:
                     auth = get_auth()
@@ -414,33 +458,52 @@ def post_cohort_preview():
                                     job_is_done['status']['errors'])),
                                     code = 500)
                             else:
-                                cohort_objects['job_reference'] = job_is_done['jobReference']
+                                # Don't return the query in this form
+                                cohort_objects.pop('query')
+
+                                jobReference = job_is_done['jobReference']
                         else:
+                            # Don't return the query in this form
+                            cohort_objects.pop('query')
+
                             logger.error("[ERROR] API query took longer than the allowed time to execute. " +
-                                         "Retry the query.")
-                            logger.error("[ERROR] Timed out on query: {}".format(cohort_objects['query']['sql_string']))
+                                         "Retry the query using the next_page token.")
+                            cipher_pageToken = encrypt_pageToken(user, jobReference, "")
+                            cohort_objects['next_page'] = cipher_pageToken
+                            cohort_objects["cohortObjects"] = {
+                                "totalFound": 0,
+                                "rowsReturned": 0,
+                                "collections": [],
+                            }
                             return dict(
                                 message="[ERROR] API query took longer than the allowed time to execute. " +
-                                         "Retry the query",
-                                code=503)
+                                         "Retry the query using the next_page token.",
+                                cohort_objects = cohort_objects,
+                                code=202)
 
                         print(("[STATUS] cohort_objects with job_ref: {}").format(cohort_objects))
 
-                    # Don't return the query in this form
-                    cohort_objects.pop('query')
 
-                    # job_reference = cohort_data['job_reference']
-                    cohort_objects['next_page'] = None
+                    # # job_reference = cohort_data['job_reference']
+                    # cohort_objects['next_page'] = None
 
                 if path_params['return_level']!= 'None':
-                    cohort_objects = get_objects(path_params['return_level'], cohort_objects, local_params['page_size'])
-                    # We don't return the project ID to the user
-                    cohort_objects['job_reference'].pop('projectId')
+                    cohort_objects, next_page = get_cohort_job_results(path_params['return_level'], cohort_objects,
+                                                                       local_params['page_size'],
+                                                                       jobReference, next_page)
+                    if next_page:
+                        cipher_pageToken = encrypt_pageToken(user, jobReference,
+                                                             next_page)
+                    else:
+                        cipher_pageToken = ""
+                    cohort_objects['next_page'] = cipher_pageToken
                 else:
+                    cohort_objects['next_page'] = ""
                     cohort_objects['cohortObjects'] = dict(
                         totalFound = 0,
                         rowsReturned = 0,
                         collections = [],
+                        next_page = ""
                     )
             except Exception as e:
                 logger.exception(e)

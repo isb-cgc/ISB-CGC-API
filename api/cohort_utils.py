@@ -21,6 +21,7 @@ import json
 import requests
 
 from .auth import get_auth
+from cryptography.fernet import Fernet
 
 from django.conf import settings
 # from idc_collections.models import ImagingDataCommonsVersion
@@ -30,6 +31,37 @@ from google_helpers.bigquery.bq_support import BigQuerySupport
 
 logger = logging.getLogger('main_logger')
 BLACKLIST_RE = settings.BLACKLIST_RE
+
+cipher_suite = Fernet(settings.PAGE_TOKEN_KEY)
+
+def encrypt_pageToken(email, jobReference, next_page):
+    # cipher_suite = Fernet(settings.PAGE_TOKEN_KEY)
+    jobDescription = dict(
+        email = email,
+        jobReference = jobReference,
+        next_page = next_page
+    )
+    plain_jobDescription = json.dumps(jobDescription).encode()
+
+    cipher_jobReference = cipher_suite.encrypt(plain_jobDescription)
+
+    return cipher_jobReference
+
+def decrypt_pageToken(email, cipher_jobReference):
+    # cipher_suite = Fernet(settings.PAGE_TOKEN_KEY)
+    plain_jobDescription = cipher_suite.decrypt(cipher_jobReference.encode())
+
+    try:
+        jobDescription = json.loads(plain_jobDescription.decode())
+        if jobDescription["email"] == email:
+            jobDescription.pop('email')
+            return jobDescription
+        else:
+            # Caller's email doesn't match what was encrypted
+            return {}
+    except:
+        return {}
+
 
 def submit_BQ_job(sql_string, params):
     results = BigQuerySupport.execute_query_and_fetch_results(sql_string, params, no_results=True)
@@ -158,7 +190,7 @@ def build_hierarchy(objects, rows, return_level, reorder):
     return objects
 
 
-def get_objects(return_level, cohort_info, maxResults):
+def get_cohort_job_results(return_level, cohort_info, maxResults, jobReference, next_page):
 
     levels = {'Instance': ['collection_id', 'PatientID', 'StudyInstanceUID', 'SeriesInstanceUID', 'SOPInstanceUID'],
               'Series': ['collection_id', 'PatientID', 'StudyInstanceUID', 'SeriesInstanceUID'],
@@ -174,7 +206,8 @@ def get_objects(return_level, cohort_info, maxResults):
     objects = {}
 
     if return_level:
-        results = BigQuerySupport.get_job_result_page(job_ref=cohort_info['job_reference'], page_token=cohort_info['next_page'], maxResults=maxResults)
+        # results = BigQuerySupport.get_job_result_page(job_ref=cohort_info['job_reference'], page_token=cohort_info['next_page'], maxResults=maxResults)
+        results = BigQuerySupport.get_job_result_page(job_ref=jobReference, page_token=next_page, maxResults=maxResults)
         rowsReturned = len(results["current_page_rows"])
 
         # Create a list of the fields in the returned schema
@@ -204,13 +237,12 @@ def get_objects(return_level, cohort_info, maxResults):
             "rowsReturned": rowsReturned,
             "collections": collections,
         }
-        cohort_info['next_page'] = results['next_page']
+        # cohort_info['next_page'] = results['next_page']
 
-    return cohort_info
+    return cohort_info, results['next_page']
 
 
 def get_manifest(request, func, url, data=None, user=None):
-    blacklist = re.compile(BLACKLIST_RE, re.UNICODE)
     manifest_info = None
 
     path_params = {
@@ -223,134 +255,201 @@ def get_manifest(request, func, url, data=None, user=None):
         "Collection_DOIs": False,
         "access_method": "doi",
     }
-
-    if user:
-        path_params["email"] = user
+    path_booleans =  ['sql', 'Collection_IDs', 'Patient_IDs', 'StudyInstanceUIDs',
+          'SeriesInstanceUIDs', 'SOPInstanceUIDs', 'Collection_DOIs']
+    path_integers = []
 
     local_params = {
-        "format": "json",
-        "job_reference": None,
-        "next_page": "",
-        "page_size": 10000
+        "page_size": 1000
     }
+    local_booleans = []
+    local_integers = ["page_size"]
+
+    jobReference = {}
+    next_page = ""
 
     access_methods = ["url", "doi"]
-    formats = ['json', 'csv', 'tsv']
 
-    # Get and validate parameters
-    for key in request.args.keys():
-        match = blacklist.search(str(key))
-        if match:
-            return dict(
-                message = "Key {} contains invalid characters; please edit and resubmit. " +
-                           "[Saw {}]".format(str(key, match)),
-                code = 400
-            )
-        if key in path_params:
-            path_params[key] = request.args.get(key)
-        elif key in local_params:
-            local_params[key] = request.args.get(key)
-
-        else:
-            manifest_info = dict(
-                message="Invalid key {}".format(key),
-                code=400
-            )
-            return manifest_info
-
-    local_params['page_size'] = int(local_params['page_size'])
-    for s in ['sql', 'Collection_IDs', 'Patient_IDs', 'StudyInstanceUIDs',
-              'SeriesInstanceUIDs', 'SOPInstanceUIDs', 'Collection_DOIs']:
-        if s in path_params:
-            path_params[s] = path_params[s] in [True, 'True']
-    if path_params["access_method"] not in access_methods:
-        return dict(
-            message = "Invalid access_method {}".format(path_params['access_method']),
-            code = 400
-        )
-    if local_params["format"] not in formats:
-        return dict(
-            message = "Invalid format {}".format(path_params['format']),
-            code = 400
-        )
-    if manifest_info == None:
-
-        try:
-            if local_params["job_reference"] and local_params['next_page']:
-                job_reference = json.loads(local_params["job_reference"].replace("'",'"'))
-                # We don't return the project ID to the user
-                job_reference['projectId'] = settings.BIGQUERY_PROJECT_ID
-                next_page = local_params['next_page']
+    try:
+        if 'next_page' in request.args and \
+            not request.args.get('next_page') in ["", None]:
+            # We have a non-empty next_page token
+            jobDescription = decrypt_pageToken(user, request.args.get('next_page'))
+            if jobDescription == {}:
                 manifest_info = dict(
-                    cohort = {},
-                    job_reference = job_reference,
-                    next_page = next_page
+                    message="Invalid next_page token {}".format(request.args.get('next_page')),
+                    code=400
                 )
+                return manifest_info
             else:
-                auth = get_auth()
-                if func == requests.post:
-                    results = func(url, params=path_params, json=data, headers=auth)
-                else:
-                    results = func(url, params=path_params, headers=auth)
+                jobReference = jobDescription['jobReference']
+                next_page = jobDescription['next_page']
 
-                manifest_info = results.json()
+            # If next_page is empty, then we timed out on the previous pass
+            if not next_page:
+                job_status = BigQuerySupport.wait_for_done(query_job={'jobReference':jobReference})
 
+                # Decide how to proceed depending on job status (DONE, RUNNING, ERRORS)
+                manifest_info = is_job_done(job_status, manifest_info, jobReference, user)
                 if "message" in manifest_info:
                     return manifest_info
-
-                # Start the BQ job, but don't get any data results, just the job info.
-                job_is_done = submit_BQ_job(manifest_info['query']['sql_string'],
-                                            manifest_info['query']['params'])
-                if job_is_done and job_is_done['status']['state'] == 'DONE':
-                    if 'status' in job_is_done and 'errors' in job_is_done['status']:
-                        job_id = job_is_done['jobReference']['jobId']
-                        logger.error("[ERROR] During query job {}: {}".format(job_id, str(
-                            job_is_done['status']['errors'])))
-                        logger.error("[ERROR] Error'd out query: {}".format(manifest_info['query']['sql_string']))
-                        return dict(
-                            message="[ERROR] During query job {}: {}".format(job_id, str(
-                                job_is_done['status']['errors'])),
-                            code=500)
-                    else:
-                        manifest_info['job_reference'] = job_is_done['jobReference']
-                else:
-                    logger.error("[ERROR] API query took longer than the allowed time to execute. " +
-                                 "Retry the query.")
-                    logger.error("[ERROR] Timed out on query: {}".format(manifest_info['query']['sql_string']))
-                    return dict(
-                        message="[ERROR] API query took longer than the allowed time to execute. " +
-                                "Retry the query",
-                        code=503)
-
-                print(("[STATUS] manifest_info with job_ref: {}").format(manifest_info))
-
-                # Don't return the query in this form
-                manifest_info.pop('query')
-
-                # job_reference = cohort_data['job_reference']
-                manifest_info['next_page'] = None
-
-            manifest_info = get_job_results(manifest_info,
-                                maxResults=local_params['page_size'], format=local_params['format'],
-                                first=local_params['next_page'] in [None,''])
-            # We don't return the project ID to the user
-            manifest_info['job_reference'].pop('projectId')
-
-        except Exception as e:
-            logger.exception(e)
             manifest_info = dict(
-                message='[ERROR] get_manifest(): Error trying to preview a cohort',
-                code=400)
+                cohort = {},
+            )
+        else:
+            # Validate most params only on initial request; ignore on next_page requests
+            manifest_info = validate_keys(request, manifest_info, {**path_params, **local_params})
+
+            manifest_info = validate_parameters(request, manifest_info, path_params, path_booleans, path_integers, user)
+
+            if path_params["access_method"] not in access_methods:
+                manifest_info = dict(
+                    message="Invalid access_method {}".format(path_params['access_method']),
+                    code=400
+                )
+
+            if manifest_info:
+                return manifest_info
+
+            auth = get_auth()
+            if func == requests.post:
+                results = func(url, params=path_params, json=data, headers=auth)
+            else:
+                results = func(url, params=path_params, headers=auth)
+
+            manifest_info = results.json()
+
+            if "message" in manifest_info:
+                return manifest_info
+
+            # Start the BQ job, but don't get any data results, just the job info.
+            job_status = submit_BQ_job(manifest_info['query']['sql_string'],
+                                        manifest_info['query']['params'])
+
+            jobReference = job_status['jobReference']
+
+            # Decide how to proceed depending on job status (DONE, RUNNING, ERRORS)
+            manifest_info = is_job_done(job_status, manifest_info, jobReference, user)
+            if "message" in manifest_info:
+                return manifest_info
+
+
+        # print(("[STATUS] manifest_info with job_ref: {}").format(manifest_info))
+
+        # Validate "local" params on initial and next_page requests
+        manifest_info = validate_parameters(request, manifest_info, local_params, local_booleans, local_integers, None)
+
+        if "message" in manifest_info:
+            return manifest_info
+
+        manifest_info, next_page = get_manifest_job_results(manifest_info,
+                                                            local_params['page_size'],
+                                                            jobReference,
+                                                            next_page)
+        if next_page:
+            cipher_pageToken = encrypt_pageToken(user, jobReference,
+                                                 next_page)
+        else:
+            cipher_pageToken = ""
+        manifest_info['next_page'] = cipher_pageToken
+
+    except Exception as e:
+        logger.exception(e)
+        manifest_info = dict(
+            message='[ERROR] get_manifest(): Error trying to preview a cohort',
+            code=400)
 
     return manifest_info
 
 
-# Get a list of GCS URLs or CRDC DOIs of the instances in the cohort
-def get_job_results(manifest_info, maxResults, format, first):
+def is_job_done(job_is_done, manifest_info, jobReference, user):
+    if job_is_done and job_is_done['status']['state'] == 'DONE':
+        if 'status' in job_is_done and 'errors' in job_is_done['status']:
+            job_id = job_is_done['jobReference']['jobId']
+            logger.error("[ERROR] During query job {}: {}".format(job_id, str(
+                job_is_done['status']['errors'])))
+            logger.error("[ERROR] Error'd out query: {}".format(manifest_info['query']['sql_string']))
+            return dict(
+                message="[ERROR] During query job {}: {}".format(job_id, str(
+                    job_is_done['status']['errors'])),
+                code=500)
+        else:
+            # Don't return the query in this form
 
-    results = BigQuerySupport.get_job_result_page(job_ref=manifest_info['job_reference'],
-                                                  page_token=manifest_info['next_page'], maxResults=maxResults)
-    manifest_info['next_page'] = results['next_page']
+            manifest_info.pop('query', None)
+    else:
+        # We timed out waiting for the BQ job to complete.
+        # Return the job ref so that the user can get the results when the job completes.
+
+        # Don't return the query in this form
+        manifest_info.pop('query', None)
+
+        logger.error("[ERROR] API query took longer than the allowed time to execute. " +
+                     "Retry the query using the next_page token.")
+        cipher_pageToken = encrypt_pageToken(user, jobReference, "")
+        manifest_info['next_page'] = cipher_pageToken
+        manifest_info["cohortObjects"] = {
+            "totalFound": 0,
+            "rowsReturned": 0,
+            "collections": [],
+        }
+        return dict(
+            message="[ERROR] API query took longer than the allowed time to execute. " +
+                    "Retry the query using the next_page token.",
+            manifest_info=manifest_info,
+            code=202)
+
+    return manifest_info
+
+
+# Check if there are invalid keys
+def validate_keys(request, manifest_info, params):
+    blacklist = re.compile(BLACKLIST_RE, re.UNICODE)
+
+    for key in request.args.keys():
+        match = blacklist.search(str(key))
+        if match:
+            manifest_info =  dict(
+                message = "Key {} contains invalid characters; please edit and resubmit. " +
+                           "[Saw {}]".format(str(key, match)),
+                code = 400
+            )
+        if not key in params:
+            manifest_info = dict(
+                message="Invalid key {}".format(key),
+                code=400
+            )
+    return manifest_info
+
+def validate_parameters(request, manifest_info, params, booleans, integers, user):
+
+    if user:
+        params["email"] = user
+
+    for key in params:
+        if key in request.args:
+            params[key] = request.args.get(key)
+
+    for param in booleans:
+        params[param] = params[param] in [True, 'True']
+
+    try:
+        for param in integers:
+            params[param] = int(params[param])
+    except ValueError:
+        manifest_info = dict(
+            message = "Parameter {} must have an integer value".format(param),
+            code = 400
+        )
+
+    return manifest_info
+
+# Get a list of GCS URLs or CRDC DOIs of the instances in the cohort
+def get_manifest_job_results(manifest_info, maxResults, jobReference, next_page):
+
+    results = BigQuerySupport.get_job_result_page(job_ref=jobReference,
+                                                  page_token=next_page,
+                                                  maxResults=maxResults)
 
     schema_names = ['doi' if field['name'] == 'crdc_instance_uuid' else 'url' if field['name'] == 'gcs_url' else field['name'] for field in results['schema']['fields']]
 
@@ -362,7 +461,7 @@ def get_job_results(manifest_info, maxResults, format, first):
     manifest_info["manifest"]['json_manifest'] = rows
 
     # rowsReturned = len(results["current_page_rows"])
-    return manifest_info
+    return manifest_info, results['next_page']
 
 
 def form_rows_json(data, schema_names):

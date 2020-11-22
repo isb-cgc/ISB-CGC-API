@@ -26,6 +26,7 @@ def test_doi(client, app):
 
     query_string = {
         'access_method': 'doi',
+        'page_size': 2000
     }
 
     # Get a doi manifest of the cohort's instances
@@ -35,14 +36,13 @@ def test_doi(client, app):
     assert response.status_code == 200
     cohort = response.json['cohort']
     manifest = response.json['manifest']
-    job_reference = response.json['job_reference']
 
     assert cohort['cohort_id']==id
 
     assert manifest['rowsReturned'] == 1638
 
     next_page = response.json['next_page']
-    assert next_page == None
+    assert next_page == ""
 
     json_manifest = manifest['json_manifest']
     assert len(json_manifest) == 1638
@@ -74,7 +74,7 @@ def test_doi(client, app):
 #     assert manifest['rowsReturned'] == 1638
 #
 #     next_page = response.json['next_page']
-#     assert next_page == None
+#     assert next_page == ""
 #
 #     csv_manifest = manifest['csv_manifest'].split('\n')
 #     assert len(csv_manifest) == 1639
@@ -107,7 +107,7 @@ def test_doi(client, app):
 #     assert manifest['rowsReturned'] == 1638
 #
 #     next_page = response.json['next_page']
-#     assert next_page == None
+#     assert next_page == ""
 #
 #     tsv_manifest = manifest['tsv_manifest'].split('\n')
 #     assert len(tsv_manifest) == 1639
@@ -124,6 +124,7 @@ def test_url(client, app):
 
     query_string = {
         'access_method': 'url',
+        'page_size': 2000
     }
 
     # Get a doi manifest of the cohort's instances
@@ -133,14 +134,13 @@ def test_url(client, app):
     assert response.status_code == 200
     cohort = response.json['cohort']
     manifest = response.json['manifest']
-    job_reference = response.json['job_reference']
 
     assert cohort['cohort_id']==id
 
     assert manifest['rowsReturned'] == 1638
 
     next_page = response.json['next_page']
-    assert next_page == None
+    assert next_page == ""
 
     json_manifest = manifest['json_manifest']
     assert len(json_manifest) == 1638
@@ -174,7 +174,7 @@ def test_url(client, app):
 #     assert manifest['rowsReturned'] == 1638
 #
 #     next_page = response.json['next_page']
-#     assert next_page == None
+#     assert next_page == ""
 #
 #     csv_manifest = manifest['csv_manifest'].split('\n')
 #     assert len(csv_manifest) == 1639
@@ -209,7 +209,7 @@ def test_url(client, app):
 #     assert manifest['rowsReturned'] == 1638
 #
 #     next_page = response.json['next_page']
-#     assert next_page == None
+#     assert next_page == ""
 #
 #     tsv_manifest = manifest['tsv_manifest'].split('\n')
 #     assert len(tsv_manifest) == 1639
@@ -227,14 +227,14 @@ def test_all(client, app):
 
     query_string = dict(
         sql = True,
-        format = "json",
         Collection_IDs = True,
         Patient_IDs = True,
         StudyInstanceUIDs = True,
         SeriesInstanceUIDs = True,
         SOPInstanceUIDs = True,
         Collection_DOIs = True,
-        access_method =  'url'
+        access_method =  'url',
+        page_size = 2000
     )
     # Get a doi manifest of the cohort's instances
     response = client.get("{}/{}/manifest/".format('v1/cohorts', id),
@@ -243,14 +243,13 @@ def test_all(client, app):
     assert response.status_code == 200
     cohort = response.json['cohort']
     manifest = response.json['manifest']
-    job_reference = response.json['job_reference']
 
     assert cohort['cohort_id']==id
 
     assert manifest['rowsReturned'] == 1638
 
     next_page = response.json['next_page']
-    assert next_page == None
+    assert next_page == ""
 
     json_manifest = manifest['json_manifest']
     assert len(json_manifest) == 1638
@@ -296,7 +295,7 @@ def test_all(client, app):
 #     assert manifest['rowsReturned'] == 1638
 #
 #     next_page = response.json['next_page']
-#     assert next_page == None
+#     assert next_page == ""
 #
 #     csv_manifest = manifest['csv_manifest'].split('\n')
 #     assert len(csv_manifest) == 1639
@@ -331,7 +330,6 @@ def test_paged_doi(client, app):
     assert response.status_code == 200
     cohort = response.json['cohort']
     manifest = response.json['manifest']
-    job_reference = response.json['job_reference']
     next_page = response.json['next_page']
 
     assert cohort['cohort_id']==id
@@ -341,7 +339,6 @@ def test_paged_doi(client, app):
     assert manifest['totalFound'] == 21940
     assert manifest['rowsReturned'] ==5000
 
-    assert job_reference
     assert next_page
 
     #Now get the remaining pages
@@ -351,7 +348,6 @@ def test_paged_doi(client, app):
     while next_page:
         query_string = {
             'access_method': 'doi',
-            'job_reference': job_reference,
             'next_page': next_page,
             'page_size': 5000
         }
@@ -363,7 +359,6 @@ def test_paged_doi(client, app):
         assert response.status_code == 200
         cohort = response.json['cohort']
         manifest = response.json['manifest']
-        job_reference = response.json['job_reference']
         next_page = response.json['next_page']
 
         totalRowsReturned += manifest["rowsReturned"]
@@ -522,7 +517,6 @@ def test_paged_url(client, app):
     assert response.status_code == 200
     cohort = response.json['cohort']
     manifest = response.json['manifest']
-    job_reference = response.json['job_reference']
     next_page = response.json['next_page']
 
     assert cohort['cohort_id'] == id
@@ -532,7 +526,6 @@ def test_paged_url(client, app):
     assert manifest['totalFound'] == 21940
     assert manifest['rowsReturned'] == 5000
 
-    assert job_reference
     assert next_page
 
     # Now get the remaining pages
@@ -542,7 +535,6 @@ def test_paged_url(client, app):
     while next_page:
         query_string = {
             'access_method': 'url',
-            'job_reference': job_reference,
             'next_page': next_page,
             'page_size': 5000
         }
@@ -554,7 +546,6 @@ def test_paged_url(client, app):
         assert response.status_code == 200
         cohort = response.json['cohort']
         manifest = response.json['manifest']
-        job_reference = response.json['job_reference']
         next_page = response.json['next_page']
 
         totalRowsReturned += manifest["rowsReturned"]

@@ -47,7 +47,6 @@ DEBUG_API_EMAIL            = os.getenv('DEBUG_API_EMAIL','')
 
 print("[STATUS] DEBUG mode is "+str(DEBUG))
 
-
 LOGGER_NAME = os.environ.get('API_LOGGER_NAME', 'main_logger')
 
 BASE_URL                = os.environ.get('BASE_URL', 'https://idc-dev.appspot.com')
@@ -107,3 +106,5 @@ BLACKLIST_RE = r'((?i)<script>|(?i)</script>|!\[\]|!!\[\]|\[\]\[\".*\"\]|(?i)<if
 STATIC_URL = os.environ.get('STATIC_URL', '/static/')
 
 IS_DEV = (os.environ.get('IS_DEV', 'False') == 'True')
+
+PAGE_TOKEN_KEY                  = os.environ.get('PAGE_TOKEN_KEY', '')

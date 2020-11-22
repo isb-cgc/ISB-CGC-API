@@ -108,18 +108,18 @@ def cohort(cohort_id):
             response.status_code = 500
         else:
             if request.method == 'GET':
-                result = get_cohort_objects(user_info["email"], cohort_id)
-                if result:
-                    if 'message' in result:
+                results = get_cohort_objects(user_info["email"], cohort_id)
+                if results:
+                    if 'message' in results:
                         response = jsonify({
-                            **result
+                            **results
                         })
                         response.status_code = results['code']
                     else:
                         code = 200
                         response = jsonify({
                             'code': code,
-                            **result
+                            **results
                         })
                         response.status_code = code
                 else:
