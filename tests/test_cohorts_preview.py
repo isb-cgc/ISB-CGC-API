@@ -398,46 +398,6 @@ def test_cohort_preview_sql(client, app):
     """
 
 
-def test_cohort_preview_none(client, app):
-    filterSet = {
-        "idc_data_version": "1.0",
-        "filters": {
-            "collection_id": ["TCGA-READ"],
-            "Modality": ["CT", "MR"],
-            "race": ["WHITE"]}}
-
-    cohortSpec = {"name": "testcohort",
-                  "description": "Test description",
-                  "filterSet": filterSet}
-
-    mimetype = ' application/json'
-    headers = {
-        'Content-Type': mimetype,
-        'Accept': mimetype
-    }
-    query_string = {
-        'return_level': 'None',
-    }
-
-    # Get the list of objects in the cohort
-    response = client.post('v1/cohorts/preview',
-                            query_string = query_string,
-                            data = json.dumps(cohortSpec),
-                            headers=headers)
-    assert response.content_type == 'application/json'
-    assert response.status_code == 200
-    cohort = response.json['cohort']
-
-    assert cohort['name']=="testcohort"
-    assert cohort['description']=="Test description"
-    assert cohort['filterSet'] == filterSet
-    assert response.json['cohortObjects']['totalFound'] == 0
-    assert response.json['cohortObjects']['rowsReturned'] == 0
-    assert response.json['cohortObjects']['collections'] == []
-    assert response.json['next_page'] == None
-
-
-
 def test_cohort_preview_collections(client, app):
     filterSet = {
         "idc_data_version": "1.0",
@@ -473,7 +433,7 @@ def test_cohort_preview_collections(client, app):
     assert cohort['filterSet'] == filterSet
     assert response.json['cohortObjects']['totalFound'] == 1
     assert response.json['cohortObjects']['rowsReturned'] == 1
-    assert response.json['next_page'] == None
+    assert response.json['next_page'] == ""
 
     collections = response.json['cohortObjects']['collections']
 
@@ -516,7 +476,7 @@ def test_cohort_preview_patients(client, app):
     assert cohort['filterSet'] == filterSet
     assert response.json['cohortObjects']['totalFound'] == 2
     assert response.json['cohortObjects']['rowsReturned'] == 2
-    assert response.json['next_page'] == None
+    assert response.json['next_page'] == ""
 
     collections = response.json['cohortObjects']['collections']
 
@@ -564,7 +524,7 @@ def test_cohort_preview_studies(client, app):
     assert cohort['filterSet'] == filterSet
     assert response.json['cohortObjects']['totalFound']==3
     assert response.json['cohortObjects']['rowsReturned']==3
-    assert response.json['next_page'] == None
+    assert response.json['next_page'] == ""
 
     collections = response.json['cohortObjects']['collections']
 
@@ -620,7 +580,7 @@ def test_cohort_preview_series(client, app):
     assert cohort['filterSet'] == filterSet
     assert response.json['cohortObjects']['totalFound']==31
     assert response.json['cohortObjects']['rowsReturned']==31
-    assert response.json['next_page'] == None
+    assert response.json['next_page'] == ""
 
     collections = response.json['cohortObjects']['collections']
 
@@ -673,6 +633,7 @@ def test_cohort_preview_instances(client, app):
     }
     query_string = {
         'return_level': 'Instance',
+        'page_size': 2000
     }
 
     # Get the list of objects in the cohort
@@ -690,7 +651,7 @@ def test_cohort_preview_instances(client, app):
     assert response.json['cohortObjects']['totalFound']==1638
     assert response.json['cohortObjects']['rowsReturned']==1638
     collections = response.json['cohortObjects']['collections']
-    assert response.json['next_page'] == None
+    assert response.json['next_page'] == ""
 
     assert [collection['collection_id'].upper()
         for collection in collections] == ['TCGA-READ']
@@ -751,6 +712,7 @@ def test_cohort_preview_instances_paged(client, app):
     # Get the first page
     query_string = {
         'return_level': 'Instance',
+        'page_size': 10000
     }
     # Get the list of objects in the cohort
     response = client.post('v1/cohorts/preview',
@@ -765,10 +727,7 @@ def test_cohort_preview_instances_paged(client, app):
     assert cohortObjects['totalFound']==21940
     assert cohortObjects['rowsReturned']==10000
 
-
-    job_reference = response.json['job_reference']
     next_page = response.json['next_page']
-    assert job_reference
     assert next_page
 
 
@@ -780,7 +739,6 @@ def test_cohort_preview_instances_paged(client, app):
     while next_page:
         query_string = {
             'return_level': 'Instance',
-            'job_reference': job_reference,
             'next_page': next_page
         }
 
@@ -801,7 +759,6 @@ def test_cohort_preview_instances_paged(client, app):
         collections = cohortObjects["collections"]
         merge(collections, allCollections, 0)
         allCollections.extend(collections)
-        job_reference = response.json['job_reference']
         next_page = response.json['next_page']
 
     assert totalRowsReturned == cohortObjects['totalFound']

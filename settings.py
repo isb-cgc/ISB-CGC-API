@@ -47,7 +47,6 @@ DEBUG_API_EMAIL            = os.getenv('DEBUG_API_EMAIL','')
 
 print("[STATUS] DEBUG mode is "+str(DEBUG))
 
-
 LOGGER_NAME = os.environ.get('API_LOGGER_NAME', 'main_logger')
 
 BASE_URL                = os.environ.get('BASE_URL', 'https://idc-dev.appspot.com')

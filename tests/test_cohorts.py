@@ -156,32 +156,6 @@ def test_get_cohort_sql(client, app):
 
     delete_cohort(client, id)
 
-def test_get_cohort_none(client, app):
-
-    (id, filterSet) = create_cohort_for_test_get_cohort_xxx(client)
-
-    query_string = {
-        'return_level': 'None',
-    }
-
-    # Get the list of objects in the cohort
-    response = client.get("{}/{}/".format('v1/cohorts', id),
-                query_string = query_string)
-    assert response.content_type == 'application/json'
-    assert response.status_code == 200
-    cohort = response.json['cohort']
-
-    assert cohort['cohort_id']==id
-    assert cohort['name']=="testcohort"
-    assert cohort['description']=="Test description"
-    assert cohort['filterSet'] == filterSet
-    assert response.json['cohortObjects']['totalFound'] == 0
-    assert response.json['cohortObjects']['rowsReturned'] == 0
-    assert response.json['cohortObjects']['collections'] == []
-    assert response.json['next_page'] == None
-
-    delete_cohort(client, id)
-
 def test_get_cohort_collections(client, app):
 
     (id, filterSet) = create_cohort_for_test_get_cohort_xxx(client)
@@ -203,7 +177,7 @@ def test_get_cohort_collections(client, app):
     assert cohort['filterSet'] == filterSet
     assert response.json['cohortObjects']['totalFound'] == 1
     assert response.json['cohortObjects']['rowsReturned'] == 1
-    assert response.json['next_page'] == None
+    assert response.json['next_page'] == ""
 
     collections = response.json['cohortObjects']['collections']
 
@@ -233,7 +207,7 @@ def test_get_cohort_patients(client, app):
     assert cohort['filterSet'] == filterSet
     assert response.json['cohortObjects']['totalFound'] == 2
     assert response.json['cohortObjects']['rowsReturned'] == 2
-    assert response.json['next_page'] == None
+    assert response.json['next_page'] == ""
 
     collections = response.json['cohortObjects']['collections']
 
@@ -268,7 +242,7 @@ def test_get_cohort_studies(client, app):
     assert cohort['filterSet'] == filterSet
     assert response.json['cohortObjects']['totalFound']==3
     assert response.json['cohortObjects']['rowsReturned']==3
-    assert response.json['next_page'] == None
+    assert response.json['next_page'] == ""
 
     collections = response.json['cohortObjects']['collections']
 
@@ -311,7 +285,7 @@ def test_get_cohort_series(client, app):
     assert cohort['filterSet'] == filterSet
     assert response.json['cohortObjects']['totalFound']==31
     assert response.json['cohortObjects']['rowsReturned']==31
-    assert response.json['next_page'] == None
+    assert response.json['next_page'] == ""
 
     collections = response.json['cohortObjects']['collections']
 
@@ -353,6 +327,7 @@ def test_get_cohort_instances(client, app):
 
     query_string = {
         'return_level': 'Instance',
+        'page_size': 2000,
     }
 
     # Get the list of objects in the cohort
@@ -369,7 +344,7 @@ def test_get_cohort_instances(client, app):
     assert response.json['cohortObjects']['totalFound']==1638
     assert response.json['cohortObjects']['rowsReturned']==1638
     collections = response.json['cohortObjects']['collections']
-    assert response.json['next_page'] == None
+    assert response.json['next_page'] == ""
 
     assert [collection['collection_id'].upper()
         for collection in collections] == ['TCGA-READ']
@@ -432,9 +407,9 @@ def test_get_cohort_instances_paged(client, app):
     assert cohortObjects['totalFound']==21940
     assert cohortObjects['rowsReturned']==5000
 
-    job_reference = response.json['job_reference']
+    # job_reference = response.json['job_reference']
     next_page = response.json['next_page']
-    assert job_reference
+    # assert job_reference
     assert next_page
 
 
@@ -445,7 +420,7 @@ def test_get_cohort_instances_paged(client, app):
     while next_page:
         query_string = {
             'return_level': 'Instance',
-            'job_reference': job_reference,
+            # 'job_reference': job_reference,
             'next_page': next_page,
             'page_size': 5000
         }
@@ -463,7 +438,7 @@ def test_get_cohort_instances_paged(client, app):
         collections = cohortObjects["collections"]
         merge(collections, allCollections, 0)
         allCollections.extend(collections)
-        job_reference = response.json['job_reference']
+        # job_reference = response.json['job_reference']
         next_page = response.json['next_page']
 
     assert totalRowsReturned == cohortObjects['totalFound']
