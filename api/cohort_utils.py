@@ -21,7 +21,7 @@ import json
 import requests
 
 from .auth import get_auth
-from cryptography.fernet import Fernet
+from cryptography.fernet import Fernet, InvalidToken
 
 from django.conf import settings
 # from idc_collections.models import ImagingDataCommonsVersion
@@ -50,9 +50,8 @@ def encrypt_pageToken(email, jobReference, next_page):
 
 def decrypt_pageToken(email, cipher_jobReference):
     # cipher_suite = Fernet(settings.PAGE_TOKEN_KEY)
-    plain_jobDescription = cipher_suite.decrypt(cipher_jobReference.encode())
-
     try:
+        plain_jobDescription = cipher_suite.decrypt(cipher_jobReference.encode())
         jobDescription = json.loads(plain_jobDescription.decode())
         if jobDescription["email"] == email:
             jobDescription.pop('email')
@@ -60,7 +59,7 @@ def decrypt_pageToken(email, cipher_jobReference):
         else:
             # Caller's email doesn't match what was encrypted
             return {}
-    except:
+    except InvalidToken:
         return {}
 
 
