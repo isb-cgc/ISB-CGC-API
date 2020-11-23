@@ -32,13 +32,10 @@ from google_helpers.bigquery.bq_support import BigQuerySupport
 logger = logging.getLogger('main_logger')
 BLACKLIST_RE = settings.BLACKLIST_RE
 
-page_token_key = Fernet.generate_key()
-cipher_suite = Fernet(page_token_key)
+cipher_suite = Fernet(settings.PAGE_TOKEN_KEY)
 
 def encrypt_pageToken(email, jobReference, next_page):
     # cipher_suite = Fernet(settings.PAGE_TOKEN_KEY)
-    logger.error("Encrypt: key: {}, email: {}, jobReference: {}, next_page: {}".format(
-        page_token_key, email, jobReference, next_page))
     jobDescription = dict(
         email = email,
         jobReference = jobReference,
@@ -47,14 +44,12 @@ def encrypt_pageToken(email, jobReference, next_page):
     plain_jobDescription = json.dumps(jobDescription).encode()
 
     cipher_jobReference = cipher_suite.encrypt(plain_jobDescription)
-    logger.error("Encrypt: cipher_jobReference: {}".format(cipher_jobReference))
 
     return cipher_jobReference
 
 def decrypt_pageToken(email, cipher_jobReference):
     # cipher_suite = Fernet(settings.PAGE_TOKEN_KEY)
     try:
-        logger.error("Decrypt: key: {}, cipher_jobReference: {}".format(page_token_key, cipher_jobReference))
         plain_jobDescription = cipher_suite.decrypt(cipher_jobReference.encode())
         jobDescription = json.loads(plain_jobDescription.decode())
         if jobDescription["email"] == email:
