@@ -407,9 +407,7 @@ def test_get_cohort_instances_paged(client, app):
     assert cohortObjects['totalFound']==21940
     assert cohortObjects['rowsReturned']==5000
 
-    # job_reference = response.json['job_reference']
     next_page = response.json['next_page']
-    # assert job_reference
     assert next_page
 
 
@@ -420,7 +418,6 @@ def test_get_cohort_instances_paged(client, app):
     while next_page:
         query_string = {
             'return_level': 'Instance',
-            # 'job_reference': job_reference,
             'next_page': next_page,
             'page_size': 5000
         }
@@ -437,8 +434,6 @@ def test_get_cohort_instances_paged(client, app):
         totalRowsReturned += rowsReturned
         collections = cohortObjects["collections"]
         merge(collections, allCollections, 0)
-        allCollections.extend(collections)
-        # job_reference = response.json['job_reference']
         next_page = response.json['next_page']
 
     assert totalRowsReturned == cohortObjects['totalFound']
