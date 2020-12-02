@@ -758,7 +758,6 @@ def test_cohort_preview_instances_paged(client, app):
         totalRowsReturned += rowsReturned
         collections = cohortObjects["collections"]
         merge(collections, allCollections, 0)
-        allCollections.extend(collections)
         next_page = response.json['next_page']
 
     assert totalRowsReturned == cohortObjects['totalFound']
@@ -806,91 +805,3 @@ def test_cohort_preview_instances_paged(client, app):
         for series in study['series']
         for instance in series['instances']])
     assert allInstances == totalInstances
-
-
-    # # Get the list of objects in the cohort
-    # response = client.post('v1/cohorts/preview',
-    #                         query_string = query_string,
-    #                         data = json.dumps(cohortSpec),
-    #                         headers=headers)
-    # assert response.content_type == 'application/json'
-    # assert response.status_code == 200
-    # cohortall= response.json['cohort']
-    # allCollections = cohortall["cohortObjects"]["collections"]
-    #
-    # #Now get the data in 500 row chunks
-    #
-    # totalSchema = []
-    # totalCollections = []
-    # totalRowsReturned = 0
-    #
-    # fetch_count = 500
-    # while True:
-    #
-    #     query_string = {
-    #         'return_level': 'Instance',
-    #         'fetch_count': fetch_count,
-    #         'offset': totalRowsReturned,
-    #     }
-    #
-    #     # Get the list of objects in the cohort
-    #     response = client.post('v1/cohorts/preview',
-    #                            query_string=query_string,
-    #                            data=json.dumps(cohortSpec),
-    #                            headers=headers)
-    #     assert response.content_type == 'application/json'
-    #     assert response.status_code == 200
-    #     cohort = response.json['cohort']
-    #
-    #     cohortObjects = response.json['cohortObjects']
-    #     rowsReturned = cohortObjects["rowsReturned"]
-    #     totalRowsReturned += rowsReturned
-    #     collections = cohortObjects["collections"]
-    #     merge(collections, totalCollections, 0)
-    #     if rowsReturned < fetch_count:
-    #         break
-    #
-    # allPatients = [patient['patient_id'].upper()
-    #    for collection in allCollections
-    #    for patient in collection['patients']].sort()
-    # totalPatients = [patient['patient_id'].upper()
-    #    for collection in totalCollections
-    #    for patient in collection['patients']].sort()
-    # assert allPatients == totalPatients
-    #
-    # allStudies = [study['StudyInstanceUID']
-    #     for collection in allCollections
-    #     for patient in collection['patients']
-    #     for study in patient['studies']].sort()
-    # totalStudies = [study['StudyInstanceUID']
-    #     for collection in totalCollections
-    #     for patient in collection['patients']
-    #     for study in patient['studies']].sort()
-    # assert allStudies == totalStudies
-    #
-    # allSeries = [series['SeriesInstanceUID']
-    #     for collection in allCollections
-    #     for patient in collection['patients']
-    #     for study in patient['studies']
-    #     for series in study['series']].sort()
-    # totalSeries = [series['SeriesInstanceUID']
-    #     for collection in totalCollections
-    #     for patient in collection['patients']
-    #     for study in patient['studies']
-    #     for series in study['series']].sort()
-    # assert allSeries == totalSeries
-    #
-    # allInstances = [instance['SOPInstanceUID']
-    #     for collection in allCollections
-    #     for patient in collection['patients']
-    #     for study in patient['studies']
-    #     for series in study['series']
-    #     for instance in series['instances']].sort()
-    # totalInstances = [instance['SOPInstanceUID']
-    #     for collection in totalCollections
-    #     for patient in collection['patients']
-    #     for study in patient['studies']
-    #     for series in study['series']
-    #     for instance in series['instances']].sort()
-    # assert allInstances == totalInstances
-

@@ -37,7 +37,7 @@ def about():
         'code': 200,
         'message': 'Welcome to the NCI IDC API, Version {}'.format(settings.API_VERSION[1:]),
         'documentation': 'SwaggerUI interface available at <{}/{}/swagger/>.'.format(settings.BASE_API_URL, settings.API_VERSION) +
-             'Documentation available at <https://https://app.gitbook.com/login/imagingdatacommons/idc-user-guide>'
+             ' Documentation is available at <https://learn.canceridc.dev/>'
     })
     response.status_code = 200
     return response
