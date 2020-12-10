@@ -79,8 +79,8 @@ def test_url(client, app):
     json_manifest = manifest['json_manifest']
     assert len(json_manifest) == 1638
     assert manifest['totalFound'] == 1638
-    assert 'gs://idc-tcia-tcga-read/dicom/1.3.6.1.4.1.14519.5.2.1.3671.4018.768291480177931556369061239508/1.3.6.1.4.1.14519.5.2.1.3671.4018.183714953600569164837490663631/1.3.6.1.4.1.14519.5.2.1.3671.4018.101814896314793708382026281597.dcm#1592638257658431' \
-           in [row['url'] for row in json_manifest]
+    assert [row['url'] for row in json_manifest  if 'dicom/1.3.6.1.4.1.14519.5.2.1.3671.4018.768291480177931556369061239508/1.3.6.1.4.1.14519.5.2.1.3671.4018.183714953600569164837490663631/1.3.6.1.4.1.14519.5.2.1.3671.4018.101814896314793708382026281597.dcm' \
+           in row['url']]
 
     delete_cohort(client, id)
 
@@ -124,8 +124,8 @@ def test_all(client, app):
     assert '1.3.6.1.4.1.14519.5.2.1.3671.4018.768291480177931556369061239508' in [row['StudyInstanceUID'] for row in json_manifest]
     assert 'tcga_read' in [row['collection_id'] for row in json_manifest]
     assert '10.7937/K9/TCIA.2016.F7PPNPNU' in [row['source_DOI'] for row in json_manifest]
-    assert 'gs://idc-tcia-tcga-read/dicom/1.3.6.1.4.1.14519.5.2.1.3671.4018.768291480177931556369061239508/1.3.6.1.4.1.14519.5.2.1.3671.4018.183714953600569164837490663631/1.3.6.1.4.1.14519.5.2.1.3671.4018.101814896314793708382026281597.dcm#1592638257658431' \
-           in [row['url'] for row in json_manifest]
+    assert [row['url'] for row in json_manifest  if 'dicom/1.3.6.1.4.1.14519.5.2.1.3671.4018.768291480177931556369061239508/1.3.6.1.4.1.14519.5.2.1.3671.4018.183714953600569164837490663631/1.3.6.1.4.1.14519.5.2.1.3671.4018.101814896314793708382026281597.dcm' \
+           in row['url']]
 
     delete_cohort(client, id)
 
@@ -237,10 +237,10 @@ def test_paged_url(client, app):
         totalRowsReturned += manifest["rowsReturned"]
         complete_manifest.extend(manifest['json_manifest'])
 
-    assert 'gs://idc-tcia-tcga-luad/dicom/1.3.6.1.4.1.14519.5.2.1.3983.9002.107656215131152599944682699489/1.3.6.1.4.1.14519.5.2.1.3983.9002.169653067901690682811265889199/1.3.6.1.4.1.14519.5.2.1.3983.9002.139964879860094005134659511427.dcm#1592637570041744' in \
-           [row['url'] for row in complete_manifest]
     assert totalRowsReturned == manifest['totalFound']
     assert manifest['totalFound'] == len(complete_manifest)
+    assert [row['url'] for row in json_manifest  if 'dicom/1.3.6.1.4.1.14519.5.2.1.3983.9002.107656215131152599944682699489/1.3.6.1.4.1.14519.5.2.1.3983.9002.169653067901690682811265889199/1.3.6.1.4.1.14519.5.2.1.3983.9002.139964879860094005134659511427.dcm' \
+           in row['url']]
 
     delete_cohort(client, id)
 
