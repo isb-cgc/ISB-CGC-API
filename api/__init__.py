@@ -73,10 +73,13 @@ def create_app(test_config=None):
     from cohorts_routes import *
     from program_routes import *
     from file_routes import *
+    from query_routes import *
     from user_routes import *'''
 
     logger = logging.getLogger(settings.LOGGER_NAME)
 
+    from . query_routes import cohort_query_bp
+    app.register_blueprint(query_routes.cohort_query_bp)
     from . main_routes import main_bp
     app.register_blueprint(main_routes.main_bp)
     from . cohort_routes import cohorts_bp
