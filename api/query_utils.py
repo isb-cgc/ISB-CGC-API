@@ -174,6 +174,102 @@ def perform_query(request, func, url, data=None, user=None):
     return query_info
 
 
+def perform_fixed_query(request, sql, user=None):
+    query_info = {}
+
+    path_params = {
+    }
+    path_booleans =  []
+    path_integers = []
+
+    local_params = {
+        "page_size": 1000
+    }
+    local_booleans = []
+    local_integers = ["page_size"]
+
+    jobReference = {}
+    next_page = ""
+
+    access_methods = ["url", "doi"]
+
+    try:
+        if 'next_page' in request.args and \
+            not request.args.get('next_page') in ["", None]:
+            # We have a non-empty next_page token
+            jobDescription = decrypt_pageToken(user, request.args.get('next_page'))
+            if jobDescription == {}:
+                query_info = dict(
+                    message="Invalid next_page token {}".format(request.args.get('next_page')),
+                    code=400
+                )
+                return query_info
+            else:
+                jobReference = jobDescription['jobReference']
+                next_page = jobDescription['next_page']
+
+            # If next_page is empty, then we timed out on the previous pass
+            if not next_page:
+                job_status = BigQuerySupport.wait_for_done(query_job={'jobReference':jobReference})
+
+                # Decide how to proceed depending on job status (DONE, RUNNING, ERRORS)
+                query_info = is_job_done(job_status, query_info, jobReference, user)
+                if "message" in query_info:
+                    return query_info
+            query_info = dict(
+                cohort = {},
+            )
+        else:
+            # Validate most params only on initial request; ignore on next_page requests
+            query_info = validate_keys(request, query_info, {**path_params, **local_params})
+
+            query_info = validate_parameters(request, query_info, path_params, path_booleans, path_integers, user)
+
+            if query_info != {}:
+                return query_info
+
+            if "message" in query_info:
+                return query_info
+
+            # Start the BQ job, but don't get any data results, just the job info.
+            job_status = submit_BQ_job(sql, [])
+
+            jobReference = job_status['jobReference']
+
+            # Decide how to proceed depending on job status (DONE, RUNNING, ERRORS)
+            query_info = is_job_done(job_status, query_info, jobReference, user)
+            if "message" in query_info:
+                return query_info
+
+
+        # print(("[STATUS] query_info with job_ref: {}").format(query_info))
+
+        # Validate "local" params on initial and next_page requests
+        query_info = validate_parameters(request, query_info, local_params, local_booleans, local_integers, None)
+
+        if "message" in query_info:
+            return query_info
+
+        query_info, next_page = get_query_job_results(query_info,
+                                                            local_params['page_size'],
+                                                            jobReference,
+                                                            next_page)
+        if next_page:
+            cipher_pageToken = encrypt_pageToken(user, jobReference,
+                                                 next_page)
+        else:
+            cipher_pageToken = ""
+        query_info['next_page'] = cipher_pageToken
+
+    except Exception as e:
+        logger.exception(e)
+        query_info = dict(
+            message='[ERROR] get_query(): Error trying to preview a cohort',
+            code=400)
+
+    return query_info
+
+
 def is_job_done(job_is_done, query_info, jobReference, user):
     if job_is_done and job_is_done['status']['state'] == 'DONE':
         if 'status' in job_is_done and 'errors' in job_is_done['status']:
@@ -235,6 +331,15 @@ def validate_keys(request, query_info, params):
 
 def validate_parameters(request, query_info, params, booleans, integers, user):
 
+    try:
+        for param in integers:
+            params[param] = int(params[param])
+    except ValueError:
+        query_info = dict(
+            message = "Parameter {} must have an integer value".format(param),
+            code = 400
+        )
+
     if user:
         params["email"] = user
 
@@ -244,15 +349,6 @@ def validate_parameters(request, query_info, params, booleans, integers, user):
 
     for param in booleans:
         params[param] = params[param] in [True, 'True']
-
-    try:
-        for param in integers:
-            params[param] = int(params[param])
-    except ValueError:
-        query_info = dict(
-            message = "Parameter {} must have an integer value".format(param),
-            code = 400
-        )
 
     return query_info
 
@@ -279,9 +375,18 @@ def get_query_job_results(query_info, maxResults, jobReference, next_page):
 def form_rows_json(data, schema_names):
     rows = []
     for row in data:
-        row_vals = [ val['v'] for val in row['f']]
+        # row_vals = [ val['v'] for val in row['f']]
+        row_vals = [unpack(val) for val in row['f']]
         rows.append(dict(zip(schema_names,row_vals)))
 
     return rows
+
+def unpack(val):
+    if not type(val['v']) == list:
+        return val['v']
+    else:
+        return [subval['v'] for subval in val['v']]
+
+
 
 

@@ -23,10 +23,9 @@ from flask import request
 from werkzeug.exceptions import BadRequest
 
 from python_settings import settings
-from . query_utils import perform_query
+from . query_utils import perform_query, perform_fixed_query
 from jsonschema import validate as schema_validate, ValidationError
 from . schemas.filterset import COHORT_FILTER_SCHEMA
-from .auth import get_auth
 
 BLACKLIST_RE = settings.BLACKLIST_RE
 
@@ -49,76 +48,60 @@ def get_params(param_defaults):
     return params
 
 def _query_metadata():
-    filterSet = {
-        "idc_data_version": "1.0",
-        "filters": {}}
 
-    fields = [
-        "AdditionalPatientHistory",
-        "Allergies",
-        "BodyPartExamined",
-        "collection_id",
-        "crdc_instance_uuid",
-        "crdc_series_uuid",
-        "crdc_study_uuid",
-        "EthnicGroup",
-        "gcs_bucket",
-        "gcs_generation",
-        "gcs_url",
-        "ImageType",
-        "LastMenstrualDate",
-        "MedicalAlerts",
-        "Modality",
-        "Occupation",
-        "PatientAge",
-        "PatientComments",
-        "PatientID",
-        "PatientSize",
-        "PatientWeight",
-        "PregnancyStatus",
-        "ReasonForStudy",
-        "RequestedProcedureComments",
-        "SeriesInstanceUID",
-        "SmokingStatus",
-        "SOPClassUID",
-        "SOPInstanceUID",
-        "Source_DOI",
-        "StudyID",
-        "StudyInstanceUID",
-        "tcia_tumorLocation",
-    ]
-    query_data = {
-        "filterSet": filterSet,
-        "fields": fields
-    }
+    sql_string =  """
+    #standardSQL
+    SELECT
+        AdditionalPatientHistory,
+        Allergies,
+        BodyPartExamined,
+        collection_id,
+        crdc_instance_uuid,
+        crdc_series_uuid,
+        crdc_study_uuid,
+        EthnicGroup,
+        gcs_bucket,
+        gcs_generation,
+        gcs_url,
+        ImageType,
+        LastMenstrualDate,
+        MedicalAlerts,
+        Modality,
+        Occupation,
+        PatientAge,
+        PatientComments,
+        PatientID,
+        PatientSize,
+        PatientWeight,
+        PregnancyStatus,
+        ReasonForStudy,
+        RequestedProcedureComments,
+        SeriesInstanceUID,
+        SmokingStatus,
+        SOPClassUID,
+        SOPInstanceUID,
+        Source_DOI,
+        StudyID,
+        StudyInstanceUID,
+        tcia_tumorLocation
+    FROM `canceridc-data.idc_views.dicom_all`
+    """
 
     try:
-        data = query_data
-
-        query_info = perform_query(request,
-                             requests.post,
-                             "{}/cohorts/api/preview/query/".format(settings.BASE_URL),
-                             data=data)
-
-    except BadRequest as e:
-        logger.warning("[WARNING] Received bad request - couldn't load JSON.")
-        query_info = dict(
-            message='The JSON provided in this request appears to be improperly formatted.',
-            code = 400)
+        query_info = perform_fixed_query(request, sql_string)
 
     except Exception as e:
-        logger.warning('[ERROR] Filters rejected for improper formatting: {}'.format(e))
+        logger.exception(e)
         query_info = dict(
-            message= 'Filters were improperly formatted.',
-            code = 400)
+            message='[ERROR] _query(): Error performing corhorts/metadata/query',
+            code=400)
 
     return query_info
-
 
     
 
 def get_query_info(user, cohort_id):
-    query_info = get_query(request,
+    query_info = perform_query(request,
                                  func=requests.get,
                                  url="{}/cohorts/api/{}/".format(settings.BASE_URL, cohort_id),
                                  user=user)

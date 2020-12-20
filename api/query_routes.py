@@ -25,8 +25,8 @@ from flask import Blueprint
 
 cohort_query_bp = Blueprint('query_bp', __name__, url_prefix='/{}'.format(settings.API_VERSION))
 
-@cohort_query_bp.route('/cohorts/metadata/query', methods=['GET'], strict_slashes=False)
-def query_metadata():
+@cohort_query_bp.route('/dicomMetadata', methods=['GET'], strict_slashes=False)
+def query_dicom_metadata():
     """
     GET: Retrieve metadata on all instances
     """
