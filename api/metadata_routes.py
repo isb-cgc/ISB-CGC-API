@@ -205,6 +205,43 @@ def collections():
 
     return response
 
+@metadata_bp.route('/fields', methods=['GET'], strict_slashes=False)
+def fields():
+    """Retrieve a list of IDC versions"""
+
+    response = jsonify({
+        'code': 500,
+        'message': '/fields not yet supported.'
+    })
+
+    return response
+
+    response = None
+
+    try:
+        results = get_attributes()
+
+        if 'message' in results:
+            response = jsonify(results)
+            response.status_code = results['code']
+        else:
+            response = jsonify({
+                'code': 200,
+                **results
+            })
+            response.status_code = 200
+    except Exception as e:
+        logger.error("[ERROR] While retrieving IDC versions:")
+        logger.exception(e)
+        response = jsonify({
+            'code': 500,
+            'message': 'Encountered an error while retrieving the attributes.'
+        })
+        response.status_code = 500
+
+    return response
+
+
 # @metadata_bp.route('/programs/<program_name>/<collection_name>/', methods=['GET'], strict_slashes=False)
 # def collection(program_name, collection_name):
 #     """"Get a list of the available fields for a specific version of a collection."""
