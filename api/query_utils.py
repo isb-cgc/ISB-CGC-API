@@ -23,9 +23,7 @@ import requests
 from .auth import get_auth
 from cryptography.fernet import Fernet, InvalidToken
 
-from django.conf import settings
-# from idc_collections.models import ImagingDataCommonsVersion
-# from idc_collections.collex_metadata_utils import get_bq_metadata, get_bq_string
+import settings
 from google_helpers.bigquery.bq_support import BigQuerySupport
 
 

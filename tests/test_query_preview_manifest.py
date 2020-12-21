@@ -27,10 +27,10 @@ def test_query_metadata(client, app):
     }
 
     query_string = {
-        'page_size': 5000
+        'page_size': 10000
     }
 
-    response = client.get('v1/query/metadata',
+    response = client.get('v1/dicomMetadata',
                             query_string = query_string,
                             headers=headers)
 
@@ -46,11 +46,11 @@ def test_query_metadata(client, app):
     while next_page:
         query_string = {
             'next_page': next_page,
-            'page_size': 100000
+            'page_size': 10000
         }
 
         # Get the list of objects in the cohort
-        response = client.get('v1/query/metadata',
+        response = client.get('v1/dicomMetadata',
                               query_string=query_string,
                               headers=headers)
         assert response.content_type == 'application/json'
