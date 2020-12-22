@@ -180,6 +180,6 @@ workflows:
             branches:
               only:
                 - master
-                - test
-                - uat
-                - prod
+                - idc-test
+                - idc-uat
+                - idc-prod
