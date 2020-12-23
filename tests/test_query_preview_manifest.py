@@ -43,7 +43,7 @@ def test_query_metadata(client, app):
     next_page = response.json['next_page']
     assert next_page
 
-    while next_page:
+    while next_page and totalRowsReturned < 50000:
         query_string = {
             'next_page': next_page,
             'page_size': 10000
