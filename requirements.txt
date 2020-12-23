@@ -21,7 +21,7 @@ Flask==1.1.1
 flask-cors==3.0.7
 flask-talisman==0.6.0
 pyjwt==1.6.1
-cryptography==3.2
+cryptography==3.3.1
 future==0.17.1
 python-dotenv==0.10.0
 ruamel.yaml==0.15.94
