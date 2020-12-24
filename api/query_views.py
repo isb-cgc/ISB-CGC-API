@@ -85,6 +85,7 @@ def _query_metadata():
         StudyInstanceUID,
         tcia_tumorLocation
     FROM `canceridc-data.idc_views.dicom_all`
+    ORDER BY collection_id, PatientID, StudyInstanceUID, SeriesInstanceUID, SOPInstanceUID
     """
 
     try:

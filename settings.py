@@ -58,8 +58,8 @@ SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', '')
 PAGE_TOKEN_KEY          = os.environ.get('PAGE_TOKEN_KEY', '')
 
 GOOGLE_APPLICATION_CREDENTIALS  = join(dirname(__file__), SECURE_LOCAL_PATH, os.environ.get('GOOGLE_APPLICATION_CREDENTIALS', ''))
-OAUTH2_CLIENT_ID                = os.environ.get('OAUTH2_CLIENT_ID', '')
-OAUTH2_CLIENT_SECRET            = os.environ.get('OAUTH2_CLIENT_SECRET', '')
+# OAUTH2_CLIENT_ID                = os.environ.get('OAUTH2_CLIENT_ID', '')
+# OAUTH2_CLIENT_SECRET            = os.environ.get('OAUTH2_CLIENT_SECRET', '')
 
 API_CLIENT_ID  = os.environ.get('API_CLIENT_ID', '')
 API_AUTH_TOKEN = ''
