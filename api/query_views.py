@@ -117,7 +117,7 @@ def post_query(user, cohort_id):
     try:
         request_data = request.get_json()
 
-        if 'queryFields' not in request_data:
+        if 'fields' not in request_data:
             return dict(
                 message = 'No queryFields provided; ensure that the request body contains a \'queryFields\' component.',
                 code = 400)

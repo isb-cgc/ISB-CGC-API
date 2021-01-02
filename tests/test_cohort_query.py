@@ -23,9 +23,7 @@ def test_basic(client, app):
 
     (id, filterSet) = create_cohort_for_test_get_cohort_xxx(client)
 
-    queryFields = {"fields": ['StudyInstanceUID', 'Modality']}
-
-    queryPreviewBody = {"queryFields": queryFields}
+    queryPreviewBody = {"fields": ['StudyInstanceUID', 'Modality']}
 
     mimetype = ' application/json'
     headers = {
@@ -61,9 +59,7 @@ def test_basic2(client, app):
 
     (id, filterSet) = create_cohort_for_test_get_cohort_xxx(client)
 
-    queryFields = {"fields": ['StudyInstanceUID', 'SeriesInstanceUID', 'SOPInstanceUID', 'Modality']}
-
-    queryPreviewBody = {"queryFields": queryFields}
+    queryPreviewBody = {"fields": ['StudyInstanceUID', 'SeriesInstanceUID', 'SOPInstanceUID', 'Modality']}
 
     mimetype = ' application/json'
     headers = {
@@ -101,9 +97,7 @@ def test_basic2(client, app):
 def test_paged(client, app):
     (id, filterSet) = create_cohort_for_test_get_cohort_xxx(client)
 
-    queryFields = {"fields": ['StudyInstanceUID', 'SeriesInstanceUID', 'SOPInstanceUID', 'Modality']}
-
-    queryPreviewBody = {"queryFields": queryFields}
+    queryPreviewBody = {"fields": ['StudyInstanceUID', 'SeriesInstanceUID', 'SOPInstanceUID', 'Modality']}
 
     mimetype = ' application/json'
     headers = {
