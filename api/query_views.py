@@ -26,6 +26,8 @@ from python_settings import settings
 from . query_utils import perform_query, perform_fixed_query
 from jsonschema import validate as schema_validate, ValidationError
 from . schemas.filterset import COHORT_FILTER_SCHEMA
+from . schemas.querypreviewbody import QUERY_PREVIEW_BODY
+from . schemas.queryfields import QUERY_FIELDS
 
 BLACKLIST_RE = settings.BLACKLIST_RE
 
@@ -47,7 +49,7 @@ def get_params(param_defaults):
             params[key] = param_defaults[key]
     return params
 
-def _query_metadata():
+def get_query_metadata():
 
     sql_string =  """
     #standardSQL
@@ -111,28 +113,70 @@ def get_query_info(user, cohort_id):
 
 
 
+def post_query(user, cohort_id):
+    try:
+        request_data = request.get_json()
+
+        if 'queryFields' not in request_data:
+            return dict(
+                message = 'No queryFields provided; ensure that the request body contains a \'queryFields\' component.',
+                code = 400)
+
+        schema_validate(request_data, QUERY_FIELDS)
+
+        data = {"request_data": request_data}
+
+        query_info = perform_query(request,
+                             func=requests.post,
+                             url="{}/cohorts/api/{}/query/".format(settings.BASE_URL,cohort_id),
+                             data=data,
+                             user=user)
+
+    except BadRequest as e:
+        logger.warning("[WARNING] Received bad request - couldn't load JSON.")
+        query_info = dict(
+            message='The JSON provided in this request appears to be improperly formatted.',
+            code = 400)
+
+    except ValidationError as e:
+        logger.warning('[WARNING] Filters rejected for improper formatting: {}'.format(e))
+        query_info = dict(
+            message= 'Filters were improperly formatted.',
+            code = 400)
+
+    return query_info
+
+
 def post_query_preview():
     try:
         request_data = request.get_json()
 
-        if 'filterSet' not in request_data:
+        if 'cohort_def' not in request_data:
             return dict(
-                message = 'No filters were provided; ensure that the request body contains a \'filterSet\' property.',
+                message = 'No cohort_def provided; ensure that the request body contains a \'cohort_dev\' component.',
+                code = 400)
+        if 'filterSet' not in request_data['cohort_def']:
+            return dict(
+                message = 'No filters were provided; ensure that the cohort_def contains a \'filterSet\' component.',
+                code = 400)
+        if 'queryFields' not in request_data:
+            return dict(
+                message = 'No queryFields provided; ensure that the request body contains a \'queryFields\' component.',
                 code = 400)
 
-        schema_validate(request_data['filterSet'], COHORT_FILTER_SCHEMA)
+        schema_validate(request_data, QUERY_PREVIEW_BODY)
 
-        if 'name' not in request_data:
+        if 'name' not in request_data["cohort_def"] or request_data["cohort_def"]['name'] == "":
             return dict(
                 message = 'A name was not provided for this cohort. The cohort was not made.',
                 code = 400
             )
 
         blacklist = re.compile(BLACKLIST_RE, re.UNICODE)
-        match = blacklist.search(str(request_data['name']))
+        match = blacklist.search(str(request_data["cohort_def"]['name']))
 
-        if not match and 'description' in request_data:
-            match = blacklist.search(str(request_data['description']))
+        if not match and 'description' in request_data["cohort_def"]:
+            match = blacklist.search(str(request_data["cohort_def"]['description']))
 
         if match:
             return dict(
@@ -143,9 +187,9 @@ def post_query_preview():
 
         data = {"request_data": request_data}
 
-        query_info = get_query(request,
+        query_info = perform_query(request,
                              func=requests.post,
-                             url="{}/cohorts/api/preview/".format(settings.BASE_URL),
+                             url="{}/cohorts/api/preview/query/".format(settings.BASE_URL),
                              data=data)
 
     except BadRequest as e:

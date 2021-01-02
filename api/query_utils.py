@@ -71,6 +71,7 @@ def perform_query(request, func, url, data=None, user=None):
     query_info = None
 
     path_params = {
+        "sql": False,
     }
     path_booleans =  []
     path_integers = []
@@ -350,7 +351,6 @@ def validate_parameters(request, query_info, params, booleans, integers, user):
 
     return query_info
 
-# Get a list of GCS URLs or CRDC DOIs of the instances in the cohort
 def get_query_job_results(query_info, maxResults, jobReference, next_page):
 
     results = BigQuerySupport.get_job_result_page(job_ref=jobReference,
