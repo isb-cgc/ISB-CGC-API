@@ -65,6 +65,7 @@ def decrypt_pageToken(email, cipher_jobReference):
 
 def submit_BQ_job(sql_string, params):
     results = BigQuerySupport.execute_query_and_fetch_results(sql_string, params, no_results=True)
+    print(f'jobReference: {results["jobReference"]}')
     return results
 
 def build_collections(objects, dois, urls):
