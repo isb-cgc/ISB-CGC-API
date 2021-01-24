@@ -126,6 +126,8 @@ def test_all(client, app):
     assert '10.7937/K9/TCIA.2016.F7PPNPNU' in [row['source_DOI'] for row in json_manifest]
     assert [row['url'] for row in json_manifest  if 'dicom/1.3.6.1.4.1.14519.5.2.1.3671.4018.768291480177931556369061239508/1.3.6.1.4.1.14519.5.2.1.3671.4018.183714953600569164837490663631/1.3.6.1.4.1.14519.5.2.1.3671.4018.101814896314793708382026281597.dcm' \
            in row['url']]
+    assert cohort['sql'] == "\n            #standardSQL\n    \n        SELECT dicom_pivot_wave1.collection_id,dicom_pivot_wave1.PatientID,dicom_pivot_wave1.StudyInstanceUID,dicom_pivot_wave1.SeriesInstanceUID,dicom_pivot_wave1.SOPInstanceUID,dicom_pivot_wave1.source_DOI,dicom_pivot_wave1.gcs_url\n        FROM `idc-dev.metadata.dicom_pivot_wave1` dicom_pivot_wave1 \n        \n        JOIN `isb-cgc.TCGA_bioclin_v0.clinical_v1` clinical_v1\n        ON dicom_pivot_wave1.PatientID = clinical_v1.case_barcode\n    \n        WHERE (dicom_pivot_wave1.Modality IN ('CT','MR')) AND (dicom_pivot_wave1.collection_id = 'tcga_read') AND (clinical_v1.race = 'WHITE')\n        GROUP BY dicom_pivot_wave1.collection_id, dicom_pivot_wave1.PatientID, dicom_pivot_wave1.StudyInstanceUID, dicom_pivot_wave1.SeriesInstanceUID, dicom_pivot_wave1.SOPInstanceUID, dicom_pivot_wave1.source_DOI, dicom_pivot_wave1.gcs_url\n        ORDER BY dicom_pivot_wave1.gcs_url ASC\n        \n        \n    "
+
 
     delete_cohort(client, id)
 
