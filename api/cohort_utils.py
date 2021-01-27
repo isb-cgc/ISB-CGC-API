@@ -67,10 +67,10 @@ def submit_BQ_job(sql_string, params):
     results = BigQuerySupport.execute_query_and_fetch_results(sql_string, params, no_results=True)
     return results
 
-def build_collections(objects, dois, urls):
+def build_collections(objects, guids, urls):
     collections = []
     for collection in objects:
-        patients = build_patients(collection, objects[collection], dois, urls)
+        patients = build_patients(collection, objects[collection], guids, urls)
         collections.append(
             {
                 "collection_id":collection,
@@ -81,10 +81,10 @@ def build_collections(objects, dois, urls):
     return collections
 
 
-def build_patients(collection,collection_patients, dois, urls):
+def build_patients(collection,collection_patients, guids, urls):
     patients = []
     for patient in collection_patients:
-        studies = build_studies(collection, patient, collection_patients[patient], dois, urls)
+        studies = build_studies(collection, patient, collection_patients[patient], guids, urls)
         patients.append({
                 "patient_id":patient,
             }
@@ -94,15 +94,15 @@ def build_patients(collection,collection_patients, dois, urls):
     return patients
 
 
-def build_studies(collection, patient, patient_studies, dois, urls):
+def build_studies(collection, patient, patient_studies, guids, urls):
     studies = []
     for study in patient_studies:
-        series = build_series(collection, patient, study, patient_studies[study], dois, urls)
+        series = build_series(collection, patient, study, patient_studies[study], guids, urls)
         studies.append(
             {
                 "StudyInstanceUID": study
             })
-        if dois:
+        if guids:
             studies[-1]["GUID"] = ""
         if urls:
             studies[-1]["AccessMethods"] = [
@@ -117,15 +117,15 @@ def build_studies(collection, patient, patient_studies, dois, urls):
     return studies
 
 
-def build_series(collection, patient, study, patient_studies, dois, urls):
+def build_series(collection, patient, study, patient_studies, guids, urls):
     series = []
     for aseries in patient_studies:
-        instances = build_instances(collection, patient, study, aseries, patient_studies[aseries], dois, urls)
+        instances = build_instances(collection, patient, study, aseries, patient_studies[aseries], guids, urls)
         series.append(
             {
                 "SeriesInstanceUID": aseries
             })
-        if dois:
+        if guids:
             series[-1]["GUID"] = ""
         if urls:
             series[-1]["AccessMethods"] = [
@@ -141,14 +141,14 @@ def build_series(collection, patient, study, patient_studies, dois, urls):
     return series
 
 
-def build_instances(collection, patient, study, series, study_series, dois, urls):
+def build_instances(collection, patient, study, series, study_series, guids, urls):
     instances = []
     for instance in study_series:
         instances.append(
             {
                 "SOPInstanceUID": instance
             })
-        if dois:
+        if guids:
             instances[-1]["GUID"] = ""
         if urls:
             instances[-1]["AccessMethods"] = [
@@ -221,12 +221,12 @@ def get_cohort_job_results(cohort_info, maxResults, jobReference, next_page):
         reorder=reorder,
         return_level=return_level)
 
-    # Then we add the details such as DOI, URL, etc. about each object
-    # dois = request.GET['return_DOIs'] in ['True', True]
+    # Then we add the details such as GUID, URL, etc. about each object
+    # guids = request.GET['return_guids'] in ['True', True]
     # urls = request.GET['return_URLs'] in ['True', True]
-    dois = False
+    guids = False
     urls = False
-    collections = build_collections(objects, dois, urls)
+    collections = build_collections(objects, guids, urls)
 
     cohort_info["cohortObjects"] = {
         "totalFound": int(results['totalFound']),
@@ -249,7 +249,7 @@ def get_manifest(request, func, url, data=None, user=None):
         "SeriesInstanceUIDs": False,
         "SOPInstanceUIDs": False,
         "Collection_DOIs": False,
-        "access_method": "doi",
+        "access_method": "guid",
     }
     path_booleans =  ['sql', 'Collection_IDs', 'Patient_IDs', 'StudyInstanceUIDs',
           'SeriesInstanceUIDs', 'SOPInstanceUIDs', 'Collection_DOIs']
@@ -264,7 +264,7 @@ def get_manifest(request, func, url, data=None, user=None):
     jobReference = {}
     next_page = ""
 
-    access_methods = ["url", "doi"]
+    access_methods = ["url", "guid"]
 
     try:
         if 'next_page' in request.args and \
@@ -560,14 +560,14 @@ def validate_parameters(request, manifest_info, params, booleans, integers, user
 
     return manifest_info
 
-# Get a list of GCS URLs or CRDC DOIs of the instances in the cohort
+# Get a list of GCS URLs or CRDC GUIDs of the instances in the cohort
 def get_manifest_job_results(manifest_info, maxResults, jobReference, next_page):
 
     results = BigQuerySupport.get_job_result_page(job_ref=jobReference,
                                                   page_token=next_page,
                                                   maxResults=maxResults)
 
-    schema_names = ['doi' if field['name'] == 'crdc_instance_uuid' else 'url' if field['name'] == 'gcs_url' else field['name'] for field in results['schema']['fields']]
+    schema_names = ['guid' if field['name'] == 'crdc_instance_uuid' else 'url' if field['name'] == 'gcs_url' else field['name'] for field in results['schema']['fields']]
 
     manifest_info["manifest"] = dict(
                 totalFound = int(results['totalFound']),

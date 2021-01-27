@@ -49,7 +49,6 @@ def test_basic(client, app):
         'page_size': 2000,
     }
 
-    # Get a doi manifest of the cohort's instances
     response = client.post('v1/cohorts/preview/query',
                             query_string = query_string,
                             data = json.dumps(queryPreviewBody),
@@ -103,7 +102,6 @@ def test_basic2(client, app):
         'page_size': 2000,
     }
 
-    # Get a doi manifest of the cohort's instances
     response = client.post('v1/cohorts/preview/query',
                             query_string = query_string,
                             data = json.dumps(queryPreviewBody),
