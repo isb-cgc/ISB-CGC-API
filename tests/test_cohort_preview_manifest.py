@@ -19,7 +19,7 @@ import json
 
 from tests.cohort_utils import merge, pretty_print_cohortObjects, create_cohort_for_test_get_cohort_xxx, delete_cohort
 
-def test_doi(client, app):
+def test_guid(client, app):
 
     filterSet = {
         "idc_data_version": "",
@@ -41,11 +41,11 @@ def test_doi(client, app):
 
     query_string = {
         'sql': False,
-        'access_method': 'doi',
+        'access_method': 'guid',
         'page_size': 2000,
     }
 
-    # Get a doi manifest of the cohort's instances
+    # Get a guid manifest of the cohort's instances
     response = client.post('v1/cohorts/preview/manifest',
                             query_string = query_string,
                             data = json.dumps(cohortSpec),
@@ -64,7 +64,7 @@ def test_doi(client, app):
     json_manifest = manifest['json_manifest']
     assert len(json_manifest) == 1638
     assert manifest['totalFound'] == 1638
-    assert 'dg.4DFC/0013f110-0928-4d66-ba61-7c3e80b48a68' in [row['doi'] for row in json_manifest]
+    assert 'dg.4DFC/0013f110-0928-4d66-ba61-7c3e80b48a68' in [row['guid'] for row in json_manifest]
 
 
 def test_url(client, app):
@@ -91,7 +91,7 @@ def test_url(client, app):
         'page_size': 2000,
     }
 
-    # Get a doi manifest of the cohort's instances
+    # Get a guid manifest of the cohort's instances
     response = client.post('v1/cohorts/preview/manifest',
                             query_string = query_string,
                             data = json.dumps(cohortSpec),
@@ -139,7 +139,7 @@ def test_SOPInstanceUID(client, app):
         'page_size': 2000,
     }
 
-    # Get a doi manifest of the cohort's instances
+    # Get a guid manifest of the cohort's instances
     response = client.post('v1/cohorts/preview/manifest',
                             query_string = query_string,
                             data = json.dumps(cohortSpec),
@@ -220,7 +220,7 @@ def test_all(client, app):
            in row['url']]
 
 
-def test_paged_doi(client, app):
+def test_paged_guid(client, app):
     filterSet = {
         "idc_data_version": "",
         "filters": {
@@ -239,7 +239,7 @@ def test_paged_doi(client, app):
     }
 
     query_string = {
-        'access_method': 'doi',
+        'access_method': 'guid',
         'page_size': 5000
     }
 
@@ -267,7 +267,7 @@ def test_paged_doi(client, app):
 
     while next_page:
         query_string = {
-            'access_method': 'doi',
+            'access_method': 'guid',
             'next_page': next_page,
             'page_size': 5000
         }
@@ -286,7 +286,7 @@ def test_paged_doi(client, app):
         complete_manifest.extend(manifest['json_manifest'])
 
     assert 'dg.4DFC/0009e98e-bca2-4a68-ada1-62e0a8b2dbaf' in \
-           [row['doi'] for row in complete_manifest]
+           [row['guid'] for row in complete_manifest]
     assert totalRowsReturned == manifest['totalFound']
     assert manifest['totalFound'] == len(complete_manifest)
 
@@ -366,7 +366,7 @@ def test_paged_url(client, app):
 
 # This test submits an empty filter which means that all instances are returned.
 # Takes a lot of time and bandwidth. Uncomment to run
-# def test_paged_doi_all_instances(client, app):
+# def test_paged_guid_all_instances(client, app):
 #
 #     import time
 #
@@ -379,7 +379,7 @@ def test_paged_url(client, app):
 #         }
 #     }
 #     query_string = dict(
-#         access_method='doi',
+#         access_method='guid',
 #         page_size=40000000
 #     )
 #
