@@ -8,7 +8,7 @@ oauth2client==3.0.0
 python-openid==2.2.5
 pyasn1==0.4.6
 requests-oauthlib==0.7.0
-rsa==3.2
+rsa==4.1
 simplejson==3.8.1
 PyYAML==4.2b1
 six==1.12.0
