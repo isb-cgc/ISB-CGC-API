@@ -10,7 +10,7 @@ pyasn1==0.4.6
 requests-oauthlib==0.7.0
 rsa==3.2
 simplejson==3.8.1
-PyYAML==4.2b1
+PyYAML==5.4
 six==1.12.0
 uritemplate==3.0.0
 GoogleAppEngineCloudStorageClient==1.9.22.1
