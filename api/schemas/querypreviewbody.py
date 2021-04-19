@@ -3900,7 +3900,7 @@ QUERY_PREVIEW_BODY={
               "Glycolysis_Within_Third_Quarter_of_Intensity_Range",
               "Glycolysis_Within_Fourth_Quarter_of_Intensity_Range",
               "Glycolysis_Within_Second_Quarter_of_Intensity_Range",
-              "Internal",
+              "Internal_structure",
               "Sphericity",
               "Calcification",
               "Lobular",
