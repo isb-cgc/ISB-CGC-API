@@ -123,7 +123,6 @@ def get_collections():
 
     path_params = {
         "idc_data_version": "",
-        "program_name": "",
     }
 
     blacklist = re.compile(BLACKLIST_RE, re.UNICODE)
@@ -170,4 +169,58 @@ def get_collections():
         )
 
     return info
+
+
+def get_analysis_results():
+    info = None
+
+    path_params = {
+        "idc_data_version": "",
+    }
+
+    blacklist = re.compile(BLACKLIST_RE, re.UNICODE)
+
+    # Get and validate parameters
+    for key in request.args.keys():
+        match = blacklist.search(str(key))
+        if match:
+            return dict(
+                message="Argument {} contains invalid characters; please edit and resubmit. " +
+                        "[Saw {}]".format(str(key, match)),
+                code=400
+            )
+        if key in path_params:
+            path_params[key] = request.args.get(key)
+        else:
+            return dict(
+                message="Invalid argument {}".format((key)),
+                code=400
+            )
+
+    # try:
+    auth = get_auth()
+    response = requests.get("{}/collections/api/analysis_results/".format(settings.BASE_URL),
+                            params=path_params, headers=auth)
+    try:
+        info = response.json()
+        if response.status_code != 200:
+            logger.error("[ERROR] Error code in response from web app: {}".format(response.status_code))
+            logger.error("[ERROR] auth: {}".format(auth))
+            logger.error("[ERROR] Request headers: {}".format(response.request.headers))
+            logger.error("[ERROR] Content: {}".format(response.content))
+            return dict(
+                message="Encountered an error while retrieving the analysis results list: {}".format(response.content),
+                code=response.status_code
+            )
+    except Exception as e:
+        logger.error("[ERROR] No content in response from web app")
+        logger.error("[ERROR] status_code: {}".format(response.status_code))
+        logger.exception(e)
+        return dict(
+            message="Encountered an error while retrieving the analysis results list.",
+            code=response.status_code
+        )
+
+    return info
+
 

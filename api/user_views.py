@@ -24,8 +24,6 @@ from werkzeug.exceptions import BadRequest
 import datetime
 
 from python_settings import settings
-
-from python_settings import settings
 from . auth import UserValidationException, get_auth
 
 logger = logging.getLogger(settings.LOGGER_NAME)

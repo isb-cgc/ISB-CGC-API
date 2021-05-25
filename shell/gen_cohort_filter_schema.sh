@@ -7,6 +7,10 @@ echo $PWD
 openapi2jsonschema ../openapi-appengine.yaml --stand-alone -o ../api/schemas
 
 # Convert the filterset schema into a python file that can be imported
+sed '1s/.*/COHORT_FILTERS_SCHEMA\=&/' ../api/schemas/filters.json > ../api/schemas/filters.py
+sed "-i" "" "-e" 's/"additionalProperties": false/"additionalProperties": False/' ../api/schemas/filters.py
+
+# Convert the filterset schema into a python file that can be imported
 sed '1s/.*/COHORT_FILTER_SCHEMA\=&/' ../api/schemas/filterset.json > ../api/schemas/filterset.py
 sed "-i" "" "-e" 's/"additionalProperties": false/"additionalProperties": False/' ../api/schemas/filterset.py
 

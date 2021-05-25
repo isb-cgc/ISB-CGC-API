@@ -39,17 +39,15 @@ def merge(src, dst, level):
 
  # Utility to create a "standard" cohort for testing
 def create_cohort(client):
-    # Create a filter set
-    filterSet = {
-        "idc_data_version": "1.0",
-        "filters": {
-            "collection_id": ["TCGA-LUAD", "TCGA-KIRC"],
-            "Modality": ["CT", "MR"],
-            "race": ["WHITE"]}}
+    # Define the filters
+    filters = {
+        "collection_id": ["tcga_luad", "tcga_kirc"],
+        "Modality": ["CT", "MR"],
+        "race": ["WHITE"]}
 
     cohortSpec = {"name": "testcohort",
                   "description": "Test description",
-                  "filterSet": filterSet}
+                  "filters": filters}
 
     mimetype = ' application/json'
     headers = {
@@ -63,6 +61,7 @@ def create_cohort(client):
 
     return cohortResponse
 
+
 # Create a cohort with filter as expected by the test_get_cohort_xxx() functions
 def create_cohort_for_test_get_cohort_xxx(client):
     # Create a cohort to test against
@@ -72,14 +71,9 @@ def create_cohort_for_test_get_cohort_xxx(client):
         "race": ["WHITE"]
     }
 
-    filterSet = {
-        "idc_data_version": "1.0",
-        "filters": filters
-    }
-
     cohortSpec = {"name": "testcohort",
                   "description": "Test description",
-                  "filterSet": filterSet}
+                  "filters": filters}
 
     mimetype = ' application/json'
     headers = {
@@ -90,7 +84,23 @@ def create_cohort_for_test_get_cohort_xxx(client):
     assert response.status_code == 200
     cohortResponse = response.json['cohort_properties']
     id = cohortResponse['cohort_id']
-    return (id, filterSet)
+    return (id, filters)
+
+
+# Find a previously created V1 cohort with filter expected by the test_get_cohort_xxx() functions
+def find_v1_cohort_for_test_get_cohort_xxx(client, filterset):
+
+    # Get a list of existing cohorts
+    response = client.get("{}/".format('v1/cohorts'))
+    cohorts = response.json['cohorts']
+
+    for cohort in cohorts:
+        # if cohort["filterSet"]["filters"] == filters and cohort["filterSet"]['idc_data_version'] == '1.0':
+        if cohort["filterSet"] == filterset:
+                return (cohort['cohort_id'], cohort["filterSet"])
+
+    # Didn't find a matching cohort
+    return(-1, -1)
 
 # Create a big cohort with filter as expected by the test_get_cohort_xxx() functions
 def create_big_cohort_for_test_get_cohort_xxx(client):
@@ -101,14 +111,9 @@ def create_big_cohort_for_test_get_cohort_xxx(client):
         "race": ["WHITE"]
     }
 
-    filterSet = {
-        "idc_data_version": "1.0",
-        "filters": filters
-    }
-
     cohortSpec = {"name": "testcohort",
                   "description": "Test description",
-                  "filterSet": filterSet}
+                  "filters": filters}
 
     mimetype = ' application/json'
     headers = {
@@ -119,12 +124,39 @@ def create_big_cohort_for_test_get_cohort_xxx(client):
     assert response.status_code == 200
     cohortResponse = response.json['cohort_properties']
     id = cohortResponse['cohort_id']
-    return (id, filterSet)
+    return (id, filters)
+
+# Find a previously created V1 cohort with filter expected by the test_get_cohort_xxx() functions
+def find_v1_big_cohort_for_test_get_cohort_xxx(client):
+    filters = {
+        "collection_id": ["tcga_luad"],
+        "Modality": ["CT", "MR"],
+        "race": ["WHITE"]
+    }
+
+    # Get a list of existing cohorts
+    response = client.get("{}/".format('v1/cohorts'))
+    cohorts = response.json['cohorts']
+
+    for cohort in cohorts:
+        if cohort["filterSet"]["filters"] == filters and cohort["filterSet"]['idc_data_version'] == '1.0':
+            return (cohort['cohort_id'], cohort["filterSet"])
+
+    # Didn't find a matching cohort
+    return(-1, -1)
 
 # Utility to delete an existing cohort
 def delete_cohort(client, id):
     response = client.delete("{}/{}/".format('v1/cohorts',id))
     assert response.content_type == 'application/json'
     assert response.status_code == 200
+
+def current_version(client):
+    response = client.get('/v1/versions')
+    data = response.json['versions']
+    current = max([v['idc_data_version'] for v in data])
+    return current
+
+
 
 

@@ -18,7 +18,7 @@ import logging
 from flask import jsonify
 from python_settings import settings
 
-from . metadata_views import get_versions, get_attributes, get_collections
+from . metadata_views import get_versions, get_attributes, get_collections, get_analysis_results
 
 from flask import Blueprint
 
@@ -200,6 +200,34 @@ def collections():
         response = jsonify({
             'code': 500,
             'message': 'Encountered an error while retrieving the collection list.'
+        })
+        response.status_code = 500
+
+    return response
+
+@metadata_bp.route('/analysisResults/', methods=['GET'], strict_slashes=False)
+def analysisResults():
+    """Retrieve the list of analysis results in some IDC versions """
+    response = None
+
+    try:
+        results = get_analysis_results()
+
+        if 'message' in results:
+            response = jsonify(results)
+            response.status_code = results['code']
+        else:
+            response = jsonify({
+                'code': 200,
+                **results
+            })
+            response.status_code = 200
+    except Exception as e:
+        logger.error("[ERROR] While retrieving analysis results information:")
+        logger.exception(e)
+        response = jsonify({
+            'code': 500,
+            'message': 'Encountered an error while retrieving the analysis results list.'
         })
         response.status_code = 500
 

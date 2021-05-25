@@ -31,16 +31,16 @@ QUERY_FIELDS={
           "Surface_area_of",
           "Total_Lesion",
           "Standardized_Added_Metabolic",
-          "Percent_Within_First_Quarter_of_Intensity",
-          "Percent_Within_Third_Quarter_of_Intensity",
-          "Percent_Within_Fourth_Quarter_of_Intensity",
-          "Percent_Within_Second_Quarter_of_Intensity",
+          "Percent_Within_First_Quarter_of_Intensity_Range",
+          "Percent_Within_Third_Quarter_of_Intensity_Range",
+          "Percent_Within_Fourth_Quarter_of_Intensity_Range",
+          "Percent_Within_Second_Quarter_of_Intensity_Range",
           "Standardized_Added_Metabolic_Activity",
-          "Glycolysis_Within_First_Quarter_of_Intensity",
-          "Glycolysis_Within_Third_Quarter_of_Intensity",
-          "Glycolysis_Within_Fourth_Quarter_of_Intensity",
-          "Glycolysis_Within_Second_Quarter_of_Intensity",
-          "Internal",
+          "Glycolysis_Within_First_Quarter_of_Intensity_Range",
+          "Glycolysis_Within_Third_Quarter_of_Intensity_Range",
+          "Glycolysis_Within_Fourth_Quarter_of_Intensity_Range",
+          "Glycolysis_Within_Second_Quarter_of_Intensity_Range",
+          "Internal_structure",
           "Sphericity",
           "Calcification",
           "Lobular",
@@ -48,7 +48,9 @@ QUERY_FIELDS={
           "Margin",
           "Texture",
           "Subtlety",
-          "Malignancy"
+          "Malignancy",
+          "Apparent_Diffusion_Coefficient",
+          "tcia_species"
         ]
       }
     }
