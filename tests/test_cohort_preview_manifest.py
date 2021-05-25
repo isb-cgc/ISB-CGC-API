@@ -21,17 +21,15 @@ from tests.cohort_utils import merge, pretty_print_cohortObjects, create_cohort_
 
 def test_guid(client, app):
 
-    filterSet = {
-        "idc_data_version": "",
-        "filters": {
-            "collection_id": ["tcga_read"],
-            "Modality": ["CT", "MR"],
-            "race": ["WHITE"],
-        }}
+    filters = {
+        "collection_id": ["tcga_read"],
+        "Modality": ["CT", "MR"],
+        "race": ["WHITE"],
+    }
 
     cohortSpec = {"name": "testcohort",
                   "description": "Test description",
-                  "filterSet": filterSet}
+                  "filters": filters}
 
     mimetype = ' application/json'
     headers = {
@@ -41,7 +39,7 @@ def test_guid(client, app):
 
     query_string = {
         'sql': False,
-        'access_method': 'guid',
+        'CRDC_Instance_GUID': True,
         'page_size': 2000,
     }
 
@@ -64,21 +62,19 @@ def test_guid(client, app):
     json_manifest = manifest['json_manifest']
     assert len(json_manifest) == 1638
     assert manifest['totalFound'] == 1638
-    assert 'dg.4DFC/0013f110-0928-4d66-ba61-7c3e80b48a68' in [row['guid'] for row in json_manifest]
+    assert 'dg.4DFC/0013f110-0928-4d66-ba61-7c3e80b48a68' in [row['CRDC_Instance_GUID'] for row in json_manifest]
 
 
 def test_url(client, app):
 
-    filterSet = {
-        "idc_data_version": "",
-        "filters": {
-            "collection_id": ["tcga_read"],
-            "Modality": ["CT", "MR"],
-            "race": ["WHITE"]}}
+    filters = {
+        "collection_id": ["tcga_read"],
+        "Modality": ["CT", "MR"],
+        "race": ["WHITE"]}
 
     cohortSpec = {"name": "testcohort",
                   "description": "Test description",
-                  "filterSet": filterSet}
+                  "filters": filters}
 
     mimetype = ' application/json'
     headers = {
@@ -87,7 +83,7 @@ def test_url(client, app):
     }
 
     query_string = {
-        'access_method': 'url',
+        'GCS_URL': True,
         'page_size': 2000,
     }
 
@@ -110,23 +106,20 @@ def test_url(client, app):
     json_manifest = manifest['json_manifest']
     assert len(json_manifest) == 1638
     assert manifest['totalFound'] == 1638
-    assert [row['url'] for row in json_manifest  if 'dicom/1.3.6.1.4.1.14519.5.2.1.3671.4018.768291480177931556369061239508/1.3.6.1.4.1.14519.5.2.1.3671.4018.183714953600569164837490663631/1.3.6.1.4.1.14519.5.2.1.3671.4018.101814896314793708382026281597.dcm' \
-           in row['url']]
+    assert {'GCS_URL': 'gs://idc_dev/0013f110-0928-4d66-ba61-7c3e80b48a68.dcm'} in json_manifest
 
 
 def test_SOPInstanceUID(client, app):
 
-    filterSet = {
-        "idc_data_version": "",
-        "filters": {
-            "collection_id": ["tcga_read"],
-            "Modality": ["CT", "MR"],
-            "race": ["WHITE"],
-            "SOPInstanceUID": ["1.3.6.1.4.1.14519.5.2.1.3671.4018.101814896314793708382026281597"]}}
+    filters = {
+        "collection_id": ["tcga_read"],
+        "Modality": ["CT", "MR"],
+        "race": ["WHITE"],
+        "SOPInstanceUID": ["1.3.6.1.4.1.14519.5.2.1.3671.4018.101814896314793708382026281597"]}
 
     cohortSpec = {"name": "testcohort",
                   "description": "Test description",
-                  "filterSet": filterSet}
+                  "filters": filters}
 
     mimetype = ' application/json'
     headers = {
@@ -135,7 +128,7 @@ def test_SOPInstanceUID(client, app):
     }
 
     query_string = {
-        'access_method': 'url',
+        'GCS_URL': True,
         'page_size': 2000,
     }
 
@@ -158,22 +151,19 @@ def test_SOPInstanceUID(client, app):
     json_manifest = manifest['json_manifest']
     assert len(json_manifest) == 1
     assert manifest['totalFound'] == 1
-    assert [row['url'] for row in json_manifest  if 'dicom/1.3.6.1.4.1.14519.5.2.1.3671.4018.768291480177931556369061239508/1.3.6.1.4.1.14519.5.2.1.3671.4018.183714953600569164837490663631/1.3.6.1.4.1.14519.5.2.1.3671.4018.101814896314793708382026281597.dcm' \
-           in row['url']]
+    assert {'GCS_URL': 'gs://idc_dev/de364433-4eaf-440e-b714-6c8b7cf3c613.dcm'} in json_manifest
 
 
 def test_all(client, app):
 
-    filterSet = {
-        "idc_data_version": "",
-        "filters": {
-            "collection_id": ["tcga_read"],
-            "Modality": ["CT", "MR"],
-            "race": ["WHITE"]}}
+    filters = {
+        "collection_id": ["tcga_read"],
+        "Modality": ["CT", "MR"],
+        "race": ["WHITE"]}
 
     cohortSpec = {"name": "testcohort",
                   "description": "Test description",
-                  "filterSet": filterSet}
+                  "filters": filters}
 
     mimetype = ' application/json'
     headers = {
@@ -182,15 +172,18 @@ def test_all(client, app):
     }
 
     query_string = dict(
-        sql = True,
-        Collection_IDs = True,
-        Patient_IDs = True,
-        StudyInstanceUIDs = True,
-        SeriesInstanceUIDs = True,
-        SOPInstanceUIDs = True,
-        Collection_DOIs = True,
-        access_method =  'url',
-        page_size = 2000,
+        sql=True,
+        Collection_ID=True,
+        Patient_ID=True,
+        StudyInstanceUID=True,
+        SeriesInstanceUID=True,
+        SOPInstanceUID=True,
+        Source_DOI=True,
+        CRDC_Study_GUID=True,
+        CRDC_Series_GUID=True,
+        CRDC_Instance_GUID=True,
+        GCS_URL=True,
+        page_size=2000
     )
     response = client.post('v1/cohorts/preview/manifest',
                             query_string = query_string,
@@ -210,27 +203,27 @@ def test_all(client, app):
     json_manifest = manifest['json_manifest']
     assert len(json_manifest) == 1638
     assert manifest['totalFound'] == 1638
-    assert 'TCGA-CL-5917' in [row['PatientID'] for row in json_manifest]
+    assert 'TCGA-CL-5917' in [row['Patient_ID'] for row in json_manifest]
     assert '1.3.6.1.4.1.14519.5.2.1.3671.4018.101814896314793708382026281597' in [row['SOPInstanceUID'] for row in json_manifest]
     assert '1.3.6.1.4.1.14519.5.2.1.3671.4018.183714953600569164837490663631' in [row['SeriesInstanceUID'] for row in json_manifest]
     assert '1.3.6.1.4.1.14519.5.2.1.3671.4018.768291480177931556369061239508' in [row['StudyInstanceUID'] for row in json_manifest]
-    assert 'tcga_read' in [row['collection_id'] for row in json_manifest]
-    assert '10.7937/K9/TCIA.2016.F7PPNPNU' in [row['source_DOI'] for row in json_manifest]
-    assert [row['url'] for row in json_manifest  if 'dicom/1.3.6.1.4.1.14519.5.2.1.3671.4018.768291480177931556369061239508/1.3.6.1.4.1.14519.5.2.1.3671.4018.183714953600569164837490663631/1.3.6.1.4.1.14519.5.2.1.3671.4018.101814896314793708382026281597.dcm' \
-           in row['url']]
+    assert 'tcga_read' in [row['Collection_ID'] for row in json_manifest]
+    assert '10.7937/K9/TCIA.2016.F7PPNPNU' in [row['Source_DOI'] for row in json_manifest]
+    assert next(row for row in json_manifest if row['GCS_URL'] == 'gs://idc_dev/0013f110-0928-4d66-ba61-7c3e80b48a68.dcm')
+    assert next(row for row in json_manifest if row['CRDC_Study_GUID'] == 'dg.4DFC/7efeae5d-6263-4184-9ad4-8df22720ada9')
+    assert next(row for row in json_manifest if row['CRDC_Series_GUID'] == 'dg.4DFC/67e22f90-36e1-40aa-88bb-9b2efb5616f2')
+    assert next(row for row in json_manifest if row['CRDC_Instance_GUID'] == 'dg.4DFC/0013f110-0928-4d66-ba61-7c3e80b48a68')
 
 
-def test_paged_guid(client, app):
-    filterSet = {
-        "idc_data_version": "",
-        "filters": {
-            "collection_id": ["tcga_luad"],
-            "Modality": ["CT", "MR"],
-            "race": ["WHITE"]}}
+def test_paged_doi(client, app):
+    filters = {
+        "collection_id": ["tcga_luad"],
+        "Modality": ["CT", "MR"],
+        "race": ["WHITE"]}
 
     cohortSpec = {"name": "testcohort",
                   "description": "Test description",
-                  "filterSet": filterSet}
+                  "filters": filters}
 
     mimetype = ' application/json'
     headers = {
@@ -239,7 +232,7 @@ def test_paged_guid(client, app):
     }
 
     query_string = {
-        'access_method': 'guid',
+        'CRDC_Instance_GUID': True,
         'page_size': 5000
     }
 
@@ -286,23 +279,22 @@ def test_paged_guid(client, app):
         complete_manifest.extend(manifest['json_manifest'])
 
     assert 'dg.4DFC/0009e98e-bca2-4a68-ada1-62e0a8b2dbaf' in \
-           [row['guid'] for row in complete_manifest]
+           [row['CRDC_Instance_GUID'] for row in complete_manifest]
     assert totalRowsReturned == manifest['totalFound']
     assert manifest['totalFound'] == len(complete_manifest)
 
 
 def test_paged_url(client, app):
 
-    filterSet = {
-        "idc_data_version": "",
-        "filters": {
-            "collection_id": ["tcga_luad"],
-            "Modality": ["CT", "MR"],
-            "race": ["WHITE"]}}
+    filters = {
+        "tcia_species": ["Human"],
+        "collection_id": ["tcga_luad"],
+        "Modality": ["CT", "MR"],
+        "race": ["WHITE"]}
 
     cohortSpec = {"name": "testcohort",
                   "description": "Test description",
-                  "filterSet": filterSet}
+                  "filters": filters}
 
     mimetype = ' application/json'
     headers = {
@@ -311,7 +303,7 @@ def test_paged_url(client, app):
     }
 
     query_string = {
-        'access_method': 'url',
+        'GCS_URL': True,
         'page_size': 5000
     }
 
@@ -356,11 +348,7 @@ def test_paged_url(client, app):
 
         totalRowsReturned += manifest["rowsReturned"]
         complete_manifest.extend(manifest['json_manifest'])
-
-    assert [row['url'] for row in json_manifest  if 'dicom/1.3.6.1.4.1.14519.5.2.1.3983.9002.107656215131152599944682699489/1.3.6.1.4.1.14519.5.2.1.3983.9002.169653067901690682811265889199/1.3.6.1.4.1.14519.5.2.1.3983.9002.139964879860094005134659511427.dcm' \
-           in row['url']]
-    # assert 'gs://idc-tcia-tcga-luad/dicom/1.3.6.1.4.1.14519.5.2.1.3983.9002.107656215131152599944682699489/1.3.6.1.4.1.14519.5.2.1.3983.9002.169653067901690682811265889199/1.3.6.1.4.1.14519.5.2.1.3983.9002.139964879860094005134659511427.dcm#1592637570041744' in \
-    #        [row['url'] for row in complete_manifest]
+    assert {'GCS_URL': 'gs://idc_dev/0009e98e-bca2-4a68-ada1-62e0a8b2dbaf.dcm'} in json_manifest
     assert totalRowsReturned == manifest['totalFound']
     assert manifest['totalFound'] == len(complete_manifest)
 
@@ -373,9 +361,7 @@ def test_paged_url(client, app):
 #     cohortSpec = {
 #         "name": "mycohort",
 #         "description": "Example description",
-#         "filterSet": {
-#             "idc_data_version": "1.0",
-#             "filters": {}
+#         "filters": {}
 #         }
 #     }
 #     query_string = dict(

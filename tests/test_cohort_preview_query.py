@@ -21,17 +21,15 @@ from tests.cohort_utils import merge, pretty_print_cohortObjects, create_cohort_
 
 def test_basic(client, app):
 
-    filterSet = {
-        "idc_data_version": "",
-        "filters": {
-            "collection_id": ["tcga_read"],
-            "Modality": ["CT", "MR"],
-            "race": ["WHITE"]
-        }}
+    filters= {
+        "collection_id": ["tcga_read"],
+        "Modality": ["CT", "MR"],
+        "race": ["WHITE"]
+    }
 
     cohortSpec = {"name": "testcohort",
                   "description": "Test description",
-                  "filterSet": filterSet}
+                  "filters": filters}
 
     queryFields = {"fields": ['StudyInstanceUID', 'Modality']}
 
@@ -60,7 +58,7 @@ def test_basic(client, app):
     cohort_def = info['cohort_def']
     assert cohort_def['name'] == cohortSpec['name']
     assert cohort_def['description'] == cohortSpec['description']
-    assert cohort_def['filterSet']['filters'] == cohortSpec['filterSet']['filters']
+    assert cohort_def['filterSet']['filters'] == cohortSpec['filters']
 
     assert response.json['query_results']['rowsReturned'] == 3
     assert response.json['query_results']['totalFound'] == 3
@@ -74,17 +72,15 @@ def test_basic(client, app):
 
 def test_basic2(client, app):
 
-    filterSet = {
-        "idc_data_version": "",
-        "filters": {
-            "collection_id": ["tcga_read"],
-            "Modality": ["CT", "MR"],
-            "race": ["WHITE"]
-        }}
+    filters = {
+        "collection_id": ["tcga_read"],
+        "Modality": ["CT", "MR"],
+        "race": ["WHITE"]
+    }
 
     cohortSpec = {"name": "testcohort",
                   "description": "Test description",
-                  "filterSet": filterSet}
+                  "filters": filters}
 
     queryFields = {"fields": ['StudyInstanceUID', 'SeriesInstanceUID', 'SOPInstanceUID', 'Modality']}
 
@@ -113,7 +109,7 @@ def test_basic2(client, app):
     cohort_def = info['cohort_def']
     assert cohort_def['name'] == cohortSpec['name']
     assert cohort_def['description'] == cohortSpec['description']
-    assert cohort_def['filterSet']['filters'] == cohortSpec['filterSet']['filters']
+    assert cohort_def['filterSet']['filters'] == cohortSpec['filters']
 
     assert response.json['query_results']['rowsReturned'] == 1638
     assert response.json['query_results']['totalFound'] == 1638
@@ -130,17 +126,15 @@ def test_basic2(client, app):
 
 def test_paged(client, app):
 
-    filterSet = {
-        "idc_data_version": "",
-        "filters": {
-            "collection_id": ["tcga_read"],
-            "Modality": ["CT", "MR"],
-            "race": ["WHITE"]
-        }}
+    filters = {
+        "collection_id": ["tcga_read"],
+        "Modality": ["CT", "MR"],
+        "race": ["WHITE"]
+    }
 
     cohortSpec = {"name": "testcohort",
                   "description": "Test description",
-                  "filterSet": filterSet}
+                  "filters": filters}
 
     queryFields = {"fields": ['StudyInstanceUID', 'SeriesInstanceUID', 'SOPInstanceUID', 'Modality']}
 
@@ -169,7 +163,7 @@ def test_paged(client, app):
     cohort_def = info['cohort_def']
     assert cohort_def['name'] == cohortSpec['name']
     assert cohort_def['description'] == cohortSpec['description']
-    assert cohort_def['filterSet']['filters'] == cohortSpec['filterSet']['filters']
+    assert cohort_def['filterSet']['filters'] == cohortSpec['filters']
 
     totalRowsReturned = response.json['query_results']['rowsReturned']
     assert response.json['query_results']['totalFound'] == 1638

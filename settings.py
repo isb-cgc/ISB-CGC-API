@@ -16,10 +16,7 @@ limitations under the License.
 
 import os
 from os.path import join, dirname, exists
-import sys
-from pathlib import Path
 from dotenv import load_dotenv
-from socket import gethostname, gethostbyname
 
 
 SECURE_LOCAL_PATH = os.environ.get('SECURE_LOCAL_PATH', '')
@@ -49,8 +46,10 @@ print("[STATUS] DEBUG mode is "+str(DEBUG))
 
 LOGGER_NAME = os.environ.get('API_LOGGER_NAME', 'main_logger')
 
-BASE_URL                = os.environ.get('BASE_URL', 'https://idc-dev.appspot.com')
-BASE_API_URL            = os.environ.get('BASE_API_URL', 'https://api-dot-idc-dev.appspot.com')
+# BASE_URL                = os.environ.get('BASE_URL', 'https://idc-dev.appspot.com')
+# BASE_API_URL            = os.environ.get('BASE_API_URL', 'https://api-dot-idc-dev.appspot.com')
+BASE_URL                = os.environ.get('BASE_URL', 'https://dev-portal.canceridc.dev')
+BASE_API_URL            = os.environ.get('BASE_API_URL', 'https://dev-portal.canceridc.dev')
 
 # Make this unique, and don't share it with anybody.
 SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', '')

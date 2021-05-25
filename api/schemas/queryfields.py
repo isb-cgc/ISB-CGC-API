@@ -48,7 +48,9 @@ QUERY_FIELDS={
           "Margin",
           "Texture",
           "Subtlety",
-          "Malignancy"
+          "Malignancy",
+          "Apparent_Diffusion_Coefficient",
+          "tcia_species"
         ]
       }
     }

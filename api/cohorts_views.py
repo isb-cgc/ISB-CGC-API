@@ -25,8 +25,8 @@ from werkzeug.exceptions import BadRequest
 from python_settings import settings
 
 from jsonschema import validate as schema_validate, ValidationError
-from . schemas.filterset import COHORT_FILTER_SCHEMA
-from . cohort_utils import submit_BQ_job, get_cohort, get_cohort_job_results, get_manifest, encrypt_pageToken, decrypt_pageToken
+from . schemas.filters import COHORT_FILTERS_SCHEMA
+from . cohort_utils import get_manifest
 from .auth import get_auth
 
 BLACKLIST_RE = settings.BLACKLIST_RE
@@ -57,12 +57,12 @@ def create_cohort(user):
 
     try:
         request_data = request.get_json()
-        if 'filterSet' not in request_data:
+        if 'filters' not in request_data:
             return dict(
-                message = 'No filters were provided; ensure that the request body contains a \'filterSet\' property.',
+                message = 'No filters were provided; ensure that the request body contains a \'filters\' property.',
                 code = 400)
 
-        schema_validate(request_data['filterSet'], COHORT_FILTER_SCHEMA)
+        schema_validate(request_data['filters'], COHORT_FILTERS_SCHEMA)
 
         if 'name' not in request_data:
             return dict(
@@ -109,66 +109,66 @@ def create_cohort(user):
 
     return cohort_info
 
+## Deprecated
+# def get_cohort_objects(user, cohort_id):
+#     cohort_objects = get_cohort(request,
+#                                  func=requests.get,
+#                                  url="{}/cohorts/api/{}/".format(settings.BASE_URL, cohort_id),
+#                                  user=user)
+#
+#     return cohort_objects
 
-def get_cohort_objects(user, cohort_id):
-    cohort_objects = get_cohort(request,
-                                 func=requests.get,
-                                 url="{}/cohorts/api/{}/".format(settings.BASE_URL, cohort_id),
-                                 user=user)
-
-    return cohort_objects
-
-
-def post_cohort_preview():
-    try:
-        request_data = request.get_json()
-
-        if 'filterSet' not in request_data:
-            return dict(
-                message = 'No filters were provided; ensure that the request body contains a \'filterSet\' property.',
-                code = 400)
-
-        schema_validate(request_data['filterSet'], COHORT_FILTER_SCHEMA)
-
-        if 'name' not in request_data:
-            return dict(
-                message = 'A name was not provided for this cohort. The cohort was not made.',
-                code = 400
-            )
-
-        blacklist = re.compile(BLACKLIST_RE, re.UNICODE)
-        match = blacklist.search(str(request_data['name']))
-
-        if not match and 'description' in request_data:
-            match = blacklist.search(str(request_data['description']))
-
-        if match:
-            return dict(
-                message = "Your cohort's name or description contains invalid characters; " +
-                            "please edit them and resubmit. [Saw {}]".format(str(match)),
-                code = 400
-            )
-
-        data = {"request_data": request_data}
-
-        cohort_objects = get_cohort(request,
-                             func=requests.post,
-                             url="{}/cohorts/api/preview/".format(settings.BASE_URL),
-                             data=data)
-
-    except BadRequest as e:
-        logger.warning("[WARNING] Received bad request - couldn't load JSON.")
-        cohort_objects = dict(
-            message='The JSON provided in this request appears to be improperly formatted.',
-            code = 400)
-
-    except ValidationError as e:
-        logger.warning('[WARNING] Filters rejected for improper formatting: {}'.format(e))
-        cohort_objects = dict(
-            message= 'Filters were improperly formatted.',
-            code = 400)
-
-    return cohort_objects
+# Deprecated
+# def post_cohort_preview():
+#     try:
+#         request_data = request.get_json()
+#
+#         if 'filterSet' not in request_data:
+#             return dict(
+#                 message = 'No filters were provided; ensure that the request body contains a \'filterSet\' property.',
+#                 code = 400)
+#
+#         schema_validate(request_data['filterSet'], COHORT_FILTER_SCHEMA)
+#
+#         if 'name' not in request_data:
+#             return dict(
+#                 message = 'A name was not provided for this cohort. The cohort was not made.',
+#                 code = 400
+#             )
+#
+#         blacklist = re.compile(BLACKLIST_RE, re.UNICODE)
+#         match = blacklist.search(str(request_data['name']))
+#
+#         if not match and 'description' in request_data:
+#             match = blacklist.search(str(request_data['description']))
+#
+#         if match:
+#             return dict(
+#                 message = "Your cohort's name or description contains invalid characters; " +
+#                             "please edit them and resubmit. [Saw {}]".format(str(match)),
+#                 code = 400
+#             )
+#
+#         data = {"request_data": request_data}
+#
+#         cohort_objects = get_cohort(request,
+#                              func=requests.post,
+#                              url="{}/cohorts/api/preview/".format(settings.BASE_URL),
+#                              data=data)
+#
+#     except BadRequest as e:
+#         logger.warning("[WARNING] Received bad request - couldn't load JSON.")
+#         cohort_objects = dict(
+#             message='The JSON provided in this request appears to be improperly formatted.',
+#             code = 400)
+#
+#     except ValidationError as e:
+#         logger.warning('[WARNING] Filters rejected for improper formatting: {}'.format(e))
+#         cohort_objects = dict(
+#             message= 'Filters were improperly formatted.',
+#             code = 400)
+#
+#     return cohort_objects
 
 
 def get_cohort_manifest(user, cohort_id):
@@ -184,12 +184,12 @@ def get_cohort_preview_manifest():
     try:
         request_data = request.get_json()
 
-        if 'filterSet' not in request_data:
+        if 'filters' not in request_data:
             return dict(
-                message = 'No filters were provided; ensure that the request body contains a \'filterSet\' property.',
+                message = 'No filters were provided; ensure that the request body contains a \'filters\' property.',
                 code = 400)
 
-        schema_validate(request_data['filterSet'], COHORT_FILTER_SCHEMA)
+        schema_validate(request_data['filters'], COHORT_FILTERS_SCHEMA)
 
         if 'name' not in request_data:
             return dict(

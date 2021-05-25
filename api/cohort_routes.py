@@ -15,8 +15,8 @@
 #
 import logging
 from flask import jsonify, request
-from . cohorts_views import create_cohort, get_cohort_objects, get_cohort_manifest, get_cohort_list, delete_cohort, \
-    delete_cohorts, post_cohort_preview, get_cohort_preview_manifest  # get_file_manifest
+from . cohorts_views import create_cohort, get_cohort_manifest, get_cohort_list, delete_cohort, \
+    delete_cohorts, get_cohort_preview_manifest  # get_file_manifest
 from . auth import auth_info, UserValidationException
 from python_settings import settings
 
@@ -108,48 +108,48 @@ def cohort(cohort_id):
             })
             response.status_code = 500
         else:
-            if request.method == 'GET':
-                results = get_cohort_objects(user_info["email"], cohort_id)
-                if results:
-                    if 'message' in results:
-                        response = jsonify({
-                            **results
-                        })
-                        response.status_code = results['code']
-                    else:
-                        code = 200
-                        response = jsonify({
-                            'code': code,
-                            **results
-                        })
-                        response.status_code = code
-                else:
-                    response = jsonify({
-                        'code': 404,
-                        'message': "Cohort ID {} was not found.".format(str(cohort_id))})
-                    response.status_code = 500
-            else:
-                results = delete_cohort(user_info["email"], cohort_id)
+            # if request.method == 'GET':
+            #     results = get_cohort_objects(user_info["email"], cohort_id)
+            #     if results:
+            #         if 'message' in results:
+            #             response = jsonify({
+            #                 **results
+            #             })
+            #             response.status_code = results['code']
+            #         else:
+            #             code = 200
+            #             response = jsonify({
+            #                 'code': code,
+            #                 **results
+            #             })
+            #             response.status_code = code
+            #     else:
+            #         response = jsonify({
+            #             'code': 404,
+            #             'message': "Cohort ID {} was not found.".format(str(cohort_id))})
+            #         response.status_code = 500
+            # else:
+            results = delete_cohort(user_info["email"], cohort_id)
 
-                if results:
-                    if 'message' in results:
-                        response = jsonify({
-                            **results
-                        })
-                        response.status_code = results['code']
-                    else:
-                        code = 200
-                        response = jsonify({
-                            'code': code,
-                            **results
-                        })
-                        response.status_code = code
-                else:
+            if results:
+                if 'message' in results:
                     response = jsonify({
-                        'code': 500,
-                        'message': "Error while attempting to retrieve the cohort info"
+                        **results
                     })
-                    response.status_code = 500
+                    response.status_code = results['code']
+                else:
+                    code = 200
+                    response = jsonify({
+                        'code': code,
+                        **results
+                    })
+                    response.status_code = code
+            else:
+                response = jsonify({
+                    'code': 500,
+                    'message': "Error while attempting to retrieve the cohort info"
+                })
+                response.status_code = 500
 
     except UserValidationException as e:
         response = jsonify({
