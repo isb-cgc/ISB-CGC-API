@@ -580,7 +580,7 @@ def validate_parameters(request, manifest_info, params, booleans, integers, user
 
     return manifest_info
 
-# Get a list of GCS URLs or CRDC DOIs of the instances in the cohort
+# Get a list of GCS URLs or CRDC GUIDs of the instances in the cohort
 def get_manifest_job_results(manifest_info, maxResults, jobReference, next_page):
 
     field_name_map = dict(
@@ -599,7 +599,6 @@ def get_manifest_job_results(manifest_info, maxResults, jobReference, next_page)
 
     # schema_names = ['guid' if field['name'] == 'crdc_instance_uuid' else 'url' if field['name'] == 'gcs_url' else field['name'] for field in results['schema']['fields']]
     schema_names = [field['name'] if field['name'] not in field_name_map.keys() else field_name_map[field['name']] for field in results['schema']['fields']]
-
     manifest_info["manifest"] = dict(
                 totalFound = int(results['totalFound']),
                 rowsReturned = len(results["current_page_rows"])

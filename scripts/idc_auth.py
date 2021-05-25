@@ -74,8 +74,8 @@ def get_credentials(storage=None, oauth_flow_args=[]):
     if storage is None:
         storage = Storage(DEFAULT_STORAGE_FILE)
     credentials = storage.get()
-    if not credentials or credentials.invalid:
-        maybe_print('credentials missing/invalid, kicking off OAuth flow')
+    if not credentials or credentials.invalid or credentials.access_token_expired:
+        maybe_print('credentials missing/invalid/exprired, kicking off OAuth flow')
         flow = OAuth2WebServerFlow(CLIENT_ID, CLIENT_SECRET, EMAIL_SCOPE)
         flow.auth_uri = flow.auth_uri.rstrip('/') + '?approval_prompt=force'
         credentials = tools.run_flow(flow, storage, tools.argparser.parse_args(oauth_flow_args))

@@ -43,7 +43,7 @@ def test_guid(client, app):
         'page_size': 2000,
     }
 
-    # Get a doi manifest of the cohort's instances
+    # Get a guid manifest of the cohort's instances
     response = client.post('v1/cohorts/preview/manifest',
                             query_string = query_string,
                             data = json.dumps(cohortSpec),
@@ -87,7 +87,7 @@ def test_url(client, app):
         'page_size': 2000,
     }
 
-    # Get a doi manifest of the cohort's instances
+    # Get a guid manifest of the cohort's instances
     response = client.post('v1/cohorts/preview/manifest',
                             query_string = query_string,
                             data = json.dumps(cohortSpec),
@@ -132,7 +132,7 @@ def test_SOPInstanceUID(client, app):
         'page_size': 2000,
     }
 
-    # Get a doi manifest of the cohort's instances
+    # Get a guid manifest of the cohort's instances
     response = client.post('v1/cohorts/preview/manifest',
                             query_string = query_string,
                             data = json.dumps(cohortSpec),
@@ -354,7 +354,7 @@ def test_paged_url(client, app):
 
 # This test submits an empty filter which means that all instances are returned.
 # Takes a lot of time and bandwidth. Uncomment to run
-# def test_paged_doi_all_instances(client, app):
+# def test_paged_guid_all_instances(client, app):
 #
 #     import time
 #
@@ -365,7 +365,7 @@ def test_paged_url(client, app):
 #         }
 #     }
 #     query_string = dict(
-#         access_method='doi',
+#         access_method='guid',
 #         page_size=40000000
 #     )
 #
