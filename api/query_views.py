@@ -155,7 +155,7 @@ def post_query_preview():
             return dict(
                 message = 'No cohort_def provided; ensure that the request body contains a \'cohort_dev\' component.',
                 code = 400)
-        if 'filterSet' not in request_data['cohort_def']:
+        if 'filters' not in request_data['cohort_def']:
             return dict(
                 message = 'No filters were provided; ensure that the cohort_def contains a \'filterSet\' component.',
                 code = 400)

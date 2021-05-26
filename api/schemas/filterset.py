@@ -3818,6 +3818,61 @@ COHORT_FILTER_SCHEMA={
             "type": "string"
           },
           "minItems": 1
+        },
+        "Apparent_Diffusion_Coefficient": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          },
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "Apparent_Diffusion_Coefficient_lt": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          },
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "Apparent_Diffusion_Coefficient_lte": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          },
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "Apparent_Diffusion_Coefficient_btw": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          },
+          "minItems": 2,
+          "maxItems": 2
+        },
+        "Apparent_Diffusion_Coefficient_gte": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          },
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "Apparent_Diffusion_Coefficient_gt": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          },
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "tcia_species": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1
         }
       },
       "additionalProperties": False

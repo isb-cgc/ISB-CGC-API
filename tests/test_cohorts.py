@@ -18,23 +18,21 @@ import json
 import re
 
 
-from .cohort_utils import pretty_print_cohortObjects, merge, create_cohort, create_cohort_for_test_get_cohort_xxx, create_big_cohort_for_test_get_cohort_xxx, delete_cohort
+from .cohort_utils import current_version, create_cohort, delete_cohort
 
 
 # Test filter schema validation
 def test_create_cohort_schema_validation(client, app):
     # Create an invalid filter set
-    filterSet = {
-        "idc_data_version": "1.0",
-        "filters": {
-            "collection_id": ["TCGA-LUAD", "TCGA-KIRC"],
-            # Undefined attribute
-            "Modalityx": ["CT", "MR"],
-            "race": ["WHITE"]}}
+    filters = {
+        "collection_id": ["tcga_luad", "tcga_kirc"],
+        # Undefined attribute
+        "Modalityx": ["CT", "MR"],
+        "race": ["WHITE"]}
 
     cohortSpec = {"name":"testcohort",
                   "description":"Test description",
-                  "filterSet":filterSet}
+                  "filters":filters}
 
     mimetype = ' application/json'
     headers = {
@@ -49,16 +47,37 @@ def test_create_cohort_schema_validation(client, app):
     assert cohortResponse['message']=='Cohort information was improperly formatted - cohort not created.'
 
     # Create an invalid filter set
-    filterSet = {
-        "idc_data_version": "1.0",
-        "filters": {
-            "collection_id": ["TCGA-LUAD", "TCGA-KIRC"],
-            "Modality": ["CT", "MR"],
-            "race": ["WHITE"]}}
+    filters = {
+        "collection_id": ["tcga_luad", "tcga_kirc"],
+        # Undefined attribute
+        "Modality": [],
+        "race": ["WHITE"]}
 
     cohortSpec = {"name":"testcohort",
                   "description":"Test description",
-                  "filterSet":filterSet}
+                  "filters":filters}
+
+    mimetype = ' application/json'
+    headers = {
+        'Content-Type': mimetype,
+        'Accept': mimetype,
+    }
+
+    response = client.post('/v1/cohorts', data=json.dumps(cohortSpec), headers=headers)
+    assert response.content_type == 'application/json'
+    assert response.status_code == 400
+    cohortResponse = response.json
+    assert cohortResponse['message']=='Cohort information was improperly formatted - cohort not created.'
+
+    # Create a valid filter set
+    filters = {
+        "collection_id": ["tcga_luad", "tcga_kirc"],
+        "Modality": ["CT", "MR"],
+        "race": ["WHITE"]}
+
+    cohortSpec = {"name":"testcohort",
+                  "description":"Test description",
+                  "filterSet":filters}
 
     mimetype = ' application/json'
     headers = {
@@ -77,19 +96,17 @@ def test_create_cohort_schema_validation(client, app):
     assert cohortResponse['message']=='The JSON provided in this request appears to be improperly formatted.'
 
 
-# Merge two sets of collection data.
+# Test basic cohort creation.
 def test_create_cohort(client, app):
     # Create a filter set
-    filterSet = {
-        "idc_data_version": "1.0",
-        "filters": {
-            "collection_id": ["TCGA-LUAD", "TCGA-KIRC"],
-            "Modality": ["CT", "MR"],
-            "race": ["WHITE"]}}
+    filters = {
+        "collection_id": ["tcga_luad", "tcga_kirc"],
+        "Modality": ["CT", "MR"],
+        "race": ["WHITE"]}
 
     cohortSpec = {"name":"testcohort",
                   "description":"Test description",
-                  "filterSet":filterSet}
+                  "filters":filters}
 
     mimetype = ' application/json'
     headers = {
@@ -105,13 +122,13 @@ def test_create_cohort(client, app):
     assert cohortResponse['name']=="testcohort"
     assert cohortResponse['description']=="Test description"
     # assert len(cohortResponse['filterSet']) == 1
-    assert cohortResponse["filterSet"]["idc_data_version"]=="1.0"
+    assert cohortResponse["filterSet"]["idc_data_version"]==current_version(client)
     assert 'race' in cohortResponse['filterSet']['filters'] and \
            cohortResponse['filterSet']['filters']['race'] == ['WHITE']
     assert 'Modality' in cohortResponse['filterSet']['filters'] and \
            cohortResponse['filterSet']['filters']['Modality'] == ['CT', 'MR']
     assert 'collection_id' in cohortResponse['filterSet']['filters'] and \
-           cohortResponse['filterSet']['filters']['collection_id'] == ['TCGA-LUAD', 'TCGA-KIRC']
+           cohortResponse['filterSet']['filters']['collection_id'] == ['tcga_luad', 'tcga_kirc']
 
     # Delete the cohort we just created
     delete_cohort(client, cohortResponse['cohort_id'])
@@ -210,36 +227,6 @@ def test_delete_cohorts(client, app):
     assert len([cohort for cohort in cohorts
                 if cohort['cohort_id']==int(cohort0) or cohort['cohort_id']==int(cohort1)]) == 0
 
-def test_delete_all_cohorts(client,app):
-    # Create a couple of cohortsw
-    create_cohort(client)
-    create_cohort(client)
 
-    # Get the list of cohorts
-    response = client.get("{}/".format('v1/cohorts'))
-    assert response.content_type == 'application/json'
-    assert response.status_code == 200
-    cohorts = response.json['cohorts']
-
-    cohortIDs = {"cohorts":[cohort['cohort_id'] for cohort in cohorts]}
-    mimetype = ' application/json'
-    headers = {
-        'Content-Type': mimetype,
-        'Accept': mimetype
-    }
-    response = client.delete('/v1/cohorts', data=json.dumps(cohortIDs), headers=headers)
-    assert response.status_code == 200
-    cohorts = response.json['cohorts']
-    for cohort in cohorts:
-        # assert cohort['result'] == "Cohort ID {} has been deleted.".format(str(cohort['cohort_id']))
-        assert re.sub(r'\(.*\) ',r'',cohort['result']['notes'])== \
-               "Cohort {} has been deleted.".format(str(cohort['cohort_id']))
-
-    # Get the list of cohorts
-    response = client.get("{}/".format('v1/cohorts'))
-    assert response.content_type == 'application/json'
-    assert response.status_code == 200
-    cohorts = response.json['cohorts']
-    assert len(cohorts) == 0
 
 
