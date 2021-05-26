@@ -85,7 +85,7 @@ def perform_query(request, func, url, data=None, user=None):
     jobReference = {}
     next_page = ""
 
-    access_methods = ["url", "doi"]
+    access_methods = ["url", "guid"]
 
     try:
         if 'next_page' in request.args and \
@@ -190,7 +190,7 @@ def perform_fixed_query(request, sql, user=None):
     jobReference = {}
     next_page = ""
 
-    access_methods = ["url", "doi"]
+    access_methods = ["url", "guid"]
 
     try:
         if 'next_page' in request.args and \

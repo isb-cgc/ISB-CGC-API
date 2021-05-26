@@ -71,7 +71,7 @@ def test_guid_active(client, app):
         'page_size': 2000
     }
 
-    # Get a doi manifest of the cohort's instances
+    # Get a guid manifest of the cohort's instances
     response = client.get("{}/{}/manifest/".format('v1/cohorts', id),
                 query_string = query_string)
     assert response.content_type == 'application/json'
@@ -142,7 +142,7 @@ def test_url_active(client, app):
         'page_size': 2000
     }
 
-    # Get a doi manifest of the cohort's instances
+    # Get a guid manifest of the cohort's instances
     response = client.get("{}/{}/manifest/".format('v1/cohorts', id),
                 query_string = query_string)
     assert response.content_type == 'application/json'
@@ -239,7 +239,7 @@ def test_all_active(client, app):
         GCS_URL = True,
         page_size = 2000
     )
-    # Get a doi manifest of the cohort's instances
+    # Get a guid manifest of the cohort's instances
     response = client.get("{}/{}/manifest/".format('v1/cohorts', id),
                 query_string = query_string)
     assert response.content_type == 'application/json'

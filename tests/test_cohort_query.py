@@ -59,7 +59,7 @@ def test_basic2(client, app):
 
     (id, filterSet) = create_cohort_for_test_get_cohort_xxx(client)
 
-    queryPreviewBody = {"fields": ['StudyInstanceUID', 'SeriesInstanceUID', 'SOPInstanceUID', 'Modality']}
+    queryPreviewBody = {"fields": ['StudyInstanceUID', 'SeriesInstanceUID', 'SOPInstanceUID', 'Modality', "BodyPartExamined", "Percent_Within_First_Quarter_of_Intensity_Range"]}
 
     mimetype = ' application/json'
     headers = {
@@ -68,7 +68,7 @@ def test_basic2(client, app):
     }
 
     query_string = {
-        'sql': False,
+        'sql': True,
         'page_size': 2000,
     }
 
@@ -88,7 +88,7 @@ def test_basic2(client, app):
 
     query_results = info['query_results']['json']
     assert len(query_results) ==  response.json['query_results']['rowsReturned']
-    assert {'Modality': 'CT', 'SOPInstanceUID': '1.3.6.1.4.1.14519.5.2.1.3671.4018.101814896314793708382026281597', \
+    assert {'Percent_Within_First_Quarter_of_Intensity_Range': None, 'BodyPartExamined':'RECTUM', 'Modality': 'CT', 'SOPInstanceUID': '1.3.6.1.4.1.14519.5.2.1.3671.4018.101814896314793708382026281597', \
             'SeriesInstanceUID': '1.3.6.1.4.1.14519.5.2.1.3671.4018.183714953600569164837490663631', \
             'StudyInstanceUID': '1.3.6.1.4.1.14519.5.2.1.3671.4018.768291480177931556369061239508'} \
         in query_results
