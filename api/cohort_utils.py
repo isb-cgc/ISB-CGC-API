@@ -63,9 +63,16 @@ def decrypt_pageToken(email, cipher_jobReference):
         logger.error("Could not decrypt token: {}".format(cipher_jobReference))
         return {}
 
+class BQS(BigQuerySupport):
+    @classmethod
+    def foo(cls):
+        bqs = cls(None, None, None)
+        print(f'***Executing project: {bqs.executing_project}***')
 
 def submit_BQ_job(sql_string, params):
+    r = BQS.foo()
     results = BigQuerySupport.execute_query_and_fetch_results(sql_string, params, no_results=True)
+    print(f'jobReference: {results["jobReference"]}')
     return results
 
 
