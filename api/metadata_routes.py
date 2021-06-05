@@ -205,8 +205,8 @@ def collections():
 
     return response
 
-@metadata_bp.route('/analysisResults/', methods=['GET'], strict_slashes=False)
-def analysisResults():
+@metadata_bp.route('/analysis_results/', methods=['GET'], strict_slashes=False)
+def analysis_results():
     """Retrieve the list of analysis results in some IDC versions """
     response = None
 
