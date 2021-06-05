@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -x
+#set -x
 
 DATE=$(date '+%Y%m%d_%H%M%S')
 
