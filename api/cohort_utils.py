@@ -380,7 +380,7 @@ def get_manifest(request, func, url, data=None, user=None):
 
         if next_page:
             cipher_pageToken = encrypt_pageToken(user, jobReference,
-                                                 next_page)
+                                                 next_page).decode()
         else:
             cipher_pageToken = ""
         manifest_info['next_page'] = cipher_pageToken
