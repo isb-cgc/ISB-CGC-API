@@ -46,7 +46,7 @@ def encrypt_pageToken(email, jobReference, next_page):
     )
     plain_jobDescription = json.dumps(jobDescription).encode()
 
-    cipher_jobReference = cipher_suite.encrypt(plain_jobDescription)
+    cipher_jobReference = cipher_suite.encrypt(plain_jobDescription).decode()
 
     return cipher_jobReference
 
@@ -380,7 +380,7 @@ def get_manifest(request, func, url, data=None, user=None):
 
         if next_page:
             cipher_pageToken = encrypt_pageToken(user, jobReference,
-                                                 next_page).decode()
+                                                 next_page)
         else:
             cipher_pageToken = ""
         manifest_info['next_page'] = cipher_pageToken
