@@ -285,8 +285,7 @@ def cohort_preview_manifest():
                     response.status_code = 500
             else:
                 code = 200
-                logger.debug("L:cohort_preview_manifest, result %s", result)
-                print("P:cohort_preview_manifest, result %s", result)
+                logger.debug("cohort_preview_manifest, result %s", result)
                 response = jsonify({
                     'code': code,
                     **result
