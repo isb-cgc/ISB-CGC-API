@@ -347,16 +347,14 @@ def get_manifest(request, func, url, data=None, user=None):
             job_status = submit_BQ_job(manifest_info['query']['sql_string'],
                                         manifest_info['query']['params'])
 
-            logger.debug("L:get_manifest, job_status %s", job_status)
-            print("P:get_manifest, job_status %s", job_status)
+            logger.debug("get_manifest, job_status %s", job_status)
 
             jobReference = job_status['jobReference']
 
             # Decide how to proceed depending on job status (DONE, RUNNING, ERRORS)
             manifest_info = is_job_done(job_status, manifest_info, jobReference, user)
 
-            logger.debug("L:get_manifest, manifest_info %s", manifest_info)
-            print("P:get_manifest, manifest_info %s", manifest_info)
+            logger.debug("get_manifest, manifest_info %s", manifest_info)
 
             if "message" in manifest_info:
                 return manifest_info
@@ -375,8 +373,7 @@ def get_manifest(request, func, url, data=None, user=None):
                                                             jobReference,
                                                             next_page)
 
-        logger.debug("L:get_manifest, manifest_info %s", manifest_info)
-        print("P:get_manifest, manifest_info %s", manifest_info)
+        logger.debug("get_manifest, manifest_info %s", manifest_info)
 
         if next_page:
             cipher_pageToken = encrypt_pageToken(user, jobReference,
