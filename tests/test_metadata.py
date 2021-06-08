@@ -126,7 +126,7 @@ def test_analysis_results_v1(client, app):
         idc_data_version = "1.0"
     )
 
-    response = client.get('/v1/analysisResults',
+    response = client.get('/v1/analysis_results',
                           query_string = query_string)
     assert response.status_code == 200
     data = response.json['analysisResults']
@@ -152,7 +152,7 @@ def test_analysis_results_v2(client, app):
         idc_data_version = "2.0"
     )
 
-    response = client.get('/v1/analysisResults',
+    response = client.get('/v1/analysis_results',
                           query_string = query_string)
     assert response.status_code == 200
     data = response.json['analysisResults']
@@ -173,7 +173,7 @@ def test_analysis_results_v2(client, app):
 
     query_string = dict()
 
-    response = client.get('/v1/analysisResults',
+    response = client.get('/v1/analysis_results',
                           query_string = query_string)
     assert response.status_code == 200
     data = response.json['analysisResults']

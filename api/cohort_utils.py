@@ -26,6 +26,10 @@ from cryptography.fernet import Fernet, InvalidToken
 import settings
 from google_helpers.bigquery.bq_support import BigQuerySupport
 
+logger = logging.getLogger(settings.LOGGER_NAME)
+logger.setLevel(settings.LOG_LEVEL)
+
+
 CRDC_GUID_PREFIX='dg.4DFC'
 
 logger = logging.getLogger('main_logger')
@@ -42,7 +46,7 @@ def encrypt_pageToken(email, jobReference, next_page):
     )
     plain_jobDescription = json.dumps(jobDescription).encode()
 
-    cipher_jobReference = cipher_suite.encrypt(plain_jobDescription)
+    cipher_jobReference = cipher_suite.encrypt(plain_jobDescription).decode()
 
     return cipher_jobReference
 
@@ -63,16 +67,10 @@ def decrypt_pageToken(email, cipher_jobReference):
         logger.error("Could not decrypt token: {}".format(cipher_jobReference))
         return {}
 
-class BQS(BigQuerySupport):
-    @classmethod
-    def foo(cls):
-        bqs = cls(None, None, None)
-        print(f'***Executing project: {bqs.executing_project}***')
 
 def submit_BQ_job(sql_string, params):
-    r = BQS.foo()
     results = BigQuerySupport.execute_query_and_fetch_results(sql_string, params, no_results=True)
-    print(f'jobReference: {results["jobReference"]}')
+    logger.debug("submit_BQ_job() results: %s", results)
     return results
 
 
@@ -349,10 +347,15 @@ def get_manifest(request, func, url, data=None, user=None):
             job_status = submit_BQ_job(manifest_info['query']['sql_string'],
                                         manifest_info['query']['params'])
 
+            logger.debug("get_manifest, job_status %s", job_status)
+
             jobReference = job_status['jobReference']
 
             # Decide how to proceed depending on job status (DONE, RUNNING, ERRORS)
             manifest_info = is_job_done(job_status, manifest_info, jobReference, user)
+
+            logger.debug("get_manifest, manifest_info %s", manifest_info)
+
             if "message" in manifest_info:
                 return manifest_info
 
@@ -369,6 +372,9 @@ def get_manifest(request, func, url, data=None, user=None):
                                                             local_params['page_size'],
                                                             jobReference,
                                                             next_page)
+
+        logger.debug("get_manifest, manifest_info %s", manifest_info)
+
         if next_page:
             cipher_pageToken = encrypt_pageToken(user, jobReference,
                                                  next_page)

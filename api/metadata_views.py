@@ -57,6 +57,8 @@ def get_versions():
         logger.error("[ERROR] No content in response from web app")
         logger.error("[ERROR] status_code: {}".format(response.status_code))
         logger.exception(e)
+        logger.error("[ERROR] Response dictionary: %s", response.__dict__)
+
         return dict(
             message="Encountered an error while retrieving the versions list.",
             code=response.status_code
