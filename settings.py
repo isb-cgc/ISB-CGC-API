@@ -17,7 +17,7 @@ limitations under the License.
 import os
 from os.path import join, dirname, exists
 from dotenv import load_dotenv
-
+import logging
 
 SECURE_LOCAL_PATH = os.environ.get('SECURE_LOCAL_PATH', '')
 
@@ -45,6 +45,7 @@ DEBUG_API_EMAIL            = os.getenv('DEBUG_API_EMAIL','')
 print("[STATUS] DEBUG mode is "+str(DEBUG))
 
 LOGGER_NAME = os.environ.get('API_LOGGER_NAME', 'main_logger')
+LOG_LEVEL                  = logging.DEBUG if DEBUG else logging.INFO
 
 # BASE_URL                = os.environ.get('BASE_URL', 'https://idc-dev.appspot.com')
 # BASE_API_URL            = os.environ.get('BASE_API_URL', 'https://api-dot-idc-dev.appspot.com')

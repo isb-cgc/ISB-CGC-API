@@ -41,7 +41,7 @@ def encrypt_pageToken(email, jobReference, next_page):
     )
     plain_jobDescription = json.dumps(jobDescription).encode()
 
-    cipher_jobReference = cipher_suite.encrypt(plain_jobDescription)
+    cipher_jobReference = cipher_suite.encrypt(plain_jobDescription).decode()
 
     return cipher_jobReference
 

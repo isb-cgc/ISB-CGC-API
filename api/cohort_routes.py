@@ -21,6 +21,7 @@ from . auth import auth_info, UserValidationException
 from python_settings import settings
 
 logger = logging.getLogger(settings.LOGGER_NAME)
+logger.setLevel(settings.LOG_LEVEL)
 
 from flask import Blueprint
 
@@ -284,6 +285,7 @@ def cohort_preview_manifest():
                     response.status_code = 500
             else:
                 code = 200
+                logger.debug("cohort_preview_manifest, result %s", result)
                 response = jsonify({
                     'code': code,
                     **result
@@ -296,7 +298,7 @@ def cohort_preview_manifest():
             response.status_code = 500
 
     except Exception as e:
-        logger.exception(e)
+        logger.exception("cohort_preview_manifest: %s", e)
         response = jsonify({
             'code': 500,
             'message': 'Encountered an error while attempting to retrieve this cohort\'s manifest.'
