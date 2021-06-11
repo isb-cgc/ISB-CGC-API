@@ -84,9 +84,13 @@ def get_credentials(storage=None, oauth_flow_args=[]):
 
 def main():
     global VERBOSE
+    global CLIENT_ID
+    global CLIENT_SECRET
     args = parse_args()
     oauth_flow_args = [args.noauth_local_webserver] if args.noauth_local_webserver else []
     VERBOSE = args.verbose
+    CLIENT_ID = args.client_id
+    CLIENT_SECRET = args.client_secret
     maybe_print('--verbose: printing extra information')
     storage = Storage(args.storage_file)
     credentials = get_credentials(storage, oauth_flow_args)
@@ -100,6 +104,8 @@ def parse_args():
     parser.add_argument('--verbose', '-v', dest='verbose', action='store_true', help='display credentials storage location, access token, and refresh token')
     parser.set_defaults(verbose=False)
     parser.add_argument('--noauth_local_webserver','-u', action='store_const', const='--noauth_local_webserver')
+    parser.add_argument('--client_id', default=CLIENT_ID)
+    parser.add_argument('--client_secret', default=CLIENT_SECRET)
     return parser.parse_args()
 
 if __name__ == '__main__':
