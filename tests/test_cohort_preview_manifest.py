@@ -22,7 +22,7 @@ from tests.cohort_utils import merge, pretty_print_cohortObjects, create_cohort_
 def test_guid(client, app):
 
     filters = {
-        "collection_id": ["tcga_read"],
+        "collection_id": ["TCGA-READ"],
         "Modality": ["CT", "MR"],
         "race": ["WHITE"],
     }
