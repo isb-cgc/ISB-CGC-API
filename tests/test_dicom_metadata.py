@@ -27,7 +27,7 @@ def test_query_metadata(client, app):
     }
 
     query_string = {
-        'page_size': 10000
+        'page_size': 5000
     }
 
     response = client.get('v1/dicomMetadata',
@@ -46,7 +46,7 @@ def test_query_metadata(client, app):
     while next_page and totalRowsReturned < 50000:
         query_string = {
             'next_page': next_page,
-            'page_size': 10000
+            'page_size': 5000
         }
 
         # Get the list of objects in the cohort
