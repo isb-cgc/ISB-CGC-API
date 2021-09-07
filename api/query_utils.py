@@ -68,7 +68,7 @@ def submit_BQ_job(sql_string, params):
     return results
 
 def perform_query(request, func, url, data=None, user=None):
-    query_info = None
+    query_info = {}
 
     path_params = {
         "sql": False,
@@ -111,7 +111,7 @@ def perform_query(request, func, url, data=None, user=None):
                 if "message" in query_info:
                     return query_info
             query_info = dict(
-                cohort = {},
+                # cohort = {},
             )
         else:
             # Validate most params only on initial request; ignore on next_page requests
@@ -237,7 +237,9 @@ def perform_fixed_query(request, sql, user=None):
 
             # Decide how to proceed depending on job status (DONE, RUNNING, ERRORS)
             query_info = is_job_done(job_status, query_info, jobReference, user)
+
             if "message" in query_info:
+                # The job did not complete in time, or there was some other issue.
                 return query_info
 
 

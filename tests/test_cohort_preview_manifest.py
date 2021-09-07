@@ -16,7 +16,8 @@
 
 import logging
 import json
-
+from python_settings import settings
+settings.BQ_MAX_ATTEMPTS=25
 from tests.cohort_utils import merge, pretty_print_cohortObjects, create_cohort_for_test_get_cohort_xxx, delete_cohort
 
 def test_guid(client, app):
@@ -39,6 +40,8 @@ def test_guid(client, app):
 
     query_string = {
         'sql': False,
+        'CRDC_Study_GUID': True,
+        'CRDC_Series_GUID':True,
         'CRDC_Instance_GUID': True,
         'page_size': 2000,
     }
@@ -354,75 +357,94 @@ def test_paged_url(client, app):
 
 # This test submits an empty filter which means that all instances are returned.
 # Takes a lot of time and bandwidth. Uncomment to run
-# def test_paged_guid_all_instances(client, app):
-#
-#     import time
-#
-#     cohortSpec = {
-#         "name": "mycohort",
-#         "description": "Example description",
-#         "filters": {}
-#         }
-#     }
-#     query_string = dict(
-#         access_method='guid',
-#         page_size=40000000
-#     )
-#
-#     mimetype = ' application/json'
-#     headers = {
-#         'Content-Type': mimetype,
-#         'Accept': mimetype
-#     }
-#
-#     start = time.time()
-#
-#     response = client.post('v1/cohorts/preview/manifest',
-#                            query_string=query_string,
-#                            data=json.dumps(cohortSpec),
-#                            headers=headers)
-#
-#     elapsed = time.time()-start
-#     totalTime = elapsed
-#
-#     # Check that there wasn't an error with the request
-#     if response.status_code != 200:
-#         # Print the error code and message if something went wrong
-#         print(response.json())
-#
-#     # print(json.dumps(response.json(), sort_keys=True, indent=4))
-#
-#     totalRows = response.json['manifest']['rowsReturned']
-#     totalBytes = len(json.dumps(response.json))
-#     next_page = response.json['next_page']
-#     print('totalRows: {}, totalBytes: {}, next_page: {}, time: {}, rate: {}'.format(
-#         totalRows, totalBytes, next_page[:16], elapsed, len(json.dumps(response.json))/elapsed
-#     ))
-#
-#     while next_page:
-#         query_string['next_page'] = response.json['next_page']
-#
-#         start = time.time()
-#         response = client.post('v1/cohorts/preview/manifest',
-#                                query_string=query_string,
-#                                data=json.dumps(cohortSpec),
-#                                headers=headers)
-#
-#         elapsed = time.time() - start
-#         totalTime += elapsed
-#
-#         # Check that there wasn't an error with the request
-#         if response.status_code != 200:
-#             # Print the error code and message if something went wrong
-#             print(response.json)
-#             break
-#
-#         totalRows += response.json['manifest']['rowsReturned']
-#         totalBytes += len(json.dumps(response.json))
-#         next_page = response.json['next_page']
-#
-#         print('totalRows: {}, totalBytes: {}, next_page: {}, time: {}, rate: {}'.format(
-#             totalRows, totalBytes, next_page[:16], elapsed, len(json.dumps(response.json)) / elapsed
-#         ))
-#
-#     print('Total time: {}, rate: {}'.format(totalTime, totalBytes/totalTime))
+# To test timeout handling, you may need toset BQ_MAX_ATTEMPTS=0
+def test_paged_guid_all_instances(client, app):
+
+    import time
+
+    cohortSpec = {
+        "name": "mycohort",
+        "description": "Example description",
+        "filters": {}
+        }
+    query_string = dict(
+        GCS_URL = True,
+        Source_DOI = True,
+        SOPInstanceUID = True,
+        SeriesInstanceUID = True,
+        StudyInstanceUID = True,
+        CRDC_Study_GUID = True,
+        CRDC_Series_GUID = True,
+        CRDC_Instance_GUID = True,
+        page_size=40000000
+    )
+
+    mimetype = ' application/json'
+    headers = {
+        'Content-Type': mimetype,
+        'Accept': mimetype
+    }
+
+    start = time.time()
+
+    response = client.post('v1/cohorts/preview/manifest',
+                           query_string=query_string,
+                           data=json.dumps(cohortSpec),
+                           headers=headers)
+
+    elapsed = time.time()-start
+    totalTime = elapsed
+
+    while response.status_code == 202:
+        query_string = dict(
+            next_page=response.json['next_page'],
+            page_size=40000000
+
+        )
+
+        response = client.post('v1/cohorts/preview/manifest',
+                           query_string=query_string,
+                           data=json.dumps(cohortSpec),
+                           headers=headers)
+
+    # Check that there wasn't an error with the request
+    if response.status_code != 200:
+        # Print the error code and message if something went wrong
+        print(response.json())
+
+    # print(json.dumps(response.json(), sort_keys=True, indent=4))
+
+    totalRows = response.json['manifest']['rowsReturned']
+    totalBytes = len(json.dumps(response.json))
+    next_page = response.json['next_page']
+    print('totalRows: {}, totalBytes: {}, next_page: {}, time: {}, rate: {}'.format(
+        totalRows, totalBytes, next_page[:16], elapsed, len(json.dumps(response.json))/elapsed
+    ))
+
+    while next_page:
+        query_string['next_page'] = response.json['next_page']
+
+        start = time.time()
+        response = client.post('v1/cohorts/preview/manifest',
+                               query_string=query_string,
+                               data=json.dumps(cohortSpec),
+                               headers=headers)
+
+        elapsed = time.time() - start
+        totalTime += elapsed
+
+        # Check that there wasn't an error with the request
+        if response.status_code != 200:
+            # Print the error code and message if something went wrong
+            print(response.json)
+            break
+
+        totalRows += response.json['manifest']['rowsReturned']
+        totalBytes += len(json.dumps(response.json))
+        next_page = response.json['next_page']
+
+        print('totalRows: {}, totalBytes: {}, next_page: {}, time: {}, rate: {}'.format(
+            totalRows, totalBytes, next_page[:16], elapsed, len(json.dumps(response.json)) / elapsed
+        ))
+
+    print('Total time: {}, rate: {}'.format(totalTime, totalBytes/totalTime))
