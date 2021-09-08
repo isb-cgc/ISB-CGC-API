@@ -40,7 +40,8 @@ def get_versions():
     # try:
     auth = get_auth()
     logger.debug("BASE_URL={}".format(settings.BASE_URL))
-    response = requests.get("{}/{}".format(settings.BASE_URL, 'collections/api/versions/'), headers=auth)
+    # response = requests.get("{}/{}".format(settings.BASE_URL, 'collections/api/versions/'), headers=auth)
+    response = requests.get("{}/{}".format(settings.BASE_URL, 'about/'))
     try:
         if response.status_code != 200:
             logger.error("[ERROR] Error code in response from web app: {}".format(response.status_code))
