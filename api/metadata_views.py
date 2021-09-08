@@ -44,6 +44,7 @@ def get_versions():
     try:
         if response.status_code != 200:
             logger.error("[ERROR] Error code in response from web app: {}".format(response.status_code))
+            logger.error("[ERROR] Request: {}".format(settings.BASE_URL, 'collections/api/versions/'))
             logger.error("[ERROR] auth: {}".format(auth))
             logger.error("[ERROR] Request headers: {}".format(response.request.headers))
             logger.error("[ERROR] Content: {}".format(response.content))
