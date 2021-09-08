@@ -130,7 +130,7 @@ def get_manifest(request, func, url, data=None, user=None):
                 if "message" in manifest_info:
                     return manifest_info
             manifest_info = dict(
-                # cohort = {},
+                cohort = {},
             )
         else:
             # Validate most params only on initial request; ignore on next_page requests

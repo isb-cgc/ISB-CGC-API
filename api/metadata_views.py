@@ -42,7 +42,6 @@ def get_versions():
     logger.debug("BASE_URL={}".format(settings.BASE_URL))
     response = requests.get("{}/{}".format(settings.BASE_URL, 'collections/api/versions/'), headers=auth)
     try:
-        info = response.json()
         if response.status_code != 200:
             logger.error("[ERROR] Error code in response from web app: {}".format(response.status_code))
             logger.error("[ERROR] auth: {}".format(auth))
@@ -52,6 +51,7 @@ def get_versions():
                 message="Encountered an error while retrieving the versions list: {}".format(response.content),
                 code=response.status_code
             )
+        info = response.json()
 
     except Exception as e:
         logger.error("[ERROR] No content in response from web app")
