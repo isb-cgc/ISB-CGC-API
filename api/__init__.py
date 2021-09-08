@@ -77,6 +77,12 @@ def create_app(test_config=None):
     from user_routes import *'''
 
     logger = logging.getLogger(settings.LOGGER_NAME)
+    logger.setLevel(settings.LOG_LEVEL)
+    ch = logging.StreamHandler()
+    ch.setLevel(logging.DEBUG)
+    formatter = logging.Formatter('%(name)s:%(levelname)s [%(filename)s:%(funcName)s:%(lineno)s] %(message)s')
+    ch.setFormatter(formatter)
+    logger.addHandler(ch)
 
     from . query_routes import cohort_query_bp
     app.register_blueprint(query_routes.cohort_query_bp)
