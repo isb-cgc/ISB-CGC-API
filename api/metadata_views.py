@@ -22,6 +22,7 @@ from os.path import join, dirname
 import requests
 
 from flask import request
+from api.auth import get_auth
 
 from python_settings import settings
 
@@ -29,10 +30,10 @@ logger = logging.getLogger(settings.LOGGER_NAME)
 
 BLACKLIST_RE = settings.BLACKLIST_RE
 
-def get_auth():
-    auth = {"Authorization": "APIToken {}".format(settings.API_AUTH_TOKEN)}
-    return auth
-
+# def get_auth():
+#     auth = {"Authorization": "APIToken {}".format(settings.API_AUTH_TOKEN)}
+#     return auth
+#
 
 def get_versions():
     info = None
@@ -40,8 +41,9 @@ def get_versions():
     # try:
     auth = get_auth()
     logger.debug("BASE_URL={}".format(settings.BASE_URL))
-    # response = requests.get("{}/{}".format(settings.BASE_URL, 'collections/api/versions/'), headers=auth)
-    response = requests.get("{}/{}".format(settings.BASE_URL, 'about/'))
+    response = requests.get("{}/{}".format(settings.BASE_URL, 'collections/api/versions/'), headers=auth)
+    # response = requests.get("{}/{}".format('https://dev-portal.canceridc.dev', 'collections/api/versions/'), headers=auth)
+    # response = requests.get("{}/{}".format(settings.BASE_URL, 'about/'))
     try:
         if response.status_code != 200:
             logger.error("[ERROR] Error code in response from web app: {}".format(response.status_code))

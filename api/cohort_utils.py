@@ -20,7 +20,7 @@ import re
 import json
 import requests
 
-from .auth import get_auth
+from api.auth import get_auth
 from cryptography.fernet import Fernet, InvalidToken
 
 import settings

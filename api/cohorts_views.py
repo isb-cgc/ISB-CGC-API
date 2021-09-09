@@ -27,7 +27,7 @@ from python_settings import settings
 from jsonschema import validate as schema_validate, ValidationError
 from . schemas.filters import COHORT_FILTERS_SCHEMA
 from . cohort_utils import get_manifest
-from .auth import get_auth
+from api.auth import get_auth
 
 BLACKLIST_RE = settings.BLACKLIST_RE
 

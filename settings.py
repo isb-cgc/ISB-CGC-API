@@ -68,6 +68,7 @@ try:
         API_AUTH_TOKEN = filehandle.read()
 except Exception:
     print("[ERROR] Failed to load API auth token - authorized endpoints may fail!")
+API_AUTH_HEADER = os.environ.get('API_AUTH_HEADER')
 API_VERSION = 'v1'
 
 ##############################################################
