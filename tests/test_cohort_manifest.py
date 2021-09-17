@@ -63,7 +63,6 @@ def test_guid_v1(client, app):
 
 
 def test_guid_active(client, app):
-
     (id, filterSet) = create_cohort_for_test_get_cohort_xxx(client)
 
     query_string = {

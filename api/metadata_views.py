@@ -69,7 +69,7 @@ def get_attributes():
     info = None
 
     path_params = {
-        "idc_data_version": "",
+        # "idc_data_version": "",
         "data_source": ""
     }
 
