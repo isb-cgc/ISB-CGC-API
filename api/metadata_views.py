@@ -17,8 +17,7 @@
 
 import logging
 import re
-import os
-from os.path import join, dirname
+
 import requests
 
 from flask import request
@@ -30,20 +29,14 @@ logger = logging.getLogger(settings.LOGGER_NAME)
 
 BLACKLIST_RE = settings.BLACKLIST_RE
 
-# def get_auth():
-#     auth = {"Authorization": "APIToken {}".format(settings.API_AUTH_TOKEN)}
-#     return auth
-#
-
 def get_versions():
     info = None
 
     # try:
     auth = get_auth()
     logger.debug("BASE_URL={}".format(settings.BASE_URL))
+
     response = requests.get("{}/{}".format(settings.BASE_URL, 'collections/api/versions/'), headers=auth)
-    # response = requests.get("{}/{}".format('https://dev-portal.canceridc.dev', 'collections/api/versions/'), headers=auth)
-    # response = requests.get("{}/{}".format(settings.BASE_URL, 'about/'))
     try:
         if response.status_code != 200:
             logger.error("[ERROR] Error code in response from web app: {}".format(response.status_code))
@@ -76,7 +69,7 @@ def get_attributes():
     info = None
 
     path_params = {
-        "idc_data_version": "",
+        # "idc_data_version": "",
         "data_source": ""
     }
 

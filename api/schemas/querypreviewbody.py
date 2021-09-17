@@ -114,6 +114,30 @@ QUERY_PREVIEW_BODY={
               "minItems": 1,
               "maxItems": 1
             },
+            "age_at_diagnosis_ebtwe": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
+            "age_at_diagnosis_ebtw": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
+            "age_at_diagnosis_btwe": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
             "age_at_diagnosis_btw": {
               "type": "array",
               "items": {
@@ -161,6 +185,30 @@ QUERY_PREVIEW_BODY={
               },
               "minItems": 1,
               "maxItems": 1
+            },
+            "days_to_birth_ebtwe": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
+            "days_to_birth_ebtw": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
+            "days_to_birth_btwe": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
             },
             "days_to_birth_btw": {
               "type": "array",
@@ -210,6 +258,30 @@ QUERY_PREVIEW_BODY={
               "minItems": 1,
               "maxItems": 1
             },
+            "days_to_death_ebtwe": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
+            "days_to_death_ebtw": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
+            "days_to_death_btwe": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
             "days_to_death_btw": {
               "type": "array",
               "items": {
@@ -257,6 +329,30 @@ QUERY_PREVIEW_BODY={
               },
               "minItems": 1,
               "maxItems": 1
+            },
+            "days_to_initial_pathologic_diagnosis_ebtwe": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
+            "days_to_initial_pathologic_diagnosis_ebtw": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
+            "days_to_initial_pathologic_diagnosis_btwe": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
             },
             "days_to_initial_pathologic_diagnosis_btw": {
               "type": "array",
@@ -306,6 +402,30 @@ QUERY_PREVIEW_BODY={
               "minItems": 1,
               "maxItems": 1
             },
+            "days_to_last_followup_ebtwe": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
+            "days_to_last_followup_ebtw": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
+            "days_to_last_followup_btwe": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
             "days_to_last_followup_btw": {
               "type": "array",
               "items": {
@@ -354,6 +474,30 @@ QUERY_PREVIEW_BODY={
               "minItems": 1,
               "maxItems": 1
             },
+            "days_to_last_known_alive_ebtwe": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
+            "days_to_last_known_alive_ebtw": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
+            "days_to_last_known_alive_btwe": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
             "days_to_last_known_alive_btw": {
               "type": "array",
               "items": {
@@ -401,6 +545,30 @@ QUERY_PREVIEW_BODY={
               },
               "minItems": 1,
               "maxItems": 1
+            },
+            "days_to_submitted_specimen_dx_ebtwe": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
+            "days_to_submitted_specimen_dx_ebtw": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
+            "days_to_submitted_specimen_dx_btwe": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
             },
             "days_to_submitted_specimen_dx_btw": {
               "type": "array",
@@ -505,6 +673,30 @@ QUERY_PREVIEW_BODY={
               },
               "minItems": 1,
               "maxItems": 1
+            },
+            "year_of_initial_pathologic_diagnosis_ebtwe": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
+            "year_of_initial_pathologic_diagnosis_ebtw": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
+            "year_of_initial_pathologic_diagnosis_btwe": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
             },
             "year_of_initial_pathologic_diagnosis_btw": {
               "type": "array",
@@ -694,6 +886,30 @@ QUERY_PREVIEW_BODY={
               "minItems": 1,
               "maxItems": 1
             },
+            "number_of_lymphnodes_examined_ebtwe": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
+            "number_of_lymphnodes_examined_ebtw": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
+            "number_of_lymphnodes_examined_btwe": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
             "number_of_lymphnodes_examined_btw": {
               "type": "array",
               "items": {
@@ -741,6 +957,30 @@ QUERY_PREVIEW_BODY={
               },
               "minItems": 1,
               "maxItems": 1
+            },
+            "number_of_lymphnodes_positive_by_he_ebtwe": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
+            "number_of_lymphnodes_positive_by_he_ebtw": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
+            "number_of_lymphnodes_positive_by_he_btwe": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
             },
             "number_of_lymphnodes_positive_by_he_btw": {
               "type": "array",
@@ -818,6 +1058,30 @@ QUERY_PREVIEW_BODY={
               "minItems": 1,
               "maxItems": 1
             },
+            "batch_number_ebtwe": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
+            "batch_number_ebtw": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
+            "batch_number_btwe": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
             "batch_number_btw": {
               "type": "array",
               "items": {
@@ -873,6 +1137,30 @@ QUERY_PREVIEW_BODY={
               "minItems": 1,
               "maxItems": 1
             },
+            "age_began_smoking_in_years_ebtwe": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
+            "age_began_smoking_in_years_ebtw": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
+            "age_began_smoking_in_years_btwe": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
             "age_began_smoking_in_years_btw": {
               "type": "array",
               "items": {
@@ -920,6 +1208,30 @@ QUERY_PREVIEW_BODY={
               },
               "minItems": 1,
               "maxItems": 1
+            },
+            "year_of_tobacco_smoking_onset_ebtwe": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
+            "year_of_tobacco_smoking_onset_ebtw": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
+            "year_of_tobacco_smoking_onset_btwe": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
             },
             "year_of_tobacco_smoking_onset_btw": {
               "type": "array",
@@ -969,6 +1281,30 @@ QUERY_PREVIEW_BODY={
               "minItems": 1,
               "maxItems": 1
             },
+            "stopped_smoking_year_ebtwe": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
+            "stopped_smoking_year_ebtw": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
+            "stopped_smoking_year_btwe": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
             "stopped_smoking_year_btw": {
               "type": "array",
               "items": {
@@ -1016,6 +1352,30 @@ QUERY_PREVIEW_BODY={
               },
               "minItems": 1,
               "maxItems": 1
+            },
+            "tobacco_smoking_history_ebtwe": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
+            "tobacco_smoking_history_ebtw": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
+            "tobacco_smoking_history_btwe": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
             },
             "tobacco_smoking_history_btw": {
               "type": "array",
@@ -1065,6 +1425,30 @@ QUERY_PREVIEW_BODY={
               "minItems": 1,
               "maxItems": 1
             },
+            "number_pack_years_smoked_ebtwe": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
+            "number_pack_years_smoked_ebtw": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
+            "number_pack_years_smoked_btwe": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
             "number_pack_years_smoked_btw": {
               "type": "array",
               "items": {
@@ -1112,6 +1496,30 @@ QUERY_PREVIEW_BODY={
               },
               "minItems": 1,
               "maxItems": 1
+            },
+            "height_ebtwe": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
+            "height_ebtw": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
+            "height_btwe": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
             },
             "height_btw": {
               "type": "array",
@@ -1161,6 +1569,30 @@ QUERY_PREVIEW_BODY={
               "minItems": 1,
               "maxItems": 1
             },
+            "weight_ebtwe": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
+            "weight_ebtw": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
+            "weight_btwe": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
             "weight_btw": {
               "type": "array",
               "items": {
@@ -1208,6 +1640,30 @@ QUERY_PREVIEW_BODY={
               },
               "minItems": 1,
               "maxItems": 1
+            },
+            "bmi_ebtwe": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
+            "bmi_ebtw": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
+            "bmi_btwe": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
             },
             "bmi_btw": {
               "type": "array",
@@ -1299,6 +1755,30 @@ QUERY_PREVIEW_BODY={
               "minItems": 1,
               "maxItems": 1
             },
+            "gleason_score_combined_ebtwe": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
+            "gleason_score_combined_ebtw": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
+            "gleason_score_combined_btwe": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
             "gleason_score_combined_btw": {
               "type": "array",
               "items": {
@@ -1346,6 +1826,30 @@ QUERY_PREVIEW_BODY={
               },
               "minItems": 1,
               "maxItems": 1
+            },
+            "psa_value_ebtwe": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
+            "psa_value_ebtw": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
+            "psa_value_btwe": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
             },
             "psa_value_btw": {
               "type": "array",
@@ -1437,6 +1941,30 @@ QUERY_PREVIEW_BODY={
               "minItems": 1,
               "maxItems": 1
             },
+            "days_to_collection_ebtwe": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
+            "days_to_collection_ebtw": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
+            "days_to_collection_btwe": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
             "days_to_collection_btw": {
               "type": "array",
               "items": {
@@ -1484,6 +2012,30 @@ QUERY_PREVIEW_BODY={
               },
               "minItems": 1,
               "maxItems": 1
+            },
+            "days_to_sample_procurement_ebtwe": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
+            "days_to_sample_procurement_ebtw": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
+            "days_to_sample_procurement_btwe": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
             },
             "days_to_sample_procurement_btw": {
               "type": "array",
@@ -1540,6 +2092,30 @@ QUERY_PREVIEW_BODY={
               "minItems": 1,
               "maxItems": 1
             },
+            "num_portions_ebtwe": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
+            "num_portions_ebtw": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
+            "num_portions_btwe": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
             "num_portions_btw": {
               "type": "array",
               "items": {
@@ -1587,6 +2163,30 @@ QUERY_PREVIEW_BODY={
               },
               "minItems": 1,
               "maxItems": 1
+            },
+            "num_slides_ebtwe": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
+            "num_slides_ebtw": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
+            "num_slides_btwe": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
             },
             "num_slides_btw": {
               "type": "array",
@@ -1636,6 +2236,30 @@ QUERY_PREVIEW_BODY={
               "minItems": 1,
               "maxItems": 1
             },
+            "avg_percent_lymphocyte_infiltration_ebtwe": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
+            "avg_percent_lymphocyte_infiltration_ebtw": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
+            "avg_percent_lymphocyte_infiltration_btwe": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
             "avg_percent_lymphocyte_infiltration_btw": {
               "type": "array",
               "items": {
@@ -1683,6 +2307,30 @@ QUERY_PREVIEW_BODY={
               },
               "minItems": 1,
               "maxItems": 1
+            },
+            "avg_percent_monocyte_infiltration_ebtwe": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
+            "avg_percent_monocyte_infiltration_ebtw": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
+            "avg_percent_monocyte_infiltration_btwe": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
             },
             "avg_percent_monocyte_infiltration_btw": {
               "type": "array",
@@ -1732,6 +2380,30 @@ QUERY_PREVIEW_BODY={
               "minItems": 1,
               "maxItems": 1
             },
+            "avg_percent_necrosis_ebtwe": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
+            "avg_percent_necrosis_ebtw": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
+            "avg_percent_necrosis_btwe": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
             "avg_percent_necrosis_btw": {
               "type": "array",
               "items": {
@@ -1779,6 +2451,30 @@ QUERY_PREVIEW_BODY={
               },
               "minItems": 1,
               "maxItems": 1
+            },
+            "avg_percent_neutrophil_infiltration_ebtwe": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
+            "avg_percent_neutrophil_infiltration_ebtw": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
+            "avg_percent_neutrophil_infiltration_btwe": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
             },
             "avg_percent_neutrophil_infiltration_btw": {
               "type": "array",
@@ -1828,6 +2524,30 @@ QUERY_PREVIEW_BODY={
               "minItems": 1,
               "maxItems": 1
             },
+            "avg_percent_normal_cells_ebtwe": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
+            "avg_percent_normal_cells_ebtw": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
+            "avg_percent_normal_cells_btwe": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
             "avg_percent_normal_cells_btw": {
               "type": "array",
               "items": {
@@ -1875,6 +2595,30 @@ QUERY_PREVIEW_BODY={
               },
               "minItems": 1,
               "maxItems": 1
+            },
+            "avg_percent_stromal_cells_ebtwe": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
+            "avg_percent_stromal_cells_ebtw": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
+            "avg_percent_stromal_cells_btwe": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
             },
             "avg_percent_stromal_cells_btw": {
               "type": "array",
@@ -1924,6 +2668,30 @@ QUERY_PREVIEW_BODY={
               "minItems": 1,
               "maxItems": 1
             },
+            "avg_percent_tumor_cells_ebtwe": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
+            "avg_percent_tumor_cells_ebtw": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
+            "avg_percent_tumor_cells_btwe": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
             "avg_percent_tumor_cells_btw": {
               "type": "array",
               "items": {
@@ -1971,6 +2739,30 @@ QUERY_PREVIEW_BODY={
               },
               "minItems": 1,
               "maxItems": 1
+            },
+            "avg_percent_tumor_nuclei_ebtwe": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
+            "avg_percent_tumor_nuclei_ebtw": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
+            "avg_percent_tumor_nuclei_btwe": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
             },
             "avg_percent_tumor_nuclei_btw": {
               "type": "array",
@@ -2020,6 +2812,30 @@ QUERY_PREVIEW_BODY={
               "minItems": 1,
               "maxItems": 1
             },
+            "max_percent_lymphocyte_infiltration_ebtwe": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
+            "max_percent_lymphocyte_infiltration_ebtw": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
+            "max_percent_lymphocyte_infiltration_btwe": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
             "max_percent_lymphocyte_infiltration_btw": {
               "type": "array",
               "items": {
@@ -2067,6 +2883,30 @@ QUERY_PREVIEW_BODY={
               },
               "minItems": 1,
               "maxItems": 1
+            },
+            "max_percent_monocyte_infiltration_ebtwe": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
+            "max_percent_monocyte_infiltration_ebtw": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
+            "max_percent_monocyte_infiltration_btwe": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
             },
             "max_percent_monocyte_infiltration_btw": {
               "type": "array",
@@ -2116,6 +2956,30 @@ QUERY_PREVIEW_BODY={
               "minItems": 1,
               "maxItems": 1
             },
+            "max_percent_necrosis_ebtwe": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
+            "max_percent_necrosis_ebtw": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
+            "max_percent_necrosis_btwe": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
             "max_percent_necrosis_btw": {
               "type": "array",
               "items": {
@@ -2163,6 +3027,30 @@ QUERY_PREVIEW_BODY={
               },
               "minItems": 1,
               "maxItems": 1
+            },
+            "max_percent_neutrophil_infiltration_ebtwe": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
+            "max_percent_neutrophil_infiltration_ebtw": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
+            "max_percent_neutrophil_infiltration_btwe": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
             },
             "max_percent_neutrophil_infiltration_btw": {
               "type": "array",
@@ -2212,6 +3100,30 @@ QUERY_PREVIEW_BODY={
               "minItems": 1,
               "maxItems": 1
             },
+            "max_percent_normal_cells_ebtwe": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
+            "max_percent_normal_cells_ebtw": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
+            "max_percent_normal_cells_btwe": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
             "max_percent_normal_cells_btw": {
               "type": "array",
               "items": {
@@ -2259,6 +3171,30 @@ QUERY_PREVIEW_BODY={
               },
               "minItems": 1,
               "maxItems": 1
+            },
+            "max_percent_stromal_cells_ebtwe": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
+            "max_percent_stromal_cells_ebtw": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
+            "max_percent_stromal_cells_btwe": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
             },
             "max_percent_stromal_cells_btw": {
               "type": "array",
@@ -2308,6 +3244,30 @@ QUERY_PREVIEW_BODY={
               "minItems": 1,
               "maxItems": 1
             },
+            "max_percent_tumor_cells_ebtwe": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
+            "max_percent_tumor_cells_ebtw": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
+            "max_percent_tumor_cells_btwe": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
             "max_percent_tumor_cells_btw": {
               "type": "array",
               "items": {
@@ -2355,6 +3315,30 @@ QUERY_PREVIEW_BODY={
               },
               "minItems": 1,
               "maxItems": 1
+            },
+            "max_percent_tumor_nuclei_ebtwe": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
+            "max_percent_tumor_nuclei_ebtw": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
+            "max_percent_tumor_nuclei_btwe": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
             },
             "max_percent_tumor_nuclei_btw": {
               "type": "array",
@@ -2404,6 +3388,30 @@ QUERY_PREVIEW_BODY={
               "minItems": 1,
               "maxItems": 1
             },
+            "min_percent_lymphocyte_infiltration_ebtwe": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
+            "min_percent_lymphocyte_infiltration_ebtw": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
+            "min_percent_lymphocyte_infiltration_btwe": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
             "min_percent_lymphocyte_infiltration_btw": {
               "type": "array",
               "items": {
@@ -2451,6 +3459,30 @@ QUERY_PREVIEW_BODY={
               },
               "minItems": 1,
               "maxItems": 1
+            },
+            "min_percent_monocyte_infiltration_ebtwe": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
+            "min_percent_monocyte_infiltration_ebtw": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
+            "min_percent_monocyte_infiltration_btwe": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
             },
             "min_percent_monocyte_infiltration_btw": {
               "type": "array",
@@ -2500,6 +3532,30 @@ QUERY_PREVIEW_BODY={
               "minItems": 1,
               "maxItems": 1
             },
+            "min_percent_necrosis_ebtwe": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
+            "min_percent_necrosis_ebtw": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
+            "min_percent_necrosis_btwe": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
             "min_percent_necrosis_btw": {
               "type": "array",
               "items": {
@@ -2547,6 +3603,30 @@ QUERY_PREVIEW_BODY={
               },
               "minItems": 1,
               "maxItems": 1
+            },
+            "min_percent_neutrophil_infiltration_ebtwe": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
+            "min_percent_neutrophil_infiltration_ebtw": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
+            "min_percent_neutrophil_infiltration_btwe": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
             },
             "min_percent_neutrophil_infiltration_btw": {
               "type": "array",
@@ -2596,6 +3676,30 @@ QUERY_PREVIEW_BODY={
               "minItems": 1,
               "maxItems": 1
             },
+            "min_percent_normal_cells_ebtwe": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
+            "min_percent_normal_cells_ebtw": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
+            "min_percent_normal_cells_btwe": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
             "min_percent_normal_cells_btw": {
               "type": "array",
               "items": {
@@ -2643,6 +3747,30 @@ QUERY_PREVIEW_BODY={
               },
               "minItems": 1,
               "maxItems": 1
+            },
+            "min_percent_stromal_cells_ebtwe": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
+            "min_percent_stromal_cells_ebtw": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
+            "min_percent_stromal_cells_btwe": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
             },
             "min_percent_stromal_cells_btw": {
               "type": "array",
@@ -2692,6 +3820,30 @@ QUERY_PREVIEW_BODY={
               "minItems": 1,
               "maxItems": 1
             },
+            "min_percent_tumor_cells_ebtwe": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
+            "min_percent_tumor_cells_ebtw": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
+            "min_percent_tumor_cells_btwe": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
             "min_percent_tumor_cells_btw": {
               "type": "array",
               "items": {
@@ -2739,6 +3891,30 @@ QUERY_PREVIEW_BODY={
               },
               "minItems": 1,
               "maxItems": 1
+            },
+            "min_percent_tumor_nuclei_ebtwe": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
+            "min_percent_tumor_nuclei_ebtw": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
+            "min_percent_tumor_nuclei_btwe": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
             },
             "min_percent_tumor_nuclei_btw": {
               "type": "array",
@@ -2850,6 +4026,30 @@ QUERY_PREVIEW_BODY={
               },
               "minItems": 1,
               "maxItems": 1
+            },
+            "SliceThickness_ebtwe": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
+            "SliceThickness_ebtw": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
+            "SliceThickness_btwe": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
             },
             "SliceThickness_btw": {
               "type": "array",
@@ -3011,6 +4211,30 @@ QUERY_PREVIEW_BODY={
               "minItems": 1,
               "maxItems": 1
             },
+            "SegmentNumber_ebtwe": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
+            "SegmentNumber_ebtw": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
+            "SegmentNumber_btwe": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
             "SegmentNumber_btw": {
               "type": "array",
               "items": {
@@ -3066,6 +4290,30 @@ QUERY_PREVIEW_BODY={
               "minItems": 1,
               "maxItems": 1
             },
+            "SUVbw_ebtwe": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
+            "SUVbw_ebtw": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
+            "SUVbw_btwe": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
             "SUVbw_btw": {
               "type": "array",
               "items": {
@@ -3113,6 +4361,30 @@ QUERY_PREVIEW_BODY={
               },
               "minItems": 1,
               "maxItems": 1
+            },
+            "Volume_ebtwe": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
+            "Volume_ebtw": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
+            "Volume_btwe": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
             },
             "Volume_btw": {
               "type": "array",
@@ -3162,6 +4434,30 @@ QUERY_PREVIEW_BODY={
               "minItems": 1,
               "maxItems": 1
             },
+            "Diameter_ebtwe": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
+            "Diameter_ebtw": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
+            "Diameter_btwe": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
             "Diameter_btw": {
               "type": "array",
               "items": {
@@ -3209,6 +4505,30 @@ QUERY_PREVIEW_BODY={
               },
               "minItems": 1,
               "maxItems": 1
+            },
+            "Surface_area_of_mesh_ebtwe": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
+            "Surface_area_of_mesh_ebtw": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
+            "Surface_area_of_mesh_btwe": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
             },
             "Surface_area_of_mesh_btw": {
               "type": "array",
@@ -3258,6 +4578,30 @@ QUERY_PREVIEW_BODY={
               "minItems": 1,
               "maxItems": 1
             },
+            "Total_Lesion_Glycolysis_ebtwe": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
+            "Total_Lesion_Glycolysis_ebtw": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
+            "Total_Lesion_Glycolysis_btwe": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
             "Total_Lesion_Glycolysis_btw": {
               "type": "array",
               "items": {
@@ -3305,6 +4649,30 @@ QUERY_PREVIEW_BODY={
               },
               "minItems": 1,
               "maxItems": 1
+            },
+            "Standardized_Added_Metabolic_Activity_ebtwe": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
+            "Standardized_Added_Metabolic_Activity_ebtw": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
+            "Standardized_Added_Metabolic_Activity_btwe": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
             },
             "Standardized_Added_Metabolic_Activity_btw": {
               "type": "array",
@@ -3354,6 +4722,30 @@ QUERY_PREVIEW_BODY={
               "minItems": 1,
               "maxItems": 1
             },
+            "Percent_Within_First_Quarter_of_Intensity_Range_ebtwe": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
+            "Percent_Within_First_Quarter_of_Intensity_Range_ebtw": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
+            "Percent_Within_First_Quarter_of_Intensity_Range_btwe": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
             "Percent_Within_First_Quarter_of_Intensity_Range_btw": {
               "type": "array",
               "items": {
@@ -3401,6 +4793,30 @@ QUERY_PREVIEW_BODY={
               },
               "minItems": 1,
               "maxItems": 1
+            },
+            "Percent_Within_Third_Quarter_of_Intensity_Range_ebtwe": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
+            "Percent_Within_Third_Quarter_of_Intensity_Range_ebtw": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
+            "Percent_Within_Third_Quarter_of_Intensity_Range_btwe": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
             },
             "Percent_Within_Third_Quarter_of_Intensity_Range_btw": {
               "type": "array",
@@ -3450,6 +4866,30 @@ QUERY_PREVIEW_BODY={
               "minItems": 1,
               "maxItems": 1
             },
+            "Percent_Within_Fourth_Quarter_of_Intensity_Range_ebtwe": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
+            "Percent_Within_Fourth_Quarter_of_Intensity_Range_ebtw": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
+            "Percent_Within_Fourth_Quarter_of_Intensity_Range_btwe": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
             "Percent_Within_Fourth_Quarter_of_Intensity_Range_btw": {
               "type": "array",
               "items": {
@@ -3497,6 +4937,30 @@ QUERY_PREVIEW_BODY={
               },
               "minItems": 1,
               "maxItems": 1
+            },
+            "Percent_Within_Second_Quarter_of_Intensity_Range_ebtwe": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
+            "Percent_Within_Second_Quarter_of_Intensity_Range_ebtw": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
+            "Percent_Within_Second_Quarter_of_Intensity_Range_btwe": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
             },
             "Percent_Within_Second_Quarter_of_Intensity_Range_btw": {
               "type": "array",
@@ -3546,6 +5010,30 @@ QUERY_PREVIEW_BODY={
               "minItems": 1,
               "maxItems": 1
             },
+            "Standardized_Added_Metabolic_Activity_Background_ebtwe": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
+            "Standardized_Added_Metabolic_Activity_Background_ebtw": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
+            "Standardized_Added_Metabolic_Activity_Background_btwe": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
             "Standardized_Added_Metabolic_Activity_Background_btw": {
               "type": "array",
               "items": {
@@ -3593,6 +5081,30 @@ QUERY_PREVIEW_BODY={
               },
               "minItems": 1,
               "maxItems": 1
+            },
+            "Glycolysis_Within_First_Quarter_of_Intensity_Range_ebtwe": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
+            "Glycolysis_Within_First_Quarter_of_Intensity_Range_ebtw": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
+            "Glycolysis_Within_First_Quarter_of_Intensity_Range_btwe": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
             },
             "Glycolysis_Within_First_Quarter_of_Intensity_Range_btw": {
               "type": "array",
@@ -3642,6 +5154,30 @@ QUERY_PREVIEW_BODY={
               "minItems": 1,
               "maxItems": 1
             },
+            "Glycolysis_Within_Third_Quarter_of_Intensity_Range_ebtwe": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
+            "Glycolysis_Within_Third_Quarter_of_Intensity_Range_ebtw": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
+            "Glycolysis_Within_Third_Quarter_of_Intensity_Range_btwe": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
             "Glycolysis_Within_Third_Quarter_of_Intensity_Range_btw": {
               "type": "array",
               "items": {
@@ -3690,6 +5226,30 @@ QUERY_PREVIEW_BODY={
               "minItems": 1,
               "maxItems": 1
             },
+            "Glycolysis_Within_Fourth_Quarter_of_Intensity_Range_ebtwe": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
+            "Glycolysis_Within_Fourth_Quarter_of_Intensity_Range_ebtw": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
+            "Glycolysis_Within_Fourth_Quarter_of_Intensity_Range_btwe": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
             "Glycolysis_Within_Fourth_Quarter_of_Intensity_Range_btw": {
               "type": "array",
               "items": {
@@ -3737,6 +5297,30 @@ QUERY_PREVIEW_BODY={
               },
               "minItems": 1,
               "maxItems": 1
+            },
+            "Glycolysis_Within_Second_Quarter_of_Intensity_Range_ebtwe": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
+            "Glycolysis_Within_Second_Quarter_of_Intensity_Range_ebtw": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
+            "Glycolysis_Within_Second_Quarter_of_Intensity_Range_btwe": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
             },
             "Glycolysis_Within_Second_Quarter_of_Intensity_Range_btw": {
               "type": "array",
@@ -3849,6 +5433,30 @@ QUERY_PREVIEW_BODY={
               "minItems": 1,
               "maxItems": 1
             },
+            "Apparent_Diffusion_Coefficient_ebtwe": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
+            "Apparent_Diffusion_Coefficient_ebtw": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
+            "Apparent_Diffusion_Coefficient_btwe": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
             "Apparent_Diffusion_Coefficient_btw": {
               "type": "array",
               "items": {
@@ -3874,6 +5482,27 @@ QUERY_PREVIEW_BODY={
               "maxItems": 1
             },
             "tcia_species": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "minItems": 1
+            },
+            "Manufacturer": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "minItems": 1
+            },
+            "ManufacturerModelName": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "minItems": 1
+            },
+            "license_short_name": {
               "type": "array",
               "items": {
                 "type": "string"
@@ -3915,6 +5544,7 @@ QUERY_PREVIEW_BODY={
               "StudyDescription",
               "StudyInstanceUID",
               "PatientID",
+              "Program",
               "SeriesInstanceUID",
               "SOPInstanceUID",
               "SeriesDescription",
@@ -3933,13 +5563,13 @@ QUERY_PREVIEW_BODY={
               "Volume",
               "Diameter",
               "Surface_area_of",
-              "Total_Lesion",
-              "Standardized_Added_Metabolic",
+              "Total_Lesion_Glycolysis",
+              "Standardized_Added_Metabolic_Activity",
               "Percent_Within_First_Quarter_of_Intensity_Range",
               "Percent_Within_Third_Quarter_of_Intensity_Range",
               "Percent_Within_Fourth_Quarter_of_Intensity_Range",
               "Percent_Within_Second_Quarter_of_Intensity_Range",
-              "Standardized_Added_Metabolic_Activity",
+              "Standardized_Added_Metabolic_Activity_Background",
               "Glycolysis_Within_First_Quarter_of_Intensity_Range",
               "Glycolysis_Within_Third_Quarter_of_Intensity_Range",
               "Glycolysis_Within_Fourth_Quarter_of_Intensity_Range",
@@ -3947,14 +5577,17 @@ QUERY_PREVIEW_BODY={
               "Internal_structure",
               "Sphericity",
               "Calcification",
-              "Lobular",
+              "Lobular_Pattern",
               "Spiculation",
               "Margin",
               "Texture",
-              "Subtlety",
+              "Subtlety_score",
               "Malignancy",
               "Apparent_Diffusion_Coefficient",
-              "tcia_species"
+              "tcia_species",
+              "Manufacturer",
+              "ManufacturerModelName",
+              "license_short_name"
             ]
           }
         }

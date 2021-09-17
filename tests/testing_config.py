@@ -14,5 +14,5 @@
 # limitations under the License.
 #
 
-VERSIONS=3
-NUM_COLLECTIONS=106
+VERSIONS=4
+NUM_COLLECTIONS=107
