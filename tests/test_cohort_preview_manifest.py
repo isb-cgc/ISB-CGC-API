@@ -47,7 +47,7 @@ def test_guid(client, app):
     }
 
     # Get a guid manifest of the cohort's instances
-    response = client.post('v1/cohorts/preview/manifest',
+    response = client.post('v1/cohorts/manifest/preview',
                             query_string = query_string,
                             data = json.dumps(cohortSpec),
                             headers=headers)
@@ -91,7 +91,7 @@ def test_url(client, app):
     }
 
     # Get a guid manifest of the cohort's instances
-    response = client.post('v1/cohorts/preview/manifest',
+    response = client.post('v1/cohorts/manifest/preview',
                             query_string = query_string,
                             data = json.dumps(cohortSpec),
                             headers=headers)
@@ -136,7 +136,7 @@ def test_SOPInstanceUID(client, app):
     }
 
     # Get a guid manifest of the cohort's instances
-    response = client.post('v1/cohorts/preview/manifest',
+    response = client.post('v1/cohorts/manifest/preview',
                             query_string = query_string,
                             data = json.dumps(cohortSpec),
                             headers=headers)
@@ -188,7 +188,7 @@ def test_all(client, app):
         GCS_URL=True,
         page_size=2000
     )
-    response = client.post('v1/cohorts/preview/manifest',
+    response = client.post('v1/cohorts/manifest/preview',
                             query_string = query_string,
                             data = json.dumps(cohortSpec),
                             headers=headers)
@@ -239,14 +239,13 @@ def test_paged_doi(client, app):
         'page_size': 5000
     }
 
-    response = client.post('v1/cohorts/preview/manifest',
+    response = client.post('v1/cohorts/manifest/preview',
                             query_string = query_string,
                             data = json.dumps(cohortSpec),
                             headers=headers)
 
     assert response.content_type == 'application/json'
     assert response.status_code == 200
-    cohort = response.json['cohort']
     manifest = response.json['manifest']
     next_page = response.json['next_page']
 
@@ -263,18 +262,16 @@ def test_paged_doi(client, app):
 
     while next_page:
         query_string = {
-            'access_method': 'guid',
             'next_page': next_page,
             'page_size': 5000
         }
 
-        response = client.post('v1/cohorts/preview/manifest',
+        response = client.get('v1/cohorts/manifest/nextPage',
                                query_string=query_string,
                                data=json.dumps(cohortSpec),
                                headers=headers)
         assert response.content_type == 'application/json'
         assert response.status_code == 200
-        cohort = response.json['cohort']
         manifest = response.json['manifest']
         next_page = response.json['next_page']
 
@@ -310,7 +307,7 @@ def test_paged_url(client, app):
         'page_size': 5000
     }
 
-    response = client.post('v1/cohorts/preview/manifest',
+    response = client.post('v1/cohorts/manifest/preview',
                             query_string = query_string,
                             data = json.dumps(cohortSpec),
                             headers=headers)
@@ -334,18 +331,16 @@ def test_paged_url(client, app):
 
     while next_page:
         query_string = {
-            'access_method': 'url',
             'next_page': next_page,
             'page_size': 5000
         }
 
-        response = client.post('v1/cohorts/preview/manifest',
+        response = client.get('v1/cohorts/manifest/nextPage',
                                query_string=query_string,
                                data=json.dumps(cohortSpec),
                                headers=headers)
         assert response.content_type == 'application/json'
         assert response.status_code == 200
-        cohort = response.json['cohort']
         manifest = response.json['manifest']
         next_page = response.json['next_page']
 
@@ -387,7 +382,7 @@ def test_paged_url(client, app):
 #
 #     start = time.time()
 #
-#     response = client.post('v1/cohorts/preview/manifest',
+#     response = client.post('v1/cohorts/manifest/preview',
 #                            query_string=query_string,
 #                            data=json.dumps(cohortSpec),
 #                            headers=headers)
@@ -402,7 +397,7 @@ def test_paged_url(client, app):
 #
 #         )
 #
-#         response = client.post('v1/cohorts/preview/manifest',
+#         response = client.post('v1/cohorts/manifest/preview',
 #                            query_string=query_string,
 #                            data=json.dumps(cohortSpec),
 #                            headers=headers)
@@ -425,7 +420,7 @@ def test_paged_url(client, app):
 #         query_string['next_page'] = response.json['next_page']
 #
 #         start = time.time()
-#         response = client.post('v1/cohorts/preview/manifest',
+#         response = client.post('v1/cohorts/manifest/preview',
 #                                query_string=query_string,
 #                                data=json.dumps(cohortSpec),
 #                                headers=headers)
