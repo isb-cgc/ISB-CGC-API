@@ -50,7 +50,7 @@ def test_query_metadata(client, app):
         }
 
         # Get the list of objects in the cohort
-        response = client.get('v1/dicomMetadata',
+        response = client.get('v1/dicomMetadata/nextPage',
                               query_string=query_string,
                               headers=headers)
         assert response.content_type == 'application/json'

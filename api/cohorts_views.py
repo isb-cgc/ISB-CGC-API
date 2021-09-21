@@ -26,7 +26,7 @@ from python_settings import settings
 
 from jsonschema import validate as schema_validate, ValidationError
 from . schemas.filters import COHORT_FILTERS_SCHEMA
-from . cohort_utils import get_manifest
+from .cohort_utils import get_manifest,get_manifest_nextpage
 from api.auth import get_auth
 
 BLACKLIST_RE = settings.BLACKLIST_RE
@@ -109,21 +109,25 @@ def create_cohort(user):
 
     return cohort_info
 
+def get_cohort_manifest_nextpage(user):
+    manifest_info = get_manifest_nextpage(request, user=user)
+    return manifest_info
+
 
 def get_cohort_manifest(user, cohort_id):
     manifest_info = get_manifest(request,
                                  func=requests.get,
                                  url="{}/cohorts/api/{}/manifest/".format(settings.BASE_URL, cohort_id),
                                  user=user)
-
     return manifest_info
 
 
-def get_cohort_preview_manifest():
+def get_cohort_preview_manifest(user):
     try:
-        if 'next_page' in request.args and request.args['next_page'] not in ["", None]:
-            data = {"request_data": None}
-        else:
+        # if 'next_page' in request.args and request.args['next_page'] not in ["", None]:
+        #     data = {"request_data": None}
+        # else:
+        if True:
             request_data = request.get_json()
 
             if 'filters' not in request_data:
@@ -156,7 +160,8 @@ def get_cohort_preview_manifest():
         manifest_info = get_manifest(request,
                              func=requests.post,
                              url="{}/cohorts/api/preview/manifest/".format(settings.BASE_URL),
-                             data=data)
+                             data=data,
+                             user=user)
 
     except BadRequest as e:
         logger.warning("[WARNING] Received bad request - couldn't load JSON.")

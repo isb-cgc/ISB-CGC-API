@@ -12,8 +12,7 @@ sed -i "" 's/#- "https"/- "https"/' dev.openapi-appengine.yaml
 sed -i "" 's/- "http"/#- "http"/' dev.openapi-appengine.yaml
 
 cp openapi-appengine.yaml test.openapi-appengine.yaml
-sed -i "" 's/host: "api-dot-idc-dev.appspot.com"/#host: "api-dot-idc-dev.appspot.com"/' test.openapi-appengine.yaml
-sed -i "" 's/#host: "api-dot-idc-testing.appspot.com"/host: "api-dot-idc-testing.appspot.com"/' test.openapi-appengine.yaml
+sed -i "" 's/#host: "testing-api.canceridc.dev"/host: "testing-api.canceridc.dev"/' test.openapi-appengine.yaml
 sed -i "" 's/x-google-audiences: "94/#x-google-audiences: "94/'  test.openapi-appengine.yaml
 sed -i "" 's/#x-google-audiences: "10/x-google-audiences: "10/'  test.openapi-appengine.yaml
 sed -i "" 's/#- "https"/- "https"/' test.openapi-appengine.yaml

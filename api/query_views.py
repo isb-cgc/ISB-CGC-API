@@ -23,7 +23,7 @@ from flask import request
 from werkzeug.exceptions import BadRequest
 
 from python_settings import settings
-from . query_utils import perform_query, perform_fixed_query
+from . query_utils import perform_query, perform_fixed_query, query_next_page, perform_fixed_query_next_page
 from jsonschema import validate as schema_validate, ValidationError
 from . schemas.filterset import COHORT_FILTER_SCHEMA
 from . schemas.querypreviewbody import QUERY_PREVIEW_BODY
@@ -125,7 +125,7 @@ def get_query_metadata():
         RequestedProcedureComments,	
         SmokingStatus	
 
-    FROM `canceridc-data.idc_v4.dicom_pivot_v4`
+    FROM `idc-dev-etl.idc_v4.dicom_pivot_v4`
     ORDER BY collection_id, PatientID, StudyInstanceUID, SeriesInstanceUID, SOPInstanceUID
     """
 
@@ -140,16 +140,18 @@ def get_query_metadata():
 
     return query_info
 
-    
-
-def get_query_info(user, cohort_id):
-    query_info = perform_query(request,
-                                 func=requests.get,
-                                 url="{}/cohorts/api/{}/".format(settings.BASE_URL, cohort_id),
-                                 user=user)
+def get_query_metadata_next_page():
+    query_info = perform_fixed_query_next_page(request)
     return query_info
 
-
+    
+# Deprecated
+# def get_query_info(user, cohort_id):
+#     query_info = perform_query(request,
+#                                  func=requests.get,
+#                                  url="{}/cohorts/api/{}/".format(settings.BASE_URL, cohort_id),
+#                                  user=user)
+#     return query_info
 
 
 def post_query(user, cohort_id):
@@ -186,7 +188,7 @@ def post_query(user, cohort_id):
     return query_info
 
 
-def post_query_preview():
+def post_query_preview(user):
     try:
         request_data = request.get_json()
 
@@ -229,7 +231,8 @@ def post_query_preview():
         query_info = perform_query(request,
                              func=requests.post,
                              url="{}/cohorts/api/preview/query/".format(settings.BASE_URL),
-                             data=data)
+                             data=data,
+                             user=user)
 
     except BadRequest as e:
         logger.warning("[WARNING] Received bad request - couldn't load JSON.")
@@ -246,6 +249,9 @@ def post_query_preview():
     return query_info
 
 
+def get_query_next_page(user):
+    query_info = query_next_page(request, user)
+    return query_info
 
 
 

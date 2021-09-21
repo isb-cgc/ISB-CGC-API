@@ -73,6 +73,76 @@ def submit_BQ_job(sql_string, params):
     logger.debug("submit_BQ_job() results: %s", results)
     return results
 
+def get_manifest_nextpage(request, user):
+    manifest_info = {}
+    path_params = {
+        }
+    path_booleans =  []
+    path_integers = []
+
+    local_params = {
+        "page_size": 1000
+    }
+    local_booleans = []
+    local_integers = ["page_size"]
+
+    jobReference = {}
+    next_page = ""
+    try:
+        if 'next_page' in request.args and \
+                not request.args.get('next_page') in ["", None]:
+            # We have a non-empty next_page token
+            jobDescription = decrypt_pageToken(user, request.args.get('next_page'))
+            if jobDescription == {}:
+                manifest_info = dict(
+                    message="Invalid next_page token {}".format(request.args.get('next_page')),
+                    code=400
+                )
+                return manifest_info
+            else:
+                jobReference = jobDescription['jobReference']
+                next_page = jobDescription['next_page']
+
+            # If next_page is empty, then we timed out on the previous pass
+            if not next_page:
+                job_status = BigQuerySupport.wait_for_done(query_job={'jobReference': jobReference})
+
+                # Decide how to proceed depending on job status (DONE, RUNNING, ERRORS)
+                manifest_info = is_job_done(job_status, manifest_info, jobReference, user)
+                if "message" in manifest_info:
+                    return manifest_info
+            manifest_info = {}
+        else:
+            manifest_info = dict(
+                message="Invalid next_page token {}".format(request.args.get('next_page')),
+                code=400
+            )
+            return manifest_info
+
+        manifest_info = validate_parameters(request, manifest_info, local_params, local_booleans, local_integers, None)
+
+        manifest_info, next_page = get_manifest_job_results(manifest_info,
+                                                            local_params['page_size'],
+                                                            jobReference,
+                                                            next_page)
+
+        logger.debug("get_manifest, manifest_info %s", manifest_info)
+
+        if next_page:
+            cipher_pageToken = encrypt_pageToken(user, jobReference,
+                                                 next_page)
+        else:
+            cipher_pageToken = ""
+        manifest_info['next_page'] = cipher_pageToken
+    except Exception as e:
+        logger.exception(e)
+        manifest_info = dict(
+            message='[ERROR] get_manifest(): Error trying to preview a cohort',
+            code=400)
+
+    return manifest_info
+
+
 
 def get_manifest(request, func, url, data=None, user=None):
     manifest_info = {}
@@ -107,32 +177,33 @@ def get_manifest(request, func, url, data=None, user=None):
     # access_methods = ["url", "guid"]
 
     try:
-        if 'next_page' in request.args and \
-            not request.args.get('next_page') in ["", None]:
-            # We have a non-empty next_page token
-            jobDescription = decrypt_pageToken(user, request.args.get('next_page'))
-            if jobDescription == {}:
-                manifest_info = dict(
-                    message="Invalid next_page token {}".format(request.args.get('next_page')),
-                    code=400
-                )
-                return manifest_info
-            else:
-                jobReference = jobDescription['jobReference']
-                next_page = jobDescription['next_page']
-
-            # If next_page is empty, then we timed out on the previous pass
-            if not next_page:
-                job_status = BigQuerySupport.wait_for_done(query_job={'jobReference':jobReference})
-
-                # Decide how to proceed depending on job status (DONE, RUNNING, ERRORS)
-                manifest_info = is_job_done(job_status, manifest_info, jobReference, user)
-                if "message" in manifest_info:
-                    return manifest_info
-            manifest_info = dict(
-                cohort = {},
-            )
-        else:
+        # if 'next_page' in request.args and \
+        #     not request.args.get('next_page') in ["", None]:
+        #     # We have a non-empty next_page token
+        #     jobDescription = decrypt_pageToken(user, request.args.get('next_page'))
+        #     if jobDescription == {}:
+        #         manifest_info = dict(
+        #             message="Invalid next_page token {}".format(request.args.get('next_page')),
+        #             code=400
+        #         )
+        #         return manifest_info
+        #     else:
+        #         jobReference = jobDescription['jobReference']
+        #         next_page = jobDescription['next_page']
+        #
+        #     # If next_page is empty, then we timed out on the previous pass
+        #     if not next_page:
+        #         job_status = BigQuerySupport.wait_for_done(query_job={'jobReference':jobReference})
+        #
+        #         # Decide how to proceed depending on job status (DONE, RUNNING, ERRORS)
+        #         manifest_info = is_job_done(job_status, manifest_info, jobReference, user)
+        #         if "message" in manifest_info:
+        #             return manifest_info
+        #     manifest_info = dict(
+        #         cohort = {},
+        #     )
+        # else:
+        if True:
             # Validate most params only on initial request; ignore on next_page requests
             manifest_info = validate_keys(request, manifest_info, {**path_params, **local_params})
 
