@@ -15,7 +15,7 @@
 #
 import logging
 from flask import jsonify, request
-from . query_views import get_query_metadata, post_query_preview, post_query
+from . query_views import get_query_metadata, post_query_preview, post_query, get_query_next_page, get_query_metadata_next_page
 
 from . auth import auth_info, UserValidationException
 from python_settings import settings
@@ -26,7 +26,7 @@ from flask import Blueprint
 
 cohort_query_bp = Blueprint('query_bp', __name__, url_prefix='/{}'.format(settings.API_VERSION))
 
-@cohort_query_bp.route('/cohorts/<int:cohort_id>/query', methods=['POST'], strict_slashes=False)
+@cohort_query_bp.route('/cohorts/query/<int:cohort_id>', methods=['GET'], strict_slashes=False)
 def cohorts_query(cohort_id):
     try:
         user_info = auth_info()
@@ -74,10 +74,11 @@ def cohorts_query(cohort_id):
     return response
 
 
-@cohort_query_bp.route('/cohorts/preview/query', methods=['POST'], strict_slashes=False)
+@cohort_query_bp.route('/cohorts/query/preview', methods=['POST'], strict_slashes=False)
 def cohorts_preview_query():
     try:
-        result = post_query_preview()
+        user_info = auth_info()
+        result = post_query_preview(user_info['email'])
         if result:
             # Presence of a message means something went wrong with the filters we received
             if 'message' in result:
@@ -108,6 +109,47 @@ def cohorts_preview_query():
         response = jsonify({
             'code': 500,
             'message': 'Encountered an error while attempting to get metadata.'
+        })
+        response.status_code = 500
+
+    return response
+
+
+@cohort_query_bp.route('/cohorts/query/nextPage', methods=['GET'], strict_slashes=False)
+def cohorts_query_next_page():
+    try:
+        user_info = auth_info()
+        result = get_query_next_page(user_info['email'])
+        if result:
+            # Presence of a message means something went wrong with the filters we received
+            if 'message' in result:
+                response = jsonify({
+                    **result
+                })
+                if 'code' in result:
+                    response.status_code = result['code']
+                else:
+                    response.status_code = 500
+            else:
+                code = 200
+                response = jsonify({
+                    'code': code,
+                    **result
+                })
+                response.status_code = code
+
+        # Lack of a valid object means something went wrong on the server
+        else:
+            response = jsonify({
+                'code': 404,
+                'message': "Error trying to get next query page."})
+            response.status_code = 500
+
+    except Exception as e:
+        logger.exception(e)
+        response = jsonify({
+            'code': 500,
+            'message': 'Encountered an error while attempting to get next query page.'
         })
         response.status_code = 500
 
@@ -157,3 +199,48 @@ def query_dicom_metadata():
         response.status_code = 500
 
     return response
+
+@cohort_query_bp.route('/dicomMetadata/nextPage', methods=['GET'], strict_slashes=False)
+def query_dicom_metadata_nextpage():
+    """
+    GET: Retrieve metadata on all instances
+    """
+
+    try:
+        result = get_query_metadata_next_page()
+
+        if result:
+            # Presence of a message means something went wrong with the filters we received
+            if 'message' in result:
+                response = jsonify({
+                    **result
+                })
+                if 'code' in result:
+                    response.status_code = result['code']
+                else:
+                    response.status_code = 500
+            else:
+                code = 200
+                response = jsonify({
+                    'code': code,
+                    **result
+                })
+                response.status_code = code
+
+        # Lack of a valid object means something went wrong on the server
+        else:
+            response = jsonify({
+                'code': 404,
+                'message': "Error trying to get metadata."})
+            response.status_code = 500
+
+    except Exception as e:
+        logger.exception(e)
+        response = jsonify({
+            'code': 500,
+            'message': 'Encountered an error while attempting to get metadata.'
+        })
+        response.status_code = 500
+
+    return response
+

@@ -16,7 +16,8 @@
 
 import logging
 import json
-
+from python_settings import settings
+settings.BQ_MAX_ATTEMPTS=25
 from tests.cohort_utils import merge, pretty_print_cohortObjects, create_cohort_for_test_get_cohort_xxx, delete_cohort
 
 def test_guid(client, app):
@@ -39,12 +40,14 @@ def test_guid(client, app):
 
     query_string = {
         'sql': False,
+        'CRDC_Study_GUID': True,
+        'CRDC_Series_GUID':True,
         'CRDC_Instance_GUID': True,
         'page_size': 2000,
     }
 
     # Get a guid manifest of the cohort's instances
-    response = client.post('v1/cohorts/preview/manifest',
+    response = client.post('v1/cohorts/manifest/preview',
                             query_string = query_string,
                             data = json.dumps(cohortSpec),
                             headers=headers)
@@ -88,7 +91,7 @@ def test_url(client, app):
     }
 
     # Get a guid manifest of the cohort's instances
-    response = client.post('v1/cohorts/preview/manifest',
+    response = client.post('v1/cohorts/manifest/preview',
                             query_string = query_string,
                             data = json.dumps(cohortSpec),
                             headers=headers)
@@ -133,7 +136,7 @@ def test_SOPInstanceUID(client, app):
     }
 
     # Get a guid manifest of the cohort's instances
-    response = client.post('v1/cohorts/preview/manifest',
+    response = client.post('v1/cohorts/manifest/preview',
                             query_string = query_string,
                             data = json.dumps(cohortSpec),
                             headers=headers)
@@ -185,7 +188,7 @@ def test_all(client, app):
         GCS_URL=True,
         page_size=2000
     )
-    response = client.post('v1/cohorts/preview/manifest',
+    response = client.post('v1/cohorts/manifest/preview',
                             query_string = query_string,
                             data = json.dumps(cohortSpec),
                             headers=headers)
@@ -236,14 +239,13 @@ def test_paged_doi(client, app):
         'page_size': 5000
     }
 
-    response = client.post('v1/cohorts/preview/manifest',
+    response = client.post('v1/cohorts/manifest/preview',
                             query_string = query_string,
                             data = json.dumps(cohortSpec),
                             headers=headers)
 
     assert response.content_type == 'application/json'
     assert response.status_code == 200
-    cohort = response.json['cohort']
     manifest = response.json['manifest']
     next_page = response.json['next_page']
 
@@ -260,18 +262,16 @@ def test_paged_doi(client, app):
 
     while next_page:
         query_string = {
-            'access_method': 'guid',
             'next_page': next_page,
             'page_size': 5000
         }
 
-        response = client.post('v1/cohorts/preview/manifest',
+        response = client.get('v1/cohorts/manifest/nextPage',
                                query_string=query_string,
                                data=json.dumps(cohortSpec),
                                headers=headers)
         assert response.content_type == 'application/json'
         assert response.status_code == 200
-        cohort = response.json['cohort']
         manifest = response.json['manifest']
         next_page = response.json['next_page']
 
@@ -307,7 +307,7 @@ def test_paged_url(client, app):
         'page_size': 5000
     }
 
-    response = client.post('v1/cohorts/preview/manifest',
+    response = client.post('v1/cohorts/manifest/preview',
                             query_string = query_string,
                             data = json.dumps(cohortSpec),
                             headers=headers)
@@ -331,18 +331,16 @@ def test_paged_url(client, app):
 
     while next_page:
         query_string = {
-            'access_method': 'url',
             'next_page': next_page,
             'page_size': 5000
         }
 
-        response = client.post('v1/cohorts/preview/manifest',
+        response = client.get('v1/cohorts/manifest/nextPage',
                                query_string=query_string,
                                data=json.dumps(cohortSpec),
                                headers=headers)
         assert response.content_type == 'application/json'
         assert response.status_code == 200
-        cohort = response.json['cohort']
         manifest = response.json['manifest']
         next_page = response.json['next_page']
 
@@ -354,6 +352,7 @@ def test_paged_url(client, app):
 
 # This test submits an empty filter which means that all instances are returned.
 # Takes a lot of time and bandwidth. Uncomment to run
+# To test timeout handling, you may need toset BQ_MAX_ATTEMPTS=0
 # def test_paged_guid_all_instances(client, app):
 #
 #     import time
@@ -363,9 +362,15 @@ def test_paged_url(client, app):
 #         "description": "Example description",
 #         "filters": {}
 #         }
-#     }
 #     query_string = dict(
-#         access_method='guid',
+#         GCS_URL = True,
+#         Source_DOI = True,
+#         SOPInstanceUID = True,
+#         SeriesInstanceUID = True,
+#         StudyInstanceUID = True,
+#         CRDC_Study_GUID = True,
+#         CRDC_Series_GUID = True,
+#         CRDC_Instance_GUID = True,
 #         page_size=40000000
 #     )
 #
@@ -377,13 +382,25 @@ def test_paged_url(client, app):
 #
 #     start = time.time()
 #
-#     response = client.post('v1/cohorts/preview/manifest',
+#     response = client.post('v1/cohorts/manifest/preview',
 #                            query_string=query_string,
 #                            data=json.dumps(cohortSpec),
 #                            headers=headers)
 #
 #     elapsed = time.time()-start
 #     totalTime = elapsed
+#
+#     while response.status_code == 202:
+#         query_string = dict(
+#             next_page=response.json['next_page'],
+#             page_size=40000000
+#
+#         )
+#
+#         response = client.post('v1/cohorts/manifest/preview',
+#                            query_string=query_string,
+#                            data=json.dumps(cohortSpec),
+#                            headers=headers)
 #
 #     # Check that there wasn't an error with the request
 #     if response.status_code != 200:
@@ -403,7 +420,7 @@ def test_paged_url(client, app):
 #         query_string['next_page'] = response.json['next_page']
 #
 #         start = time.time()
-#         response = client.post('v1/cohorts/preview/manifest',
+#         response = client.post('v1/cohorts/manifest/preview',
 #                                query_string=query_string,
 #                                data=json.dumps(cohortSpec),
 #                                headers=headers)

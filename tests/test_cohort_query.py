@@ -36,7 +36,7 @@ def test_basic(client, app):
         'page_size': 2000,
     }
 
-    response = client.post(f'v1/cohorts/{id}/query',
+    response = client.get(f'v1/cohorts/query/{id}',
                             query_string = query_string,
                             data = json.dumps(queryPreviewBody),
                             headers=headers)
@@ -72,7 +72,7 @@ def test_basic2(client, app):
         'page_size': 2000,
     }
 
-    response = client.post(f'v1/cohorts/{id}/query',
+    response = client.get(f'v1/cohorts/query/{id}',
                             query_string = query_string,
                             data = json.dumps(queryPreviewBody),
                             headers=headers)
@@ -110,7 +110,7 @@ def test_paged(client, app):
         'page_size': 500,
     }
 
-    response = client.post(f'v1/cohorts/{id}/query',
+    response = client.get(f'v1/cohorts/query/{id}',
                             query_string = query_string,
                             data = json.dumps(queryPreviewBody),
                             headers=headers)
@@ -132,12 +132,12 @@ def test_paged(client, app):
 
     while response.json['next_page']:
         query_string = {
-            'sql': False,
+            # 'sql': False,
             'page_size': 500,
             'next_page': response.json['next_page']
         }
 
-        response = client.post(f'v1/cohorts/{id}/query',
+        response = client.get(f'v1/cohorts/query/nextPage',
                                query_string=query_string,
                                data=json.dumps(queryPreviewBody),
                                headers=headers)

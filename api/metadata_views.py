@@ -17,11 +17,11 @@
 
 import logging
 import re
-import os
-from os.path import join, dirname
+
 import requests
 
 from flask import request
+from api.auth import get_auth
 
 from python_settings import settings
 
@@ -29,22 +29,18 @@ logger = logging.getLogger(settings.LOGGER_NAME)
 
 BLACKLIST_RE = settings.BLACKLIST_RE
 
-def get_auth():
-    auth = {"Authorization": "APIToken {}".format(settings.API_AUTH_TOKEN)}
-    return auth
-
-
 def get_versions():
     info = None
 
     # try:
     auth = get_auth()
     logger.debug("BASE_URL={}".format(settings.BASE_URL))
+
     response = requests.get("{}/{}".format(settings.BASE_URL, 'collections/api/versions/'), headers=auth)
     try:
-        info = response.json()
         if response.status_code != 200:
             logger.error("[ERROR] Error code in response from web app: {}".format(response.status_code))
+            logger.error("[ERROR] Request: {}".format(settings.BASE_URL, 'collections/api/versions/'))
             logger.error("[ERROR] auth: {}".format(auth))
             logger.error("[ERROR] Request headers: {}".format(response.request.headers))
             logger.error("[ERROR] Content: {}".format(response.content))
@@ -52,6 +48,7 @@ def get_versions():
                 message="Encountered an error while retrieving the versions list: {}".format(response.content),
                 code=response.status_code
             )
+        info = response.json()
 
     except Exception as e:
         logger.error("[ERROR] No content in response from web app")
@@ -72,7 +69,7 @@ def get_attributes():
     info = None
 
     path_params = {
-        "idc_data_version": "",
+        # "idc_data_version": "",
         "data_source": ""
     }
 

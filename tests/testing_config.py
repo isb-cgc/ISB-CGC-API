@@ -14,8 +14,5 @@
 # limitations under the License.
 #
 
-VERSIONS=2
-
-def foo():
-    a=1
-    return a
+VERSIONS=4
+NUM_COLLECTIONS=107

@@ -70,7 +70,7 @@ def write_attribute(f, attribute):
         f.write(' "number"\n')
         f.write('        minItems: 1\n')
         f.write('        maxItems: 1\n')
-        for details in [('_lt',1), ('_lte',1), ('_btw',2), ('_gte',1), ('_gt',1)]:
+        for details in [('_lt',1), ('_lte',1), ('_ebtwe',2),('_ebtw',2), ('_btwe',2), ('_btw',2), ('_gte',1), ('_gt',1)]:
             write_continuous_numeric(f,"{}{}".format(name,details[0]),details[1])
 
     # data_type = attribute['data_type']
@@ -97,24 +97,24 @@ def gen_filters_schema(args, attributes):
             write_attribute(f, attribute)
         f.write('    additionalProperties: False\n')
 
-def gen_query_schema(args, attributes):
-    with open(args.query_file, "w") as f:
-        f.write(
-"""  queryFields:
-    type: "array"
-    items:
-      type: "string"
-      enum: [
-"""
-        )
-        for attribute in attributes:
-            if 'Image Data' in attribute['dataSetTypes'] or 'Derived Data' in attribute['dataSetTypes']:
-                if not attribute['name'].endswith(('_lt', '_lte', '_btw', '_gte', '_gt')):
-                        f.write('        "{}",\n'.format(attribute['name'].rsplit('_', 1)[0]))
-        f.write(
-"""      ]
-"""
-        )
+# def gen_query_schema(args, attributes):
+#     with open(args.query_file, "w") as f:
+#         f.write(
+# """  queryFields:
+#     type: "array"
+#     items:
+#       type: "string"
+#       enum: [
+# """
+#         )
+#         for attribute in attributes:
+#             if 'Image Data' in attribute['dataSetTypes'] or 'Derived Data' in attribute['dataSetTypes']:
+#                 if not attribute['name'].endswith(('_lt', '_lte', '_ebtwe', '_ebtw', '_btwe', '_btw', '_gte', '_gt')):
+#                         f.write('        "{}",\n'.format(attribute['name'].rsplit('_', 1)[0]))
+#         f.write(
+# """      ]
+# """
+#         )
 
 def gen_query_schema(args, attributes):
     with open(args.query_file, "w") as f:
@@ -128,7 +128,7 @@ def gen_query_schema(args, attributes):
         )
         for attribute in attributes:
             if 'Image Data' in attribute['dataSetTypes'] or 'Derived Data' in attribute['dataSetTypes']:
-                if not attribute['name'].endswith(('_lt', '_lte', '_btw', '_gte', '_gt')):
+                if not attribute['name'].endswith(('_lt', '_lte', '_ebtwe', '_ebtw', '_btwe', '_btw', '_gte', '_gt')):
                         f.write('        "{}",\n'.format(attribute['name'].rsplit('_', 1)[0]))
         f.write(
 """      ]
@@ -145,7 +145,7 @@ def gen_query_results_schema(args, attributes):
         )
         for attribute in attributes:
             if 'Image Data' in attribute['dataSetTypes'] or 'Derived Data' in attribute['dataSetTypes']:
-                if not attribute['name'].endswith(('_lt', '_lte', '_btw', '_gte', '_gt')):
+                if not attribute['name'].endswith(('_lt', '_lte', '_ebtwe', '_ebtw', '_btwe', '_btw', '_gte', '_gt')):
                     write_attribute(f, attribute)
 
 
@@ -154,9 +154,8 @@ def gen_json(args):
 
     gen_filters_schema(args, attributes)
 
-    # Mpt yet supporting /query
-    # gen_query_schema(args, attributes)
-    # gen_query_results_schema(args, attributes)
+    gen_query_schema(args, attributes)
+    gen_query_results_schema(args, attributes)
 
 
 if __name__ == '__main__':

@@ -42,7 +42,7 @@ def test_guid_v1(client, app):
     }
 
     # Get a doi manifest of the cohort's instances
-    response = client.get("{}/{}/manifest/".format('v1/cohorts', id),
+    response = client.get("{}/manifest/{}".format('v1/cohorts', id),
                 query_string = query_string)
     assert response.content_type == 'application/json'
     assert response.status_code == 200
@@ -63,7 +63,6 @@ def test_guid_v1(client, app):
 
 
 def test_guid_active(client, app):
-
     (id, filterSet) = create_cohort_for_test_get_cohort_xxx(client)
 
     query_string = {
@@ -72,7 +71,7 @@ def test_guid_active(client, app):
     }
 
     # Get a guid manifest of the cohort's instances
-    response = client.get("{}/{}/manifest/".format('v1/cohorts', id),
+    response = client.get("{}/manifest/{}/".format('v1/cohorts', id),
                 query_string = query_string)
     assert response.content_type == 'application/json'
     assert response.status_code == 200
@@ -113,7 +112,7 @@ def test_url_v1(client, app):
     }
 
     # Get a doi manifest of the cohort's instances
-    response = client.get("{}/{}/manifest/".format('v1/cohorts', id),
+    response = client.get("{}/manifest/{}/".format('v1/cohorts', id),
                 query_string = query_string)
     assert response.content_type == 'application/json'
     assert response.status_code == 200
@@ -143,7 +142,7 @@ def test_url_active(client, app):
     }
 
     # Get a guid manifest of the cohort's instances
-    response = client.get("{}/{}/manifest/".format('v1/cohorts', id),
+    response = client.get("{}/manifest/{}/".format('v1/cohorts', id),
                 query_string = query_string)
     assert response.content_type == 'application/json'
     assert response.status_code == 200
@@ -192,7 +191,7 @@ def test_all_v1(client, app):
         page_size = 2000
     )
     # Get a doi manifest of the cohort's instances
-    response = client.get("{}/{}/manifest/".format('v1/cohorts', id),
+    response = client.get("{}/manifest/{}/".format('v1/cohorts', id),
                 query_string = query_string)
     assert response.content_type == 'application/json'
     assert response.status_code == 200
@@ -240,7 +239,7 @@ def test_all_active(client, app):
         page_size = 2000
     )
     # Get a guid manifest of the cohort's instances
-    response = client.get("{}/{}/manifest/".format('v1/cohorts', id),
+    response = client.get("{}/manifest/{}/".format('v1/cohorts', id),
                 query_string = query_string)
     assert response.content_type == 'application/json'
     assert response.status_code == 200
@@ -291,7 +290,7 @@ def test_paged_guid_v1(client, app):
     }
 
     # Get a manifest of the cohort's instances
-    response = client.get("{}/{}/manifest/".format('v1/cohorts', id),
+    response = client.get("{}/manifest/{}/".format('v1/cohorts', id),
                 query_string = query_string)
     assert response.content_type == 'application/json'
     assert response.status_code == 200
@@ -314,17 +313,18 @@ def test_paged_guid_v1(client, app):
 
     while next_page:
         query_string = {
-            'access_method': 'guid',
+            # 'access_method': 'guid',
             'next_page': next_page,
             'page_size': 5000
         }
 
         # Get the list of objects in the cohort
-        response = client.get("{}/{}/manifest/".format('v1/cohorts', id),
+        # response = client.get("{}/manifest/{}/".format('v1/cohorts', id),
+        #             query_string = query_string)
+        response = client.get("{}/manifest/nextPage/".format('v1/cohorts', id),
                     query_string = query_string)
         assert response.content_type == 'application/json'
         assert response.status_code == 200
-        cohort = response.json['cohort']
         manifest = response.json['manifest']
         next_page = response.json['next_page']
 
@@ -347,7 +347,7 @@ def test_paged_guid_active(client, app):
     }
 
     # Get a manifest of the cohort's instances
-    response = client.get("{}/{}/manifest/".format('v1/cohorts', id),
+    response = client.get("{}/manifest/{}/".format('v1/cohorts', id),
                 query_string = query_string)
     assert response.content_type == 'application/json'
     assert response.status_code == 200
@@ -370,17 +370,15 @@ def test_paged_guid_active(client, app):
 
     while next_page:
         query_string = {
-            'access_method': 'guid',
             'next_page': next_page,
             'page_size': 5000
         }
 
         # Get the list of objects in the cohort
-        response = client.get("{}/{}/manifest/".format('v1/cohorts', id),
+        response = client.get("{}/manifest/nextPage/".format('v1/cohorts', id),
                     query_string = query_string)
         assert response.content_type == 'application/json'
         assert response.status_code == 200
-        cohort = response.json['cohort']
         manifest = response.json['manifest']
         next_page = response.json['next_page']
 
@@ -414,7 +412,7 @@ def test_paged_url_v1(client, app):
     }
 
     # Get a manifest of the cohort's instances
-    response = client.get("{}/{}/manifest/".format('v1/cohorts', id),
+    response = client.get("{}/manifest/{}/".format('v1/cohorts', id),
                           query_string=query_string)
     assert response.content_type == 'application/json'
     assert response.status_code == 200
@@ -437,17 +435,15 @@ def test_paged_url_v1(client, app):
 
     while next_page:
         query_string = {
-            'access_method': 'url',
             'next_page': next_page,
             'page_size': 5000
         }
 
         # Get the list of objects in the cohort
-        response = client.get("{}/{}/manifest/".format('v1/cohorts', id),
+        response = client.get("{}/manifest/nextPage/".format('v1/cohorts', id),
                               query_string=query_string)
         assert response.content_type == 'application/json'
         assert response.status_code == 200
-        cohort = response.json['cohort']
         manifest = response.json['manifest']
         next_page = response.json['next_page']
 
@@ -468,7 +464,7 @@ def test_paged_url_active(client, app):
     }
 
     # Get a manifest of the cohort's instances
-    response = client.get("{}/{}/manifest/".format('v1/cohorts', id),
+    response = client.get("{}/manifest/{}/".format('v1/cohorts', id),
                           query_string=query_string)
     assert response.content_type == 'application/json'
     assert response.status_code == 200
@@ -491,17 +487,15 @@ def test_paged_url_active(client, app):
 
     while next_page:
         query_string = {
-            'access_method': 'url',
             'next_page': next_page,
             'page_size': 5000
         }
 
         # Get the list of objects in the cohort
-        response = client.get("{}/{}/manifest/".format('v1/cohorts', id),
+        response = client.get("{}/manifest/nextPage/".format('v1/cohorts', id),
                               query_string=query_string)
         assert response.content_type == 'application/json'
         assert response.status_code == 200
-        cohort = response.json['cohort']
         manifest = response.json['manifest']
         next_page = response.json['next_page']
 

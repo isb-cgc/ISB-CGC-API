@@ -20,7 +20,7 @@ import re
 import json
 import requests
 
-from .auth import get_auth
+from api.auth import get_auth
 from cryptography.fernet import Fernet, InvalidToken
 
 import settings
@@ -68,7 +68,7 @@ def submit_BQ_job(sql_string, params):
     return results
 
 def perform_query(request, func, url, data=None, user=None):
-    query_info = None
+    query_info = {}
 
     path_params = {
         "sql": False,
@@ -88,32 +88,33 @@ def perform_query(request, func, url, data=None, user=None):
     access_methods = ["url", "guid"]
 
     try:
-        if 'next_page' in request.args and \
-            not request.args.get('next_page') in ["", None]:
-            # We have a non-empty next_page token
-            jobDescription = decrypt_pageToken(user, request.args.get('next_page'))
-            if jobDescription == {}:
-                query_info = dict(
-                    message="Invalid next_page token {}".format(request.args.get('next_page')),
-                    code=400
-                )
-                return query_info
-            else:
-                jobReference = jobDescription['jobReference']
-                next_page = jobDescription['next_page']
-
-            # If next_page is empty, then we timed out on the previous pass
-            if not next_page:
-                job_status = BigQuerySupport.wait_for_done(query_job={'jobReference':jobReference})
-
-                # Decide how to proceed depending on job status (DONE, RUNNING, ERRORS)
-                query_info = is_job_done(job_status, query_info, jobReference, user)
-                if "message" in query_info:
-                    return query_info
-            query_info = dict(
-                cohort = {},
-            )
-        else:
+        # if 'next_page' in request.args and \
+        #     not request.args.get('next_page') in ["", None]:
+        #     # We have a non-empty next_page token
+        #     jobDescription = decrypt_pageToken(user, request.args.get('next_page'))
+        #     if jobDescription == {}:
+        #         query_info = dict(
+        #             message="Invalid next_page token {}".format(request.args.get('next_page')),
+        #             code=400
+        #         )
+        #         return query_info
+        #     else:
+        #         jobReference = jobDescription['jobReference']
+        #         next_page = jobDescription['next_page']
+        #
+        #     # If next_page is empty, then we timed out on the previous pass
+        #     if not next_page:
+        #         job_status = BigQuerySupport.wait_for_done(query_job={'jobReference':jobReference})
+        #
+        #         # Decide how to proceed depending on job status (DONE, RUNNING, ERRORS)
+        #         query_info = is_job_done(job_status, query_info, jobReference, user)
+        #         if "message" in query_info:
+        #             return query_info
+        #     query_info = dict(
+        #         # cohort = {},
+        #     )
+        # else:
+        if True:
             # Validate most params only on initial request; ignore on next_page requests
             query_info = validate_keys(request, query_info, {**path_params, **local_params})
 
@@ -173,7 +174,7 @@ def perform_query(request, func, url, data=None, user=None):
     return query_info
 
 
-def perform_fixed_query(request, sql, user=None):
+def query_next_page(request, user):
     query_info = {}
 
     path_params = {
@@ -219,6 +220,85 @@ def perform_fixed_query(request, sql, user=None):
                 cohort = {},
             )
         else:
+            query_info = dict(
+                message="Invalid next_page token {}".format(request.args.get('next_page')),
+                code=400
+            )
+            return query_info
+
+        # Validate "local" params on initial and next_page requests
+        query_info = validate_parameters(request, query_info, local_params, local_booleans, local_integers, None)
+
+        if "message" in query_info:
+            return query_info
+
+        query_info, next_page = get_query_job_results(query_info,
+                                                            local_params['page_size'],
+                                                            jobReference,
+                                                            next_page)
+        if next_page:
+            cipher_pageToken = encrypt_pageToken(user, jobReference,
+                                                 next_page)
+        else:
+            cipher_pageToken = ""
+        query_info['next_page'] = cipher_pageToken
+
+    except Exception as e:
+        logger.exception(e)
+        query_info = dict(
+            message='[ERROR] get_query(): Error trying to preview a cohort',
+            code=400)
+
+    return query_info
+
+
+def perform_fixed_query(request, sql, user=None):
+    query_info = {}
+
+    path_params = {
+    }
+    path_booleans =  []
+    path_integers = []
+
+    local_params = {
+        "page_size": 1000
+    }
+    local_booleans = []
+    local_integers = ["page_size"]
+
+    jobReference = {}
+    next_page = ""
+
+    access_methods = ["url", "guid"]
+
+    try:
+        # if 'next_page' in request.args and \
+        #     not request.args.get('next_page') in ["", None]:
+        #     # We have a non-empty next_page token
+        #     jobDescription = decrypt_pageToken(user, request.args.get('next_page'))
+        #     if jobDescription == {}:
+        #         query_info = dict(
+        #             message="Invalid next_page token {}".format(request.args.get('next_page')),
+        #             code=400
+        #         )
+        #         return query_info
+        #     else:
+        #         jobReference = jobDescription['jobReference']
+        #         next_page = jobDescription['next_page']
+        #
+        #     # If next_page is empty, then we timed out on the previous pass
+        #     if not next_page:
+        #         job_status = BigQuerySupport.wait_for_done(query_job={'jobReference':jobReference})
+        #
+        #         # Decide how to proceed depending on job status (DONE, RUNNING, ERRORS)
+        #         query_info = is_job_done(job_status, query_info, jobReference, user)
+        #         if "message" in query_info:
+        #             return query_info
+        #     query_info = dict(
+        #         cohort = {},
+        #     )
+        # else:
+        if True:
             # Validate most params only on initial request; ignore on next_page requests
             query_info = validate_keys(request, query_info, {**path_params, **local_params})
 
@@ -237,7 +317,9 @@ def perform_fixed_query(request, sql, user=None):
 
             # Decide how to proceed depending on job status (DONE, RUNNING, ERRORS)
             query_info = is_job_done(job_status, query_info, jobReference, user)
+
             if "message" in query_info:
+                # The job did not complete in time, or there was some other issue.
                 return query_info
 
 
@@ -267,6 +349,88 @@ def perform_fixed_query(request, sql, user=None):
             code=400)
 
     return query_info
+
+def perform_fixed_query_next_page(request, user=None):
+    query_info = {}
+
+    path_params = {
+    }
+    path_booleans =  []
+    path_integers = []
+
+    local_params = {
+        "page_size": 1000
+    }
+    local_booleans = []
+    local_integers = ["page_size"]
+
+    jobReference = {}
+    next_page = ""
+
+    access_methods = ["url", "guid"]
+
+    try:
+        if 'next_page' in request.args and \
+            not request.args.get('next_page') in ["", None]:
+            # We have a non-empty next_page token
+            jobDescription = decrypt_pageToken(user, request.args.get('next_page'))
+            if jobDescription == {}:
+                query_info = dict(
+                    message="Invalid next_page token {}".format(request.args.get('next_page')),
+                    code=400
+                )
+                return query_info
+            else:
+                jobReference = jobDescription['jobReference']
+                next_page = jobDescription['next_page']
+
+            # If next_page is empty, then we timed out on the previous pass
+            if not next_page:
+                job_status = BigQuerySupport.wait_for_done(query_job={'jobReference':jobReference})
+
+                # Decide how to proceed depending on job status (DONE, RUNNING, ERRORS)
+                query_info = is_job_done(job_status, query_info, jobReference, user)
+                if "message" in query_info:
+                    return query_info
+            query_info = dict(
+                cohort = {},
+            )
+        else:
+            query_info = dict(
+                message="Invalid next_page token {}".format(request.args.get('next_page')),
+                code=400
+            )
+            return query_info
+            # Validate most params only on initial request; ignore on next_page requests
+
+        # print(("[STATUS] query_info with job_ref: {}").format(query_info))
+
+        # Validate "local" params on initial and next_page requests
+        query_info = validate_parameters(request, query_info, local_params, local_booleans, local_integers, None)
+
+        if "message" in query_info:
+            return query_info
+
+        query_info, next_page = get_query_job_results(query_info,
+                                                            local_params['page_size'],
+                                                            jobReference,
+                                                            next_page)
+        if next_page:
+            cipher_pageToken = encrypt_pageToken(user, jobReference,
+                                                 next_page)
+        else:
+            cipher_pageToken = ""
+        query_info['next_page'] = cipher_pageToken
+
+    except Exception as e:
+        logger.exception(e)
+        query_info = dict(
+            message='[ERROR] get_query(): Error trying to preview a cohort',
+            code=400)
+
+    return query_info
+
+
 
 
 def is_job_done(job_is_done, query_info, jobReference, user):

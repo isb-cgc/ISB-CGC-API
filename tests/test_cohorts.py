@@ -189,7 +189,7 @@ def test_delete_a_cohort(client, app):
     cohorts = response.json['cohorts']
     assert len(cohorts) == 1
     assert cohorts[0]['cohort_id'] == int(cohort1)
-    assert cohorts[0]['result']['message'] == "Cohort ID {} has already been deleted.".format(str(cohort1))
+    assert cohorts[0]['result']['message'] == "Cohort ID {} was not found - it may already be deleted.".format(str(cohort1))
 
 def test_delete_cohorts(client, app):
     # Create a cohort

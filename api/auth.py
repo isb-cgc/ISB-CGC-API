@@ -28,7 +28,7 @@ class UserValidationException(Exception):
     pass
 
 def get_auth():
-    auth = {"Authorization": "APIToken {}".format(settings.API_AUTH_TOKEN)}
+    auth = {"X-API-AUTH": "APIToken {}".format(settings.API_AUTH_TOKEN)}
     return auth
 
 
