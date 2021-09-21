@@ -125,7 +125,7 @@ def get_query_metadata():
         RequestedProcedureComments,	
         SmokingStatus	
 
-    FROM `idc-dev-etl.idc_v4.dicom_pivot_v4`
+    FROM `canceridc-data.idc_v4.dicom_pivot_v4`
     ORDER BY collection_id, PatientID, StudyInstanceUID, SeriesInstanceUID, SOPInstanceUID
     """
 
