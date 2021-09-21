@@ -209,12 +209,6 @@ def get_manifest(request, func, url, data=None, user=None):
 
             manifest_info = validate_parameters(request, manifest_info, path_params, path_booleans, path_integers, user)
 
-            # if path_params["access_method"] not in access_methods:
-            #     manifest_info = dict(
-            #         message="Invalid access_method {}".format(path_params['access_method']),
-            #         code=400
-            #     )
-
             valid = False
             for param in ['Collection_ID', 'Patient_ID', 'StudyInstanceUID',
                 'SeriesInstanceUID', 'SOPInstanceUID', 'Source_DOI', 'CRDC_Study_GUID',
