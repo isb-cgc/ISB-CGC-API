@@ -1,5 +1,5 @@
 mysqlclient==1.3.13
-django==2.2.13
+django==2.2.24
 requests==2.20.0
 ecdsa==0.13
 google-api-python-client==1.6.1
