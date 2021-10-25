@@ -73,7 +73,8 @@ CRON_MODULE             = os.environ.get('CRON_MODULE')
 SERVICE_ACCOUNT_LOG_NAME = os.environ.get('SERVICE_ACCOUNT_LOG_NAME', 'local_dev_logging')
 WEBAPP_LOGIN_LOG_NAME = os.environ.get('WEBAPP_LOGIN_LOG_NAME', 'local_dev_logging')
 GCP_ACTIVITY_LOG_NAME = os.environ.get('GCP_ACTIVITY_LOG_NAME', 'local_dev_logging')
-API_ACTIVITY_LOG_NAME = os.environ.get('API_ACTIVITY_LOG_NAME', 'local_dev_logging')
+DCF_REFRESH_LOG_NAME = os.environ.get('DCF_REFRESH_LOG_NAME', 'local_dev_logging')
+DCF_SA_REG_LOG_NAME = os.environ.get('DCF_SA_REG_LOG_NAME', 'local_dev_logging')
 
 BASE_URL                = os.environ.get('BASE_URL', 'https://isb-cgc.appspot.com')
 BASE_API_URL            = os.environ.get('BASE_API_URL', 'https://api-dot-isb-cgc.appspot.com')
@@ -411,7 +412,6 @@ SUPERADMIN_FOR_REPORTS                  = os.environ.get('SUPERADMIN_FOR_REPORTS
 
 # Log name for ERA login views
 LOG_NAME_ERA_LOGIN_VIEW                  = os.environ.get('LOG_NAME_ERA_LOGIN_VIEW', '')
-DCF_REFRESH_LOG_NAME                     = os.environ.get('DCF_REFRESH_LOG_NAME', '')
 
 # Service account blacklist file path
 SERVICE_ACCOUNT_BLACKLIST_PATH           = os.environ.get('SERVICE_ACCOUNT_BLACKLIST_PATH', '')
@@ -457,13 +457,16 @@ DCF_LOGIN_EXPIRATION_SECONDS             = int(os.environ.get('DCF_LOGIN_EXPIRAT
 ##############################
 #   Start django-finalware   #
 ##############################
+#
+# This should only be done on a local system which is running against its own VM. Deployed systems will already have
+# a site superuser so this would simply overwrite that user. Don't enable this in production!
+if (IS_DEV and CONNECTION_IS_LOCAL) or IS_CIRCLE:
+    INSTALLED_APPS += (
+        'finalware',)
 
-INSTALLED_APPS += (
-    'finalware',)
-
-SITE_SUPERUSER_USERNAME = os.environ.get('SUPERUSER_USERNAME', '')
-SITE_SUPERUSER_EMAIL = ''
-SITE_SUPERUSER_PASSWORD = os.environ.get('SUPERUSER_PASSWORD', '')
+    SITE_SUPERUSER_USERNAME = os.environ.get('SUPERUSER_USERNAME', 'isb')
+    SITE_SUPERUSER_EMAIL = ''
+    SITE_SUPERUSER_PASSWORD = os.environ.get('SUPERUSER_PASSWORD')
 
 ############################
 #   End django-finalware   #
@@ -501,7 +504,12 @@ NOTIFICATION_EMAIL_FROM_ADDRESS = os.environ.get('NOTIFICATOON_EMAIL_FROM_ADDRES
 # Explicitly check for known items
 BLACKLIST_RE = r'((?i)<script>|(?i)</script>|!\[\]|!!\[\]|\[\]\[\".*\"\]|(?i)<iframe>|(?i)</iframe>)'
 
+MITELMAN_URL = os.environ.get('MITELMAN_URL', 'https://mitelmandatabase.isb-cgc.org/')
+
 ##########################
 # OAUTH PLATFORM         #
 ##########################
 IDP        = os.environ.get('IDP', 'fence')
+# RAS TOKEN MAX LIFE 25 DAYS
+DCF_UPSTREAM_EXPIRES_IN_SEC = os.environ.get('DCF_UPSTREAM_EXPIRES_IN_SEC', '1296000')
+DCF_REFRESH_TOKEN_EXPIRES_IN_SEC = os.environ.get('DCF_REFRESH_TOKEN_EXPIRES_IN_SEC', '2592000')
