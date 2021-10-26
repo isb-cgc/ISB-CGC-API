@@ -108,9 +108,14 @@ DB_SOCKET = DATABASES['default']['HOST'] if 'cloudsql' in DATABASES['default']['
 
 CONN_MAX_AGE = 60
 
-IS_DEV = (os.environ.get('IS_DEV', 'False') == 'True')
-IS_APP_ENGINE_FLEX = os.getenv('GAE_INSTANCE', '').startswith(APP_ENGINE_FLEX)
-IS_APP_ENGINE = os.getenv('SERVER_SOFTWARE', '').startswith(APP_ENGINE)
+DEBUG                   = (os.environ.get('DEBUG', 'False') == 'True')
+CONNECTION_IS_LOCAL     = (os.environ.get('DATABASE_HOST', '127.0.0.1') == 'localhost')
+IS_CIRCLE               = (os.environ.get('CI', None) is not None)
+DEBUG_TOOLBAR           = ((os.environ.get('DEBUG_TOOLBAR', 'False') == 'True') and CONNECTION_IS_LOCAL)
+IS_DEV                  = (os.environ.get('IS_DEV', 'False') == 'True')
+IS_UAT                  = (os.environ.get('IS_UAT', 'False') == 'True')
+IS_APP_ENGINE_FLEX      = os.getenv('GAE_INSTANCE', '').startswith(APP_ENGINE_FLEX)
+IS_APP_ENGINE           = os.getenv('SERVER_SOFTWARE', '').startswith(APP_ENGINE)
 
 # Default to localhost for the site ID
 SITE_ID = 3
