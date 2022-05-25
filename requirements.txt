@@ -20,7 +20,7 @@ jsonschema==2.6.0
 Flask==1.1.1
 flask-cors==3.0.9
 flask-talisman==0.6.0
-pyjwt==1.6.1
+pyjwt==2.4.0
 cryptography==3.3.2
 future==0.17.1
 python-dotenv==0.10.0
