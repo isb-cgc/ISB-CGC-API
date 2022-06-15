@@ -305,7 +305,8 @@ INSTALLED_APPS = (
     'django.contrib.admindocs',
     'sharing',
     'cohorts',
-    'projects'
+    'projects',
+    'data_upload'
 )
 
 TEST_RUNNER = 'django.test.runner.DiscoverRunner'
@@ -472,6 +473,9 @@ OAUTH2_CLIENT_ID = os.environ.get('OAUTH2_CLIENT_ID', '')
 # Client ID used for OAuth2 - this is for the test database
 OAUTH2_CLIENT_SECRET = os.environ.get('OAUTH2_CLIENT_SECRET', '')
 
+# OAuth2 client ID for the API
+API_CLIENT_ID                   = os.environ.get('API_CLIENT_ID', '') # Client ID for the API
+
 #################################
 #   For NIH/eRA Commons login   #
 #################################
@@ -520,24 +524,6 @@ DCF_GOOGLE_SA_MONITOR_URL                = os.environ.get('DCF_GOOGLE_SA_MONITOR
 DCF_GOOGLE_SA_URL                        = os.environ.get('DCF_GOOGLE_SA_URL', '')
 DCF_TOKEN_REFRESH_WINDOW_SECONDS         = int(os.environ.get('DCF_TOKEN_REFRESH_WINDOW_SECONDS', 86400))
 DCF_LOGIN_EXPIRATION_SECONDS             = int(os.environ.get('DCF_LOGIN_EXPIRATION_SECONDS', 86400))
-
-##############################
-#   Start django-finalware   #
-##############################
-#
-# This should only be done on a local system which is running against its own VM. Deployed systems will already have
-# a site superuser so this would simply overwrite that user. Don't enable this in production!
-if (IS_DEV and CONNECTION_IS_LOCAL) or IS_CIRCLE:
-    INSTALLED_APPS += (
-        'finalware',)
-
-    SITE_SUPERUSER_USERNAME = os.environ.get('SUPERUSER_USERNAME', 'isb')
-    SITE_SUPERUSER_EMAIL = ''
-    SITE_SUPERUSER_PASSWORD = os.environ.get('SUPERUSER_PASSWORD')
-
-############################
-#   End django-finalware   #
-############################
 
 CONN_MAX_AGE = 60
 
