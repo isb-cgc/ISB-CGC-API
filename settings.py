@@ -473,6 +473,9 @@ OAUTH2_CLIENT_ID = os.environ.get('OAUTH2_CLIENT_ID', '')
 # Client ID used for OAuth2 - this is for the test database
 OAUTH2_CLIENT_SECRET = os.environ.get('OAUTH2_CLIENT_SECRET', '')
 
+# OAuth2 client ID for the API
+API_CLIENT_ID                   = os.environ.get('API_CLIENT_ID', '') # Client ID for the API
+
 #################################
 #   For NIH/eRA Commons login   #
 #################################
