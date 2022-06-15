@@ -27,14 +27,14 @@ from socket import gethostname, gethostbyname
 
 SECURE_LOCAL_PATH = os.environ.get('SECURE_LOCAL_PATH', '')
 
-if not exists(join(dirname(__file__), '../{}.env'.format(SECURE_LOCAL_PATH))):
+if not exists(join(dirname(__file__), './{}.env'.format(SECURE_LOCAL_PATH))):
     print("[ERROR] Couldn't open .env file expected at {}!".format(
-        join(dirname(__file__), '../{}.env'.format(SECURE_LOCAL_PATH)))
+        join(dirname(__file__), './{}.env'.format(SECURE_LOCAL_PATH)))
     )
     print("[ERROR] Exiting settings.py load - check your Pycharm settings and secure_path.env file.")
     exit(1)
 
-dotenv.read_dotenv(join(dirname(__file__), '../{}.env'.format(SECURE_LOCAL_PATH)))
+dotenv.read_dotenv(join(dirname(__file__), './{}.env'.format(SECURE_LOCAL_PATH)))
 
 APP_ENGINE_FLEX = 'aef-'
 APP_ENGINE = 'Google App Engine/'
@@ -80,15 +80,13 @@ CRON_MODULE             = os.environ.get('CRON_MODULE')
 # Log Names
 SERVICE_ACCOUNT_LOG_NAME = os.environ.get('SERVICE_ACCOUNT_LOG_NAME', 'local_dev_logging')
 WEBAPP_LOGIN_LOG_NAME = os.environ.get('WEBAPP_LOGIN_LOG_NAME', 'local_dev_logging')
+API_ACTIVITY_LOG_NAME = os.environ.get('API_ACTIVITY_LOG_NAME', 'local_dev_logging')
 GCP_ACTIVITY_LOG_NAME = os.environ.get('GCP_ACTIVITY_LOG_NAME', 'local_dev_logging')
 DCF_REFRESH_LOG_NAME = os.environ.get('DCF_REFRESH_LOG_NAME', 'local_dev_logging')
 DCF_SA_REG_LOG_NAME = os.environ.get('DCF_SA_REG_LOG_NAME', 'local_dev_logging')
 
 BASE_URL                = os.environ.get('BASE_URL', 'https://dev.isb-cgc.org')
 BASE_API_URL            = os.environ.get('BASE_API_URL', 'https://api-dot-dev.isb-cgc.org/v4')
-
-# Compute services - Should not be necessary in webapp
-PAIRWISE_SERVICE_URL    = os.environ.get('PAIRWISE_SERVICE_URL', None)
 
 # Data Buckets
 OPEN_DATA_BUCKET        = os.environ.get('OPEN_DATA_BUCKET', '')
@@ -504,7 +502,7 @@ if IS_DEV:
 ##########################
 
 # Path to application runtime JSON key
-GOOGLE_APPLICATION_CREDENTIALS        = join(dirname(__file__), '../{}{}'.format(SECURE_LOCAL_PATH,os.environ.get('GOOGLE_APPLICATION_CREDENTIALS', '')))
+GOOGLE_APPLICATION_CREDENTIALS        = join(dirname(__file__), './{}{}'.format(SECURE_LOCAL_PATH,os.environ.get('GOOGLE_APPLICATION_CREDENTIALS', '')))
 
 if not exists(GOOGLE_APPLICATION_CREDENTIALS):
     print("[ERROR] Google application credentials file wasn't found! Provided path: {}".format(GOOGLE_APPLICATION_CREDENTIALS))
@@ -514,7 +512,7 @@ if not exists(GOOGLE_APPLICATION_CREDENTIALS):
 MONITORING_SA_CLIENT_EMAIL            = os.environ.get('MONITORING_SA_CLIENT_EMAIL', '')
 
 # GCP monitoring Service Account key
-MONITORING_SA_ACCESS_CREDENTIALS      = join(dirname(__file__), '../{}{}'.format(SECURE_LOCAL_PATH,os.environ.get('MONITORING_SA_ACCESS_CREDENTIALS', '')))
+MONITORING_SA_ACCESS_CREDENTIALS      = join(dirname(__file__), './{}{}'.format(SECURE_LOCAL_PATH,os.environ.get('MONITORING_SA_ACCESS_CREDENTIALS', '')))
 
 if not exists(MONITORING_SA_ACCESS_CREDENTIALS):
     print("[ERROR] Monitoring service account credentials file wasn't found! Provided path: {}".format(MONITORING_SA_ACCESS_CREDENTIALS))
@@ -629,14 +627,6 @@ FILE_SIZE_UPLOAD_MAX = 1950000
 #################################
 DICOM_VIEWER = os.environ.get('DICOM_VIEWER', None)
 SLIM_VIEWER = os.environ.get('SLIM_VIEWER', None)
-
-#################################
-# NOTEBOOK settings
-#################################
-# NOTEBOOK_VIEWER = os.environ.get('NOTEBOOK_VIEWER', None)
-NOTEBOOK_VIEWER = ''
-# NOTEBOOK_ENV_LOC = os.path.join(BASE_DIR, os.environ.get('NOTEBOOK_ENV_PATH', None))
-# NOTEBOOK_SL_PATH = os.path.join(BASE_DIR, os.environ.get('NOTEBOOK_SL_PATH', None))
 
 #################################
 # SOLR settings
