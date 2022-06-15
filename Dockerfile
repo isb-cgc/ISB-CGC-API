@@ -30,6 +30,9 @@ RUN virtualenv /env -p python3
 ENV VIRTUAL_ENV /env
 ENV PATH /env/bin:$PATH
 
+RUN echo 'download mysql public build key'
+RUN apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 467B942D3A79BD29
+
 RUN apt-get update
 ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get install -y wget
