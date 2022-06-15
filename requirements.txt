@@ -23,6 +23,5 @@ flask-talisman==1.0.0
 pyjwt==2.4.0
 cryptography==3.3.2
 future==0.17.1
-python-dotenv==0.10.0
 ruamel.yaml==0.15.94
 google-cloud-storage==1.18.0
