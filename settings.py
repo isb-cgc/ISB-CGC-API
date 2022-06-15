@@ -322,39 +322,10 @@ INSTALLED_APPS = (
     'django.contrib.staticfiles',
     'django.contrib.admin',
     'django.contrib.admindocs',
-    'anymail',
-    'isb_cgc',
-    'visualizations',
-    'seqpeek',
     'sharing',
     'cohorts',
-    'projects',
-    'genes',
-    'variables',
-    'workbooks',
-    # 'notebooks',
-    'data_upload',
-    'analysis',
-    'offline',
-    'adminrestrict',
+    'projects'
 )
-
-#############################
-#  django-session-security  #
-#############################
-
-INSTALLED_APPS += ('session_security',)
-SESSION_SECURITY_WARN_AFTER = int(os.environ.get('SESSION_SECURITY_WARN_AFTER','540'))
-SESSION_SECURITY_EXPIRE_AFTER = int(os.environ.get('SESSION_SECURITY_EXPIRE_AFTER','600'))
-SESSION_EXPIRE_AT_BROWSER_CLOSE = True
-MIDDLEWARE.append(
-    # for django-session-security -- must go *after* AuthenticationMiddleware
-    'session_security.middleware.SessionSecurityMiddleware',
-)
-
-###############################
-# End django-session-security #
-###############################
 
 TEST_RUNNER = 'django.test.runner.DiscoverRunner'
 
@@ -441,8 +412,7 @@ INSTALLED_APPS += (
     'allauth',
     'allauth.account',
     'allauth.socialaccount',
-    'allauth.socialaccount.providers.google',
-    'rest_framework.authtoken')
+    'allauth.socialaccount.providers.google')
 
 # Template Engine Settings
 TEMPLATES = [
@@ -460,9 +430,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
-                'django.template.context_processors.tz',
-                'finalware.context_processors.contextify',
-                'isb_cgc.context_processor.additional_context',
+                'django.template.context_processors.tz'
             ),
             # add any loaders here; if using the defaults, we can comment it out
             # 'loaders': (
