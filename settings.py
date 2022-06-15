@@ -1,47 +1,45 @@
-"""
-Copyright 2019, Institute for Systems Biology
+###
+# Copyright 2015-2019, Institute for Systems Biology
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+###
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
+from __future__ import print_function
 
-   http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-"""
-
+from builtins import str
+from builtins import object
 import os
-from os.path import join, dirname
+from os.path import join, dirname, exists
 import sys
-from pathlib import Path
-from dotenv import load_dotenv
+import dotenv
 from socket import gethostname, gethostbyname
+
 
 SECURE_LOCAL_PATH = os.environ.get('SECURE_LOCAL_PATH', '')
 
-env_path = ''
-env_file = '.env'
+if not exists(join(dirname(__file__), './{}.env'.format(SECURE_LOCAL_PATH))):
+    print("[ERROR] Couldn't open .env file expected at {}!".format(
+        join(dirname(__file__), './{}.env'.format(SECURE_LOCAL_PATH)))
+    )
+    print("[ERROR] Exiting settings.py load - check your Pycharm settings and secure_path.env file.")
+    exit(1)
 
-if SECURE_LOCAL_PATH:
-    env_path += os.environ.get('SECURE_LOCAL_PATH')
-
-if os.environ.get('ENV_FILE', None):
-    env_file = os.environ.get('ENV_FILE')
-
-load_dotenv(dotenv_path=join(dirname(__file__), env_path+env_file))
+dotenv.read_dotenv(join(dirname(__file__), './{}.env'.format(SECURE_LOCAL_PATH)))
 
 APP_ENGINE_FLEX = 'aef-'
 APP_ENGINE = 'Google App Engine/'
 
 BASE_DIR                = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir)) + os.sep
-
-DEBUG                   = (os.environ.get('DEBUG', 'False') == 'True')
-
-print("[STATUS] DEBUG mode is "+str(DEBUG))
 
 SHARED_SOURCE_DIRECTORIES = [
     'ISB-CGC-Common'
@@ -51,9 +49,16 @@ SHARED_SOURCE_DIRECTORIES = [
 for directory_name in SHARED_SOURCE_DIRECTORIES:
     sys.path.append(os.path.join(BASE_DIR, directory_name))
 
+DEBUG                   = (os.environ.get('DEBUG', 'False') == 'True')
+CONNECTION_IS_LOCAL     = (os.environ.get('DATABASE_HOST', '127.0.0.1') == 'localhost')
+IS_CIRCLE               = (os.environ.get('CI', None) is not None)
+DEBUG_TOOLBAR           = ((os.environ.get('DEBUG_TOOLBAR', 'False') == 'True') and CONNECTION_IS_LOCAL)
+
+print("[STATUS] DEBUG mode is "+str(DEBUG), file=sys.stdout)
+
+# Theoretically Nginx allows us to use '*' for ALLOWED_HOSTS but...
 ALLOWED_HOSTS = list(set(os.environ.get('ALLOWED_HOST', 'localhost').split(',') + ['localhost', '127.0.0.1', '[::1]', gethostname(), gethostbyname(gethostname()),]))
-# Testing health checks problem
-# ALLOWED_HOSTS = ['*']
+print("ALLOWED_HOSTS: {}".format(ALLOWED_HOSTS))
 
 ADMINS                  = ()
 MANAGERS                = ADMINS
@@ -62,9 +67,11 @@ LOGGER_NAME = os.environ.get('API_LOGGER_NAME', 'main_logger')
 
 GCLOUD_PROJECT_ID              = os.environ.get('GCLOUD_PROJECT_ID', '')
 GCLOUD_PROJECT_NUMBER          = os.environ.get('GCLOUD_PROJECT_NUMBER', '')
-BIGQUERY_PROJECT_ID           = os.environ.get('BIGQUERY_PROJECT_ID', GCLOUD_PROJECT_ID)
-BIGQUERY_DATASET_V1         = os.environ.get('BIGQUERY_DATASET_V1', '')
-BIGQUERY_DATA_PROJECT_ID  = os.environ.get('BIGQUERY_DATA_PROJECT_ID', GCLOUD_PROJECT_ID)
+BIGQUERY_PROJECT_ID            = os.environ.get('BIGQUERY_PROJECT_ID', GCLOUD_PROJECT_ID)
+BIGQUERY_DATASET_V1            = os.environ.get('BIGQUERY_DATASET_V1', '')
+BIGQUERY_DATA_PROJECT_ID       = os.environ.get('BIGQUERY_DATA_PROJECT_ID', GCLOUD_PROJECT_ID)
+BIGQUERY_FEEDBACK_DATASET      = os.environ.get('BIGQUERY_FEEDBACK_DATASET', '')
+BIGQUERY_FEEDBACK_TABLE        = os.environ.get('BIGQUERY_FEEDBACK_TABLE', '')
 
 # Deployment module
 CRON_MODULE             = os.environ.get('CRON_MODULE')
@@ -77,13 +84,11 @@ GCP_ACTIVITY_LOG_NAME = os.environ.get('GCP_ACTIVITY_LOG_NAME', 'local_dev_loggi
 DCF_REFRESH_LOG_NAME = os.environ.get('DCF_REFRESH_LOG_NAME', 'local_dev_logging')
 DCF_SA_REG_LOG_NAME = os.environ.get('DCF_SA_REG_LOG_NAME', 'local_dev_logging')
 
-BASE_URL                = os.environ.get('BASE_URL', 'https://isb-cgc.appspot.com')
-BASE_API_URL            = os.environ.get('BASE_API_URL', 'https://api-dot-isb-cgc.appspot.com')
+BASE_URL                = os.environ.get('BASE_URL', 'https://dev.isb-cgc.org')
+BASE_API_URL            = os.environ.get('BASE_API_URL', 'https://api-dot-dev.isb-cgc.org/v4')
 
 # Data Buckets
 OPEN_DATA_BUCKET        = os.environ.get('OPEN_DATA_BUCKET', '')
-DCC_CONTROLLED_DATA_BUCKET = os.environ.get('DCC_CONTROLLED_DATA_BUCKET', '')
-CGHUB_CONTROLLED_DATA_BUCKET = os.environ.get('CGHUB_CONTROLLED_DATA_BUCKET', '')
 GCLOUD_BUCKET           = os.environ.get('GOOGLE_STORAGE_BUCKET')
 
 # BigQuery cohort storage settings
@@ -91,11 +96,37 @@ BIGQUERY_COHORT_DATASET_ID           = os.environ.get('BIGQUERY_COHORT_DATASET_I
 BIGQUERY_COHORT_TABLE_ID    = os.environ.get('BIGQUERY_COHORT_TABLE_ID', 'developer_cohorts')
 BIGQUERY_COSMIC_DATASET_ID    = os.environ.get('BIGQUERY_COSMIC_DATASET_ID', '')
 BIGQUERY_CGC_TABLE_ID    = os.environ.get('BIGQUERY_CGC_TABLE_ID', '')
+BQ_FILE_MANIFEST_TABLE_ID_HG19 = os.environ.get('BQ_FILE_MANIFEST_TABLE_ID_HG19', '')
+BQ_FILE_MANIFEST_TABLE_ID_HG38 = os.environ.get('BQ_FILE_MANIFEST_TABLE_ID_HG38', '')
+
+BQ_TCGA_BIOCLIN_TABLE_ID = os.environ.get('BQ_TCGA_BIOCLIN_TABLE_ID', '')
+BQ_TARGET_BIOCLIN_TABLE_ID = os.environ.get('BQ_TARGET_BIOCLIN_TABLE_ID', '')
+BQ_CCLE_BIOCLIN_TABLE_ID = os.environ.get('BQ_CCLE_BIOCLIN_TABLE_ID', '')
+BQ_BEATAML_BIOCLIN_TABLE_ID = os.environ.get('BQ_BEATAML_BIOCLIN_TABLE_ID', '')
+BQ_FM_BIOCLIN_TABLE_ID = os.environ.get('BQ_FM_BIOCLIN_TABLE_ID', '')
+BQ_OHSU_BIOCLIN_TABLE_ID = os.environ.get('BQ_OHSU_BIOCLIN_TABLE_ID', '')
+BQ_MMRF_BIOCLIN_TABLE_ID = os.environ.get('BQ_MMRF_BIOCLIN_TABLE_ID', '')
+BQ_GPRP_BIOCLIN_TABLE_ID = os.environ.get('BQ_GPRP_BIOCLIN_TABLE_ID', '')
+
 MAX_BQ_INSERT               = int(os.environ.get('MAX_BQ_INSERT', '500'))
 
 USER_DATA_ON            = bool(os.environ.get('USER_DATA_ON', False))
 
-DATABASES = {
+BQ_FILE_MANIFEST_TABLE_ID = {
+    'HG19': BQ_FILE_MANIFEST_TABLE_ID_HG19,
+    'HG38': BQ_FILE_MANIFEST_TABLE_ID_HG38
+}
+BQ_PROG_BIOCLIN_TABLE_ID = {
+    'TCGA': BQ_TCGA_BIOCLIN_TABLE_ID,
+    'TARGET': BQ_TARGET_BIOCLIN_TABLE_ID,
+    'CCLE': BQ_CCLE_BIOCLIN_TABLE_ID,
+    'BEATAML1.0': BQ_BEATAML_BIOCLIN_TABLE_ID,
+    'FM': BQ_FM_BIOCLIN_TABLE_ID,
+    'OHSU': BQ_OHSU_BIOCLIN_TABLE_ID,
+    'MMRF': BQ_MMRF_BIOCLIN_TABLE_ID,
+    'GPRP': BQ_GPRP_BIOCLIN_TABLE_ID
+}
+database_config = {
     'default': {
         'ENGINE': os.environ.get('DATABASE_ENGINE', 'django.db.backends.mysql'),
         'HOST': os.environ.get('DATABASE_HOST', '127.0.0.1'),
@@ -105,24 +136,44 @@ DATABASES = {
     }
 }
 
-DB_SOCKET = DATABASES['default']['HOST'] if 'cloudsql' in DATABASES['default']['HOST'] else None
+# On the build system, we need to use build-system specific database information
 
-CONN_MAX_AGE = 60
+if os.environ.get('CI', None) is not None:
+    database_config = {
+        'default': {
+            'ENGINE': os.environ.get('DATABASE_ENGINE', 'django.db.backends.mysql'),
+            'HOST': os.environ.get('DATABASE_HOST_BUILD', '127.0.0.1'),
+            'NAME': os.environ.get('DATABASE_NAME_BUILD', ''),
+            'PORT': 3306,
+            'USER': os.environ.get('DATABASE_USER_BUILD'),
+            'PASSWORD': os.environ.get('MYSQL_ROOT_PASSWORD_BUILD')
+        }
+    }
 
-DEBUG                   = (os.environ.get('DEBUG', 'False') == 'True')
-CONNECTION_IS_LOCAL     = (os.environ.get('DATABASE_HOST', '127.0.0.1') == 'localhost')
-IS_CIRCLE               = (os.environ.get('CI', None) is not None)
-DEBUG_TOOLBAR           = ((os.environ.get('DEBUG_TOOLBAR', 'False') == 'True') and CONNECTION_IS_LOCAL)
-IS_DEV                  = (os.environ.get('IS_DEV', 'False') == 'True')
-IS_UAT                  = (os.environ.get('IS_UAT', 'False') == 'True')
-IS_APP_ENGINE_FLEX      = os.getenv('GAE_INSTANCE', '').startswith(APP_ENGINE_FLEX)
-IS_APP_ENGINE           = os.getenv('SERVER_SOFTWARE', '').startswith(APP_ENGINE)
+DATABASES = database_config
+DB_SOCKET = database_config['default']['HOST'] if 'cloudsql' in database_config['default']['HOST'] else None
+
+IS_DEV = (os.environ.get('IS_DEV', 'False') == 'True')
+IS_UAT = (os.environ.get('IS_UAT', 'False') == 'True')
+IS_APP_ENGINE_FLEX = os.getenv('GAE_INSTANCE', '').startswith(APP_ENGINE_FLEX)
+IS_APP_ENGINE = os.getenv('SERVER_SOFTWARE', '').startswith(APP_ENGINE)
+
+# If this is a GAE-Flex deployment, we don't need to specify SSL; the proxy will take
+# care of that for us
+if 'DB_SSL_CERT' in os.environ and not IS_APP_ENGINE_FLEX:
+    DATABASES['default']['OPTIONS'] = {
+        'ssl': {
+            'ca': os.environ.get('DB_SSL_CA'),
+            'cert': os.environ.get('DB_SSL_CERT'),
+            'key': os.environ.get('DB_SSL_KEY')
+        }
+    }
 
 # Default to localhost for the site ID
 SITE_ID = 3
 
 if IS_APP_ENGINE_FLEX or IS_APP_ENGINE:
-    print("[STATUS] AppEngine detected - swapping in live site ID.")
+    print("[STATUS] AppEngine Flex detected.", file=sys.stdout)
     SITE_ID = 4
 
 
@@ -215,6 +266,10 @@ STATIC_ROOT = ''
 # Example: "http://media.lawrence.com/static/"
 STATIC_URL = os.environ.get('STATIC_URL', '/static/')
 
+BQ_ECOSYS_STATIC_URL = os.environ.get('BQ_ECOSYS_STATIC_URL', 'https://storage.googleapis.com/webapp-static-files-isb-cgc-dev/bq_ecosys/')
+
+CITATIONS_STATIC_URL = os.environ.get('CITATIONS_STATIC_URL', 'https://storage.googleapis.com/webapp-static-files-isb-cgc-dev/static/citations/')
+
 GCS_STORAGE_URI = os.environ.get('GCS_STORAGE_URI', 'https://storage.googleapis.com/')
 
 # Additional locations of static files
@@ -235,6 +290,10 @@ STATICFILES_FINDERS = (
 # Make this unique, and don't share it with anybody.
 SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', '')
 
+SECURE_HSTS_INCLUDE_SUBDOMAINS = (os.environ.get('SECURE_HSTS_INCLUDE_SUBDOMAINS','True') == 'True')
+SECURE_HSTS_PRELOAD = (os.environ.get('SECURE_HSTS_PRELOAD','True') == 'True')
+SECURE_HSTS_SECONDS = int(os.environ.get('SECURE_HSTS_SECONDS','3600'))
+
 INSTALLED_APPS = (
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -247,12 +306,8 @@ INSTALLED_APPS = (
     'sharing',
     'cohorts',
     'projects',
-    'data_upload',
+    'data_upload'
 )
-
-###############################
-# End django-session-security #
-###############################
 
 TEST_RUNNER = 'django.test.runner.DiscoverRunner'
 
@@ -357,8 +412,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
-                'django.template.context_processors.tz',
-                'finalware.context_processors.contextify'
+                'django.template.context_processors.tz'
             ),
             # add any loaders here; if using the defaults, we can comment it out
             # 'loaders': (
@@ -380,10 +434,10 @@ AUTHENTICATION_BACKENDS = (
 
 SOCIALACCOUNT_PROVIDERS = \
     { 'google':
-        { 'SCOPE': ['profile', 'email'],
-          'AUTH_PARAMS': { 'access_type': 'online' }
-        }
-    }
+          { 'SCOPE': ['profile', 'email'],
+            'AUTH_PARAMS': { 'access_type': 'online' }
+            }
+      }
 
 # Trying to force allauth to only use https
 ACCOUNT_DEFAULT_HTTP_PROTOCOL = 'https'
@@ -397,16 +451,30 @@ if IS_DEV:
 ##########################
 
 # Path to application runtime JSON key
-GOOGLE_APPLICATION_CREDENTIALS  = join(dirname(__file__), '{}{}'.format(SECURE_LOCAL_PATH,os.environ.get('GOOGLE_APPLICATION_CREDENTIALS', '')))
+GOOGLE_APPLICATION_CREDENTIALS        = join(dirname(__file__), './{}{}'.format(SECURE_LOCAL_PATH,os.environ.get('GOOGLE_APPLICATION_CREDENTIALS', '')))
 
-# OAuth2 client ID for the API
-API_CLIENT_ID                   = os.environ.get('API_CLIENT_ID', '') # Client ID for the API
+if not exists(GOOGLE_APPLICATION_CREDENTIALS):
+    print("[ERROR] Google application credentials file wasn't found! Provided path: {}".format(GOOGLE_APPLICATION_CREDENTIALS))
+    exit(1)
 
-# GCP monitoring Service Account
+# GCP monitoring Service Account, needed for template display
 MONITORING_SA_CLIENT_EMAIL            = os.environ.get('MONITORING_SA_CLIENT_EMAIL', '')
 
 # GCP monitoring Service Account key
-MONITORING_SA_ACCESS_CREDENTIALS      = join(dirname(__file__), '{}{}'.format(SECURE_LOCAL_PATH,os.environ.get('MONITORING_SA_ACCESS_CREDENTIALS', '')))
+MONITORING_SA_ACCESS_CREDENTIALS      = join(dirname(__file__), './{}{}'.format(SECURE_LOCAL_PATH,os.environ.get('MONITORING_SA_ACCESS_CREDENTIALS', '')))
+
+if not exists(MONITORING_SA_ACCESS_CREDENTIALS):
+    print("[ERROR] Monitoring service account credentials file wasn't found! Provided path: {}".format(MONITORING_SA_ACCESS_CREDENTIALS))
+    exit(1)
+
+# Client ID used for OAuth2 - this is for IGV and the test database
+OAUTH2_CLIENT_ID = os.environ.get('OAUTH2_CLIENT_ID', '')
+
+# Client ID used for OAuth2 - this is for the test database
+OAUTH2_CLIENT_SECRET = os.environ.get('OAUTH2_CLIENT_SECRET', '')
+
+# OAuth2 client ID for the API
+API_CLIENT_ID                   = os.environ.get('API_CLIENT_ID', '') # Client ID for the API
 
 #################################
 #   For NIH/eRA Commons login   #
@@ -427,9 +495,6 @@ GOOGLE_ORG_WHITELIST_PATH                = os.environ.get('GOOGLE_ORG_WHITELIST_
 
 # Managed Service Account file path
 MANAGED_SERVICE_ACCOUNTS_PATH            = os.environ.get('MANAGED_SERVICE_ACCOUNTS_PATH', '')
-
-# Dataset configuration file path
-DATASET_CONFIGURATION_PATH               = os.environ.get('DATASET_CONFIGURATION_PATH', '')
 
 # DCF Phase I enable flag
 DCF_TEST                                 = bool(os.environ.get('DCF_TEST', 'False') == 'True')
@@ -460,23 +525,21 @@ DCF_GOOGLE_SA_URL                        = os.environ.get('DCF_GOOGLE_SA_URL', '
 DCF_TOKEN_REFRESH_WINDOW_SECONDS         = int(os.environ.get('DCF_TOKEN_REFRESH_WINDOW_SECONDS', 86400))
 DCF_LOGIN_EXPIRATION_SECONDS             = int(os.environ.get('DCF_LOGIN_EXPIRATION_SECONDS', 86400))
 
-##############################
-#   Start django-finalware   #
-##############################
-#
-# This should only be done on a local system which is running against its own VM. Deployed systems will already have
-# a site superuser so this would simply overwrite that user. Don't enable this in production!
-if (IS_DEV and CONNECTION_IS_LOCAL) or IS_CIRCLE:
-    INSTALLED_APPS += (
-        'finalware',)
-
-    SITE_SUPERUSER_USERNAME = os.environ.get('SUPERUSER_USERNAME', 'isb')
-    SITE_SUPERUSER_EMAIL = ''
-    SITE_SUPERUSER_PASSWORD = os.environ.get('SUPERUSER_PASSWORD')
+CONN_MAX_AGE = 60
 
 ############################
-#   End django-finalware   #
+#   CUSTOM TEMPLATE CONTEXT
 ############################
+
+############################
+#   METRICS SETTINGS
+############################
+
+SITE_GOOGLE_ANALYTICS   = bool(os.environ.get('SITE_GOOGLE_ANALYTICS_TRACKING_ID', None) is not None)
+SITE_GOOGLE_ANALYTICS_TRACKING_ID = os.environ.get('SITE_GOOGLE_ANALYTICS_TRACKING_ID', '')
+METRICS_SPREADSHEET_ID = os.environ.get('METRICS_SPREADSHEET_ID', '')
+METRICS_SHEET_ID = os.environ.get('METRICS_SHEET_ID', '0')
+METRICS_BQ_DATASET = os.environ.get('METRICS_BQ_DATASET', '')
 
 ##############################################################
 #   MAXes to prevent size-limited events from causing errors
@@ -493,11 +556,19 @@ MAX_FILES_IGV = 5
 # Rough max file size to allow for eg. barcode list upload, to revent triggering RequestDataTooBig
 FILE_SIZE_UPLOAD_MAX = 1950000
 
-# Apache Solr settings
+#################################
+# Viewer settings
+#################################
+DICOM_VIEWER = os.environ.get('DICOM_VIEWER', None)
+SLIM_VIEWER = os.environ.get('SLIM_VIEWER', None)
+
+#################################
+# SOLR settings
+#################################
 SOLR_URI = os.environ.get('SOLR_URI', '')
 SOLR_LOGIN = os.environ.get('SOLR_LOGIN', '')
 SOLR_PASSWORD = os.environ.get('SOLR_PASSWORD', '')
-SOLR_CERT = os.environ.get('SOLR_CERT', '')
+SOLR_CERT = join(dirname(dirname(__file__)), "{}{}".format(SECURE_LOCAL_PATH, os.environ.get('SOLR_CERT', '')))
 
 ##############################################################
 #   MailGun Email Settings
@@ -506,11 +577,30 @@ SOLR_CERT = os.environ.get('SOLR_CERT', '')
 EMAIL_SERVICE_API_URL = os.environ.get('EMAIL_SERVICE_API_URL', '')
 EMAIL_SERVICE_API_KEY = os.environ.get('EMAIL_SERVICE_API_KEY', '')
 NOTIFICATION_EMAIL_FROM_ADDRESS = os.environ.get('NOTIFICATOON_EMAIL_FROM_ADDRESS', '')
+NOTIFICATION_EMAIL_TO_ADDRESS = os.environ.get('NOTIFICATION_EMAIL_TO_ADDRESS', '')
+
+#########################
+# django-anymail        #
+#########################
+#
+# Anymail lets us use the Django mail system with mailgun (eg. in local account email verification)
+ANYMAIL = {
+    "MAILGUN_API_KEY": EMAIL_SERVICE_API_KEY,
+    "MAILGUN_SENDER_DOMAIN": 'mg.isb-cgc.org',  # your Mailgun domain, if needed
+}
+EMAIL_BACKEND = "anymail.backends.mailgun.EmailBackend"
+DEFAULT_FROM_EMAIL = NOTIFICATION_EMAIL_FROM_ADDRESS
+SERVER_EMAIL = "info@isb-cgc.org"
+
+# Cron user settings
+CRON_USER = os.environ.get('CRON_USER', 'cron_user')
+CRON_AUTH_KEY = os.environ.get('CRON_AUTH_KEY', 'Token')
 
 # Explicitly check for known items
 BLACKLIST_RE = r'((?i)<script>|(?i)</script>|!\[\]|!!\[\]|\[\]\[\".*\"\]|(?i)<iframe>|(?i)</iframe>)'
 
 MITELMAN_URL = os.environ.get('MITELMAN_URL', 'https://mitelmandatabase.isb-cgc.org/')
+TP53_URL = os.environ.get('TP53_URL', 'https://tp53.isb-cgc.org/')
 
 ##########################
 # OAUTH PLATFORM         #
