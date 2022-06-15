@@ -305,7 +305,8 @@ INSTALLED_APPS = (
     'django.contrib.admindocs',
     'sharing',
     'cohorts',
-    'projects'
+    'projects',
+    'data_upload'
 )
 
 TEST_RUNNER = 'django.test.runner.DiscoverRunner'
