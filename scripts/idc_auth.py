@@ -117,6 +117,7 @@ def main():
     maybe_print('access_token: ' + credentials.access_token)
     maybe_print('refresh_token: ' + credentials.refresh_token)
 
+
 def parse_args():
     parser = ArgumentParser()
     parser.add_argument('--storage_file', '-s', default=DEFAULT_STORAGE_FILE, help='storage file to use for the credentials (default is {})'.format(DEFAULT_STORAGE_FILE))
@@ -125,6 +126,7 @@ def parse_args():
     parser.add_argument('--client_id', default=CLIENT_ID)
     parser.add_argument('--client_secret', default=CLIENT_SECRET)
     return parser.parse_args()
+
 
 if __name__ == '__main__':
     main()
