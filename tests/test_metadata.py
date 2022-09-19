@@ -15,7 +15,8 @@
 #
 
 import json
-from tests.testing_config import VERSIONS, NUM_COLLECTIONS
+from tests.testing_config import VERSIONS, NUM_COLLECTIONS, NUM_ANALYSIS_RESULTS
+from fnmatch import fnmatch
 
 
 def test_versions(client, app):
@@ -28,12 +29,6 @@ def test_versions(client, app):
         v = f"{version}.0"
         assert v in versions
         assert versions[v]['active'] == (version == VERSIONS)
-        # assert versions[v]["data_sources"] == \
-        #     [{'data_type': 'Clinical, Biospecimen, and Mutation Data',
-        #      'name': 'isb-cgc.TCGA_bioclin_v0.Biospecimen'},
-        #     {'data_type': 'Clinical, Biospecimen, and Mutation Data',
-        #      'name': 'isb-cgc.TCGA_bioclin_v0.clinical_v1_1'},
-        #      {'data_type': 'Image Data', 'name': f'idc-dev-etl.idc_v{version}.dicom_pivot_v{version}'}]
 
 
 
@@ -57,205 +52,55 @@ def test_collections(client, app):
     assert collection['subject_count'] == 14
     assert collection['supporting_data'] == 'Clinical, Genomics'
 
-# def test_analysis_results_v1(client, app):
-#
-#     query_string = dict(
-#         idc_data_version = "1.0"
-#     )
-#
-#     response = client.get('/v1/analysis_results',
-#                           query_string = query_string)
-#     assert response.status_code == 200
-#     data = response.json['analysisResults']
-#     results = {r['description']: \
-#                    {key: r[key] for key in r.keys() if key != 'description'} \
-#                    for r in data}
-#     assert len(results) == 3
-#     assert 'Standardized representation of the TCIA LIDC-IDRI annotations using DICOM' in results
-#     collection = results['Standardized representation of the TCIA LIDC-IDRI annotations using DICOM' ]
-#     assert collection['idc_data_versions'] == ['1.0']
-#     assert collection['analysisArtifacts'] == 'Tumor segmentations, image features'
-#     assert collection['cancer_type'] == 'Lung'
-#     assert collection['collections'] =='LIDC-IDRI'
-#     # assert collection['date_updated'] == '2016-08-29'
-#     assert collection['doi'] == '10.7937/TCIA.2018.h7umfurq'
-#     assert collection['location'] == 'Chest'
-#     assert collection['subject_count'] == 1010
-
 
 def test_analysis_results(client, app):
-
-    # query_string = dict(
-    #     idc_data_version = "2.0"
-    # )
-
-    # response = client.get('/v1/analysis_results',
-    #                       query_string = query_string)
     response = client.get('/v1/analysis_results')
     assert response.status_code == 200
     data = response.json['analysisResults']
     results = {r['description']: \
                    {key: r[key] for key in r.keys() if key != 'description'} \
                    for r in data}
-    assert len(results) == 6
+    assert len(results) == NUM_ANALYSIS_RESULTS
     assert 'Standardized representation of the TCIA LIDC-IDRI annotations using DICOM' in results
     collection = results['Standardized representation of the TCIA LIDC-IDRI annotations using DICOM' ]
     # assert collection['idc_data_versions'] == ['1.0','2.0']
     assert collection['analysisArtifacts'] == 'Tumor segmentations, image features'
     assert collection['cancer_type'] == 'Lung'
-    assert collection['collections'] =='LIDC-IDRI'
+    assert collection['collections'].lower().replace(' ','_').replace('-','_') =='lidc_idri'
     # assert collection['date_updated'] == '2016-08-29'
     assert collection['doi'] == '10.7937/TCIA.2018.h7umfurq'
     assert collection['location'] == 'Chest'
     assert collection['subject_count'] == 1010
 
-    # query_string = dict()
-    #
-    # response = client.get('/v1/analysis_results',
-    #                       query_string = query_string)
-    # assert response.status_code == 200
-    # data = response.json['analysisResults']
-    # results = {r['description']: \
-    #                {key: r[key] for key in r.keys() if key != 'description'} \
-    #                for r in data}
-    # assert len(results) == 6
-    # assert 'PROSTATEx Zone Segmentations' in results
-    # collection = results['PROSTATEx Zone Segmentations' ]
-    # # assert collection['idc_data_versions'] == ['1.0','2.0']
-    # assert collection['analysisArtifacts'] == 'Prostate Segmentations'
-    # assert collection['cancer_type'] == 'Prostate'
-    # assert collection['collections'] =='SPIE-AAPM-NCI PROSTATEx Challenges (Prostate-X-Challenge)'
-    # # assert collection['date_updated'] == '2016-08-29'
-    # assert collection['doi'] == '10.7937/tcia.nbb4-4655'
-    # assert collection['location'] == 'Prostate'
-    # assert collection['subject_count'] == 98
-
 
 def test_attributes(client, app):
-
-    # query_string = dict(
-    #     # idc_data_version = f'{v}.0',
-    #     data_source = f'idc-dev-etl.idc_v4.dicom_pivot_v4'
-    # )
-    # response = client.get('/v1/attributes',
-    #                       query_string = query_string)
 
     response = client.get('/v1/attributes')
     assert response.status_code == 200
     data = response.json
     data_sources = data["data_sources"]
 
-    source_name = 'idc-dev-etl.idc_v4.dicom_pivot_v4'
+    source_name = f'idc-dev-etl.idc_v{VERSIONS}.dicom_pivot_v{VERSIONS}'
     data_source = next(
         source for source in data_sources if source['data_source'] == source_name)
     attributes = {attribute['name']: {key: attribute[key] for key in attribute.keys() if key != 'name'} for attribute in data_source['attributes']}
     assert 'Modality' in attributes
     assert attributes['Modality'] == {'active': True, 'data_type': 'Categorical String', 'units': None}
 
-    # query_string = dict(
-    #     # idc_data_version=f'{v}.0',
-    #     data_source = 'isb-cgc.TCGA_bioclin_v0.Biospecimen'
-    # )
-    # response = client.get('/v1/attributes',
-    #                       query_string = query_string)
-    # assert response.status_code == 200
-    # data = response.json['data_sources']
-
-    source_name = 'idc-dev-etl.idc_v4.tcga_biospecimen_rel9'
+    source_name = f'idc-dev-etl.idc_v*.tcga_biospecimen_rel9'
     data_source = next(
-        source for source in data_sources if source['data_source'] == source_name)
+        source for source in data_sources if fnmatch(source['data_source'], source_name))
     attributes = {attribute['name']: {key: attribute[key] for key in attribute.keys() if key != 'name'} for attribute in data_source['attributes']}
     assert 'sample_type' in attributes
     # assert attributes['program_name']['dataSetTypes'][0]['data_type'] == 'Clinical, Biospecimen, and Mutation Data'
     assert attributes['sample_type'] == {'active': True, 'data_type': 'Categorical String', 'units': None}
 
-    # query_string = dict(
-    #     # idc_data_version=f'{v}.0',
-    #     data_source = 'isb-cgc.TCGA_bioclin_v0.clinical_v1_1'
-    # )
-    # response = client.get('/v1/attributes',
-    #                       query_string = query_string)
-    # assert response.status_code == 200
-    # data = response.json['data_sources']
-
-    source_name = 'idc-dev-etl.idc_v4.tcga_clinical_rel9'
+    source_name = f'idc-dev-etl.idc_v*.tcga_clinical_rel9'
     data_source = next(
-        source for source in data_sources if source['data_source'] == source_name)
+        source for source in data_sources if fnmatch(source['data_source'], source_name))
     attributes = {attribute['name']: {key: attribute[key] for key in attribute.keys() if key != 'name'} for attribute in data_source['attributes']}
     assert 'disease_code' in attributes
     # assert attributes['program_name']['dataSetTypes'][0]['data_type'] == 'Clinical, Biospecimen, and Mutation Data'
     assert attributes['disease_code'] == {'active': True, 'data_type': 'Categorical String', 'units': None}
 
 
-# def test_attributes_current(client, app):
-#     query_string = dict(
-#         idc_data_version='',
-#         data_source = 'isb-cgc.TCGA_bioclin_v0.Biospecimen'
-#     )
-#     response = client.get('/v1/attributes',
-#                           query_string = query_string)
-#     assert response.status_code == 200
-#     data = response.json['data_sources']
-#     data_sources = {data_source['data_source']: {key: data_source[key] for key in data_source.keys() if key != 'data_source'} for data_source in data}
-#     attributes = {attribute['name']: {key: attribute[key] for key in attribute.keys() if key != 'name'} for attribute in data_sources[query_string['data_source']]['attributes']}
-#     assert 'program_name' in attributes
-#     # assert attributes['program_name']['dataSetTypes'][0]['data_type'] == 'Clinical, Biospecimen, and Mutation Data'
-#     assert attributes['program_name'] == {'active': True, 'data_type': 'Categorical String', 'units': None}
-#
-#     query_string = dict(
-#         idc_data_version='',
-#     data_source = 'isb-cgc.TCGA_bioclin_v0.clinical_v1_1'
-#     )
-#     response = client.get('/v1/attributes',
-#                           query_string = query_string)
-#     assert response.status_code == 200
-#     data = response.json['data_sources']
-#     data_sources = {data_source['data_source']: {key: data_source[key] for key in data_source.keys() if key != 'data_source'} for data_source in data}
-#     attributes = {attribute['name']: {key: attribute[key] for key in attribute.keys() if key != 'name'} for attribute in data_sources[query_string['data_source']]['attributes']}
-#     assert 'program_name' in attributes
-#     # assert attributes['program_name']['dataSetTypes'][0]['data_type'] == 'Clinical, Biospecimen, and Mutation Data'
-#     assert attributes['program_name'] == {'active': True, 'data_type': 'Categorical String', 'units': None}
-#
-#     query_string = dict(
-#         idc_data_version = '',
-#         data_source = f'idc-dev-etl.idc_v{VERSIONS}.dicom_pivot_v{VERSIONS}'
-#     )
-#     response = client.get('/v1/attributes',
-#                           query_string = query_string)
-#     assert response.status_code == 200
-#     assert response.json['idc_data_version'] == f'{VERSIONS}.0'
-#     data = response.json['data_sources']
-#     data_sources = {data_source['data_source']: {key: data_source[key] for key in data_source.keys() if key != 'data_source'} for data_source in data}
-#     attributes = {attribute['name']: {key: attribute[key] for key in attribute.keys() if key != 'name'} for attribute in data_sources[query_string['data_source']]['attributes']}
-#     assert 'Modality' in attributes
-#     assert attributes['Modality'] == {'active': True, 'data_type': 'Categorical String', 'units': None}
-
-
-# def test_attributes_all_data_sources(client, app):
-#     for v in range(1, VERSIONS+1):
-#         query_string = dict(
-#             idc_data_version = f'{v}.0',
-#             data_source = ''
-#         )
-#         response = client.get('/v1/attributes',
-#                               query_string = query_string)
-#         assert response.status_code == 200
-#         assert response.json['idc_data_version'] == f'{v}.0'
-#         data = response.json['data_sources']
-#         data_sources = {data_source['data_source']: {key: data_source[key] for key in data_source.keys() if key != 'data_source'} for data_source in data}
-#         for data_source in data_sources:
-#             attributes = {attribute['name']: {key: attribute[key] for key in attribute.keys() if key != 'name'} for attribute in data_sources[data_source]['attributes']}
-#             if data_source == f'idc-dev-etl.idc_v{v}.dicom_pivot_v{v}':
-#                 assert 'Modality' in attributes
-#                 assert attributes['Modality'] == {'active': True, 'data_type': 'Categorical String', 'units': None}
-#             elif data_source == 'isb-cgc.TCGA_bioclin_v0.Biospecimen':
-#                 assert 'program_name' in attributes
-#                 # assert attributes['program_name']['dataSetTypes'][0]['data_type'] == 'Clinical, Biospecimen, and Mutation Data'
-#                 assert attributes['program_name'] == {'active': True, 'data_type': 'Categorical String',
-#                                                       'units': None}
-#             elif data_source == 'isb-cgc.TCGA_bioclin_v0.clinical_v1_1':
-#                 assert 'program_name' in attributes
-#                 # assert attributes['program_name']['dataSetTypes'][0]['data_type'] == 'Clinical, Biospecimen, and Mutation Data'
-#                 assert attributes['program_name'] == {'active': True, 'data_type': 'Categorical String', 'units': None}
-#             else:
-#                 assert 0==1

@@ -50,7 +50,7 @@ def auth_info():
         if 'email' not in user_info:
             raise UserValidationException("Couldn't obtain user email - the correct scopes may not have been provided during authorization!")
     elif os.getenv("DEBUG"):
-        logger.info("[STATUS] Using debug API user info")
+        logger.debug("[STATUS] Using debug API user info")
         user_info = {
             'id' : settings.DEBUG_API_ID,
             'email' : settings.DEBUG_API_EMAIL
