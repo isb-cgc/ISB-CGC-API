@@ -29,7 +29,7 @@ apt-get -y install software-properties-common
 
 if [ -n "$CI" ]; then
     echo 'download mysql public build key'
-    # apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 5072E1F5
+    apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 5072E1F5
     apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 467B942D3A79BD29
 #    wget -O - -q 'https://keyserver.ubuntu.com/pks/lookup?op=get&search=0x8C718D3B5072E1F5' | grep -v '>' | grep -v '<' | grep -v '{' > mysql_pubkey.asc
 #    apt-key add mysql_pubkey.asc || exit 1
