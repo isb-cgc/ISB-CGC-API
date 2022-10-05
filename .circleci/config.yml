@@ -119,13 +119,6 @@ jobs:
           name: Install Dependencies
           command: |
             sudo -E /bin/bash ./shell/install-deps.sh
-      - run:
-          name: Compare Config
-          command: |
-            sudo -E /bin/bash ./shell/compareConfig.sh "gs://${DEPLOYMENT_BUCKET}/deployment_config.txt"
-            sudo -E /bin/bash ./shell/compareConfig.sh "gs://${DEPLOYMENT_BUCKET}/${ENV_FILE}"
-            sudo -E /bin/bash ./shell/compareConfig.sh "gs://${DEPLOYMENT_BUCKET}/${API_APP_YAML}"
-            sudo -E /bin/bash ./shell/compareConfig.sh "gs://${DEPLOYMENT_BUCKET}/${OPEN_API_YAML}"
       - save_cache:
           key: idc-api-lib-{{ checksum "requirements.txt" }}
           paths:
@@ -138,6 +131,13 @@ jobs:
           name: Staging
           command: |
             sudo -E /bin/bash ./shell/gcloud-pull-staging-files.sh
+      - run:
+          name: Compare Config
+          command: |
+            sudo -E /bin/bash ./shell/compareConfig.sh "gs://${DEPLOYMENT_BUCKET}/deployment_config.txt"
+            sudo -E /bin/bash ./shell/compareConfig.sh "gs://${DEPLOYMENT_BUCKET}/${ENV_FILE}"
+            sudo -E /bin/bash ./shell/compareConfig.sh "gs://${DEPLOYMENT_BUCKET}/${API_APP_YAML}"
+            sudo -E /bin/bash ./shell/compareConfig.sh "gs://${DEPLOYMENT_BUCKET}/${OPEN_API_YAML}"
       - save_cache:
           key: idc-api-{{ .Branch }}-{{ .Revision }}-{{ epoch }}
           paths:
