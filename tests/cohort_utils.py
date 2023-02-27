@@ -155,7 +155,7 @@ def delete_cohort(client, id):
 def current_version(client):
     response = client.get('/v1/versions')
     data = response.json['versions']
-    current = max([v['idc_data_version'] for v in data])
+    current = str(max([float(v['idc_data_version']) for v in data]))
     return current
 
 

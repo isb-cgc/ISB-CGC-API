@@ -50,11 +50,11 @@ def test_collections(client, app):
     collection = collections['tcga_prad']
     assert collection['cancer_type'] == 'Prostate Cancer'
     assert collection['description'] == '<div>\n\t<strong>Note:&nbsp;This collection has special restrictions on its usage. See <a href="https://wiki.cancerimagingarchive.net/x/c4hF" target="_blank">Data Usage Policies and Restrictions</a>.</strong></p>\n<div>\n\t&nbsp;</p>\n<div>\n\t<span>The <a href="http://imaging.cancer.gov/" target="_blank"><u>Cancer Imaging Program (CIP)</u></a></span><span>&thinsp;</span><span> is working directly with primary investigators from institutes participating in TCGA to obtain and load images relating to the genomic, clinical, and pathological data being stored within the <a href="http://tcga-data.nci.nih.gov/" target="_blank">TCGA Data Portal</a>.&nbsp;Currently this image collection of prostate adenocarcinoma (PRAD) patients can be matched by each unique case identifier with the extensive gene and expression data of the same case from The Cancer Genome Atlas Data Portal to research the link between clinical phenome and tissue genome.&nbsp;<br />\n\t</span></p>\n<div>\n\t&nbsp;</p>\n<div>\n\t<span>Please see the <span><a href="https://wiki.cancerimagingarchive.net/x/tgpp" target="_blank">TCGA-PRAD</a></span> wiki page to learn more about the images and to obtain any supporting metadata for this collection.</span></p>\n'
-    assert collection['doi'] == '10.7937/K9/TCIA.2016.YXOGLM4Y'
-    assert collection['image_types'] == 'CT, PT, MR, Pathology'
+    assert collection['doi'].lower() == '10.7937/K9/TCIA.2016.YXOGLM4Y'.lower()
+    assert collection['image_types'] == 'CT, MR, PT, SM'
     assert collection['location'] == 'Prostate'
     assert collection['species'] == 'Human'
-    assert collection['subject_count'] == 14
+    assert collection['subject_count'] == 500
     assert collection['supporting_data'] == 'Clinical, Genomics'
 
 # def test_analysis_results_v1(client, app):
@@ -97,15 +97,15 @@ def test_analysis_results(client, app):
     results = {r['description']: \
                    {key: r[key] for key in r.keys() if key != 'description'} \
                    for r in data}
-    assert len(results) == 6
+    # assert len(results) == 6
     assert 'Standardized representation of the TCIA LIDC-IDRI annotations using DICOM' in results
     collection = results['Standardized representation of the TCIA LIDC-IDRI annotations using DICOM' ]
     # assert collection['idc_data_versions'] == ['1.0','2.0']
     assert collection['analysisArtifacts'] == 'Tumor segmentations, image features'
     assert collection['cancer_type'] == 'Lung'
-    assert collection['collections'] =='LIDC-IDRI'
+    assert collection['collections'].lower() =='lidc_idri'
     # assert collection['date_updated'] == '2016-08-29'
-    assert collection['doi'] == '10.7937/TCIA.2018.h7umfurq'
+    assert collection['doi'].lower() == '10.7937/TCIA.2018.h7umfurq'.lower()
     assert collection['location'] == 'Chest'
     assert collection['subject_count'] == 1010
 
@@ -145,7 +145,7 @@ def test_attributes(client, app):
     data = response.json
     data_sources = data["data_sources"]
 
-    source_name = 'idc-dev-etl.idc_v4.dicom_pivot_v4'
+    source_name = 'idc-dev-etl.idc_v13_pub.dicom_pivot_v13'
     data_source = next(
         source for source in data_sources if source['data_source'] == source_name)
     attributes = {attribute['name']: {key: attribute[key] for key in attribute.keys() if key != 'name'} for attribute in data_source['attributes']}

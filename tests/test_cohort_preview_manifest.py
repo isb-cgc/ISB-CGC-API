@@ -109,7 +109,7 @@ def test_url(client, app):
     json_manifest = manifest['json_manifest']
     assert len(json_manifest) == 1638
     assert manifest['totalFound'] == 1638
-    assert {'GCS_URL': 'gs://idc_dev/0013f110-0928-4d66-ba61-7c3e80b48a68.dcm'} in json_manifest
+    assert {'GCS_URL': 'gs://idc-dev-open/0013f110-0928-4d66-ba61-7c3e80b48a68.dcm'} in json_manifest
 
 
 def test_SOPInstanceUID(client, app):
@@ -154,7 +154,7 @@ def test_SOPInstanceUID(client, app):
     json_manifest = manifest['json_manifest']
     assert len(json_manifest) == 1
     assert manifest['totalFound'] == 1
-    assert {'GCS_URL': 'gs://idc_dev/de364433-4eaf-440e-b714-6c8b7cf3c613.dcm'} in json_manifest
+    assert {'GCS_URL': 'gs://idc-dev-open/de364433-4eaf-440e-b714-6c8b7cf3c613.dcm'} in json_manifest
 
 
 def test_all(client, app):
@@ -212,7 +212,7 @@ def test_all(client, app):
     assert '1.3.6.1.4.1.14519.5.2.1.3671.4018.768291480177931556369061239508' in [row['StudyInstanceUID'] for row in json_manifest]
     assert 'tcga_read' in [row['Collection_ID'] for row in json_manifest]
     assert '10.7937/K9/TCIA.2016.F7PPNPNU' in [row['Source_DOI'] for row in json_manifest]
-    assert next(row for row in json_manifest if row['GCS_URL'] == 'gs://idc_dev/0013f110-0928-4d66-ba61-7c3e80b48a68.dcm')
+    assert next(row for row in json_manifest if row['GCS_URL'] == 'gs://idc-dev-open/0013f110-0928-4d66-ba61-7c3e80b48a68.dcm')
     assert next(row for row in json_manifest if row['CRDC_Study_GUID'] == 'dg.4DFC/7efeae5d-6263-4184-9ad4-8df22720ada9')
     assert next(row for row in json_manifest if row['CRDC_Series_GUID'] == 'dg.4DFC/67e22f90-36e1-40aa-88bb-9b2efb5616f2')
     assert next(row for row in json_manifest if row['CRDC_Instance_GUID'] == 'dg.4DFC/0013f110-0928-4d66-ba61-7c3e80b48a68')
@@ -346,7 +346,7 @@ def test_paged_url(client, app):
 
         totalRowsReturned += manifest["rowsReturned"]
         complete_manifest.extend(manifest['json_manifest'])
-    assert {'GCS_URL': 'gs://idc_dev/0009e98e-bca2-4a68-ada1-62e0a8b2dbaf.dcm'} in json_manifest
+    assert {'GCS_URL': 'gs://idc-dev-open/0009e98e-bca2-4a68-ada1-62e0a8b2dbaf.dcm'} in json_manifest
     assert totalRowsReturned == manifest['totalFound']
     assert manifest['totalFound'] == len(complete_manifest)
 
