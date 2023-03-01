@@ -51,6 +51,11 @@ commands:
             echo "export DEPLOYMENT_PROJECT_ID=${PROJECT_ID}" >> $BASH_ENV
             echo "export DEPLOYMENT_BUCKET=${BUCKET}" >> $BASH_ENV
 
+            echo "Project settings assigned:"
+            echo "Deployment client: ${CLIENT_EMAIL}"
+            echo "Deployment project: ${PROJECT_ID}"
+            echo "Deployment bucket: gs://${BUCKET}"
+
   deployment_config:
     steps:
       - run:
@@ -58,6 +63,12 @@ commands:
           command: |
             sudo -E /bin/bash ./shell/pull_config.sh
             xargs -a deployment_config.txt -I{} echo "export {}" >> $BASH_ENV
+            # Set up test/deployment database values
+            echo "export MYSQL_ROOT_PASSWORD_BUILD=isb" >> $BASH_ENV
+            echo "export DATABASE_NAME_BUILD=build_database" >> $BASH_ENV
+            echo "export DATABASE_PASSWORD_BUILD=isb" >> $BASH_ENV
+            echo "export DATABASE_USER_BUILD=django-user" >> $BASH_ENV
+            echo "export DATABASE_HOST_BUILD=127.0.0.1" >> $BASH_ENV
 
   auth:
     steps:
@@ -72,9 +83,26 @@ commands:
           name: "Install CloudSDK"
           command: |
             echo "export CLOUDSDK_CORE_DISABLE_PROMPTS=1" >> $BASH_ENV
+            sudo apt-get update -qq
+            sudo apt-get install ca-certificates python3-distutils apt-transport-https gnupg
             echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] http://packages.cloud.google.com/apt cloud-sdk main" | sudo tee -a /etc/apt/sources.list.d/google-cloud-sdk.list
             curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key --keyring /usr/share/keyrings/cloud.google.gpg add -
-            sudo apt-get update && sudo apt-get -y install google-cloud-sdk
+            sudo apt-get update -qq
+            sudo apt-get -y install google-cloud-sdk
+
+  run_tests:
+    steps:
+      - run:
+          name: "Run Tests"
+          command: |
+            sudo -E /bin/bash ./shell/run_tests.sh
+
+  run_lint:
+    steps:
+      - run:
+          name: "Run Pylint"
+          command: |
+            sudo -E /bin/bash ./shell/run_lint.sh
 
 jobs:
   build_job:
@@ -82,13 +110,14 @@ jobs:
       TZ: "/usr/share/zoneinfo/America/Los_Angeles"
     working_directory: ~/ISB-CGC-API
     docker:
-      - image: circleci/python:3.7.0-stretch
-      - image: circleci/mysql:5.7
+      - image: cimg/python:3.8.14
+      - image: cimg/mysql:5.7.36
         environment:
           MYSQL_ROOT_HOST: "%"
           MYSQL_USER: ubuntu
           MYSQL_PASSWORD: "isb"
           MYSQL_ROOT_PASSWORD: "isb"
+          MYSQL_DATABASE: "build_database"
     steps:
       - checkout
       - run:
@@ -110,9 +139,18 @@ jobs:
       - auth
       - deployment_config
       - run:
-          name: Staging
+          name: Staging and Database testing
           command: |
             sudo -E /bin/bash ./shell/gcloud-pull-staging-files.sh
+      - run_lint
+      - run:
+          name: Compare Config
+          command: |
+            echo "Compare env config file"
+            sudo -E /bin/bash ./shell/compareConfig.sh "gs://${DEPLOYMENT_BUCKET}/${ENV_FILE}"
+            echo "Compare deployment config text file"
+            sudo -E /bin/bash ./shell/compareConfig.sh "gs://${DEPLOYMENT_BUCKET}/deployment_config.txt"
+
       - save_cache:
           key: isb-cgc-api-{{ .Branch }}-{{ .Revision }}-{{ epoch }}
           paths:
@@ -120,6 +158,7 @@ jobs:
             - ./shell
             - ./ISB-CGC-Common
             - ./Dockerfile
+            - ./.dockerignore
             - ./app.yaml
             - ./openapi-appengine.yaml
             - ./gunicorn.conf.py
@@ -127,12 +166,13 @@ jobs:
             - ./txt
             - ./json
             - ./.env
+            - ./solr-ssl.pem
+
   deploy_job:
     environment:
       TZ: "/usr/share/zoneinfo/America/Los_Angeles"
     docker:
-      - image: circleci/python:3.7.0-stretch
-    working_directory: ~/ISB-CGC-API
+      - image: cimg/python:3.8
     steps:
       - restore_cache:
           keys:
@@ -144,6 +184,7 @@ jobs:
       - deploy:
           nane: Deployment
           command: |
+            sudo -E rm -rf ./lib
             sudo -E /bin/bash ./shell/unpack_for_deployment.sh
             sudo -E gcloud endpoints services deploy ./openapi-appengine.yaml
             sudo -E gcloud app deploy --verbosity=debug ./app.yaml --quiet
