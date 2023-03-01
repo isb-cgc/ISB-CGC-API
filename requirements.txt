@@ -21,7 +21,8 @@ Flask==2.1.0
 flask-cors==3.0.9
 flask-talisman==1.0.0
 pyjwt==2.4.0
-cryptography==3.3.2
-future==0.17.1
+pyOpenSSL==23.0.0    # This is necessary for the local builds specifically...
+cryptography==39.0.1 # because of this version, which is incompatible with pyOpenSSL < 22
+future==0.18.3
 ruamel.yaml==0.15.94
 google-cloud-storage==1.18.0
