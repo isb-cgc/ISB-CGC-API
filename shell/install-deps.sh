@@ -1,6 +1,13 @@
 if [ -n "$CI" ]; then
+    echo "Check our Python and Ubuntu versions since they keep getting updated without warning..."
+
+    ls -l /usr/bin/python3*
+    cat /etc/os-release
+
+    export DEBIAN_FRONTEND=noninteractive
     export HOME=/home/circleci/${CIRCLE_PROJECT_REPONAME}
     export HOMEROOT=/home/circleci/${CIRCLE_PROJECT_REPONAME}
+
     # Clone dependencies
     COMMON_BRANCH=master
     if [[ ${CIRCLE_BRANCH} =~ isb-cgc-(prod|uat|test).* ]]; then
@@ -22,14 +29,11 @@ export DEBIAN_FRONTEND=noninteractive
 
 # Install and update apt-get info
 echo "Preparing System..."
-apt-get -y install software-properties-common
-
+apt-get -y --force-yes install software-properties-common
 if [ -n "$CI" ]; then
     # Use these next 4 lines to update mysql public build key
     echo 'download mysql public build key'
-    apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 5072E1F5
-#    wget -O - -q 'https://keyserver.ubuntu.com/pks/lookup?op=get&search=0x8C718D3B5072E1F5' | grep -v '>' | grep -v '<' | grep -v '{' > mysql_pubkey.asc
-#    apt-key add mysql_pubkey.asc || exit 1
+    apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 467B942D3A79BD29
     echo 'mysql build key update done.'
     wget https://dev.mysql.com/get/mysql-apt-config_0.8.9-1_all.deb
     apt-get install -y lsb-release
@@ -37,15 +41,32 @@ if [ -n "$CI" ]; then
 fi
 
 apt-get update -qq
+apt-get install ca-certificates
 
 # Install apt-get dependencies
 echo "Installing Dependencies..."
-if [ -n "$CI" ]; then
-apt-get install -y --force-yes unzip libffi-dev libssl-dev libmysqlclient-dev python3-mysqldb python3-dev libpython3-dev git ruby g++ curl dos2unix python3.5
-apt-get install -y --force-yes mysql-client
+apt-get install -y --force-yes unzip libffi-dev libssl-dev git ruby g++ curl dos2unix
+# CircleCI provides a Python 3.8 image, but locally, we use 3.7 to mimic the Dockerfile
+if [ -z "${CI}" ]; then
+    # Update to Python 3.7
+    add-apt-repository ppa:deadsnakes/ppa
+    apt update
+    apt install -y --force-yes python3.7
+    # Set Python 3.7 as the python3 version
+    update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.7 1
+    apt-get install -y --force-yes python3.7-venv python3.7-distutils python3.7-dev
 else
-    apt-get install -qq -y --force-yes unzip libffi-dev libssl-dev libmysqlclient-dev python3-mysqldb python3-dev libpython3-dev git ruby g++ curl dos2unix python3.5 mysql-client-5.7
+  apt-get install -y --force-yes python3-distutils
 fi
+apt-get install -y --force-yes python3-mysqldb libmysqlclient-dev libpython3-dev build-essential
+apt-get install -y --force-yes mysql-client
+
+if [ -z "${CI}" ]; then
+  # Per https://stackoverflow.com/questions/13708180/python-dev-installation-error-importerror-no-module-named-apt-pkg
+  # there's an issue with Python 3.7 and deadsnakes.
+  cp -v /usr/lib/python3/dist-packages/apt_pkg.cpython-36m-x86_64-linux-gnu.so /usr/lib/python3/dist-packages/apt_pkg.so
+fi
+
 echo "Dependencies Installed"
 
 # If this is local development, clean out lib for a re-structuring
@@ -77,7 +98,7 @@ if [ -z "${CI}" ] || [ ! -d "/usr/lib/google-cloud-sdk" ]; then
     echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.cloud.google.com/apt cloud-sdk main" | sudo tee -a /etc/apt/sources.list.d/google-cloud-sdk.list
     apt-get install apt-transport-https ca-certificates
     curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key --keyring /usr/share/keyrings/cloud.google.gpg add -
-    apt-get update && apt-get -y --allow-downgrades install google-cloud-sdk=251.0.0-0
-    apt-get -y --allow-downgrades install google-cloud-sdk-app-engine-python=251.0.0-0
+    apt-get update && apt-get -y install google-cloud-sdk
+    apt-get -y install google-cloud-sdk-app-engine-python
     echo "Google Cloud SDK Installed"
 fi
