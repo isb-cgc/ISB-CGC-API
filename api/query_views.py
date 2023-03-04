@@ -25,8 +25,8 @@ from werkzeug.exceptions import BadRequest
 from python_settings import settings
 from . query_utils import perform_query, perform_fixed_query, query_next_page, perform_fixed_query_next_page
 from jsonschema import validate as schema_validate, ValidationError
-from . schemas.filterset import COHORT_FILTER_SCHEMA
-from . schemas.querypreviewbody import QUERY_PREVIEW_BODY
+# from . schemas.querypreviewbody import QUERY_PREVIEW_BODY
+from . schemas.filters import COHORT_FILTERS_SCHEMA
 from . schemas.queryfields import QUERY_FIELDS
 
 BLACKLIST_RE = settings.BLACKLIST_RE
@@ -204,14 +204,16 @@ def post_query_preview(user):
             return dict(
                 message = 'No queryFields provided; ensure that the request body contains a \'queryFields\' component.',
                 code = 400)
-
-        schema_validate(request_data, QUERY_PREVIEW_BODY)
-
         if 'name' not in request_data["cohort_def"] or request_data["cohort_def"]['name'] == "":
             return dict(
                 message = 'A name was not provided for this cohort. The cohort was not made.',
                 code = 400
             )
+
+        # schema_validate(request_data, QUERY_PREVIEW_BODY)
+        schema_validate(request_data['cohort_def']['filters'], COHORT_FILTERS_SCHEMA)
+        schema_validate(request_data['queryFields'], QUERY_FIELDS)
+
 
         blacklist = re.compile(BLACKLIST_RE, re.UNICODE)
         match = blacklist.search(str(request_data["cohort_def"]['name']))
