@@ -63,6 +63,9 @@ print("ALLOWED_HOSTS: {}".format(ALLOWED_HOSTS))
 ADMINS                  = ()
 MANAGERS                = ADMINS
 
+# For Django 3.2, we need to specify our default auto-increment type for PKs
+DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
+
 LOGGER_NAME = os.environ.get('API_LOGGER_NAME', 'main_logger')
 
 GCLOUD_PROJECT_ID              = os.environ.get('GCLOUD_PROJECT_ID', '')
