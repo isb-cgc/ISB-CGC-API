@@ -1,6 +1,6 @@
-django==2.2.28
+django==3.2.19
 mysqlclient==2.0.1
-requests==2.20.0
+requests==2.31.0
 ecdsa==0.13.3
 google-api-python-client==1.12.8
 httplib2==0.19.0
@@ -15,14 +15,14 @@ six==1.13.0
 uritemplate==3.0.0
 GoogleAppEngineCloudStorageClient==1.9.22.1
 django-dotenv==1.4.2
-django-allauth==0.41.0
+django-allauth==0.43.0
 jsonschema==2.6.0
 Flask==2.2.5
 flask-cors==3.0.9
 flask-talisman==1.0.0
 pyjwt==2.4.0
-pyOpenSSL==23.0.0    # This is necessary for the local builds specifically...
-cryptography==39.0.1 # because of this version, which is incompatible with pyOpenSSL < 22
+pyOpenSSL==23.2.0    # This is necessary for the local builds specifically...
+cryptography==41.0.0 # because of this version, which is incompatible with pyOpenSSL < 22
 future==0.18.3
 ruamel.yaml==0.15.94
 google-cloud-storage==1.18.0
