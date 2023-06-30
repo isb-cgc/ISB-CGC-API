@@ -34,7 +34,6 @@ def cohorts():
     POST: Add a new cohort
     DELETE: Delete a list of cohorts
     """
-
     try:
         user_info = auth_info()
         if not user_info:
@@ -109,29 +108,7 @@ def cohort(cohort_id):
             })
             response.status_code = 500
         else:
-            # if request.method == 'GET':
-            #     results = get_cohort_objects(user_info["email"], cohort_id)
-            #     if results:
-            #         if 'message' in results:
-            #             response = jsonify({
-            #                 **results
-            #             })
-            #             response.status_code = results['code']
-            #         else:
-            #             code = 200
-            #             response = jsonify({
-            #                 'code': code,
-            #                 **results
-            #             })
-            #             response.status_code = code
-            #     else:
-            #         response = jsonify({
-            #             'code': 404,
-            #             'message': "Cohort ID {} was not found.".format(str(cohort_id))})
-            #         response.status_code = 500
-            # else:
             results = delete_cohort(user_info["email"], cohort_id)
-
             if results:
                 if 'message' in results:
                     response = jsonify({
@@ -222,49 +199,6 @@ def cohort_manifest(cohort_id):
         response.status_code = 500
 
     return response
-
-
-# @cohorts_bp.route('/cohorts/preview/', methods=['POST'], strict_slashes=False)
-# def cohort_preview():
-#     """List the samples, cases, and counts a given set of cohort filters would produce"""
-#
-#     try:
-#         result = post_cohort_preview()
-#
-#         if result:
-#             # Presence of a message means something went wrong with the filters we received
-#             if 'message' in result:
-#                 response = jsonify({
-#                     **result
-#                 })
-#                 if 'code' in result:
-#                     response.status_code = result['code']
-#                 else:
-#                     response.status_code = 500
-#             else:
-#                 code = 200
-#                 response = jsonify({
-#                     'code': code,
-#                     **result
-#                 })
-#                 response.status_code = code
-#
-#         # Lack of a valid object means something went wrong on the server
-#         else:
-#             response = jsonify({
-#                 'code': 404,
-#                 'message': "Error trying to preview cohort."})
-#             response.status_code = 500
-#
-#     except Exception as e:
-#         logger.exception(e)
-#         response = jsonify({
-#             'code': 500,
-#             'message': 'Encountered an error while attempting to preview this cohort\'s information.'
-#         })
-#         response.status_code = 500
-#
-#     return response
 
 
 @cohorts_bp.route('/cohorts/manifest/preview/', methods=['POST'], strict_slashes=False)

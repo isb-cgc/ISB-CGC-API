@@ -15,8 +15,65 @@
 #
 
 import json
+from settings import API_VERSION
+from tests.testing_config import VERSIONS
+from api.schemas.filters import COHORT_FILTERS_SCHEMA
 
 levels = ["collections", "patients", "studies", "series", "instances"]
+
+
+def gen_query(filter_set, query_string):
+    schema = {
+    }
+    for filter, value in COHORT_FILTERS_SCHEMA['properties'].items():
+        schema[filter.lower()] = value
+
+    query = f"""
+SELECT DISTINCT @fields
+FROM `idc-dev-etl.idc_v{VERSIONS}_pub.dicom_pivot{'_v'+VERSIONS if VERSIONS < 15 else ''}` da
+LEFT JOIN `idc-dev-etl.idc_v{VERSIONS}_pub.tcga_clinical_rel9` tc
+ON da.PatientID = tc.case_barcode
+WHERE @filters
+            """
+    fields = ", ".join([key for key, value in query_string.items() if value in [True,'True'] and \
+                        key not in ['sql', 'gcs_bucket', 'aws_bucket']])
+    if 'gcs_bucket' in query_string.keys():
+        fields = f"{fields}, REGEXP_EXTRACT(gcs_url, r'^gs://([a-zA-Z0-9-]+)') gcs_bucket"
+    if 'aws_bucket' in query_string.keys():
+        fields = f"{fields}, REGEXP_EXTRACT(aws_url, r'^s3://([a-zA-Z0-9-]+)') aws_bucket"
+
+    query = query.replace('@fields', fields)
+    filters = []
+    for filter, value in filter_set.items():
+        try:
+            property = schema[filter.lower()]
+            if property["items"]["type"] == "number":
+                try:
+                    suffix = filter.split('_')[-1]
+                    op = filter.rsplit('_',1)[0]
+                except:
+                    suffix = ''
+                    op = filter
+                if suffix == '':
+                    filters.append(f'({op} = {value[0]})' )
+                elif suffix in ['lt', 'lte']:
+                    filters.append( f'({op} <= {value[0]})')
+                elif suffix in ['btw', 'ebtw', 'ebtwe', 'btwe']:
+                    filters.append(f'({op} BETWEEN {value[0]} AND {value[1]})')
+                elif suffix == 'lte':
+                    filters.append(f'({op} <= {value[0]})')
+                else:
+                    filters.append(f'({op} < {value[0]})')
+            else:
+                # filters.append(f"{filter} in [{','.join([v for v in value])}]")
+                if filter.lower() == 'collection_id':
+                    for x, v in enumerate(value):
+                        value[x] = v.lower().replace('-','_').replace(' ','_')
+                filters.append(f"(lower({filter}) in {str(value).lower()})".replace('[', '(').replace(']',')'))
+        except Exception as exc:
+            print(f'{exc}')
+    query = query.replace('@filters', '\nAND '.join(filters))
+    return query
 
 def pretty_print_cohortObjects(cohortObjects, indent=4):
     print(json.dumps(cohortObjects, sort_keys=True, indent=indent))
@@ -54,12 +111,12 @@ def create_cohort(client):
         'Content-Type': mimetype,
         'Accept': mimetype
     }
-    response = client.post('/v1/cohorts', data=json.dumps(cohortSpec), headers=headers)
+    response = client.post(f'/{API_VERSION}/cohorts', data=json.dumps(cohortSpec), headers=headers)
     assert response.content_type == 'application/json'
     assert response.status_code == 200
     cohortResponse = response.json['cohort_properties']
 
-    return cohortResponse
+    return cohortResponse, cohortSpec
 
 
 # Create a cohort with filter as expected by the test_get_cohort_xxx() functions
@@ -67,12 +124,13 @@ def create_cohort_for_test_get_cohort_xxx(client, filters=None):
     # Create a cohort to test against
     if not filters:
         filters = {
-            "collection_id": ["tcga_read"],
+            "collection_id": ["TCGA-READ"],
             "Modality": ["CT", "MR"],
-            "race": ["WHITE"]
+            "race": ["WHITE"],
+            "age_at_diagnosis_btw": [1, 100],
         }
 
-    cohortSpec = {"name": "testcohort",
+        cohortSpec = {"name": "testcohort",
                   "description": "Test description",
                   "filters": filters}
 
@@ -81,11 +139,11 @@ def create_cohort_for_test_get_cohort_xxx(client, filters=None):
         'Content-Type': mimetype,
         'Accept': mimetype
     }
-    response = client.post('/v1/cohorts', data=json.dumps(cohortSpec), headers=headers)
+    response = client.post(f'/{API_VERSION}/cohorts', data=json.dumps(cohortSpec), headers=headers)
     assert response.status_code == 200
     cohortResponse = response.json['cohort_properties']
     id = cohortResponse['cohort_id']
-    return (id, filters)
+    return (id, cohortSpec)
 
 
 # Find a previously created V1 cohort with filter expected by the test_get_cohort_xxx() functions
@@ -121,7 +179,7 @@ def create_big_cohort_for_test_get_cohort_xxx(client):
         'Content-Type': mimetype,
         'Accept': mimetype
     }
-    response = client.post('/v1/cohorts', data=json.dumps(cohortSpec), headers=headers)
+    response = client.post(f'/{API_VERSION}/cohorts', data=json.dumps(cohortSpec), headers=headers)
     assert response.status_code == 200
     cohortResponse = response.json['cohort_properties']
     id = cohortResponse['cohort_id']
@@ -148,12 +206,12 @@ def find_v1_big_cohort_for_test_get_cohort_xxx(client):
 
 # Utility to delete an existing cohort
 def delete_cohort(client, id):
-    response = client.delete("{}/{}/".format('v1/cohorts',id))
+    response = client.delete(f"{API_VERSION}/cohorts/{id}/")
     assert response.content_type == 'application/json'
     assert response.status_code == 200
 
 def current_version(client):
-    response = client.get('/v1/versions')
+    response = client.get(f'/{API_VERSION}/versions')
     data = response.json['versions']
     current = str(max([float(v['idc_data_version']) for v in data]))
     return current

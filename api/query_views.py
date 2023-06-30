@@ -23,11 +23,12 @@ from flask import request
 from werkzeug.exceptions import BadRequest
 
 from python_settings import settings
-from . query_utils import perform_query, perform_fixed_query, query_next_page, perform_fixed_query_next_page
+from api.query_utils import perform_query, query_next_page
 from jsonschema import validate as schema_validate, ValidationError
 # from . schemas.querypreviewbody import QUERY_PREVIEW_BODY
-from . schemas.filters import COHORT_FILTERS_SCHEMA
-from . schemas.queryfields import QUERY_FIELDS
+# from . schemas.filters import COHORT_FILTERS_SCHEMA
+from api.schemas.queryfields import QUERY_FIELDS
+from api.cohort_utils import validate_cohort_definition
 
 BLACKLIST_RE = settings.BLACKLIST_RE
 
@@ -49,110 +50,6 @@ def get_params(param_defaults):
             params[key] = param_defaults[key]
     return params
 
-def get_query_metadata():
-
-    sql_string =  """
-    #standardSQL
-    SELECT
-        PatientID,
-        BodyPartExamined,	
-        SeriesInstanceUID,	
-        SliceThickness,	
-        SeriesNumber,	
-        SeriesDescription,	
-        StudyInstanceUID,	
-        StudyDescription,	
-        StudyDate,	
-        SOPInstanceUID,	
-        Modality,	
-        SOPClassUID,	
-        collection_id,	
-        AnatomicRegionSequence,	
-        FrameOfReferenceUID,	
-        crdc_study_uuid,	
-        crdc_series_uuid,	
-        crdc_instance_uuid,	
-        program,	
-        tcia_tumorLocation,	
-        source_DOI,	
-        tcia_species,	
-        license_short_name,	
-        gcs_url,	
-        Manufacturer,	
-        ManufacturerModelName,	
-        Apparent_Diffusion_Coefficient,	
-        Internal_structure,	
-        Sphericity,	
-        Calcification,	
-        Lobular_Pattern,	
-        Spiculation,	
-        Margin,	
-        Texture,	
-        Subtlety_score,	
-        Malignancy,	
-        SUVbw,	
-        Volume,	
-        Diameter,	
-        Surface_area_of_mesh,	
-        Total_Lesion_Glycolysis,	
-        Standardized_Added_Metabolic_Activity,	
-        Percent_Within_First_Quarter_of_Intensity_Range,	
-        Percent_Within_Third_Quarter_of_Intensity_Range,	
-        Percent_Within_Fourth_Quarter_of_Intensity_Range,	
-        Percent_Within_Second_Quarter_of_Intensity_Range,	
-        Standardized_Added_Metabolic_Activity_Background,	
-        Glycolysis_Within_First_Quarter_of_Intensity_Range,	
-        Glycolysis_Within_Third_Quarter_of_Intensity_Range,	
-        Glycolysis_Within_Fourth_Quarter_of_Intensity_Range,	
-        Glycolysis_Within_Second_Quarter_of_Intensity_Range,	
-        SegmentedPropertyCategoryCodeSequence,	
-        SegmentedPropertyTypeCodeSequence,	
-        SegmentNumber,	
-        SegmentAlgorithmType,	
-        AdditionalPatientHistory,	
-        Allergies,	
-        ImageType,	
-        LastMenstrualDate,	
-        MedicalAlerts,	
-        EthnicGroup,	
-        Occupation,	
-        PatientAge,	
-        PatientComments,	
-        PatientSize,	
-        PatientWeight,	
-        PregnancyStatus,	
-        ReasonForStudy,	
-        RequestedProcedureComments,	
-        SmokingStatus	
-
-    FROM `canceridc-data.idc_v4.dicom_pivot_v4`
-    ORDER BY collection_id, PatientID, StudyInstanceUID, SeriesInstanceUID, SOPInstanceUID
-    """
-
-    try:
-        query_info = perform_fixed_query(request, sql_string)
-
-    except Exception as e:
-        logger.exception(e)
-        query_info = dict(
-            message='[ERROR] _query(): Error performing corhorts/metadata/query',
-            code=400)
-
-    return query_info
-
-def get_query_metadata_next_page():
-    query_info = perform_fixed_query_next_page(request)
-    return query_info
-
-    
-# Deprecated
-# def get_query_info(user, cohort_id):
-#     query_info = perform_query(request,
-#                                  func=requests.get,
-#                                  url="{}/cohorts/api/{}/".format(settings.BASE_URL, cohort_id),
-#                                  user=user)
-#     return query_info
-
 
 def post_query(user, cohort_id):
     try:
@@ -160,12 +57,15 @@ def post_query(user, cohort_id):
 
         if 'fields' not in request_data:
             return dict(
-                message = 'No queryFields provided; ensure that the request body contains a \'queryFields\' component.',
+                message = 'No fields provided; ensure that the request body contains a \'fields\' component.',
                 code = 400)
 
         schema_validate(request_data, QUERY_FIELDS)
 
-        data = {"request_data": request_data}
+        data = {
+            "request_data": request_data,
+            "email": user
+        }
 
         query_info = perform_query(request,
                              func=requests.post,
@@ -191,45 +91,12 @@ def post_query(user, cohort_id):
 def post_query_preview(user):
     try:
         request_data = request.get_json()
-
-        if 'cohort_def' not in request_data:
-            return dict(
-                message = 'No cohort_def provided; ensure that the request body contains a \'cohort_dev\' component.',
-                code = 400)
-        if 'filters' not in request_data['cohort_def']:
-            return dict(
-                message = 'No filters were provided; ensure that the cohort_def contains a \'filterSet\' component.',
-                code = 400)
-        if 'queryFields' not in request_data:
-            return dict(
-                message = 'No queryFields provided; ensure that the request body contains a \'queryFields\' component.',
-                code = 400)
-        if 'name' not in request_data["cohort_def"] or request_data["cohort_def"]['name'] == "":
-            return dict(
-                message = 'A name was not provided for this cohort. The cohort was not made.',
-                code = 400
-            )
-
-        # schema_validate(request_data, QUERY_PREVIEW_BODY)
-        schema_validate(request_data['cohort_def']['filters'], COHORT_FILTERS_SCHEMA)
-        schema_validate(request_data['queryFields'], QUERY_FIELDS)
-
-
-        blacklist = re.compile(BLACKLIST_RE, re.UNICODE)
-        match = blacklist.search(str(request_data["cohort_def"]['name']))
-
-        if not match and 'description' in request_data["cohort_def"]:
-            match = blacklist.search(str(request_data["cohort_def"]['description']))
-
-        if match:
-            return dict(
-                message = "Your cohort's name or description contains invalid characters; " +
-                            "please edit them and resubmit. [Saw {}]".format(str(match)),
-                code = 400
-            )
-
-        data = {"request_data": request_data}
-
+        request_data['cohort_def'], cohort_info = validate_cohort_definition(request_data['cohort_def'])
+        if 'message' in cohort_info:
+            return cohort_info
+        data = {
+            "request_data": request_data,
+        }
         query_info = perform_query(request,
                              func=requests.post,
                              url="{}/cohorts/api/preview/query/".format(settings.BASE_URL),

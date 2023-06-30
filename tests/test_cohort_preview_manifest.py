@@ -14,18 +14,66 @@
 # limitations under the License.
 #
 
-import logging
+from settings import API_VERSION
 import json
-from python_settings import settings
-settings.BQ_MAX_ATTEMPTS=25
-from tests.cohort_utils import merge, pretty_print_cohortObjects, create_cohort_for_test_get_cohort_xxx, delete_cohort
+from tests.testing_utils import gen_query, VERSIONS
+from google.cloud import bigquery
+
+
+def test_invalid_filter(client, app):
+
+        filters = {
+            "collection_id": ["TCGA-READ"],
+            "Modality": ["ct", "mR"],
+            "RACE": ["WHITE"],
+            "age_at_diagnosis_btw": [1, 100],
+            "foo": ["bar"]
+            # "age_at_diagnosis_btw": [0, 100]
+        }
+
+        cohortSpec = {"name": "testcohort",
+                      "description": "Test description",
+                      "filters": filters}
+
+        mimetype = ' application/json'
+        headers = {
+            'Content-Type': mimetype,
+            'Accept': mimetype
+        }
+
+        query_string = {
+            'sql': True,
+            'crdc_study_uuid': True,
+            'crdc_series_uuid': True,
+            'crdc_instance_uuid': True,
+            'gcs_bucket': True,
+            'gcs_url': False,
+            'aws_bucket': 'True',
+            'aws_url': 'False',
+            'page_size': 2000,
+        }
+
+         # Get a guid manifest of the cohort's instances
+        response = client.post(f'{API_VERSION}/cohorts/manifest/preview',
+                               query_string=query_string,
+                               data=json.dumps(cohortSpec),
+                               headers=headers)
+
+        assert response.content_type == 'application/json'
+        assert response.status_code == 400
+        assert response.json['message'] == 'foo is not a valid filter.'
+
+
 
 def test_guid(client, app):
+    bq_client = bigquery.Client(project='idc-dev-etl')
 
     filters = {
         "collection_id": ["TCGA-READ"],
-        "Modality": ["CT", "MR"],
-        "race": ["WHITE"],
+        "Modality": ["ct", "mR"],
+        "RACE": ["WHITE"],
+        "age_at_diagnosis_btw": [1,100],
+        # "age_at_diagnosis_btw": [0, 100]
     }
 
     cohortSpec = {"name": "testcohort",
@@ -38,16 +86,24 @@ def test_guid(client, app):
         'Accept': mimetype
     }
 
+
     query_string = {
-        'sql': False,
-        'CRDC_Study_GUID': True,
-        'CRDC_Series_GUID':True,
-        'CRDC_Instance_GUID': True,
+        'sql': True,
+        'crdc_study_uuid': "True",
+        'crdc_series_uuid':True,
+        'crdc_instance_uuid': True,
+        'gcs_bucket': 'True',
+        'gcs_url': True,
+        'aws_bucket': True,
+        'aws_url': 'True',
         'page_size': 2000,
     }
 
+    query = gen_query(filters, query_string)
+    bq_data = [dict(row) for row in bq_client.query(query)]
+
     # Get a guid manifest of the cohort's instances
-    response = client.post('v1/cohorts/manifest/preview',
+    response = client.post(f'{API_VERSION}/cohorts/manifest/preview',
                             query_string = query_string,
                             data = json.dumps(cohortSpec),
                             headers=headers)
@@ -57,18 +113,21 @@ def test_guid(client, app):
     cohort = response.json['cohort']
     manifest = response.json['manifest']
 
-    assert manifest['rowsReturned'] == 1638
+    assert manifest['rowsReturned'] == len(bq_data)
 
     next_page = response.json['next_page']
     assert next_page == ""
 
     json_manifest = manifest['json_manifest']
-    assert len(json_manifest) == 1638
-    assert manifest['totalFound'] == 1638
-    assert 'dg.4DFC/0013f110-0928-4d66-ba61-7c3e80b48a68' in [row['CRDC_Instance_GUID'] for row in json_manifest]
+    assert len(json_manifest) == len(bq_data)
+    assert manifest['totalFound'] == len(bq_data)
+    for key in bq_data[0]:
+        print(key)
+        assert (set(row[key] for row in bq_data) == set(row[key] for row in json_manifest))
 
 
 def test_url(client, app):
+    bq_client = bigquery.Client(project='idc-dev-etl')
 
     filters = {
         "collection_id": ["tcga_read"],
@@ -86,12 +145,16 @@ def test_url(client, app):
     }
 
     query_string = {
-        'GCS_URL': True,
+        'gcs_url': True,
+        'aws_url': True,
         'page_size': 2000,
     }
 
+    query = gen_query(filters, query_string)
+    bq_data = [dict(row) for row in bq_client.query(query)]
+
     # Get a guid manifest of the cohort's instances
-    response = client.post('v1/cohorts/manifest/preview',
+    response = client.post(f'{API_VERSION}/cohorts/manifest/preview',
                             query_string = query_string,
                             data = json.dumps(cohortSpec),
                             headers=headers)
@@ -101,18 +164,22 @@ def test_url(client, app):
     cohort = response.json['cohort']
     manifest = response.json['manifest']
 
-    assert manifest['rowsReturned'] == 1638
+    assert manifest['rowsReturned'] == len(bq_data)
 
     next_page = response.json['next_page']
     assert next_page == ""
 
     json_manifest = manifest['json_manifest']
-    assert len(json_manifest) == 1638
-    assert manifest['totalFound'] == 1638
-    assert {'GCS_URL': 'gs://idc-dev-open/0013f110-0928-4d66-ba61-7c3e80b48a68.dcm'} in json_manifest
+    assert len(json_manifest) == len(bq_data)
+    assert manifest['totalFound'] == len(bq_data)
+    for key in bq_data[0]:
+        print(key)
+        assert (set(row[key] for row in bq_data) == set(row[key] for row in json_manifest))
+    # assert {'GCS_URL': 'gs://public-datasets-idc/0190fe71-7144-40ae-a24c-c8d21a99317d/01210a30-8395-498c-905f-6667db67101a.dcm'} in json_manifest
 
 
 def test_SOPInstanceUID(client, app):
+    bq_client = bigquery.Client(project='idc-dev-etl')
 
     filters = {
         "collection_id": ["tcga_read"],
@@ -135,8 +202,11 @@ def test_SOPInstanceUID(client, app):
         'page_size': 2000,
     }
 
+    query = gen_query(filters, query_string)
+    bq_data = [dict(row) for row in bq_client.query(query)]
+
     # Get a guid manifest of the cohort's instances
-    response = client.post('v1/cohorts/manifest/preview',
+    response = client.post(f'{API_VERSION}/cohorts/manifest/preview',
                             query_string = query_string,
                             data = json.dumps(cohortSpec),
                             headers=headers)
@@ -154,10 +224,15 @@ def test_SOPInstanceUID(client, app):
     json_manifest = manifest['json_manifest']
     assert len(json_manifest) == 1
     assert manifest['totalFound'] == 1
-    assert {'GCS_URL': 'gs://idc-dev-open/de364433-4eaf-440e-b714-6c8b7cf3c613.dcm'} in json_manifest
+    for bq_key in bq_data[0]:
+        print(bq_key)
+        api_key = next(api_key for api_key in json_manifest[0].keys() if bq_key.lower()==api_key.lower())
+        assert (set(row[bq_key] for row in bq_data) == set(row[api_key] for row in json_manifest))
+    # assert {'GCS_URL': 'gs://public-datasets-idc/dc19e1f0-63cf-422a-9742-c8c14de01370/de364433-4eaf-440e-b714-6c8b7cf3c613.dcm'} in json_manifest
 
 
 def test_all(client, app):
+    bq_client = bigquery.Client(project='idc-dev-etl')
 
     filters = {
         "collection_id": ["tcga_read"],
@@ -177,18 +252,23 @@ def test_all(client, app):
     query_string = dict(
         sql=True,
         Collection_ID=True,
-        Patient_ID=True,
+        PatientID="True",
         StudyInstanceUID=True,
         SeriesInstanceUID=True,
         SOPInstanceUID=True,
         Source_DOI=True,
-        CRDC_Study_GUID=True,
-        CRDC_Series_GUID=True,
-        CRDC_Instance_GUID=True,
+        CRDC_Study_UUID=True,
+        CRDC_Series_UUID=True,
+        CRDC_Instance_UUID=True,
         GCS_URL=True,
+        AWS_URL=True,
+        gcs_bucket=True,
+        AWS_bucket="True",
         page_size=2000
     )
-    response = client.post('v1/cohorts/manifest/preview',
+    query = gen_query(filters, query_string)
+    bq_data = [dict(row) for row in bq_client.query(query)]
+    response = client.post(f'{API_VERSION}/cohorts/manifest/preview',
                             query_string = query_string,
                             data = json.dumps(cohortSpec),
                             headers=headers)
@@ -198,31 +278,27 @@ def test_all(client, app):
     cohort = response.json['cohort']
     manifest = response.json['manifest']
 
-    assert manifest['rowsReturned'] == 1638
+    assert manifest['rowsReturned'] == len(bq_data)
 
     next_page = response.json['next_page']
     assert next_page == ""
 
     json_manifest = manifest['json_manifest']
-    assert len(json_manifest) == 1638
-    assert manifest['totalFound'] == 1638
-    assert 'TCGA-CL-5917' in [row['Patient_ID'] for row in json_manifest]
-    assert '1.3.6.1.4.1.14519.5.2.1.3671.4018.101814896314793708382026281597' in [row['SOPInstanceUID'] for row in json_manifest]
-    assert '1.3.6.1.4.1.14519.5.2.1.3671.4018.183714953600569164837490663631' in [row['SeriesInstanceUID'] for row in json_manifest]
-    assert '1.3.6.1.4.1.14519.5.2.1.3671.4018.768291480177931556369061239508' in [row['StudyInstanceUID'] for row in json_manifest]
-    assert 'tcga_read' in [row['Collection_ID'] for row in json_manifest]
-    assert '10.7937/K9/TCIA.2016.F7PPNPNU' in [row['Source_DOI'] for row in json_manifest]
-    assert next(row for row in json_manifest if row['GCS_URL'] == 'gs://idc-dev-open/0013f110-0928-4d66-ba61-7c3e80b48a68.dcm')
-    assert next(row for row in json_manifest if row['CRDC_Study_GUID'] == 'dg.4DFC/7efeae5d-6263-4184-9ad4-8df22720ada9')
-    assert next(row for row in json_manifest if row['CRDC_Series_GUID'] == 'dg.4DFC/67e22f90-36e1-40aa-88bb-9b2efb5616f2')
-    assert next(row for row in json_manifest if row['CRDC_Instance_GUID'] == 'dg.4DFC/0013f110-0928-4d66-ba61-7c3e80b48a68')
+    assert len(json_manifest) == len(bq_data)
+    assert manifest['totalFound'] == len(bq_data)
+    for bq_key in bq_data[0]:
+        api_key = next(api_key for api_key in json_manifest[0].keys() if bq_key.lower()==api_key.lower())
+        assert (set(row[bq_key] for row in bq_data) == set(row[api_key] for row in json_manifest))
 
 
-def test_paged_doi(client, app):
+def test_all_paged(client, app):
+    bq_client = bigquery.Client(project='idc-dev-etl')
     filters = {
-        "collection_id": ["tcga_luad"],
-        "Modality": ["CT", "MR"],
-        "race": ["WHITE"]}
+        "collection_id": ["TCGA-READ"],
+        "Modality": ["ct", "mR"],
+        "RACE": ["WHITE"],
+        "age_at_diagnosis_btw": [1,100],
+    }
 
     cohortSpec = {"name": "testcohort",
                   "description": "Test description",
@@ -234,12 +310,25 @@ def test_paged_doi(client, app):
         'Accept': mimetype
     }
 
-    query_string = {
-        'CRDC_Instance_GUID': True,
-        'page_size': 5000
-    }
+    query_string = dict(
+        sql=True,
+        Collection_ID=True,
+        PatientID="True",
+        StudyInstanceUID=True,
+        SeriesInstanceUID=True,
+        SOPInstanceUID=True,
+        Source_DOI=True,
+        CRDC_Study_UUID=True,
+        CRDC_Series_UUID=True,
+        CRDC_Instance_UUID=True,
+        GCS_URL=True,
+        AWS_URL=True,
+        page_size=500
+    )
 
-    response = client.post('v1/cohorts/manifest/preview',
+    query = gen_query(filters, query_string)
+    bq_data = [dict(row) for row in bq_client.query(query)]
+    response = client.post(f'{API_VERSION}/cohorts/manifest/preview',
                             query_string = query_string,
                             data = json.dumps(cohortSpec),
                             headers=headers)
@@ -250,9 +339,9 @@ def test_paged_doi(client, app):
     next_page = response.json['next_page']
 
     json_manifest = manifest['json_manifest']
-    assert len(json_manifest) == 5000
-    assert manifest['totalFound'] == 21940
-    assert manifest['rowsReturned'] ==5000
+    assert len(json_manifest) == 500
+    assert manifest['totalFound'] == len(bq_data)
+    assert manifest['rowsReturned'] ==500
 
     assert next_page
 
@@ -262,14 +351,12 @@ def test_paged_doi(client, app):
 
     while next_page:
         query_string = {
-            'next_page': next_page,
-            'page_size': 5000
+            'Next_Page': next_page,
+            'PAGE_SIZE': 500
         }
 
-        response = client.get('v1/cohorts/manifest/nextPage',
-                               query_string=query_string,
-                               data=json.dumps(cohortSpec),
-                               headers=headers)
+        response = client.get(f'{API_VERSION}/cohorts/manifest/nextPage',
+                               query_string=query_string )
         assert response.content_type == 'application/json'
         assert response.status_code == 200
         manifest = response.json['manifest']
@@ -278,168 +365,7 @@ def test_paged_doi(client, app):
         totalRowsReturned += manifest["rowsReturned"]
         complete_manifest.extend(manifest['json_manifest'])
 
-    assert 'dg.4DFC/0009e98e-bca2-4a68-ada1-62e0a8b2dbaf' in \
-           [row['CRDC_Instance_GUID'] for row in complete_manifest]
-    assert totalRowsReturned == manifest['totalFound']
-    assert manifest['totalFound'] == len(complete_manifest)
-
-
-def test_paged_url(client, app):
-
-    filters = {
-        "tcia_species": ["Human"],
-        "collection_id": ["tcga_luad"],
-        "Modality": ["CT", "MR"],
-        "race": ["WHITE"]}
-
-    cohortSpec = {"name": "testcohort",
-                  "description": "Test description",
-                  "filters": filters}
-
-    mimetype = ' application/json'
-    headers = {
-        'Content-Type': mimetype,
-        'Accept': mimetype
-    }
-
-    query_string = {
-        'GCS_URL': True,
-        'page_size': 5000
-    }
-
-    response = client.post('v1/cohorts/manifest/preview',
-                            query_string = query_string,
-                            data = json.dumps(cohortSpec),
-                            headers=headers)
-
-    assert response.content_type == 'application/json'
-    assert response.status_code == 200
-    cohort = response.json['cohort']
-    manifest = response.json['manifest']
-    next_page = response.json['next_page']
-
-    json_manifest = manifest['json_manifest']
-    assert len(json_manifest) == 5000
-    assert manifest['totalFound'] == 21940
-    assert manifest['rowsReturned'] == 5000
-
-    assert next_page
-
-    # Now get the remaining pages
-    complete_manifest = manifest['json_manifest']
-    totalRowsReturned = manifest['rowsReturned']
-
-    while next_page:
-        query_string = {
-            'next_page': next_page,
-            'page_size': 5000
-        }
-
-        response = client.get('v1/cohorts/manifest/nextPage',
-                               query_string=query_string,
-                               data=json.dumps(cohortSpec),
-                               headers=headers)
-        assert response.content_type == 'application/json'
-        assert response.status_code == 200
-        manifest = response.json['manifest']
-        next_page = response.json['next_page']
-
-        totalRowsReturned += manifest["rowsReturned"]
-        complete_manifest.extend(manifest['json_manifest'])
-    assert {'GCS_URL': 'gs://idc-dev-open/0009e98e-bca2-4a68-ada1-62e0a8b2dbaf.dcm'} in json_manifest
-    assert totalRowsReturned == manifest['totalFound']
-    assert manifest['totalFound'] == len(complete_manifest)
-
-# This test submits an empty filter which means that all instances are returned.
-# Takes a lot of time and bandwidth. Uncomment to run
-# To test timeout handling, you may need toset BQ_MAX_ATTEMPTS=0
-# def test_paged_guid_all_instances(client, app):
-#
-#     import time
-#
-#     cohortSpec = {
-#         "name": "mycohort",
-#         "description": "Example description",
-#         "filters": {}
-#         }
-#     query_string = dict(
-#         GCS_URL = True,
-#         Source_DOI = True,
-#         SOPInstanceUID = True,
-#         SeriesInstanceUID = True,
-#         StudyInstanceUID = True,
-#         CRDC_Study_GUID = True,
-#         CRDC_Series_GUID = True,
-#         CRDC_Instance_GUID = True,
-#         page_size=40000000
-#     )
-#
-#     mimetype = ' application/json'
-#     headers = {
-#         'Content-Type': mimetype,
-#         'Accept': mimetype
-#     }
-#
-#     start = time.time()
-#
-#     response = client.post('v1/cohorts/manifest/preview',
-#                            query_string=query_string,
-#                            data=json.dumps(cohortSpec),
-#                            headers=headers)
-#
-#     elapsed = time.time()-start
-#     totalTime = elapsed
-#
-#     while response.status_code == 202:
-#         query_string = dict(
-#             next_page=response.json['next_page'],
-#             page_size=40000000
-#
-#         )
-#
-#         response = client.post('v1/cohorts/manifest/preview',
-#                            query_string=query_string,
-#                            data=json.dumps(cohortSpec),
-#                            headers=headers)
-#
-#     # Check that there wasn't an error with the request
-#     if response.status_code != 200:
-#         # Print the error code and message if something went wrong
-#         print(response.json())
-#
-#     # print(json.dumps(response.json(), sort_keys=True, indent=4))
-#
-#     totalRows = response.json['manifest']['rowsReturned']
-#     totalBytes = len(json.dumps(response.json))
-#     next_page = response.json['next_page']
-#     print('totalRows: {}, totalBytes: {}, next_page: {}, time: {}, rate: {}'.format(
-#         totalRows, totalBytes, next_page[:16], elapsed, len(json.dumps(response.json))/elapsed
-#     ))
-#
-#     while next_page:
-#         query_string['next_page'] = response.json['next_page']
-#
-#         start = time.time()
-#         response = client.post('v1/cohorts/manifest/preview',
-#                                query_string=query_string,
-#                                data=json.dumps(cohortSpec),
-#                                headers=headers)
-#
-#         elapsed = time.time() - start
-#         totalTime += elapsed
-#
-#         # Check that there wasn't an error with the request
-#         if response.status_code != 200:
-#             # Print the error code and message if something went wrong
-#             print(response.json)
-#             break
-#
-#         totalRows += response.json['manifest']['rowsReturned']
-#         totalBytes += len(json.dumps(response.json))
-#         next_page = response.json['next_page']
-#
-#         print('totalRows: {}, totalBytes: {}, next_page: {}, time: {}, rate: {}'.format(
-#             totalRows, totalBytes, next_page[:16], elapsed, len(json.dumps(response.json)) / elapsed
-#         ))
-#
-#     print('Total time: {}, rate: {}'.format(totalTime, totalBytes/totalTime))
+    assert len(complete_manifest) == len(bq_data)
+    for bq_key in bq_data[0]:
+        api_key = next(api_key for api_key in json_manifest[0].keys() if bq_key.lower()==api_key.lower())
+        assert (set(row[bq_key] for row in bq_data) == set(row[api_key] for row in json_manifest))

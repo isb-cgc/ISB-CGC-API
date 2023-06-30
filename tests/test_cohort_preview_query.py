@@ -14,17 +14,18 @@
 # limitations under the License.
 #
 
-import logging
+from settings import API_VERSION
 import json
-
-from tests.cohort_utils import merge, pretty_print_cohortObjects, create_cohort_for_test_get_cohort_xxx, delete_cohort
+from tests.testing_utils import gen_query, VERSIONS
+from google.cloud import bigquery
 
 def test_basic(client, app):
+    bq_client = bigquery.Client(project='idc-dev-etl')
 
     filters= {
         "collection_id": ["tcga_read"],
         "Modality": ["CT", "MR"],
-        "race": ["WHITE"]
+        "Race": ["WHITE"]
     }
 
     cohortSpec = {"name": "testcohort",
@@ -32,10 +33,10 @@ def test_basic(client, app):
                   "filters": filters}
 
     # queryFields = {"fields": ['StudyInstanceUID', 'Modality', "gender"]}
-    queryFields = {"fields": ['StudyInstanceUID', 'Modality']}
+    fields =  ['StudyInstanceUID', 'modality']
 
     queryPreviewBody = {"cohort_def": cohortSpec,
-                        "queryFields": queryFields}
+                        "fields": fields}
 
     mimetype = ' application/json'
     headers = {
@@ -45,10 +46,13 @@ def test_basic(client, app):
 
     query_string = {
         'sql': False,
-        'page_size': 2000,
+        'page_Size': 2000,
     }
 
-    response = client.post('v1/cohorts/query/preview',
+    query = gen_query(filters, {field: "True" for field in fields})
+    bq_data = [dict(row) for row in bq_client.query(query)]
+
+    response = client.post(f'{API_VERSION}/cohorts/query/preview',
                             query_string = query_string,
                             data = json.dumps(queryPreviewBody),
                             headers=headers)
@@ -59,19 +63,23 @@ def test_basic(client, app):
     cohort_def = info['cohort_def']
     assert cohort_def['name'] == cohortSpec['name']
     assert cohort_def['description'] == cohortSpec['description']
-    assert cohort_def['filterSet']['filters'] == cohortSpec['filters']
+    assert set(filter.lower() for filter in cohort_def['filterSet']['filters']) == \
+           set(filter.lower() for filter in cohortSpec['filters'])
 
-    assert response.json['query_results']['rowsReturned'] == 3
-    assert response.json['query_results']['totalFound'] == 3
+    assert response.json['query_results']['rowsReturned'] == len(bq_data)
+    assert response.json['query_results']['totalFound'] == len(bq_data)
 
     assert response.json['next_page'] == ""
 
     query_results = info['query_results']['json']
     assert len(query_results) ==  response.json['query_results']['rowsReturned']
-    assert {'Modality': 'CT', 'StudyInstanceUID': '1.3.6.1.4.1.14519.5.2.1.3671.4018.768291480177931556369061239508'} \
-        in query_results
+    for bq_key in bq_data[0]:
+        api_key = next(api_key for api_key in query_results[0].keys() if bq_key.lower()==api_key.lower())
+        assert (set(row[bq_key] for row in bq_data) == set(row[api_key] for row in query_results))
+
 
 def test_basic2(client, app):
+    bq_client = bigquery.Client(project='idc-dev-etl')
 
     filters = {
         "collection_id": ["tcga_read"],
@@ -83,10 +91,10 @@ def test_basic2(client, app):
                   "description": "Test description",
                   "filters": filters}
 
-    queryFields = {"fields": ['StudyInstanceUID', 'SeriesInstanceUID', 'SOPInstanceUID', 'Modality']}
+    fields =  ['StudyInstanceUID', 'SeriesInstanceUID', 'SOPInstanceUID', 'Modality']
 
     queryPreviewBody = {"cohort_def": cohortSpec,
-                        "queryFields": queryFields}
+                        "fields": fields}
 
     mimetype = ' application/json'
     headers = {
@@ -99,7 +107,10 @@ def test_basic2(client, app):
         'page_size': 2000,
     }
 
-    response = client.post('v1/cohorts/query/preview',
+    query = gen_query(filters, {field: "True" for field in fields})
+    bq_data = [dict(row) for row in bq_client.query(query)]
+
+    response = client.post(f'{API_VERSION}/cohorts/query/preview',
                             query_string = query_string,
                             data = json.dumps(queryPreviewBody),
                             headers=headers)
@@ -112,20 +123,24 @@ def test_basic2(client, app):
     assert cohort_def['description'] == cohortSpec['description']
     assert cohort_def['filterSet']['filters'] == cohortSpec['filters']
 
-    assert response.json['query_results']['rowsReturned'] == 1638
-    assert response.json['query_results']['totalFound'] == 1638
+    assert response.json['query_results']['rowsReturned'] == len(bq_data)
+    assert response.json['query_results']['totalFound'] == len(bq_data)
 
     assert response.json['next_page'] == ""
 
     query_results = info['query_results']['json']
     assert len(query_results) ==  response.json['query_results']['rowsReturned']
-    assert {'Modality': 'CT', 'SOPInstanceUID': '1.3.6.1.4.1.14519.5.2.1.3671.4018.101814896314793708382026281597', \
-            'SeriesInstanceUID': '1.3.6.1.4.1.14519.5.2.1.3671.4018.183714953600569164837490663631', \
-            'StudyInstanceUID': '1.3.6.1.4.1.14519.5.2.1.3671.4018.768291480177931556369061239508'} \
-        in query_results
+    for bq_key in bq_data[0]:
+        api_key = next(api_key for api_key in query_results[0].keys() if bq_key.lower()==api_key.lower())
+        assert (set(row[bq_key] for row in bq_data) == set(row[api_key] for row in query_results))
+    # assert {'Modality': 'CT', 'SOPInstanceUID': '1.3.6.1.4.1.14519.5.2.1.3671.4018.101814896314793708382026281597', \
+    #         'SeriesInstanceUID': '1.3.6.1.4.1.14519.5.2.1.3671.4018.183714953600569164837490663631', \
+    #         'StudyInstanceUID': '1.3.6.1.4.1.14519.5.2.1.3671.4018.768291480177931556369061239508'} \
+    #     in query_results
 
 
 def test_paged(client, app):
+    bq_client = bigquery.Client(project='idc-dev-etl')
 
     filters = {
         "collection_id": ["tcga_read"],
@@ -137,10 +152,10 @@ def test_paged(client, app):
                   "description": "Test description",
                   "filters": filters}
 
-    queryFields = {"fields": ['StudyInstanceUID', 'SeriesInstanceUID', 'SOPInstanceUID', 'Modality']}
+    fields = ['StudyInstanceUID', 'SeriesInstanceUID', 'SOPInstanceUID', 'Modality']
 
     queryPreviewBody = {"cohort_def": cohortSpec,
-                        "queryFields": queryFields}
+                        "fields": fields}
 
     mimetype = ' application/json'
     headers = {
@@ -153,7 +168,10 @@ def test_paged(client, app):
         'page_size': 500,
     }
 
-    response = client.post('v1/cohorts/query/preview',
+    query = gen_query(filters, {field: "True" for field in fields})
+    bq_data = [dict(row) for row in bq_client.query(query)]
+
+    response = client.post(f'{API_VERSION}/cohorts/query/preview',
                             query_string = query_string,
                             data = json.dumps(queryPreviewBody),
                             headers=headers)
@@ -167,17 +185,12 @@ def test_paged(client, app):
     assert cohort_def['filterSet']['filters'] == cohortSpec['filters']
 
     totalRowsReturned = response.json['query_results']['rowsReturned']
-    assert response.json['query_results']['totalFound'] == 1638
+    assert response.json['query_results']['totalFound'] == len(bq_data)
 
     assert response.json['next_page']
 
     query_results = info['query_results']['json']
     assert len(query_results) ==  response.json['query_results']['rowsReturned']
-    assert {'Modality': 'CT', 'SOPInstanceUID': '1.3.6.1.4.1.14519.5.2.1.3671.4018.101814896314793708382026281597', \
-            'SeriesInstanceUID': '1.3.6.1.4.1.14519.5.2.1.3671.4018.183714953600569164837490663631', \
-            'StudyInstanceUID': '1.3.6.1.4.1.14519.5.2.1.3671.4018.768291480177931556369061239508'} \
-        in query_results
-
     while response.json['next_page']:
         query_string = {
             # 'sql': False,
@@ -185,10 +198,11 @@ def test_paged(client, app):
             'next_page': response.json['next_page']
         }
 
-        response = client.get('v1/cohorts/query/nextPage',
-                               query_string=query_string,
-                               data=json.dumps(queryPreviewBody),
-                               headers=headers)
+        response = client.get(f'{API_VERSION}/cohorts/query/nextPage',
+                               query_string=query_string
+                              )
+                               # data=json.dumps(queryPreviewBody),
+                               # headers=headers)
 
         assert response.content_type == 'application/json'
         assert response.status_code == 200
@@ -199,8 +213,11 @@ def test_paged(client, app):
 
     assert totalRowsReturned == response.json['query_results']['totalFound']
     assert len(query_results) == response.json['query_results']['totalFound']
+    for bq_key in bq_data[0]:
+        api_key = next(api_key for api_key in query_results[0].keys() if bq_key.lower()==api_key.lower())
+        assert (set(row[bq_key] for row in bq_data) == set(row[api_key] for row in query_results))
 
-    assert {'Modality': 'CT', 'SOPInstanceUID': '1.3.6.1.4.1.14519.5.2.1.3671.4018.101814896314793708382026281597', \
-            'SeriesInstanceUID': '1.3.6.1.4.1.14519.5.2.1.3671.4018.183714953600569164837490663631', \
-            'StudyInstanceUID': '1.3.6.1.4.1.14519.5.2.1.3671.4018.768291480177931556369061239508'} \
-        in query_results
+    # assert {'Modality': 'CT', 'SOPInstanceUID': '1.3.6.1.4.1.14519.5.2.1.3671.4018.101814896314793708382026281597', \
+    #         'SeriesInstanceUID': '1.3.6.1.4.1.14519.5.2.1.3671.4018.183714953600569164837490663631', \
+    #         'StudyInstanceUID': '1.3.6.1.4.1.14519.5.2.1.3671.4018.768291480177931556369061239508'} \
+    #     in query_results

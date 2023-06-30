@@ -34,7 +34,7 @@ import ast
 
 
 def get_db_metadata(args):
-    url = 'http://localhost:8095/v1/attributes'
+    url = 'http://localhost:8095/v1/filters'
     headers = {'accept': 'application/json'}
     response = requests.get(url).json()
     return response
@@ -55,15 +55,15 @@ definitions:
     return
 
 
-def write_attribute(f, attribute):
-    name = attribute['name']
+def write_filter(f, filter):
+    name = filter['name']
     data_type = {
         'Continuous Numeric': 'number',
         'Categorical Number': 'number',
         'Integer': 'integer',
         'Categorical String':'string',
         'String': 'string'
-    }[attribute['data_type']]
+    }[filter['data_type']]
 
     f.write('      {}:'.format(name))
     f.write(
@@ -72,8 +72,8 @@ def write_attribute(f, attribute):
         items:
           type:"""
     )
-    if data_type == 'Continuous Numeric':
-        f.write(f' "number"\n')
+    if data_type == 'number':
+        f.write(f' "{data_type}"\n')
         items = 2 if name.split('_')[-1] in ['ebtwe', 'ebtw', 'btwe', 'btw'] else 1
         f.write(f'        minItems: {items}\n')
         f.write(f'        maxItems: {items}\n')
@@ -84,7 +84,7 @@ def write_attribute(f, attribute):
     return
 
 
-def gen_filters_schema(args, attributes):
+def gen_filters_schema(args, filters):
 
     with open(args.filters_file, "w") as f:
         write_required_fields(f)
@@ -95,36 +95,44 @@ def gen_filters_schema(args, attributes):
 """
         )
         names = []
-        for source in attributes['data_sources']:
-            for attribute in source ['attributes']:
-                if not attribute['name'] in names:
-                    write_attribute(f, attribute)
-                    names.append(attribute['name'])
+        all_filters = [filter for source in filters['data_sources'] for filter in source['filters']]
+        for source in filters['data_sources']:
+            for filter in source ['filters']:
+                if not filter['name'] in names:
+                    write_filter(f, filter)
+                    names.append(filter['name'])
         f.write('    additionalProperties: False\n')
     return
 
 
-def gen_query_schema(args, attributes):
+def gen_query_schema(args, filters):
     with open(args.query_file, "w") as f:
         write_required_fields(f)
         f.write(
 """
   queryFields:
-    type: "object"
-    properties:
-      fields:
-        type: "array"
-        items:
-          type: "string"
-          enum: [
+    type: "array"
+    items:
+      type: "string"
+      enum: [
 """
+# """
+#   queryFields:
+#     type: "object"
+#     properties:
+#       fields:
+#         type: "array"
+#         items:
+#           type: "string"
+#           enum: [
+# """
         )
 
-        source = next(source for source in attributes['data_sources'] if source['data_source'].find('dicom_pivot') != -1)
-        for attribute in source['attributes']:
-            if attribute['data_type'] != 'Continuous Numeric' or \
-                    attribute['name'].split('_')[-1] not in ('lt', 'lte', 'btw', 'ebtw', 'ebtwe', 'btwe', 'gte', 'gt'):
-                name = attribute['name']
+        source = next(source for source in filters['data_sources'] if source['data_source'].find('dicom_pivot') != -1)
+        for filter in source['filters']:
+            if filter['data_type'] != 'Continuous Numeric' or \
+                    filter['name'].split('_')[-1] not in ('lt', 'lte', 'btw', 'ebtw', 'ebtwe', 'btwe', 'gte', 'gt'):
+                name = filter['name']
                 f.write(f'        "{name}",\n')
         f.write(
 """      ]
@@ -134,12 +142,12 @@ def gen_query_schema(args, attributes):
 
 
 def gen_json(args):
-    attributes = get_db_metadata(args)
+    filters = get_db_metadata(args)
 
-    gen_filters_schema(args, attributes)
+    gen_filters_schema(args, filters)
 
-    gen_query_schema(args, attributes)
-    # gen_query_results_schema(args, attributes)
+    gen_query_schema(args, filters)
+    # gen_query_results_schema(args, filters)
 
 
 if __name__ == '__main__':
