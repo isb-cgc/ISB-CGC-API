@@ -18,7 +18,11 @@ sed -i "" 's/#x-google-audiences: "10/x-google-audiences: "10/'  test.openapi-ap
 sed -i "" 's/#- "https"/- "https"/' test.openapi-appengine.yaml
 sed -i "" 's/- "http"/#- "http"/' test.openapi-appengine.yaml
 PWD
+gcloud auth login bcliffor@systemsbiology.org
+gsutil cp openapi-appengine.yaml gs://idc-api-dev-files/openapi-api.yaml.${DATE}
+
 gsutil cp dev.openapi-appengine.yaml gs://idc-deployment-files/dev/dev.openapi-appengine.yaml
+
 gcloud auth login bcliffor@canceridc.dev
 gsutil cp  test.openapi-appengine.yaml gs://webapp-deployment-files-idc-test/test.openapi-appengine.yaml
 gcloud auth login bcliffor@systemsbiology.org

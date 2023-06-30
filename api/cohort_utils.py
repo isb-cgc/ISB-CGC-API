@@ -19,12 +19,14 @@ import logging
 import re
 import json
 import requests
+from api.schemas.filters import COHORT_FILTERS_SCHEMA
 
 from api.auth import get_auth
 from cryptography.fernet import Fernet, InvalidToken
 
 import settings
 from google_helpers.bigquery.bq_support import BigQuerySupport
+from jsonschema import validate as schema_validate, ValidationError
 
 logger = logging.getLogger(settings.LOGGER_NAME)
 logger.setLevel(settings.LOG_LEVEL)
@@ -37,12 +39,40 @@ BLACKLIST_RE = settings.BLACKLIST_RE
 
 cipher_suite = Fernet(settings.PAGE_TOKEN_KEY)
 
-def encrypt_pageToken(email, jobReference, next_page):
+default_manifest_params = {
+    "page_size": 1000,
+    "sql": False,
+    "collection_id": False,
+    "PatientID": False,
+    "StudyInstanceUID": False,
+    "SeriesInstanceUID": False,
+    "SOPInstanceUID": False,
+    "source_DOI": False,
+    "crdc_study_uuid": True,
+    "crdc_series_uuid": False,
+    "crdc_instance_uuid": False,
+    "gcs_bucket": False,
+    "gcs_url": False,
+    "aws_bucket": False,
+    "aws_url": False,
+}
+
+lowered_manifest_params = {key.lower(): key for key in default_manifest_params}
+
+default_query_params = {
+    "page_size": 1000,
+    "sql": False,
+}
+lowered_query_params = {key.lower(): key for key in default_query_params}
+
+
+def encrypt_pageToken(email, jobReference, next_page, op):
     # cipher_suite = Fernet(settings.PAGE_TOKEN_KEY)
     jobDescription = dict(
         email = email,
         jobReference = jobReference,
-        next_page = next_page
+        next_page = next_page,
+        op = op
     )
     plain_jobDescription = json.dumps(jobDescription).encode()
 
@@ -50,19 +80,26 @@ def encrypt_pageToken(email, jobReference, next_page):
 
     return cipher_jobReference
 
-def decrypt_pageToken(email, cipher_jobReference):
+
+def decrypt_pageToken(email, cipher_jobReference, op):
     # cipher_suite = Fernet(settings.PAGE_TOKEN_KEY)
     try:
         plain_jobDescription = cipher_suite.decrypt(cipher_jobReference.encode())
         jobDescription = json.loads(plain_jobDescription.decode())
-        if jobDescription["email"] == email:
-            jobDescription.pop('email')
-            return jobDescription
-        else:
+        if jobDescription["email"] != email:
             # Caller's email doesn't match what was encrypted
             logger.error("Caller's email, {}, doesn't match what was encrypted: {}".format(
                 email, jobDescription['email']))
             return {}
+        elif jobDescription["op"] != op:
+            # Caller's email doesn't match what was encrypted
+            logger.error("Incorrect next_page endpoint for next_page token".format(
+                email, jobDescription['email']))
+            return {}
+        else:
+            jobDescription.pop('email')
+            jobDescription.pop('op')
+            return jobDescription
     except InvalidToken:
         logger.error("Could not decrypt token: {}".format(cipher_jobReference))
         return {}
@@ -73,29 +110,215 @@ def submit_BQ_job(sql_string, params):
     logger.debug("submit_BQ_job() results: %s", results)
     return results
 
-def get_manifest_nextpage(request, user):
-    manifest_info = {}
-    path_params = {
-        }
-    path_booleans =  []
-    path_integers = []
 
-    local_params = {
-        "page_size": 1000
-    }
-    local_booleans = []
-    local_integers = ["page_size"]
+# Deal with casing issues in filterset, converting to normalized values
+def normalize_filterset(filterset):
+    corrected_filters = {}
+    lowered_filters = {key.lower(): key for key in COHORT_FILTERS_SCHEMA['properties'].keys()}
+    for filter, value in filterset.items():
+        if filter.lower() in lowered_filters:
+            corrected_filters[lowered_filters[filter.lower()]] = value
+        else:
+            return (filterset, dict(
+                message=f'{filter} is not a valid filter.',
+                code=400
+            )
+                    )
+    return corrected_filters, {}
 
-    jobReference = {}
+
+def validate_cohort_definition(cohort_def):
+    try:
+        if 'name' not in cohort_def:
+            return (cohort_def, dict(
+                        message='A name was not provided for this cohort.',
+                        code=400
+                        )
+                    )
+        if 'filters' not in cohort_def:
+            return (cohort_def, dict(
+                        message='No filters were provided; ensure that the request body contains a \'filters\' property.',
+                        code=400
+                        )
+                    )
+
+        # Replace submitted filter IDs normalized filter IDs
+        cohort_def['filters'], filter_info = normalize_filterset(cohort_def['filters'])
+        if 'message' in filter_info:
+            return(cohort_def, filter_info)
+        # Validate the filterset
+        schema_validate(cohort_def['filters'], COHORT_FILTERS_SCHEMA)
+
+        blacklist = re.compile(BLACKLIST_RE, re.UNICODE)
+        match = blacklist.search(str(cohort_def['name']))
+
+        if not match and 'description' in cohort_def:
+            match = blacklist.search(str(cohort_def['description']))
+
+        if match:
+            return (cohort_def, dict(
+                            message="Your cohort's name or description contains invalid characters; " +
+                                    "please edit them and resubmit. [Saw {}]".format(str(match)),
+                            code=400
+                        )
+                    )
+        return (cohort_def, {})
+    except ValidationError as e:
+        logger.warning('[WARNING] Filters rejected for improper formatting: {}'.format(e))
+        manifest_info = dict(
+            message= f'[WARNING] {e}',
+            code = 400)
+        return {}, manifest_info
+
+
+def validate_query_parameters(request, default_params, lowered_params):
+
+    corrected_params = default_params
+    params =  [key for key in corrected_params]
+
+    # Correct casing errors in param names
+    for param, value in request.args.items():
+        if param.lower() in lowered_params:
+            corrected_params[lowered_params[param.lower()]] = value
+        else:
+            param_info =  dict(
+                message = f"{param} is an invalid param.",
+                code = 400
+            )
+            return params, param_info
+        
+    blacklist = re.compile(BLACKLIST_RE, re.UNICODE)
+    for param, value in corrected_params.items():
+        # Verify that params have acceptable values
+        # Parameter pages must have an integer value or be
+        # convertible to an integer
+        if param == 'page_size':
+            if not value in ["", None]:
+                try:
+                    corrected_params[param] = int(value)
+                except:
+                    manifest_info = dict(
+                        message=f"Parameter pages must be Null or an empty string" +
+                            "or an integer or convertibe to an integer",
+                        code=400
+                    )
+                    return [], manifest_info
+        else:
+            # Other params must have values that are convertible to a boolean
+            if value in [True, "True"]:
+                corrected_params[param] = True
+            elif value in [False, "False"]:
+                corrected_params[param] = False
+            else:
+                manifest_info = dict(
+                    message=f'Parameter {param} must be on of [True", "True", False, "False"]',
+                    code=400
+                )
+                return [], manifest_info
+
+    # There must be at least one param that selects a column
+    for param in corrected_params:
+        if param in params[1:]:
+            return corrected_params, {}
+
+    manifest_info = dict(
+        message=f'At least one query parameter must be True.',
+        code=400
+    )
+    return [], manifest_info
+
+
+def get_manifest(request, func, url, data=None): #, user=None):
     next_page = ""
     try:
-        if 'next_page' in request.args and \
-                not request.args.get('next_page') in ["", None]:
+        query_params, error_info = validate_query_parameters(request, \
+                 default_manifest_params.copy(), lowered_manifest_params)
+        if error_info:
+            return error_info
+        # if user:
+        #     query_params['email'] = user
+
+        auth = get_auth()
+        if func == requests.post:
+            results = func(url, params=query_params, json=data, headers=auth)
+        else:
+            results = func(url, params=query_params, json=data, headers=auth)
+
+        manifest_info = results.json()
+
+        if "message" in manifest_info:
+            return manifest_info
+
+        # Temporary workaround to support aws_bucket
+        if 'aws_bucket' in query_params and query_params['aws_bucket'] == True:
+            manifest_info['query']['sql_string'] = \
+            manifest_info['query']['sql_string'].replace('SELECT', 'SELECT dicom_pivot.aws_bucket,')
+            manifest_info['query']['sql_string'] = \
+            manifest_info['query']['sql_string'].replace('GROUP BY', 'GROUP BY dicom_pivot.aws_bucket,')
+
+
+        # We now have SQL that will generate the request manifest
+        # Start the BQ job, but don't get any data results, just the job info.
+        job_status = submit_BQ_job(manifest_info['query']['sql_string'],
+                                    manifest_info['query']['params'])
+        jobReference = job_status['jobReference']
+
+        # Decide how to proceed depending on job status (DONE, RUNNING, ERRORS)
+        user = data["email"]
+        manifest_info = is_job_done(job_status, manifest_info, jobReference, user, 'manifest')
+
+        if "message" in manifest_info:
+            return manifest_info
+
+        manifest_info, next_page = get_manifest_job_results(manifest_info,
+                    query_params['page_size'], jobReference, next_page)
+        if next_page:
+            cipher_pageToken = encrypt_pageToken(user, jobReference, next_page, 'manifest')
+        else:
+            cipher_pageToken = ""
+        manifest_info['next_page'] = cipher_pageToken
+
+    except Exception as e:
+        logger.exception(e)
+        manifest_info = dict(
+            message='[ERROR] get_manifest(): Error trying to preview a cohort',
+            code=400)
+
+    return manifest_info
+
+
+def get_manifest_nextpage(request, user):
+    manifest_info = {}
+    page_params = {
+        "page_size": 1000,
+        "next_page": ""
+    }
+    for param, value in request.args.items():
+        if param.lower() == 'page_size':
+            try:
+                page_params['page_size'] = int(value)
+            except:
+                manifest_info = dict(
+                    message="Invalid page_size",
+                    code=400
+                )
+                return manifest_info
+        elif param.lower() == 'next_page':
+            page_params['next_page'] = value
+        else:
+            manifest_info = dict(
+                message=f"Invalid query parameter {param}",
+                code=400
+            )
+            return manifest_info
+
+    try:
+        if not page_params['next_page'] in ["", None]:
             # We have a non-empty next_page token
-            jobDescription = decrypt_pageToken(user, request.args.get('next_page'))
+            jobDescription = decrypt_pageToken(user, page_params['next_page'], 'manifest')
             if jobDescription == {}:
                 manifest_info = dict(
-                    message="Invalid next_page token {}".format(request.args.get('next_page')),
+                    message="Invalid next_page token {}".format(page_params['next_page']),
                     code=400
                 )
                 return manifest_info
@@ -108,21 +331,21 @@ def get_manifest_nextpage(request, user):
                 job_status = BigQuerySupport.wait_for_done(query_job={'jobReference': jobReference})
 
                 # Decide how to proceed depending on job status (DONE, RUNNING, ERRORS)
-                manifest_info = is_job_done(job_status, manifest_info, jobReference, user)
+                manifest_info = is_job_done(job_status, manifest_info, jobReference, user, 'manifest')
                 if "message" in manifest_info:
                     return manifest_info
             manifest_info = {}
         else:
             manifest_info = dict(
-                message="Invalid next_page token {}".format(request.args.get('next_page')),
+                message="Invalid next_page token {}".format(page_params['next_page']),
                 code=400
             )
             return manifest_info
 
-        manifest_info = validate_parameters(request, manifest_info, local_params, local_booleans, local_integers, None)
-
+        # manifest_info = validate_parameters(request, manifest_info, local_params, local_booleans, local_integers, None)
+        #
         manifest_info, next_page = get_manifest_job_results(manifest_info,
-                                                            local_params['page_size'],
+                                                            page_params['page_size'],
                                                             jobReference,
                                                             next_page)
 
@@ -130,7 +353,7 @@ def get_manifest_nextpage(request, user):
 
         if next_page:
             cipher_pageToken = encrypt_pageToken(user, jobReference,
-                                                 next_page)
+                                                 next_page, 'manifest')
         else:
             cipher_pageToken = ""
         manifest_info['next_page'] = cipher_pageToken
@@ -143,154 +366,7 @@ def get_manifest_nextpage(request, user):
     return manifest_info
 
 
-
-def get_manifest(request, func, url, data=None, user=None):
-    manifest_info = {}
-
-    path_params = {
-        "sql": False,
-        "Collection_ID": False,
-        "Patient_ID": False,
-        "StudyInstanceUID": False,
-        "SeriesInstanceUID": False,
-        "SOPInstanceUID": False,
-        "Source_DOI": False,
-        "CRDC_Study_GUID": False,
-        "CRDC_Series_GUID": False,
-        "CRDC_Instance_GUID": False,
-        "GCS_URL": False,
-    }
-    path_booleans =  ['sql', 'Collection_ID', 'Patient_ID', 'StudyInstanceUID',
-          'SeriesInstanceUID', 'SOPInstanceUID', 'Source_DOI', 'CRDC_Study_GUID',
-          'CRDC_Series_GUID', 'CRDC_Instance_GUID', 'GCS_URL']
-    path_integers = []
-
-    local_params = {
-        "page_size": 1000
-    }
-    local_booleans = []
-    local_integers = ["page_size"]
-
-    jobReference = {}
-    next_page = ""
-
-    # access_methods = ["url", "guid"]
-
-    try:
-        # if 'next_page' in request.args and \
-        #     not request.args.get('next_page') in ["", None]:
-        #     # We have a non-empty next_page token
-        #     jobDescription = decrypt_pageToken(user, request.args.get('next_page'))
-        #     if jobDescription == {}:
-        #         manifest_info = dict(
-        #             message="Invalid next_page token {}".format(request.args.get('next_page')),
-        #             code=400
-        #         )
-        #         return manifest_info
-        #     else:
-        #         jobReference = jobDescription['jobReference']
-        #         next_page = jobDescription['next_page']
-        #
-        #     # If next_page is empty, then we timed out on the previous pass
-        #     if not next_page:
-        #         job_status = BigQuerySupport.wait_for_done(query_job={'jobReference':jobReference})
-        #
-        #         # Decide how to proceed depending on job status (DONE, RUNNING, ERRORS)
-        #         manifest_info = is_job_done(job_status, manifest_info, jobReference, user)
-        #         if "message" in manifest_info:
-        #             return manifest_info
-        #     manifest_info = dict(
-        #         cohort = {},
-        #     )
-        # else:
-        if True:
-            # Validate most params only on initial request; ignore on next_page requests
-            manifest_info = validate_keys(request, manifest_info, {**path_params, **local_params})
-
-            manifest_info = validate_parameters(request, manifest_info, path_params, path_booleans, path_integers, user)
-
-            # if path_params["access_method"] not in access_methods:
-            #     manifest_info = dict(
-            #         message="Invalid access_method {}".format(path_params['access_method']),
-            #         code=400
-            #     )
-
-            valid = False
-            for param in ['Collection_ID', 'Patient_ID', 'StudyInstanceUID',
-                'SeriesInstanceUID', 'SOPInstanceUID', 'Source_DOI', 'CRDC_Study_GUID',
-                'CRDC_Series_GUID', 'CRDC_Instance_GUID', 'GCS_URL']:
-                if path_params[param]:
-                    valid = True
-                    break
-            if not valid:
-                manifest_info = dict(
-                    message="Invalid access_method {}".format(path_params['access_method']),
-                    code=400
-                )
-
-            if manifest_info:
-                return manifest_info
-
-            auth = get_auth()
-            if func == requests.post:
-                results = func(url, params=path_params, json=data, headers=auth)
-            else:
-                results = func(url, params=path_params, headers=auth)
-
-            manifest_info = results.json()
-
-            if "message" in manifest_info:
-                return manifest_info
-
-            # Start the BQ job, but don't get any data results, just the job info.
-            job_status = submit_BQ_job(manifest_info['query']['sql_string'],
-                                        manifest_info['query']['params'])
-
-            logger.debug("get_manifest, job_status %s", job_status)
-
-            jobReference = job_status['jobReference']
-
-            # Decide how to proceed depending on job status (DONE, RUNNING, ERRORS)
-            manifest_info = is_job_done(job_status, manifest_info, jobReference, user)
-
-            logger.debug("get_manifest, manifest_info %s", manifest_info)
-
-            if "message" in manifest_info:
-                return manifest_info
-
-
-        # print(("[STATUS] manifest_info with job_ref: {}").format(manifest_info))
-
-        # Validate "local" params on initial and next_page requests
-        manifest_info = validate_parameters(request, manifest_info, local_params, local_booleans, local_integers, None)
-
-        if "message" in manifest_info:
-            return manifest_info
-
-        manifest_info, next_page = get_manifest_job_results(manifest_info,
-                                                            local_params['page_size'],
-                                                            jobReference,
-                                                            next_page)
-
-        logger.debug("get_manifest, manifest_info %s", manifest_info)
-
-        if next_page:
-            cipher_pageToken = encrypt_pageToken(user, jobReference,
-                                                 next_page)
-        else:
-            cipher_pageToken = ""
-        manifest_info['next_page'] = cipher_pageToken
-
-    except Exception as e:
-        logger.exception(e)
-        manifest_info = dict(
-            message='[ERROR] get_manifest(): Error trying to preview a cohort',
-            code=400)
-
-    return manifest_info
-
-
-def is_job_done(job_is_done, manifest_info, jobReference, user):
+def is_job_done(job_is_done, manifest_info, jobReference, user, op):
     if job_is_done and job_is_done['status']['state'] == 'DONE':
         if 'status' in job_is_done and 'errors' in job_is_done['status']:
             job_id = job_is_done['jobReference']['jobId']
@@ -314,7 +390,7 @@ def is_job_done(job_is_done, manifest_info, jobReference, user):
 
         logger.error("[ERROR] API query took longer than the allowed time to execute. " +
                      "Retry the query using the next_page token.")
-        cipher_pageToken = encrypt_pageToken(user, jobReference, "")
+        cipher_pageToken = encrypt_pageToken(user, jobReference, "", op)
         # manifest_info['next_page'] = cipher_pageToken
         # manifest_info["cohortObjects"] = {
         #     "totalFound": 0,
@@ -344,7 +420,8 @@ def validate_keys(request, manifest_info, params):
                            "[Saw {}]".format(str(key, match)),
                 code = 400
             )
-        if not key in params:
+
+        if not key.lower() in params:
             manifest_info = dict(
                 message="Invalid key {}".format(key),
                 code=400
@@ -377,21 +454,28 @@ def validate_parameters(request, manifest_info, params, booleans, integers, user
 # Get a list of GCS URLs or CRDC GUIDs of the instances in the cohort
 def get_manifest_job_results(manifest_info, maxResults, jobReference, next_page):
 
-    field_name_map = dict(
-        collection_id = 'Collection_ID',
-        PatientID = 'Patient_ID',
-        source_DOI = 'Source_DOI',
-        crdc_study_uuid = 'CRDC_Study_GUID',
-        crdc_series_uuid = 'CRDC_Series_GUID',
-        crdc_instance_uuid = 'CRDC_Instance_GUID',
-        gcs_url = 'GCS_URL'
-    )
+    # field_name_map = dict(
+    #     collection_id = 'collection_id',
+    #     PatientID = 'PatientID',
+    #     StudyInstanceUID = 'StudyInstanceUID',
+    #     StopIteration = 'SeriesInstanceUID',
+    #     SOPInstanceUID = 'SOPInstanceUID',
+    #     source_DOI = 'source_DOI',
+    #     crdc_study_uuid = 'crdc_study_uuid',
+    #     crdc_series_uuid = 'crdc_series_uuid',
+    #     crdc_instance_uuid = 'crdc_instance_uuid',
+    #     gcs_bucket = 'gcs_bucket',
+    #     gcs_url = 'gcs_url',
+    #     aws_bucket = 'aws_bucket',
+    #     aws_url = 'aws_url'
+    # )
+
+    field_name_map = {field_name: field_name for field_name in default_manifest_params}
 
     results = BigQuerySupport.get_job_result_page(job_ref=jobReference,
                                                   page_token=next_page,
                                                   maxResults=maxResults)
 
-    # schema_names = ['guid' if field['name'] == 'crdc_instance_uuid' else 'url' if field['name'] == 'gcs_url' else field['name'] for field in results['schema']['fields']]
     schema_names = [field['name'] if field['name'] not in field_name_map.keys() else field_name_map[field['name']] for field in results['schema']['fields']]
     manifest_info["manifest"] = dict(
                 totalFound = int(results['totalFound']),
@@ -409,9 +493,9 @@ def form_rows_json(data, schema_names):
     for row in data:
         row_vals = [ val['v'] for val in row['f']]
         row_dict = dict(zip(schema_names,row_vals))
-        for key in row_dict.keys():
-            if 'GUID' in key:
-                row_dict[key] = f"{CRDC_GUID_PREFIX}/{row_dict[key]}"
+        # for key in row_dict.keys():
+        #     if 'GUID' in key:
+        #         row_dict[key] = f"{CRDC_GUID_PREFIX}/{row_dict[key]}"
         rows.append(row_dict)
 
     return rows

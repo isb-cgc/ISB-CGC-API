@@ -14,6 +14,14 @@
 # limitations under the License.
 #
 
+# Generate the 'filters' and queryFields schemas to be inserted in openapi-appengine.yaml.
+# Ideally, these could stay in a separate yaml file which openapi-appengine.yaml would reference,
+# but such external references are not support by Google appengine.
+# Therefore the schemas must be manually inserted into openapi-appengine.yaml.
+# This script should be run whenever the set of filters and fields change. This at least
+# means when dicom_pivot_vX changes.
+# The script queries the IDC API on localhost, and the webapp must be running on Vagrant
+# when the script is executed.
 import requests
 import sys
 import argparse
@@ -24,34 +32,39 @@ from google.cloud import storage
 import subprocess
 import ast
 
-# Generate the 'filters' schema to be inserted in openapi-appengine.yaml.
-# Ideally, this could stay in a separate yaml file which openapi-appengine.yaml references,
-# but can't get that to work, so must be manually inserted when the attributes change.
 
 def get_db_metadata(args):
-    subprocess.run(['gsutil', 'cp', args.collex_metadata_blob, args.collex_metadata_file])
-    with open(args.collex_metadata_file) as f:
-        attrib_string = f.read().split("INSERT INTO `idc_collections_attribute` VALUES ")[1].split(';')[0]
-        attribs = list(ast.literal_eval(attrib_string.replace('NULL,','')))
-
-    return attribs
+    url = 'http://localhost:8095/v1/filters'
+    headers = {'accept': 'application/json'}
+    response = requests.get(url).json()
+    return response
 
 
-def write_continuous_numeric(f, name, min_max):
-    f.write('      {}:'.format(name))
+def write_required_fields(f):
     f.write(
 """
-        type: "array"
-        items:
-          type:"""
-        )
-    f.write(' "number"\n')
-    f.write('        minItems: {}\n'.format(min_max))
-    f.write('        maxItems: {}\n'.format(min_max))
+swagger: "2.0"
+info:
+  description: "IDC API Endpoints, version 1"
+  title: "IDC API"
+  version: "1.0"
+paths:
+definitions:
+"""
+    )
+    return
 
 
-def write_attribute(f, attribute):
-    name = attribute[1]
+def write_filter(f, filter):
+    name = filter['name']
+    data_type = {
+        'Continuous Numeric': 'number',
+        'Categorical Number': 'number',
+        'Integer': 'integer',
+        'Categorical String':'string',
+        'String': 'string'
+    }[filter['data_type']]
+
     f.write('      {}:'.format(name))
     f.write(
 """
@@ -59,115 +72,94 @@ def write_attribute(f, attribute):
         items:
           type:"""
     )
-    data_type = attribute[3]
-    if data_type in ['T', 'S', 'C']:
-        f.write(' "string"\n')
+    if data_type == 'number':
+        f.write(f' "{data_type}"\n')
+        items = 2 if name.split('_')[-1] in ['ebtwe', 'ebtw', 'btwe', 'btw'] else 1
+        f.write(f'        minItems: {items}\n')
+        f.write(f'        maxItems: {items}\n')
+    else:
+        f.write(f' "{data_type}"\n')
         f.write('        minItems: 1\n')
-    elif data_type == 'M':
-        f.write(' "integer"\n')
-        f.write('        minItems: 1\n')
-    elif data_type == 'N':
-        f.write(' "number"\n')
-        f.write('        minItems: 1\n')
-        f.write('        maxItems: 1\n')
-        for details in [('_lt',1), ('_lte',1), ('_ebtwe',2),('_ebtw',2), ('_btwe',2), ('_btw',2), ('_gte',1), ('_gt',1)]:
-            write_continuous_numeric(f,"{}{}".format(name,details[0]),details[1])
 
-    # data_type = attribute['data_type']
-    # if data_type in ['Text', 'String']:
-    #     f.write(' "string"\n')
-    # elif data_type == 'Integer':
-    #     f.write(' "integer"\n')
-    # elif data_type == 'Continuous Numeric':
-    #     f.write(' "number"\n')
-    #     # write_continuous_numeric(f, attribute)
-    # elif data_type == 'Categorical String':
-    #     f.write(' "string"\n')
+    return
 
 
-def gen_filters_schema(args, attributes):
+def gen_filters_schema(args, filters):
+
     with open(args.filters_file, "w") as f:
+        write_required_fields(f)
         f.write(
 """  filters:
     type: "object"
     properties:
 """
         )
-        for attribute in attributes:
-            write_attribute(f, attribute)
+        names = []
+        all_filters = [filter for source in filters['data_sources'] for filter in source['filters']]
+        for source in filters['data_sources']:
+            for filter in source ['filters']:
+                if not filter['name'] in names:
+                    write_filter(f, filter)
+                    names.append(filter['name'])
         f.write('    additionalProperties: False\n')
+    return
 
-# def gen_query_schema(args, attributes):
-#     with open(args.query_file, "w") as f:
-#         f.write(
-# """  queryFields:
-#     type: "array"
-#     items:
-#       type: "string"
-#       enum: [
-# """
-#         )
-#         for attribute in attributes:
-#             if 'Image Data' in attribute['dataSetTypes'] or 'Derived Data' in attribute['dataSetTypes']:
-#                 if not attribute['name'].endswith(('_lt', '_lte', '_ebtwe', '_ebtw', '_btwe', '_btw', '_gte', '_gt')):
-#                         f.write('        "{}",\n'.format(attribute['name'].rsplit('_', 1)[0]))
-#         f.write(
-# """      ]
-# """
-#         )
 
-def gen_query_schema(args, attributes):
+def gen_query_schema(args, filters):
     with open(args.query_file, "w") as f:
+        write_required_fields(f)
         f.write(
-"""  queryFields:
+"""
+  queryFields:
     type: "array"
     items:
       type: "string"
       enum: [
 """
+# """
+#   queryFields:
+#     type: "object"
+#     properties:
+#       fields:
+#         type: "array"
+#         items:
+#           type: "string"
+#           enum: [
+# """
         )
-        for attribute in attributes:
-            if 'Image Data' in attribute['dataSetTypes'] or 'Derived Data' in attribute['dataSetTypes']:
-                if not attribute['name'].endswith(('_lt', '_lte', '_ebtwe', '_ebtw', '_btwe', '_btw', '_gte', '_gt')):
-                        f.write('        "{}",\n'.format(attribute['name'].rsplit('_', 1)[0]))
+
+        source = next(source for source in filters['data_sources'] if source['data_source'].find('dicom_pivot') != -1)
+        for filter in source['filters']:
+            if filter['data_type'] != 'Continuous Numeric' or \
+                    filter['name'].split('_')[-1] not in ('lt', 'lte', 'btw', 'ebtw', 'ebtwe', 'btwe', 'gte', 'gt'):
+                name = filter['name']
+                f.write(f'        "{name}",\n')
         f.write(
 """      ]
 """
         )
-
-def gen_query_results_schema(args, attributes):
-    with open(args.query_results_file, "w") as f:
-        f.write(
-"""  queryResults:
-    type: "object"
-    properties:
-"""
-        )
-        for attribute in attributes:
-            if 'Image Data' in attribute['dataSetTypes'] or 'Derived Data' in attribute['dataSetTypes']:
-                if not attribute['name'].endswith(('_lt', '_lte', '_ebtwe', '_ebtw', '_btwe', '_btw', '_gte', '_gt')):
-                    write_attribute(f, attribute)
+    return
 
 
 def gen_json(args):
-    attributes = get_db_metadata(args)
+    filters = get_db_metadata(args)
 
-    gen_filters_schema(args, attributes)
+    gen_filters_schema(args, filters)
 
-    gen_query_schema(args, attributes)
-    gen_query_results_schema(args, attributes)
+    gen_query_schema(args, filters)
+    # gen_query_results_schema(args, filters)
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--collex_metadata_blob', default = "gs://idc-dev-files/idc_dev_collex_metadata.sql")
     parser.add_argument('--collex_metadata_file', default = "idc_dev_collex_metadata.sql")
-    parser.add_argument('--filters_file', default='filters_schema.yaml',
+    parser.add_argument('--filters_file', default='filters.yaml',
                         help='File into which to save the generated yaml schema')
-    parser.add_argument('--query_file', default='query_schema.yaml',
+    parser.add_argument('--query_file', default='queryfields.yaml',
                         help='File into which to save the generated queryFields schema')
-    parser.add_argument('--query_results_file', default='query_results_schema.yaml',
-                        help='File into which to save the generated queryResults schema')
+    # parser.add_argument('--query_results_file', default='query_results_schema.yaml',
+    #                     help='File into which to save the generated queryResults schema')
     args = parser.parse_args()
     print("{}".format(args), file=sys.stdout)
     gen_json(args)

@@ -15,20 +15,21 @@
 #
 
 from python_settings import settings
+from settings import API_VERSION
 
 def test_about(client, app):
-    response = client.get('/v1/about')
-    assert client.get('/v1/about').status_code == 200
+    response = client.get(f'/{API_VERSION}/about')
+    assert client.get(f'/{API_VERSION}/about').status_code == 200
     assert 'NCI IDC API' in response.json['message']
 
 
 def test_oauth2callback(client, app):
-    response = client.get('v1/oauth2callback')
+    response = client.get(f'/{API_VERSION}/oauth2callback')
     print(response)
 
 
 def test_user_info(client, app):
-    response = client.get('v1/users/account_details')
+    response = client.get(f'/{API_VERSION}/users/account_details')
     assert response.status_code == 200
     user_details = response.json['user_details']
 

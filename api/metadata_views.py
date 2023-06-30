@@ -64,7 +64,7 @@ def get_versions():
     return info
 
 
-def get_attributes():
+def get_filters():
     blacklist = re.compile(BLACKLIST_RE, re.UNICODE)
     info = None
 
@@ -166,19 +166,15 @@ def get_collections():
             message="Encountered an error while retrieving the collections list.",
             code=response.status_code
         )
-
     return info
 
 
 def get_analysis_results():
     info = None
-
     path_params = {
         "idc_data_version": "",
     }
-
     blacklist = re.compile(BLACKLIST_RE, re.UNICODE)
-
     # Get and validate parameters
     for key in request.args.keys():
         match = blacklist.search(str(key))
