@@ -204,7 +204,7 @@ def cohort_manifest(cohort_id):
 @cohorts_bp.route('/cohorts/manifest/preview/', methods=['POST'], strict_slashes=False)
 def cohort_preview_manifest():
     """
-    GET: Retrieve manifest for a previewed cohort
+    POST: Retrieve manifest for a previewed cohort
     """
     try:
         user_info = auth_info()

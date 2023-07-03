@@ -108,4 +108,4 @@ def test_queryFields(client, app):
     assert response.status_code == 200
     fields = response.json
 
-    assert set(fields) == set(QUERY_FIELDS["properties"]['fields']['items']['enum'])
+    assert set(fields['queryFields']) == set(QUERY_FIELDS["properties"]['fields']['items']['enum'])

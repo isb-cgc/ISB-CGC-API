@@ -40,7 +40,7 @@ def test_basic(client, app):
     query = gen_query(cohortSpec['filters'], {field: "True" for field in data['fields']})
     bq_data = [dict(row) for row in bq_client.query(query)]
 
-    response = client.get(f'{API_VERSION}/cohorts/query/{id}',
+    response = client.post(f'{API_VERSION}/cohorts/query/{id}',
                             query_string = query_string,
                             data = json.dumps(data),
                             headers=headers)
@@ -89,7 +89,7 @@ def test_basic2(client, app):
     query = gen_query(cohortSpec['filters'], {field: "True" for field in data['fields']})
     bq_data = [dict(row) for row in bq_client.query(query)]
 
-    response = client.get(f'{API_VERSION}/cohorts/query/{id}',
+    response = client.post(f'{API_VERSION}/cohorts/query/{id}',
                             query_string = query_string,
                             data = json.dumps(data),
                             headers=headers)
@@ -135,7 +135,7 @@ def test_paged(client, app):
     query = gen_query(cohortSpec['filters'], {field: "True" for field in data['fields']})
     bq_data = [dict(row) for row in bq_client.query(query)]
 
-    response = client.get(f'{API_VERSION}/cohorts/query/{id}',
+    response = client.post(f'{API_VERSION}/cohorts/query/{id}',
                             query_string = query_string,
                             data = json.dumps(data),
                             headers=headers)
