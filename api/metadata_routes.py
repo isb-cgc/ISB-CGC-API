@@ -42,7 +42,7 @@ def versions():
             response.status_code = results['code']
         else:
             response = jsonify({
-                # 'code': 200,
+                'code': 200,
                 **results
             })
             response.status_code = 200
@@ -71,7 +71,7 @@ def collections():
             response.status_code = results['code']
         else:
             response = jsonify({
-                # 'code': 200,
+                'code': 200,
                 **results
             })
             response.status_code = 200
@@ -99,8 +99,8 @@ def analysis_results():
             response.status_code = results['code']
         else:
             response = jsonify({
-                # 'code': 200,
-                **results
+                'code': 200,
+                **results,
             })
             response.status_code = 200
     except Exception as e:
@@ -125,7 +125,7 @@ def filters():
             response.status_code = results['code']
         else:
             response = jsonify({
-                # 'code': 200,
+                'code': 200,
                 **results
             })
             response.status_code = 200
@@ -145,10 +145,10 @@ def filters():
 def queryFields():
     """Retrieve a list of query fields for the current IDC versions"""
     fields = [field for field in QUERY_FIELDS['properties']['fields']['items']['enum']]
-    response = jsonify(
-        # 'code': 200,
-        *fields
-    )
+    response = jsonify({
+        'code': 200,
+        'queryFields': fields
+        })
     response.status_code = 200
 
     return response
