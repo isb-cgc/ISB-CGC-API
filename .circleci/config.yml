@@ -128,7 +128,6 @@ jobs:
           key: idc-api-lib-{{ checksum "requirements.txt" }}
           paths:
             - ./lib
-      - install_cloud_sdk
       - deployment_setup
       - auth
       - deployment_config
