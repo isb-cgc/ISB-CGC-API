@@ -154,7 +154,7 @@ jobs:
     environment:
       TZ: "/usr/share/zoneinfo/America/Los_Angeles"
     docker:
-      - image: cimg/python:3.8
+      - image: cimg/python:3.8.14
     working_directory: ~/IDC-API
     steps:
       - restore_cache:
