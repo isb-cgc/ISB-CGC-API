@@ -33,7 +33,7 @@ def test_basic(client, app):
                   "filters": filters}
 
     # queryFields = {"fields": ['StudyInstanceUID', 'Modality', "gender"]}
-    fields =  ['StudyInstanceUID', 'modality']
+    fields =  ['StudyInstanceUID', 'modality', 'age_at_diagnosis']
 
     queryPreviewBody = {"cohort_def": cohortSpec,
                         "fields": fields}
