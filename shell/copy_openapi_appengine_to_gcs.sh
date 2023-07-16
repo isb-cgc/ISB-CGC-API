@@ -24,5 +24,5 @@ gsutil cp openapi-appengine.yaml gs://idc-api-dev-files/openapi-api.yaml.${DATE}
 gsutil cp dev.openapi-appengine.yaml gs://idc-deployment-files/dev/dev.openapi-appengine.yaml
 
 gcloud auth login bcliffor@canceridc.dev
-gsutil cp  test.openapi-appengine.yaml gs://webapp-deployment-files-idc-test/test.openapi-appengine.yaml
+gsutil cp test.openapi-appengine.yaml gs://webapp-deployment-files-idc-test/test.openapi-appengine.yaml
 gcloud auth login bcliffor@systemsbiology.org
