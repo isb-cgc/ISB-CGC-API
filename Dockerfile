@@ -71,6 +71,10 @@ ADD . /app
 
 # We need to recompile some of the items because of differences in compiler versions
 RUN pip3 install -r /app/requirements.txt -t /app/lib/ --upgrade
+
+# HOTFIX 7/17/23: root cert change causing errors on prod, this should fix it
+RUN cat *.crt >> /app/lib/certifi/cacert.pem
+
 RUN pip3 install gunicorn==19.9.0
 
 ENV PYTHONPATH=/app:/app/api:/app/lib:/app/IDC-Common:${PYTHONPATH}
