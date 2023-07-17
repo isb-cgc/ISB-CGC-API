@@ -58,6 +58,7 @@ RUN apt-get install -y mysql-server
 RUN curl --silent https://bootstrap.pypa.io/get-pip.py | python3
 
 RUN apt-get -y install build-essential
+RUN apt-get -y install apt-transport-https ca-certificates
 RUN apt-get -y install --reinstall python-m2crypto python3-crypto
 RUN apt-get -y install libxml2-dev libxmlsec1-dev swig
 RUN pip3 install pexpect
