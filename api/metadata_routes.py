@@ -36,7 +36,6 @@ def versions():
 
     try:
         results = get_versions()
-
         if 'message' in results:
             response = jsonify(results)
             response.status_code = results['code']
