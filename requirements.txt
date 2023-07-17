@@ -9,8 +9,8 @@ charset-normalizer==3.0.1
 click
 colorama==0.4.6
 coverage==7.1.0
-cryptography==2.4.2
-#Django==4.1.7
+pyOpenSSL==23.2.0    # This is necessary for the local builds specifically...
+cryptography==41.0.0 # because of this version, which is incompatible with pyOpenSSL < 22
 Django==3.2.19
 ecdsa==0.18.0
 exceptiongroup==1.1.0
