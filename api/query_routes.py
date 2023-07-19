@@ -26,7 +26,7 @@ from flask import Blueprint
 
 cohort_query_bp = Blueprint('query_bp', __name__, url_prefix='/{}'.format(settings.API_VERSION))
 
-@cohort_query_bp.route('/cohorts/query/<int:cohort_id>', methods=['GET'], strict_slashes=False)
+@cohort_query_bp.route('/cohorts/query/<int:cohort_id>', methods=['POST'], strict_slashes=False)
 def cohorts_query(cohort_id):
     try:
         user_info = auth_info()
