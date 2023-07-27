@@ -23,11 +23,10 @@ from flask import request
 from werkzeug.exceptions import BadRequest
 
 from python_settings import settings
-from api.v1.query_utils import perform_query, perform_fixed_query, query_next_page, perform_fixed_query_next_page
+from .query_utils import perform_query, perform_fixed_query, query_next_page, perform_fixed_query_next_page
 from jsonschema import validate as schema_validate, ValidationError
-from api.v1.schemas.filterset import COHORT_FILTER_SCHEMA
-from api.v1.schemas.querypreviewbody import QUERY_PREVIEW_BODY
-from api.v1.schemas.queryfields import QUERY_FIELDS
+from .schemas.querypreviewbody import QUERY_PREVIEW_BODY
+from .schemas.queryfields import QUERY_FIELDS
 from .version_config import API_VERSION
 
 BLACKLIST_RE = settings.BLACKLIST_RE

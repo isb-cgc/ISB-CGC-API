@@ -15,28 +15,21 @@
 #
 
 import logging
-import json
-from flask import jsonify, request, render_template
-from .version_config import API_VERSION
-
+from flask import jsonify, render_template
 from python_settings import settings
-
-from . main_views import get_privacy, get_help
 from flask import Blueprint
-
-
+from .version_config import API_VERSION
 logger = logging.getLogger(settings.LOGGER_NAME)
 
 SCOPE = 'https://www.googleapis.com/auth/userinfo.email'
 
 main_bp = Blueprint(f'main_bp_{API_VERSION}', __name__, url_prefix='/{}'.format(API_VERSION))
-
 @main_bp.route('/about/', methods=['GET'], strict_slashes=False)
 def about():
     """Base response"""
     response = jsonify({
         'code': 200,
-        'message': 'Welcome to the NCI IDC API, Version {}'.format(settings.API_VERSION[1:]),
+        'message': 'Welcome to the NCI IDC API, Version {}'.format(API_VERSION[1:]),
         'documentation': 'SwaggerUI interface available at <{}/{}/swagger/>.'.format(settings.BASE_API_URL, settings.API_VERSION) +
              ' Documentation is available at <https://learn.canceridc.dev/>'
     })

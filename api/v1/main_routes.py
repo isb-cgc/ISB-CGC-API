@@ -15,16 +15,10 @@
 #
 
 import logging
-import json
-from flask import jsonify, request, render_template
-
+from flask import jsonify, render_template
 from python_settings import settings
-
-from . main_views import get_privacy, get_help
 from flask import Blueprint
-
 from .version_config import API_VERSION
-
 logger = logging.getLogger(settings.LOGGER_NAME)
 
 SCOPE = 'https://www.googleapis.com/auth/userinfo.email'

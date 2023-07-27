@@ -21,6 +21,7 @@ from .auth import auth_info, UserValidationException
 from python_settings import settings
 from .version_config import API_VERSION
 
+
 logger = logging.getLogger(settings.LOGGER_NAME)
 logger.setLevel(settings.LOG_LEVEL)
 
@@ -35,7 +36,6 @@ def cohorts():
     POST: Add a new cohort
     DELETE: Delete a list of cohorts
     """
-
     try:
         user_info = auth_info()
         if not user_info:
@@ -111,7 +111,6 @@ def cohort(cohort_id):
             response.status_code = 500
         else:
             results = delete_cohort(user_info["email"], cohort_id)
-
             if results:
                 if 'message' in results:
                     response = jsonify({
@@ -207,7 +206,7 @@ def cohort_manifest(cohort_id):
 @cohorts_bp.route('/cohorts/manifest/preview/', methods=['POST'], strict_slashes=False)
 def cohort_preview_manifest():
     """
-    GET: Retrieve manifest for a previewed cohort
+    POST: Retrieve manifest for a previewed cohort
     """
     try:
         user_info = auth_info()

@@ -420,7 +420,6 @@ def validate_keys(request, manifest_info, params):
                            "[Saw {}]".format(str(key, match)),
                 code = 400
             )
-
         if not key.lower() in params:
             manifest_info = dict(
                 message="Invalid key {}".format(key),
@@ -453,22 +452,6 @@ def validate_parameters(request, manifest_info, params, booleans, integers, user
 
 # Get a list of GCS URLs or CRDC GUIDs of the instances in the cohort
 def get_manifest_job_results(manifest_info, maxResults, jobReference, next_page):
-
-    # field_name_map = dict(
-    #     collection_id = 'collection_id',
-    #     PatientID = 'PatientID',
-    #     StudyInstanceUID = 'StudyInstanceUID',
-    #     StopIteration = 'SeriesInstanceUID',
-    #     SOPInstanceUID = 'SOPInstanceUID',
-    #     source_DOI = 'source_DOI',
-    #     crdc_study_uuid = 'crdc_study_uuid',
-    #     crdc_series_uuid = 'crdc_series_uuid',
-    #     crdc_instance_uuid = 'crdc_instance_uuid',
-    #     gcs_bucket = 'gcs_bucket',
-    #     gcs_url = 'gcs_url',
-    #     aws_bucket = 'aws_bucket',
-    #     aws_url = 'aws_url'
-    # )
 
     field_name_map = {field_name: field_name for field_name in default_manifest_params}
 

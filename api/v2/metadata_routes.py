@@ -19,11 +19,8 @@ from flask import jsonify
 from python_settings import settings
 from .schemas.queryfields import QUERY_FIELDS
 from .version_config import API_VERSION
-
 from . metadata_views import get_versions, get_filters, get_collections, get_analysis_results
-
 from flask import Blueprint
-
 
 logger = logging.getLogger(settings.LOGGER_NAME)
 
@@ -100,7 +97,7 @@ def analysis_results():
         else:
             response = jsonify({
                 'code': 200,
-                **results,
+                **results
             })
             response.status_code = 200
     except Exception as e:

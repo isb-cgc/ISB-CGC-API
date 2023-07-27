@@ -16,23 +16,19 @@
 
 import logging
 import re
-import json
 import requests
-
 from flask import request
 from werkzeug.exceptions import BadRequest
-
 from python_settings import settings
-
 from jsonschema import validate as schema_validate, ValidationError
 from .schemas.filters import COHORT_FILTERS_SCHEMA
 from .cohort_utils import get_manifest,get_manifest_nextpage
 from .auth import get_auth
 from .version_config import API_VERSION
 
+logger = logging.getLogger(settings.LOGGER_NAME)
 BLACKLIST_RE = settings.BLACKLIST_RE
 
-logger = logging.getLogger(settings.LOGGER_NAME)
 
 MAX_FETCH_COUNT = 5000
 

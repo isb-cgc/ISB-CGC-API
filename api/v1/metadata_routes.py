@@ -18,15 +18,12 @@ import logging
 from flask import jsonify
 from python_settings import settings
 from .version_config import API_VERSION
-
 from . metadata_views import get_versions, get_attributes, get_collections, get_analysis_results
-
 from flask import Blueprint
-
-metadata_bp = Blueprint(f'metadata_bp_{API_VERSION}', __name__, url_prefix='/{}'.format(API_VERSION))
 
 logger = logging.getLogger(settings.LOGGER_NAME)
 
+metadata_bp = Blueprint(f'metadata_bp_{API_VERSION}', __name__, url_prefix='/{}'.format(API_VERSION))
 
 @metadata_bp.route('/versions/', methods=['GET'], strict_slashes=False)
 def versions():
@@ -36,7 +33,6 @@ def versions():
 
     try:
         results = get_versions()
-
         if 'message' in results:
             response = jsonify(results)
             response.status_code = results['code']
@@ -56,126 +52,6 @@ def versions():
         response.status_code = 500
 
     return response
-
-
-# @metadata_bp.route('/data_sources/', methods=['GET'], strict_slashes=False)
-# def data_sources():
-#     """Retrieve a list of IDC versions"""
-#
-#     response = None
-#
-#     try:
-#         results = get_data_sources()
-#
-#         if 'message' in results:
-#             response = jsonify(results)
-#             response.status_code = results['code']
-#         else:
-#             response = jsonify({
-#                 'code': 200,
-#                 **results
-#             })
-#             response.status_code = 200
-#     except Exception as e:
-#         logger.error("[ERROR] While retrieving IDC versions:")
-#         logger.exception(e)
-#         response = jsonify({
-#             'code': 500,
-#             'message': 'Encountered an error while retrieving the program list.'
-#         })
-#         response.status_code = 500
-#
-#     return response
-
-
-@metadata_bp.route('/attributes', methods=['GET'], strict_slashes=False)
-def attributes():
-    """Retrieve a list of IDC versions"""
-
-    response = None
-
-    try:
-        results = get_attributes()
-
-        if 'message' in results:
-            response = jsonify(results)
-            response.status_code = results['code']
-        else:
-            response = jsonify({
-                'code': 200,
-                **results
-            })
-            response.status_code = 200
-    except Exception as e:
-        logger.error("[ERROR] While retrieving IDC versions:")
-        logger.exception(e)
-        response = jsonify({
-            'code': 500,
-            'message': 'Encountered an error while retrieving the attributes.'
-        })
-        response.status_code = 500
-
-    return response
-
-
-# @metadata_bp.route('/programs/', methods=['GET'], strict_slashes=False)
-# def programs():
-#     """Retrieve the list of programs and builds currently available for cohort creation."""
-#
-#     response = None
-#
-#     try:
-#         results = get_programs()
-#
-#         if 'message' in results:
-#             response = jsonify(results)
-#             response.status_code = results['code']
-#         else:
-#             response = jsonify({
-#                 'code': 200,
-#                 **results
-#             })
-#             response.status_code = 200
-#     except Exception as e:
-#         logger.error("[ERROR] While retrieving program information:")
-#         logger.exception(e)
-#         response = jsonify({
-#             'code': 500,
-#             'message': 'Encountered an error while retrieving the program list.'
-#         })
-#         response.status_code = 500
-#
-#     return response
-#
-#
-# @metadata_bp.route('/programs/<program_name>', methods=['GET'], strict_slashes=False)
-# def program_collections(program_name):
-#     """Retrieve the list of collections and versions in program <program_name>."""
-#     response = None
-#
-#     try:
-#
-#         results = get_program_collections(program_name)
-#
-#         if 'message' in results:
-#             response = jsonify(results)
-#             response.status_code = results['code']
-#         else:
-#             response = jsonify({
-#                 'code': 200,
-#                 **results
-#             })
-#             response.status_code = 200
-#     except Exception as e:
-#         logger.error("[ERROR] While retrieving collection information:")
-#         logger.exception(e)
-#         response = jsonify({
-#             'code': 500,
-#             'message': 'Encountered an error while retrieving the collection list.'
-#         })
-#         response.status_code = 500
-#
-#     return response
 
 
 @metadata_bp.route('/collections/', methods=['GET'], strict_slashes=False)

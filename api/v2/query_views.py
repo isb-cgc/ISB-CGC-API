@@ -25,8 +25,6 @@ from werkzeug.exceptions import BadRequest
 from python_settings import settings
 from .query_utils import perform_query, query_next_page
 from jsonschema import validate as schema_validate, ValidationError
-# from . schemas.querypreviewbody import QUERY_PREVIEW_BODY
-# from . schemas.filters import COHORT_FILTERS_SCHEMA
 from .schemas.queryfields import QUERY_FIELDS
 from .cohort_utils import validate_cohort_definition
 from .version_config import API_VERSION

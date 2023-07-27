@@ -16,17 +16,12 @@
 
 import logging
 import requests
-
 from flask import request
 from werkzeug.exceptions import BadRequest
 from python_settings import settings
 from .cohort_utils import get_manifest, get_manifest_nextpage, validate_cohort_definition
 from .auth import get_auth
 from .version_config import API_VERSION
-
-from jsonschema import validate as schema_validate, ValidationError
-from . schemas.filters import COHORT_FILTERS_SCHEMA
-import re
 
 logger = logging.getLogger(settings.LOGGER_NAME)
 BLACKLIST_RE = settings.BLACKLIST_RE
@@ -35,7 +30,6 @@ MAX_FETCH_COUNT = 5000
 
 def create_cohort(user):
     try:
-        # path_params = {'email': user}
         try:
             request_data, cohort_info = validate_cohort_definition(request.get_json())
             if 'message' in cohort_info:
