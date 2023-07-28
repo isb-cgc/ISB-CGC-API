@@ -142,7 +142,8 @@ jobs:
             sudo -E /bin/bash ./shell/compareConfig.sh "gs://${DEPLOYMENT_BUCKET}/deployment_config.txt"
             sudo -E /bin/bash ./shell/compareConfig.sh "gs://${DEPLOYMENT_BUCKET}/${ENV_FILE}"
             sudo -E /bin/bash ./shell/compareConfig.sh "gs://${DEPLOYMENT_BUCKET}/${API_APP_YAML}"
-            sudo -E /bin/bash ./shell/compareConfig.sh "gs://${DEPLOYMENT_BUCKET}/${OPEN_API_YAML}"
+            sudo -E /bin/bash ./shell/compareConfig.sh "gs://${DEPLOYMENT_BUCKET}/${OPEN_API_V1_YAML}"
+            sudo -E /bin/bash ./shell/compareConfig.sh "gs://${DEPLOYMENT_BUCKET}/${OPEN_API_V2_AML}"
       - save_cache:
           key: idc-api-{{ .Branch }}-{{ .Revision }}-{{ epoch }}
           paths:
@@ -176,7 +177,7 @@ jobs:
       - auth
       - deployment_config
       - deploy:
-          nane: Deployment
+          name: Deployment
           command: |
             sudo -E /bin/bash ./shell/unpack_for_deployment.sh
             sudo -E gcloud endpoints services deploy ./openapi-appengine.v1.yaml
