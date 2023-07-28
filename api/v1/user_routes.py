@@ -21,13 +21,11 @@ from .auth import auth_info, UserValidationException
 from .user_views import get_account_details
 from python_settings import settings
 from .version_config import API_VERSION
-
 from flask import Blueprint
-
-user_bp = Blueprint(f'user_bp_{API_VERSION}', __name__, url_prefix='/{}'.format(API_VERSION))
 
 logger = logging.getLogger(settings.LOGGER_NAME)
 
+user_bp = Blueprint(f'user_bp_{API_VERSION}', __name__, url_prefix='/{}'.format(API_VERSION))
 
 @user_bp.route('/users/account_details/', methods=['GET'], strict_slashes=False)
 def account_details():

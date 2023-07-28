@@ -21,10 +21,7 @@ from .auth import auth_info, UserValidationException
 from .user_views import get_account_details
 from python_settings import settings
 from .version_config import API_VERSION
-
-
 from flask import Blueprint
-
 
 logger = logging.getLogger(settings.LOGGER_NAME)
 

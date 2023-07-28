@@ -28,8 +28,8 @@ def test_invalid_filter(client, app):
             "Modality": ["ct", "mR"],
             "RACE": ["WHITE"],
             "age_at_diagnosis_btw": [1, 100],
-            "foo": ["bar"]
-            # "age_at_diagnosis_btw": [0, 100]
+            "foo": ["bar"],
+            "age_at_diagnosis_btw": [0, 100]
         }
 
         cohortSpec = {"name": "testcohort",

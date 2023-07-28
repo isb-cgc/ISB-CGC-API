@@ -17,15 +17,12 @@
 import logging
 import json
 import requests
-from .version_config import API_VERSION
-
 from flask import request
 from werkzeug.exceptions import BadRequest
-
 import datetime
-
 from python_settings import settings
-from . auth import UserValidationException, get_auth
+from .auth import UserValidationException, get_auth
+from .version_config import API_VERSION
 
 logger = logging.getLogger(settings.LOGGER_NAME)
 
@@ -35,9 +32,8 @@ def get_account_details(user):
     path_params = {'email': user}
     try:
         auth = get_auth()
-        # response = requests.get("{}/users/api/".format(settings.BASE_URL),
-        response = requests.get(f"{settings.BASE_URL}/users/api/{API_VERSION}",
-                                params=path_params, headers=auth)
+        response = requests.get(f"{settings.BASE_URL}/users/api/{API_VERSION}/",
+                                 params=path_params, headers=auth)
         account_details = response.json()
 
         account_details['user_details']['date_joined'] = datetime.datetime.fromtimestamp(

@@ -97,6 +97,8 @@ def test_create_cohort_schema_validation(client, app):
     assert cohortResponse['message']=='The JSON provided in this request appears to be improperly formatted.'\
 
 
+
+
 # Test basic cohort creation.
 def test_create_cohort(client, app):
     # Create a filter set
@@ -230,6 +232,19 @@ def test_delete_cohorts(client, app):
     assert len([cohort for cohort in cohorts
                 if cohort['cohort_id']==int(cohort0) or cohort['cohort_id']==int(cohort1)]) == 0
 
+
+# Delete all cohorts from the DB
+# This should normally be commented out
+# Useful to clean up the DB, and to speed up testing
+def test_delete_all_cohorts(client, app):
+    # Get the list of cohorts
+    response = client.get(f'{API_VERSION}/cohorts')
+    assert response.content_type == 'application/json'
+    assert response.status_code == 200
+
+    cohorts = response.json['cohorts']
+    for cohort in cohorts:
+        delete_cohort(client, cohort['cohort_id'])
 
 
 

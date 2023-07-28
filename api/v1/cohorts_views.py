@@ -169,7 +169,7 @@ def get_cohort_preview_manifest(user):
     except ValidationError as e:
         logger.warning('[WARNING] Filters rejected for improper formatting: {}'.format(e))
         manifest_info = dict(
-            message= 'Filters were improperly formatted.',
+            message= e.message,
             code = 400)
 
     return manifest_info

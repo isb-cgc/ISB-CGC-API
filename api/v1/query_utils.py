@@ -20,7 +20,7 @@ import re
 import json
 import requests
 
-from api.v1.auth import get_auth
+from .auth import get_auth
 from cryptography.fernet import Fernet, InvalidToken
 
 import settings
@@ -377,8 +377,6 @@ def perform_fixed_query_next_page(request, user=None):
             code=400)
 
     return query_info
-
-
 
 
 def is_job_done(job_is_done, query_info, jobReference, user):

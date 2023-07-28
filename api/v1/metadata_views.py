@@ -23,21 +23,15 @@ import requests
 from flask import request
 from .auth import get_auth
 from .version_config import API_VERSION
-
 from python_settings import settings
-
 logger = logging.getLogger(settings.LOGGER_NAME)
 
 BLACKLIST_RE = settings.BLACKLIST_RE
 
 def get_versions():
-    info = None
-
-    # try:
     auth = get_auth()
     logger.debug("BASE_URL={}".format(settings.BASE_URL))
 
-    # response = requests.get("{}/{}".format(settings.BASE_URL, f'collections/api/{API_VERSION}/versions/'), headers=auth)
     response = requests.get(f"{settings.BASE_URL}/collections/api/{API_VERSION}/versions/", headers=auth)
     try:
         if response.status_code != 200:
@@ -62,14 +56,11 @@ def get_versions():
             message="Encountered an error while retrieving the versions list.",
             code=response.status_code
         )
-
     return info
 
 
 def get_attributes():
     blacklist = re.compile(BLACKLIST_RE, re.UNICODE)
-    info = None
-
     path_params = {
         # "idc_data_version": "",
         "data_source": ""
@@ -93,7 +84,6 @@ def get_attributes():
             )
 
     auth = get_auth()
-    # response = requests.get("{}/{}/".format(settings.BASE_URL, f'collections/api/{API_VERSION}/attributes'),
     response = requests.get(f"{settings.BASE_URL}/collections/api/{API_VERSION}/attributes/",
                             params=path_params, headers=auth)
     try:
@@ -116,13 +106,10 @@ def get_attributes():
             message="Encountered an error while retrieving the attributes list.",
             code=response.status_code
         )
-
     return info
 
 
 def get_collections():
-    info = None
-
     path_params = {
         "idc_data_version": "",
     }
@@ -146,7 +133,6 @@ def get_collections():
                 code=400
             )
 
-    # try:
     auth = get_auth()
     response = requests.get(f'{settings.BASE_URL}/collections/api/{API_VERSION}/',
                             params=path_params, headers=auth)
@@ -169,19 +155,14 @@ def get_collections():
             message="Encountered an error while retrieving the collections list.",
             code=response.status_code
         )
-
     return info
 
 
 def get_analysis_results():
-    info = None
-
     path_params = {
         "idc_data_version": "",
     }
-
     blacklist = re.compile(BLACKLIST_RE, re.UNICODE)
-
     # Get and validate parameters
     for key in request.args.keys():
         match = blacklist.search(str(key))
@@ -199,11 +180,9 @@ def get_analysis_results():
                 code=400
             )
 
-    # try:
     auth = get_auth()
-    # response = requests.get("{}/collections/api/{}/analysis_results/".format(settings.BASE_URL, API_VERSION,
-    response = requests.get(f"{settings.BASE_URL}/collections/api/{ API_VERSION}/analysis_results/",
-                                                                             params=path_params, headers=auth)
+    response = requests.get(f"{settings.BASE_URL}/collections/api/{API_VERSION}/analysis_results/",
+                             params=path_params, headers=auth)
     try:
         info = response.json()
         if response.status_code != 200:
@@ -223,7 +202,6 @@ def get_analysis_results():
             message="Encountered an error while retrieving the analysis results list.",
             code=response.status_code
         )
-
     return info
 
 

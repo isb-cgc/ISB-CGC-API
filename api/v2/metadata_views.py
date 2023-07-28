@@ -22,17 +22,13 @@ import requests
 
 from flask import request
 from .auth import get_auth
-
+from .version_config import API_VERSION
 from python_settings import settings
-from.version_config import API_VERSION
 logger = logging.getLogger(settings.LOGGER_NAME)
 
 BLACKLIST_RE = settings.BLACKLIST_RE
 
 def get_versions():
-    info = None
-
-    # try:
     auth = get_auth()
     logger.debug("BASE_URL={}".format(settings.BASE_URL))
 
@@ -60,14 +56,11 @@ def get_versions():
             message="Encountered an error while retrieving the versions list.",
             code=response.status_code
         )
-
     return info
 
 
 def get_filters():
     blacklist = re.compile(BLACKLIST_RE, re.UNICODE)
-    info = None
-
     path_params = {
         # "idc_data_version": "",
         "data_source": ""
@@ -113,13 +106,10 @@ def get_filters():
             message="Encountered an error while retrieving the attributes list.",
             code=response.status_code
         )
-
     return info
 
 
 def get_collections():
-    info = None
-
     path_params = {
         "idc_data_version": "",
     }
@@ -143,9 +133,8 @@ def get_collections():
                 code=400
             )
 
-    # try:
     auth = get_auth()
-    response = requests.get(f"{settings.BASE_URL}/collections/api/{API_VERSION}/",
+    response = requests.get(f'{settings.BASE_URL}/collections/api/{API_VERSION}/',
                             params=path_params, headers=auth)
     try:
         info = response.json()
@@ -170,7 +159,6 @@ def get_collections():
 
 
 def get_analysis_results():
-    info = None
     path_params = {
         "idc_data_version": "",
     }
@@ -192,10 +180,9 @@ def get_analysis_results():
                 code=400
             )
 
-    # try:
     auth = get_auth()
     response = requests.get(f"{settings.BASE_URL}/collections/api/{API_VERSION}/analysis_results/",
-                            params=path_params, headers=auth)
+                             params=path_params, headers=auth)
     try:
         info = response.json()
         if response.status_code != 200:
@@ -215,7 +202,6 @@ def get_analysis_results():
             message="Encountered an error while retrieving the analysis results list.",
             code=response.status_code
         )
-
     return info
 
 

@@ -82,6 +82,7 @@ def collections():
 
     return response
 
+
 @metadata_bp.route('/analysis_results/', methods=['GET'], strict_slashes=False)
 def analysis_results():
     """Retrieve the list of analysis results in some IDC versions """
@@ -110,16 +111,10 @@ def analysis_results():
 
     return response
 
-@metadata_bp.route('/fields', methods=['GET'], strict_slashes=False)
-def fields():
+
+@metadata_bp.route('/attributes', methods=['GET'], strict_slashes=False)
+def attributes():
     """Retrieve a list of IDC versions"""
-
-    response = jsonify({
-        'code': 500,
-        'message': '/fields not yet supported.'
-    })
-
-    return response
 
     response = None
 
@@ -145,41 +140,3 @@ def fields():
         response.status_code = 500
 
     return response
-
-
-# @metadata_bp.route('/programs/<program_name>/<collection_name>/', methods=['GET'], strict_slashes=False)
-# def collection(program_name, collection_name):
-#     """"Get a list of the available fields for a specific version of a collection."""
-#     response = None
-#
-#     try:
-#         results = get_collection_info(program_name, collection_name)
-#         if results:
-#             if 'message' in results:
-#                 response = jsonify(results)
-#                 response.status_code = 500
-#
-#             else:
-#                 code = 200
-#                 response = jsonify({
-#                     'code': code,
-#                     **results
-#                 })
-#                 response.status_code = 200
-#         else:
-#             response = jsonify({
-#                 'code': 500,
-#                 'message': 'Encountered an error while retrieving the collection list.'
-#             })
-#             response.status_code = 500
-#     except Exception as e:
-#         logger.error("[ERROR] While retrieving collection information:")
-#         logger.exception(e)
-#         response = jsonify({
-#             'code': 500,
-#             'message': 'Encountered an error while retrieving the collection metadata.'
-#         })
-#         response.status_code = 500
-#
-#     return response
-

@@ -17,12 +17,9 @@
 import logging
 import json
 import requests
-
 from flask import request
 from werkzeug.exceptions import BadRequest
-
 import datetime
-
 from python_settings import settings
 from .auth import UserValidationException, get_auth
 from .version_config import API_VERSION

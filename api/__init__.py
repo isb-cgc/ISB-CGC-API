@@ -118,12 +118,12 @@ def create_app(test_config=None):
 
     @app.context_processor
     def utilities():
-        def load_spec():
+        def load_spec(version):
             json_spec = ""
             try:
                 yaml = ruamel.yaml.YAML(typ='safe')
-                logger.debug(os.path.split(os.path.abspath(dirname(__file__)))[0] + '/openapi-appengine.yaml')
-                with open(os.path.split(os.path.abspath(dirname(__file__)))[0] + '/openapi-appengine.yaml') as fpi:
+                logger.debug(os.path.split(os.path.abspath(dirname(__file__)))[0] + f'/openapi-appengine.{version}.yaml')
+                with open(os.path.split(os.path.abspath(dirname(__file__)))[0] + f'/openapi-appengine.{version}.yaml') as fpi:
                     data = yaml.load(fpi)
                     del data['paths']['/swagger']
                     del data['paths']['/oauth2callback']

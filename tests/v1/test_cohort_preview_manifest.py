@@ -64,7 +64,7 @@ def test_invalid_filter(client, app):
 
         assert response.content_type == 'application/json'
         assert response.status_code == 400
-        assert response.json['message'] == 'foo is not a valid filter.'
+        assert response.json['message'] ==  "Additional properties are not allowed ('RACE', 'foo' were unexpected)"
 
 
 
