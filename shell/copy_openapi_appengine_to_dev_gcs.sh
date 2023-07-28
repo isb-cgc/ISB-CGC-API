@@ -7,11 +7,11 @@ DATE=$(date '+%Y%m%d_%H%M%S')
 # Save the current version with a datetime stamp
 
 cp openapi-appengine.v1.yaml dev.openapi-appengine.v1.yaml
-sed -i "" 's/#host: "dev-api.canceridc.v1.dev"/host: "dev-api.canceridc.v1.dev"/' dev.v1.openapi-appengine.yaml
+sed -i "" 's/#host: "dev-api.canceridc.dev"/host: "dev-api.canceridc.dev"/' dev.openapi-appengine.v1.yaml
 sed -i "" 's/#- "https"/- "https"/' dev.openapi-appengine.v1.yaml
 sed -i "" 's/- "http"/#- "http"/' dev.openapi-appengine.v1.yaml
 cp openapi-appengine.v2.yaml dev.openapi-appengine.v2.yaml
-sed -i "" 's/#host: "dev-api.canceridc.v2.dev"/host: "dev-api.canceridc.v2.dev"/' dev.openapi-appengine.v2.yaml
+sed -i "" 's/#host: "dev-api.canceridc.dev"/host: "dev-api.canceridc.dev"/' dev.openapi-appengine.v2.yaml
 sed -i "" 's/#- "https"/- "https"/' dev.openapi-appengine.v2.yaml
 sed -i "" 's/- "http"/#- "http"/' dev.openapi-appengine.v2.yaml
 
