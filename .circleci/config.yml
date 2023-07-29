@@ -180,8 +180,7 @@ jobs:
           name: Deployment
           command: |
             sudo -E /bin/bash ./shell/unpack_for_deployment.sh
-            sudo -E gcloud endpoints services deploy ./openapi-appengine.v1.yaml
-            sudo -E gcloud endpoints services deploy ./openapi-appengine.v2.yaml
+            sudo -E gcloud endpoints services deploy ./openapi-appengine.v1.yaml  ./openapi-appengine.v2.yaml
             sudo -E gcloud app deploy --verbosity=debug ./app.yaml --quiet
 workflows:
   version: 2
