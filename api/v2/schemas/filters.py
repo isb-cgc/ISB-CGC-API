@@ -62,63 +62,72 @@ COHORT_FILTERS_SCHEMA={
       "items": {
         "type": "number"
       },
-      "minItems": 1
+      "minItems": 1,
+      "maxItems": 1
     },
     "age_at_diagnosis_lt": {
       "type": "array",
       "items": {
         "type": "number"
       },
-      "minItems": 1
+      "minItems": 1,
+      "maxItems": 1
     },
     "age_at_diagnosis_lte": {
       "type": "array",
       "items": {
         "type": "number"
       },
-      "minItems": 1
+      "minItems": 1,
+      "maxItems": 1
     },
     "age_at_diagnosis_btw": {
       "type": "array",
       "items": {
         "type": "number"
       },
-      "minItems": 1
+      "minItems": 2,
+      "maxItems": 2
     },
     "age_at_diagnosis_ebtw": {
       "type": "array",
       "items": {
         "type": "number"
       },
-      "minItems": 1
+      "minItems": 2,
+      "maxItems": 2
     },
     "age_at_diagnosis_ebtwe": {
       "type": "array",
       "items": {
         "type": "number"
       },
-      "minItems": 1
+      "minItems": 2,
+      "maxItems": 2
     },
     "age_at_diagnosis_btwe": {
       "type": "array",
       "items": {
         "type": "number"
       },
-      "minItems": 1
+      "minItems": 2,
+      "maxItems": 2
     },
     "age_at_diagnosis_gte": {
       "type": "array",
       "items": {
         "type": "number"
       },
-      "minItems": 1
+      "minItems": 1,
+      "maxItems": 1
     },
     "age_at_diagnosis_gt": {
       "type": "array",
       "items": {
         "type": "number"
       },
-      "minItems": 1
+      "minItems": 1,
+      "maxItems": 1
     },
     "pathologic_stage": {
       "type": "array",
@@ -153,126 +162,144 @@ COHORT_FILTERS_SCHEMA={
       "items": {
         "type": "number"
       },
-      "minItems": 1
+      "minItems": 1,
+      "maxItems": 1
     },
     "bmi_lt": {
       "type": "array",
       "items": {
         "type": "number"
       },
-      "minItems": 1
+      "minItems": 1,
+      "maxItems": 1
     },
     "bmi_lte": {
       "type": "array",
       "items": {
         "type": "number"
       },
-      "minItems": 1
+      "minItems": 1,
+      "maxItems": 1
     },
     "bmi_btw": {
       "type": "array",
       "items": {
         "type": "number"
       },
-      "minItems": 1
+      "minItems": 2,
+      "maxItems": 2
     },
     "bmi_ebtw": {
       "type": "array",
       "items": {
         "type": "number"
       },
-      "minItems": 1
+      "minItems": 2,
+      "maxItems": 2
     },
     "bmi_ebtwe": {
       "type": "array",
       "items": {
         "type": "number"
       },
-      "minItems": 1
+      "minItems": 2,
+      "maxItems": 2
     },
     "bmi_btwe": {
       "type": "array",
       "items": {
         "type": "number"
       },
-      "minItems": 1
+      "minItems": 2,
+      "maxItems": 2
     },
     "bmi_gte": {
       "type": "array",
       "items": {
         "type": "number"
       },
-      "minItems": 1
+      "minItems": 1,
+      "maxItems": 1
     },
     "bmi_gt": {
       "type": "array",
       "items": {
         "type": "number"
       },
-      "minItems": 1
+      "minItems": 1,
+      "maxItems": 1
     },
     "Apparent_Diffusion_Coefficient": {
       "type": "array",
       "items": {
         "type": "number"
       },
-      "minItems": 1
+      "minItems": 1,
+      "maxItems": 1
     },
     "Apparent_Diffusion_Coefficient_lt": {
       "type": "array",
       "items": {
         "type": "number"
       },
-      "minItems": 1
+      "minItems": 1,
+      "maxItems": 1
     },
     "Apparent_Diffusion_Coefficient_lte": {
       "type": "array",
       "items": {
         "type": "number"
       },
-      "minItems": 1
+      "minItems": 1,
+      "maxItems": 1
     },
     "Apparent_Diffusion_Coefficient_btw": {
       "type": "array",
       "items": {
         "type": "number"
       },
-      "minItems": 1
+      "minItems": 2,
+      "maxItems": 2
     },
     "Apparent_Diffusion_Coefficient_ebtw": {
       "type": "array",
       "items": {
         "type": "number"
       },
-      "minItems": 1
+      "minItems": 2,
+      "maxItems": 2
     },
     "Apparent_Diffusion_Coefficient_ebtwe": {
       "type": "array",
       "items": {
         "type": "number"
       },
-      "minItems": 1
+      "minItems": 2,
+      "maxItems": 2
     },
     "Apparent_Diffusion_Coefficient_btwe": {
       "type": "array",
       "items": {
         "type": "number"
       },
-      "minItems": 1
+      "minItems": 2,
+      "maxItems": 2
     },
     "Apparent_Diffusion_Coefficient_gte": {
       "type": "array",
       "items": {
         "type": "number"
       },
-      "minItems": 1
+      "minItems": 1,
+      "maxItems": 1
     },
     "Apparent_Diffusion_Coefficient_gt": {
       "type": "array",
       "items": {
         "type": "number"
       },
-      "minItems": 1
+      "minItems": 1,
+      "maxItems": 1
     },
     "tcia_species": {
       "type": "array",
@@ -321,189 +348,216 @@ COHORT_FILTERS_SCHEMA={
       "items": {
         "type": "number"
       },
-      "minItems": 1
+      "minItems": 1,
+      "maxItems": 1
     },
     "Volume_lt": {
       "type": "array",
       "items": {
         "type": "number"
       },
-      "minItems": 1
+      "minItems": 1,
+      "maxItems": 1
     },
     "Volume_lte": {
       "type": "array",
       "items": {
         "type": "number"
       },
-      "minItems": 1
+      "minItems": 1,
+      "maxItems": 1
     },
     "Volume_btw": {
       "type": "array",
       "items": {
         "type": "number"
       },
-      "minItems": 1
+      "minItems": 2,
+      "maxItems": 2
     },
     "Volume_ebtw": {
       "type": "array",
       "items": {
         "type": "number"
       },
-      "minItems": 1
+      "minItems": 2,
+      "maxItems": 2
     },
     "Volume_ebtwe": {
       "type": "array",
       "items": {
         "type": "number"
       },
-      "minItems": 1
+      "minItems": 2,
+      "maxItems": 2
     },
     "Volume_btwe": {
       "type": "array",
       "items": {
         "type": "number"
       },
-      "minItems": 1
+      "minItems": 2,
+      "maxItems": 2
     },
     "Volume_gte": {
       "type": "array",
       "items": {
         "type": "number"
       },
-      "minItems": 1
+      "minItems": 1,
+      "maxItems": 1
     },
     "Volume_gt": {
       "type": "array",
       "items": {
         "type": "number"
       },
-      "minItems": 1
+      "minItems": 1,
+      "maxItems": 1
     },
     "Diameter": {
       "type": "array",
       "items": {
         "type": "number"
       },
-      "minItems": 1
+      "minItems": 1,
+      "maxItems": 1
     },
     "Diameter_lt": {
       "type": "array",
       "items": {
         "type": "number"
       },
-      "minItems": 1
+      "minItems": 1,
+      "maxItems": 1
     },
     "Diameter_lte": {
       "type": "array",
       "items": {
         "type": "number"
       },
-      "minItems": 1
+      "minItems": 1,
+      "maxItems": 1
     },
     "Diameter_btw": {
       "type": "array",
       "items": {
         "type": "number"
       },
-      "minItems": 1
+      "minItems": 2,
+      "maxItems": 2
     },
     "Diameter_ebtw": {
       "type": "array",
       "items": {
         "type": "number"
       },
-      "minItems": 1
+      "minItems": 2,
+      "maxItems": 2
     },
     "Diameter_ebtwe": {
       "type": "array",
       "items": {
         "type": "number"
       },
-      "minItems": 1
+      "minItems": 2,
+      "maxItems": 2
     },
     "Diameter_btwe": {
       "type": "array",
       "items": {
         "type": "number"
       },
-      "minItems": 1
+      "minItems": 2,
+      "maxItems": 2
     },
     "Diameter_gte": {
       "type": "array",
       "items": {
         "type": "number"
       },
-      "minItems": 1
+      "minItems": 1,
+      "maxItems": 1
     },
     "Diameter_gt": {
       "type": "array",
       "items": {
         "type": "number"
       },
-      "minItems": 1
+      "minItems": 1,
+      "maxItems": 1
     },
     "Surface_area_of_mesh": {
       "type": "array",
       "items": {
         "type": "number"
       },
-      "minItems": 1
+      "minItems": 1,
+      "maxItems": 1
     },
     "Surface_area_of_mesh_lt": {
       "type": "array",
       "items": {
         "type": "number"
       },
-      "minItems": 1
+      "minItems": 1,
+      "maxItems": 1
     },
     "Surface_area_of_mesh_lte": {
       "type": "array",
       "items": {
         "type": "number"
       },
-      "minItems": 1
+      "minItems": 1,
+      "maxItems": 1
     },
     "Surface_area_of_mesh_btw": {
       "type": "array",
       "items": {
         "type": "number"
       },
-      "minItems": 1
+      "minItems": 2,
+      "maxItems": 2
     },
     "Surface_area_of_mesh_ebtw": {
       "type": "array",
       "items": {
         "type": "number"
       },
-      "minItems": 1
+      "minItems": 2,
+      "maxItems": 2
     },
     "Surface_area_of_mesh_ebtwe": {
       "type": "array",
       "items": {
         "type": "number"
       },
-      "minItems": 1
+      "minItems": 2,
+      "maxItems": 2
     },
     "Surface_area_of_mesh_btwe": {
       "type": "array",
       "items": {
         "type": "number"
       },
-      "minItems": 1
+      "minItems": 2,
+      "maxItems": 2
     },
     "Surface_area_of_mesh_gte": {
       "type": "array",
       "items": {
         "type": "number"
       },
-      "minItems": 1
+      "minItems": 1,
+      "maxItems": 1
     },
     "Surface_area_of_mesh_gt": {
       "type": "array",
       "items": {
         "type": "number"
       },
-      "minItems": 1
+      "minItems": 1,
+      "maxItems": 1
     },
     "Internal_structure": {
       "type": "array",
@@ -636,63 +690,72 @@ COHORT_FILTERS_SCHEMA={
       "items": {
         "type": "number"
       },
-      "minItems": 1
+      "minItems": 1,
+      "maxItems": 1
     },
     "SliceThickness_lt": {
       "type": "array",
       "items": {
         "type": "number"
       },
-      "minItems": 1
+      "minItems": 1,
+      "maxItems": 1
     },
     "SliceThickness_lte": {
       "type": "array",
       "items": {
         "type": "number"
       },
-      "minItems": 1
+      "minItems": 1,
+      "maxItems": 1
     },
     "SliceThickness_btw": {
       "type": "array",
       "items": {
         "type": "number"
       },
-      "minItems": 1
+      "minItems": 2,
+      "maxItems": 2
     },
     "SliceThickness_ebtw": {
       "type": "array",
       "items": {
         "type": "number"
       },
-      "minItems": 1
+      "minItems": 2,
+      "maxItems": 2
     },
     "SliceThickness_ebtwe": {
       "type": "array",
       "items": {
         "type": "number"
       },
-      "minItems": 1
+      "minItems": 2,
+      "maxItems": 2
     },
     "SliceThickness_btwe": {
       "type": "array",
       "items": {
         "type": "number"
       },
-      "minItems": 1
+      "minItems": 2,
+      "maxItems": 2
     },
     "SliceThickness_gte": {
       "type": "array",
       "items": {
         "type": "number"
       },
-      "minItems": 1
+      "minItems": 1,
+      "maxItems": 1
     },
     "SliceThickness_gt": {
       "type": "array",
       "items": {
         "type": "number"
       },
-      "minItems": 1
+      "minItems": 1,
+      "maxItems": 1
     },
     "SeriesNumber": {
       "type": "array",
@@ -748,126 +811,144 @@ COHORT_FILTERS_SCHEMA={
       "items": {
         "type": "number"
       },
-      "minItems": 1
+      "minItems": 1,
+      "maxItems": 1
     },
     "Volume_of_Mesh_lt": {
       "type": "array",
       "items": {
         "type": "number"
       },
-      "minItems": 1
+      "minItems": 1,
+      "maxItems": 1
     },
     "Volume_of_Mesh_lte": {
       "type": "array",
       "items": {
         "type": "number"
       },
-      "minItems": 1
+      "minItems": 1,
+      "maxItems": 1
     },
     "Volume_of_Mesh_btw": {
       "type": "array",
       "items": {
         "type": "number"
       },
-      "minItems": 1
+      "minItems": 2,
+      "maxItems": 2
     },
     "Volume_of_Mesh_ebtw": {
       "type": "array",
       "items": {
         "type": "number"
       },
-      "minItems": 1
+      "minItems": 2,
+      "maxItems": 2
     },
     "Volume_of_Mesh_ebtwe": {
       "type": "array",
       "items": {
         "type": "number"
       },
-      "minItems": 1
+      "minItems": 2,
+      "maxItems": 2
     },
     "Volume_of_Mesh_btwe": {
       "type": "array",
       "items": {
         "type": "number"
       },
-      "minItems": 1
+      "minItems": 2,
+      "maxItems": 2
     },
     "Volume_of_Mesh_gte": {
       "type": "array",
       "items": {
         "type": "number"
       },
-      "minItems": 1
+      "minItems": 1,
+      "maxItems": 1
     },
     "Volume_of_Mesh_gt": {
       "type": "array",
       "items": {
         "type": "number"
       },
-      "minItems": 1
+      "minItems": 1,
+      "maxItems": 1
     },
     "Sphericity_quant": {
       "type": "array",
       "items": {
         "type": "number"
       },
-      "minItems": 1
+      "minItems": 1,
+      "maxItems": 1
     },
     "Sphericity_quant_lt": {
       "type": "array",
       "items": {
         "type": "number"
       },
-      "minItems": 1
+      "minItems": 1,
+      "maxItems": 1
     },
     "Sphericity_quant_lte": {
       "type": "array",
       "items": {
         "type": "number"
       },
-      "minItems": 1
+      "minItems": 1,
+      "maxItems": 1
     },
     "Sphericity_quant_btw": {
       "type": "array",
       "items": {
         "type": "number"
       },
-      "minItems": 1
+      "minItems": 2,
+      "maxItems": 2
     },
     "Sphericity_quant_ebtw": {
       "type": "array",
       "items": {
         "type": "number"
       },
-      "minItems": 1
+      "minItems": 2,
+      "maxItems": 2
     },
     "Sphericity_quant_ebtwe": {
       "type": "array",
       "items": {
         "type": "number"
       },
-      "minItems": 1
+      "minItems": 2,
+      "maxItems": 2
     },
     "Sphericity_quant_btwe": {
       "type": "array",
       "items": {
         "type": "number"
       },
-      "minItems": 1
+      "minItems": 2,
+      "maxItems": 2
     },
     "Sphericity_quant_gte": {
       "type": "array",
       "items": {
         "type": "number"
       },
-      "minItems": 1
+      "minItems": 1,
+      "maxItems": 1
     },
     "Sphericity_quant_gt": {
       "type": "array",
       "items": {
         "type": "number"
       },
-      "minItems": 1
+      "minItems": 1,
+      "maxItems": 1
     },
     "illuminationType": {
       "type": "array",
@@ -888,194 +969,229 @@ COHORT_FILTERS_SCHEMA={
       "items": {
         "type": "number"
       },
-      "minItems": 1
+      "minItems": 1,
+      "maxItems": 1
     },
     "min_PixelSpacing": {
       "type": "array",
       "items": {
         "type": "number"
       },
-      "minItems": 1
+      "minItems": 1,
+      "maxItems": 1
     },
     "min_PixelSpacing_lt": {
       "type": "array",
       "items": {
         "type": "number"
       },
-      "minItems": 1
+      "minItems": 1,
+      "maxItems": 1
     },
     "min_PixelSpacing_lte": {
       "type": "array",
       "items": {
         "type": "number"
       },
-      "minItems": 1
+      "minItems": 1,
+      "maxItems": 1
     },
     "min_PixelSpacing_btw": {
       "type": "array",
       "items": {
         "type": "number"
       },
-      "minItems": 1
+      "minItems": 2,
+      "maxItems": 2
     },
     "min_PixelSpacing_ebtw": {
       "type": "array",
       "items": {
         "type": "number"
       },
-      "minItems": 1
+      "minItems": 2,
+      "maxItems": 2
     },
     "min_PixelSpacing_ebtwe": {
       "type": "array",
       "items": {
         "type": "number"
       },
-      "minItems": 1
+      "minItems": 2,
+      "maxItems": 2
     },
     "min_PixelSpacing_btwe": {
       "type": "array",
       "items": {
         "type": "number"
       },
-      "minItems": 1
+      "minItems": 2,
+      "maxItems": 2
     },
     "min_PixelSpacing_gte": {
       "type": "array",
       "items": {
         "type": "number"
       },
-      "minItems": 1
+      "minItems": 1,
+      "maxItems": 1
     },
     "min_PixelSpacing_gt": {
       "type": "array",
       "items": {
         "type": "number"
       },
-      "minItems": 1
+      "minItems": 1,
+      "maxItems": 1
     },
     "max_TotalPixelMatrixColumns": {
       "type": "array",
       "items": {
         "type": "number"
       },
-      "minItems": 1
+      "minItems": 1,
+      "maxItems": 1
     },
     "max_TotalPixelMatrixColumns_lt": {
       "type": "array",
       "items": {
         "type": "number"
       },
-      "minItems": 1
+      "minItems": 1,
+      "maxItems": 1
     },
     "max_TotalPixelMatrixColumns_lte": {
       "type": "array",
       "items": {
         "type": "number"
       },
-      "minItems": 1
+      "minItems": 1,
+      "maxItems": 1
     },
     "max_TotalPixelMatrixColumns_btw": {
       "type": "array",
       "items": {
         "type": "number"
       },
-      "minItems": 1
+      "minItems": 2,
+      "maxItems": 2
     },
     "max_TotalPixelMatrixColumns_ebtw": {
       "type": "array",
       "items": {
         "type": "number"
       },
-      "minItems": 1
+      "minItems": 2,
+      "maxItems": 2
     },
     "max_TotalPixelMatrixColumns_ebtwe": {
       "type": "array",
       "items": {
         "type": "number"
       },
-      "minItems": 1
+      "minItems": 2,
+      "maxItems": 2
     },
     "max_TotalPixelMatrixColumns_btwe": {
       "type": "array",
       "items": {
         "type": "number"
       },
-      "minItems": 1
+      "minItems": 2,
+      "maxItems": 2
     },
     "max_TotalPixelMatrixColumns_gte": {
       "type": "array",
       "items": {
         "type": "number"
       },
-      "minItems": 1
+      "minItems": 1,
+      "maxItems": 1
     },
     "max_TotalPixelMatrixColumns_gt": {
       "type": "array",
       "items": {
         "type": "number"
       },
-      "minItems": 1
+      "minItems": 1,
+      "maxItems": 1
     },
     "max_TotalPixelMatrixRows": {
       "type": "array",
       "items": {
         "type": "number"
       },
-      "minItems": 1
+      "minItems": 1,
+      "maxItems": 1
     },
     "max_TotalPixelMatrixRows_lt": {
       "type": "array",
       "items": {
         "type": "number"
       },
-      "minItems": 1
+      "minItems": 1,
+      "maxItems": 1
     },
     "max_TotalPixelMatrixRows_lte": {
       "type": "array",
       "items": {
         "type": "number"
       },
-      "minItems": 1
+      "minItems": 1,
+      "maxItems": 1
     },
     "max_TotalPixelMatrixRows_btw": {
       "type": "array",
       "items": {
         "type": "number"
       },
-      "minItems": 1
+      "minItems": 2,
+      "maxItems": 2
     },
     "max_TotalPixelMatrixRows_ebtw": {
       "type": "array",
       "items": {
         "type": "number"
       },
-      "minItems": 1
+      "minItems": 2,
+      "maxItems": 2
     },
     "max_TotalPixelMatrixRows_ebtwe": {
       "type": "array",
       "items": {
         "type": "number"
       },
-      "minItems": 1
+      "minItems": 2,
+      "maxItems": 2
     },
     "max_TotalPixelMatrixRows_btwe": {
       "type": "array",
       "items": {
         "type": "number"
       },
-      "minItems": 1
+      "minItems": 2,
+      "maxItems": 2
     },
     "max_TotalPixelMatrixRows_gte": {
       "type": "array",
       "items": {
         "type": "number"
       },
-      "minItems": 1
+      "minItems": 1,
+      "maxItems": 1
     },
     "max_TotalPixelMatrixRows_gt": {
       "type": "array",
       "items": {
         "type": "number"
+      },
+      "minItems": 1,
+      "maxItems": 1
+    },
+    "CancerType": {
+      "type": "array",
+      "items": {
+        "type": "string"
       },
       "minItems": 1
     }

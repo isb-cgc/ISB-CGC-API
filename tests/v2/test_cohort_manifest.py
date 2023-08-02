@@ -42,7 +42,7 @@ from google.cloud import bigquery
 #     }
 #
 #     # Get a doi manifest of the cohort's instances
-#     response = client.get("{}/manifest/{}".format('v1/cohorts', id),
+#     response = client.get("{}/manifest/{}".format('v2/cohorts', id),
 #                 query_string = query_string)
 #     assert response.content_type == 'application/json'
 #     assert response.status_code == 200

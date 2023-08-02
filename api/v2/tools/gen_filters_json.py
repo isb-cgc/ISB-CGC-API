@@ -25,16 +25,10 @@
 import requests
 import sys
 import argparse
-import json
-import os
-from os.path import join, dirname
-from google.cloud import storage
-import subprocess
-import ast
 
 
 def get_db_metadata(args):
-    url = 'http://localhost:8095/v1/filters'
+    url = 'http://localhost:8095/v2/filters'
     headers = {'accept': 'application/json'}
     response = requests.get(url).json()
     return response
@@ -109,23 +103,24 @@ def gen_query_schema(args, filters):
     with open(args.query_file, "w") as f:
         write_required_fields(f)
         f.write(
-"""
-  queryFields:
-    type: "array"
-    items:
-      type: "string"
-      enum: [
-"""
 # """
 #   queryFields:
-#     type: "object"
-#     properties:
-#       fields:
-#         type: "array"
-#         items:
-#           type: "string"
-#           enum: [
+#     type: "array"
+#     items:
+#       type: "string"
+#       enum: [
 # """
+
+"""
+  queryFields:
+    type: "object"
+    properties:
+      fields:
+        type: "array"
+        items:
+          type: "string"
+          enum: [
+"""
         )
 
         source = next(source for source in filters['data_sources'] if source['data_source'].find('dicom_pivot') != -1)
@@ -134,10 +129,14 @@ def gen_query_schema(args, filters):
                     filter['name'].split('_')[-1] not in ('lt', 'lte', 'btw', 'ebtw', 'ebtwe', 'btwe', 'gte', 'gt'):
                 name = filter['name']
                 f.write(f'        "{name}",\n')
+        # Add two additonal query fields
+        f.write(f'        "counts",\n')
+        f.write(f'        "sizes",\n')
         f.write(
 """      ]
 """
         )
+
     return
 
 
@@ -152,8 +151,6 @@ def gen_json(args):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--collex_metadata_blob', default = "gs://idc-dev-files/idc_dev_collex_metadata.sql")
-    parser.add_argument('--collex_metadata_file', default = "idc_dev_collex_metadata.sql")
     parser.add_argument('--filters_file', default='filters.yaml',
                         help='File into which to save the generated yaml schema')
     parser.add_argument('--query_file', default='queryfields.yaml',

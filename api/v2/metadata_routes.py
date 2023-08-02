@@ -142,6 +142,7 @@ def filters():
 def queryFields():
     """Retrieve a list of query fields for the current IDC versions"""
     fields = [field for field in QUERY_FIELDS['properties']['fields']['items']['enum']]
+    # fields = [field for field in QUERY_FIELDS['items']['enum']]
     response = jsonify({
         'code': 200,
         'queryFields': fields

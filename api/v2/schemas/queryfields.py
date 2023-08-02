@@ -49,7 +49,10 @@ QUERY_FIELDS={
           "ObjectiveLensPower",
           "min_PixelSpacing",
           "max_TotalPixelMatrixColumns",
-          "max_TotalPixelMatrixRows"
+          "max_TotalPixelMatrixRows",
+          "CancerType",
+          "counts",
+          "sizes"
         ]
       }
     }
