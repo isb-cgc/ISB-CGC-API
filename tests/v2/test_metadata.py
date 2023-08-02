@@ -18,7 +18,7 @@ import json
 # from settings import API_VERSION
 from testing_config import VERSIONS, API_VERSION
 from testing_config import VERSIONS, NUM_COLLECTIONS
-from api.v1.schemas.queryfields import QUERY_FIELDS
+from api.v2.schemas.queryfields import QUERY_FIELDS
 
 
 def test_versions(client, app):

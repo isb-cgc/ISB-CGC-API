@@ -42,17 +42,92 @@ def submit_BQ_job(sql_string, params):
 
 def normalize_query_fields(fields):
     corrected_fields = []
+    special_fields = []
     lowered_fields = {key.lower(): key for key in QUERY_FIELDS['properties']['fields']['items']['enum']}
+    # lowered_fields = {key.lower(): key for key in QUERY_FIELDS['items']['enum']}
     for field in fields:
-        if field.lower() in lowered_fields:
+        if field.lower() in ['counts', 'sizes']:
+            special_fields.append(field.lower())
+        elif field.lower() in lowered_fields:
             corrected_fields.append(lowered_fields[field.lower()])
         else:
-            return (fields, dict(
+            return (corrected_fields, special_fields, dict(
                 message=f'{field} is not a valid field.',
                 code=400
             )
                     )
-    return corrected_fields, {}
+    return corrected_fields, special_fields, {}
+
+def add_counts_and_sizes(special_fields, query_info, data):
+    if special_fields:
+        fields = set([field.lower() for field in data['request_data']['fields']])
+        sql_string = query_info['query']['sql_string']
+        # Include counts if there is an explicit level
+        if 'counts' in special_fields:
+            if {'crdc_instance_uuid', 'sopinstanceuid'} & fields:
+                pass
+            elif {'crdc_sseries_uuid', 'seriesinstanceuid'} & fields:
+                sql_string = sql_string.replace('SELECT', 'SELECT count(DISTINCT dicom_pivot.SOPInstanceUID) instance_count,')
+            elif {'crdc_study_uuid', 'studyinstanceuid'} & fields:
+                sql_string = sql_string.replace('SELECT', \
+        '''SELECT count(DISTINCT dicom_pivot.SeriesInstanceUID) series_count,
+        count(DISTINCT dicom_pivot.SOPInstanceUID) instance_count,''')
+            elif {'patientid'} & fields:
+                sql_string = sql_string.replace('SELECT', \
+        '''SELECT count(DISTINCT dicom_pivot.StudyInstanceUID) study_count,
+        count(DISTINCT dicom_pivot.SeriesInstanceUID) series_count,
+        count(DISTINCT dicom_pivot.SOPInstanceUID) instance_count,''')
+            elif {'collection_id'} & fields:
+                sql_string = sql_string.replace('SELECT', \
+        '''SELECT count(DISTINCT dicom_pivot.patientID) patient_count,
+        count(DISTINCT dicom_pivot.StudyInstanceUID) study_count,
+        count(DISTINCT dicom_pivot.SeriesInstanceUID) series_count,
+        count(DISTINCT dicom_pivot.SOPInstanceUID) instance_count,''')
+            else:
+                sql_string = sql_string.replace('SELECT', \
+        '''SELECT count(DISTINCT dicom_pivot.collection_id) collection_count, 
+        count(DISTINCT dicom_pivot.patientID) patient_count,'
+        count(DISTINCT dicom_pivot.StudyInstanceUID) study_count,
+        count(DISTINCT dicom_pivot.SeriesInstanceUID) series_count,
+        count(DISTINCT dicom_pivot.SOPInstanceUID) instance_count,''')
+            # if 'sopinstanceuid' in fields:
+            #     pass
+            # elif 'seriesinstanceuid' in fields:
+            #     sql_string = sql_string.replace('SELECT', 'SELECT count(DISTINCT dicom_pivot.SOPInstanceUID) instance_count,')
+            # elif 'studyinstanceuid' in fields:
+            #     sql_string = sql_string.replace('SELECT', 'SELECT count(DISTINCT dicom_pivot.SeriesInstanceUID) series_count,')
+            #     sql_string = sql_string.replace('SELECT', 'SELECT count(DISTINCT dicom_pivot.SOPInstanceUID) instance_count,')
+            # elif 'patientid' in fields:
+            #     sql_string = sql_string.replace('SELECT', 'SELECT count(DISTINCT dicom_pivot.StudyInstanceUID) study_count,')
+            #     sql_string = sql_string.replace('SELECT', 'SELECT count(DISTINCT dicom_pivot.SeriesInstanceUID) series_count,')
+            #     sql_string = sql_string.replace('SELECT', 'SELECT count(DISTINCT dicom_pivot.SOPInstanceUID) instance_count,')
+            # elif 'collection_id' in fields:
+            #     sql_string = sql_string.replace('SELECT', 'SELECT count(DISTINCT dicom_pivot.patientID) patient_count,')
+            #     sql_string = sql_string.replace('SELECT', 'SELECT count(DISTINCT dicom_pivot.StudyInstanceUID) study_count,')
+            #     sql_string = sql_string.replace('SELECT', 'SELECT count(DISTINCT dicom_pivot.SeriesInstanceUID) series_count,')
+            #     sql_string = sql_string.replace('SELECT', 'SELECT count(DISTINCT dicom_pivot.SOPInstanceUID) instance_count,')
+            # else:
+            #     sql_string = sql_string.replace('SELECT', 'SELECT count(DISTINCT dicom_pivot.collection_id) collection_count,')
+            #     sql_string = sql_string.replace('SELECT', 'SELECT count(DISTINCT dicom_pivot.patientID) patient_count,')
+            #     sql_string = sql_string.replace('SELECT', 'SELECT count(DISTINCT dicom_pivot.StudyInstanceUID) study_count,')
+            #     sql_string = sql_string.replace('SELECT', 'SELECT count(DISTINCT dicom_pivot.SeriesInstanceUID) series_count,')
+            #     sql_string = sql_string.replace('SELECT', 'SELECT count(DISTINCT dicom_pivot.SOPInstanceUID) instance_count,')
+        if 'sizes' in special_fields:
+            if 'sopinstanceuid' in fields:
+                sql_string = sql_string.replace('SELECT', 'SELECT ROUND(sum(dicom_pivot.instance_size)/POW(10,6), 2) instance_size_MB,')
+            elif 'seriesinstanceuid' in fields:
+                sql_string = sql_string.replace('SELECT', 'SELECT ROUND(sum(dicom_pivot.instance_size)/POW(10,6), 2) series_size_MB,')
+            elif 'studyinstanceuid' in fields:
+                sql_string = sql_string.replace('SELECT', 'SELECT ROUND(sum(dicom_pivot.instance_size)/POW(10,6), 2) study_size_MB,')
+            elif 'patientid'  in fields:
+                sql_string = sql_string.replace('SELECT', 'SELECT ROUND(sum(dicom_pivot.instance_size)/POW(10,6), 2) patient_size_MB,')
+            elif 'collection_id' in fields:
+                sql_string = sql_string.replace('SELECT', 'SELECT ROUND(sum(dicom_pivot.instance_size)/POW(10,6), 2) collection_size_MB,')
+
+
+        query_info['query']['sql_string'] = sql_string
+    return query_info
+
 
 
 def perform_query(request, func, url, data=None, user=None): #, user=None):
@@ -65,7 +140,7 @@ def perform_query(request, func, url, data=None, user=None): #, user=None):
         if error_info:
             return error_info
 
-        data['request_data']['fields'], error_info = normalize_query_fields(data['request_data']['fields'])
+        data['request_data']['fields'], special_fields, error_info = normalize_query_fields(data['request_data']['fields'])
         if error_info:
             return error_info
 
@@ -79,6 +154,8 @@ def perform_query(request, func, url, data=None, user=None): #, user=None):
         query_info = results.json()
         if "message" in query_info:
             return query_info
+
+        query_info = add_counts_and_sizes(special_fields, query_info, data)
 
         # Start the BQ job, but don't get any data results, just the job info.
         job_status = submit_BQ_job(query_info['query']['sql_string'],

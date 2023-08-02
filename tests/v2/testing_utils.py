@@ -18,7 +18,7 @@ import json
 # from settings import API_VERSION
 from testing_config import VERSIONS, API_VERSION
 from testing_config import VERSIONS
-from api.v1.schemas.filters import COHORT_FILTERS_SCHEMA
+from api.v2.schemas.filters import COHORT_FILTERS_SCHEMA
 
 levels = ["collections", "patients", "studies", "series", "instances"]
 
@@ -151,7 +151,7 @@ def create_cohort_for_test_get_cohort_xxx(client, filters=None):
 def find_v1_cohort_for_test_get_cohort_xxx(client, filterset):
 
     # Get a list of existing cohorts
-    response = client.get("{}/".format('v1/cohorts'))
+    response = client.get("{}/".format('v2/cohorts'))
     cohorts = response.json['cohorts']
 
     for cohort in cohorts:
@@ -195,7 +195,7 @@ def find_v1_big_cohort_for_test_get_cohort_xxx(client):
     }
 
     # Get a list of existing cohorts
-    response = client.get("{}/".format('v1/cohorts'))
+    response = client.get("{}/".format('v2/cohorts'))
     cohorts = response.json['cohorts']
 
     for cohort in cohorts:
