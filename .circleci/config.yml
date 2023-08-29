@@ -128,6 +128,7 @@ jobs:
           key: idc-api-lib-{{ checksum "requirements.txt" }}
           paths:
             - ./lib
+      - install_cloud_sdk
       - deployment_setup
       - auth
       - deployment_config
@@ -135,6 +136,14 @@ jobs:
           name: Staging
           command: |
             sudo -E /bin/bash ./shell/gcloud-pull-staging-files.sh
+      - run:
+          name: Compare Config
+          command: |
+            sudo -E /bin/bash ./shell/compareConfig.sh "gs://${DEPLOYMENT_BUCKET}/deployment_config.txt"
+            sudo -E /bin/bash ./shell/compareConfig.sh "gs://${DEPLOYMENT_BUCKET}/${ENV_FILE}"
+            sudo -E /bin/bash ./shell/compareConfig.sh "gs://${DEPLOYMENT_BUCKET}/${API_APP_YAML}"
+            sudo -E /bin/bash ./shell/compareConfig.sh "gs://${DEPLOYMENT_BUCKET}/${OPEN_API_V1_YAML}"
+            # sudo -E /bin/bash ./shell/compareConfig.sh "gs://${DEPLOYMENT_BUCKET}/${OPEN_API_V2_YAML}"
       - save_cache:
           key: idc-api-{{ .Branch }}-{{ .Revision }}-{{ epoch }}
           paths:
@@ -143,7 +152,8 @@ jobs:
             - ./IDC-Common
             - ./Dockerfile
             - ./app.yaml
-            - ./openapi-appengine.yaml
+            - ./openapi-appengine.v1.yaml
+            # - ./openapi-appengine.v2.yaml
             - ./settings.py
             - ./txt
             - ./json
@@ -152,9 +162,9 @@ jobs:
   deploy_job:
     environment:
       TZ: "/usr/share/zoneinfo/America/Los_Angeles"
+    working_directory: ~/IDC-API
     docker:
       - image: cimg/python:3.8.14
-    working_directory: ~/IDC-API
     steps:
       - restore_cache:
           keys:
@@ -167,10 +177,10 @@ jobs:
       - auth
       - deployment_config
       - deploy:
-          nane: Deployment
           command: |
             sudo -E /bin/bash ./shell/unpack_for_deployment.sh
-            sudo -E gcloud endpoints services deploy ./openapi-appengine.yaml
+            # sudo -E gcloud endpoints services deploy ./openapi-appengine.v1.yaml  ./openapi-appengine.v2.yaml
+            sudo -E gcloud endpoints services deploy ./openapi-appengine.v1.yaml
             sudo -E gcloud app deploy --verbosity=debug ./app.yaml --quiet
 workflows:
   version: 2
@@ -187,3 +197,4 @@ workflows:
                 - idc-test
                 - idc-uat
                 - idc-prod
+
