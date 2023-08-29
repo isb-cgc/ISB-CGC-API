@@ -23,6 +23,8 @@ import json
 from flask import Flask, jsonify, request
 from flask_cors import cross_origin
 from flask_talisman import Talisman
+# import v1
+# import v2
 
 import os
 
@@ -84,25 +86,44 @@ def create_app(test_config=None):
     ch.setFormatter(formatter)
     logger.addHandler(ch)
 
-    from . query_routes import cohort_query_bp
-    app.register_blueprint(query_routes.cohort_query_bp)
-    from . main_routes import main_bp
-    app.register_blueprint(main_routes.main_bp)
-    from . cohort_routes import cohorts_bp
-    app.register_blueprint(cohort_routes.cohorts_bp)
-    from . user_routes import user_bp
-    app.register_blueprint(user_routes.user_bp)
-    from . metadata_routes import metadata_bp
-    app.register_blueprint(metadata_routes.metadata_bp)
+    from .v1.query_routes import cohort_query_bp
+    app.register_blueprint(cohort_query_bp)
+
+    from .v1.main_routes import main_bp # as v1_main_bp
+    app.register_blueprint(main_bp)
+
+    from .v1.cohort_routes import cohorts_bp # as v1_cohorts_bp
+    app.register_blueprint(cohorts_bp)
+
+    from .v1.user_routes import user_bp # as v1_user_bp
+    app.register_blueprint(user_bp)
+
+    from .v1.metadata_routes import metadata_bp # as v1_metadata_bp
+    app.register_blueprint(metadata_bp)
+
+    from .v2.query_routes import cohort_query_bp
+    app.register_blueprint(cohort_query_bp)
+
+    from .v2.main_routes import main_bp # as v1_main_bp
+    app.register_blueprint(main_bp)
+
+    from .v2.cohort_routes import cohorts_bp # as v1_cohorts_bp
+    app.register_blueprint(cohorts_bp)
+
+    from .v2.user_routes import user_bp # as v1_user_bp
+    app.register_blueprint(user_bp)
+
+    from .v2.metadata_routes import metadata_bp # as v1_metadata_bp
+    app.register_blueprint(metadata_bp)
 
     @app.context_processor
     def utilities():
-        def load_spec():
+        def load_spec(version):
             json_spec = ""
             try:
                 yaml = ruamel.yaml.YAML(typ='safe')
-                logger.debug(os.path.split(os.path.abspath(dirname(__file__)))[0] + '/openapi-appengine.yaml')
-                with open(os.path.split(os.path.abspath(dirname(__file__)))[0] + '/openapi-appengine.yaml') as fpi:
+                logger.debug(os.path.split(os.path.abspath(dirname(__file__)))[0] + f'/openapi-appengine.{version}.yaml')
+                with open(os.path.split(os.path.abspath(dirname(__file__)))[0] + f'/openapi-appengine.{version}.yaml') as fpi:
                     data = yaml.load(fpi)
                     del data['paths']['/swagger']
                     del data['paths']['/oauth2callback']
