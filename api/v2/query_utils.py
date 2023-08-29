@@ -61,7 +61,8 @@ def normalize_query_fields(fields):
 def add_counts_and_sizes(special_fields, query_info, data):
     if special_fields:
         fields = set([field.lower() for field in data['request_data']['fields']])
-        sql_string = query_info['query']['sql_string']
+        # sql_string = query_info['query']['sql_string']
+        sql_string = 'SELECT'
         # Include counts if there is an explicit level
         if 'counts' in special_fields:
             if {'crdc_instance_uuid', 'sopinstanceuid'} & fields:
@@ -86,32 +87,11 @@ def add_counts_and_sizes(special_fields, query_info, data):
             else:
                 sql_string = sql_string.replace('SELECT', \
         '''SELECT count(DISTINCT dicom_pivot.collection_id) collection_count, 
-        count(DISTINCT dicom_pivot.patientID) patient_count,'
+        count(DISTINCT dicom_pivot.patientID) patient_count,
         count(DISTINCT dicom_pivot.StudyInstanceUID) study_count,
         count(DISTINCT dicom_pivot.SeriesInstanceUID) series_count,
         count(DISTINCT dicom_pivot.SOPInstanceUID) instance_count,''')
-            # if 'sopinstanceuid' in fields:
-            #     pass
-            # elif 'seriesinstanceuid' in fields:
-            #     sql_string = sql_string.replace('SELECT', 'SELECT count(DISTINCT dicom_pivot.SOPInstanceUID) instance_count,')
-            # elif 'studyinstanceuid' in fields:
-            #     sql_string = sql_string.replace('SELECT', 'SELECT count(DISTINCT dicom_pivot.SeriesInstanceUID) series_count,')
-            #     sql_string = sql_string.replace('SELECT', 'SELECT count(DISTINCT dicom_pivot.SOPInstanceUID) instance_count,')
-            # elif 'patientid' in fields:
-            #     sql_string = sql_string.replace('SELECT', 'SELECT count(DISTINCT dicom_pivot.StudyInstanceUID) study_count,')
-            #     sql_string = sql_string.replace('SELECT', 'SELECT count(DISTINCT dicom_pivot.SeriesInstanceUID) series_count,')
-            #     sql_string = sql_string.replace('SELECT', 'SELECT count(DISTINCT dicom_pivot.SOPInstanceUID) instance_count,')
-            # elif 'collection_id' in fields:
-            #     sql_string = sql_string.replace('SELECT', 'SELECT count(DISTINCT dicom_pivot.patientID) patient_count,')
-            #     sql_string = sql_string.replace('SELECT', 'SELECT count(DISTINCT dicom_pivot.StudyInstanceUID) study_count,')
-            #     sql_string = sql_string.replace('SELECT', 'SELECT count(DISTINCT dicom_pivot.SeriesInstanceUID) series_count,')
-            #     sql_string = sql_string.replace('SELECT', 'SELECT count(DISTINCT dicom_pivot.SOPInstanceUID) instance_count,')
-            # else:
-            #     sql_string = sql_string.replace('SELECT', 'SELECT count(DISTINCT dicom_pivot.collection_id) collection_count,')
-            #     sql_string = sql_string.replace('SELECT', 'SELECT count(DISTINCT dicom_pivot.patientID) patient_count,')
-            #     sql_string = sql_string.replace('SELECT', 'SELECT count(DISTINCT dicom_pivot.StudyInstanceUID) study_count,')
-            #     sql_string = sql_string.replace('SELECT', 'SELECT count(DISTINCT dicom_pivot.SeriesInstanceUID) series_count,')
-            #     sql_string = sql_string.replace('SELECT', 'SELECT count(DISTINCT dicom_pivot.SOPInstanceUID) instance_count,')
+
         if 'sizes' in special_fields:
             if 'sopinstanceuid' in fields:
                 sql_string = sql_string.replace('SELECT', 'SELECT ROUND(sum(dicom_pivot.instance_size)/POW(10,6), 2) instance_size_MB,')
@@ -124,8 +104,10 @@ def add_counts_and_sizes(special_fields, query_info, data):
             elif 'collection_id' in fields:
                 sql_string = sql_string.replace('SELECT', 'SELECT ROUND(sum(dicom_pivot.instance_size)/POW(10,6), 2) collection_size_MB,')
 
-
-        query_info['query']['sql_string'] = sql_string
+        # Revise the query SQL with the additional fields
+        query_info['query']['sql_string'] = query_info['query']['sql_string'].replace('SELECT', sql_string)
+        if query_info['cohort_def']['sql']:
+            query_info['cohort_def']['sql'] = query_info['cohort_def']['sql'].replace('SELECT', sql_string)
     return query_info
 
 
