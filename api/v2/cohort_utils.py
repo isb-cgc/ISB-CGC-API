@@ -249,14 +249,6 @@ def get_manifest(request, func, url, data=None): #, user=None):
         if "message" in manifest_info:
             return manifest_info
 
-        # Temporary workaround to support aws_bucket
-        if 'aws_bucket' in query_params and query_params['aws_bucket'] == True:
-            manifest_info['query']['sql_string'] = \
-            manifest_info['query']['sql_string'].replace('SELECT', 'SELECT dicom_pivot.aws_bucket,')
-            manifest_info['query']['sql_string'] = \
-            manifest_info['query']['sql_string'].replace('GROUP BY', 'GROUP BY dicom_pivot.aws_bucket,')
-
-
         # We now have SQL that will generate the request manifest
         # Start the BQ job, but don't get any data results, just the job info.
         job_status = submit_BQ_job(manifest_info['query']['sql_string'],
