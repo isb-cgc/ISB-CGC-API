@@ -50,6 +50,8 @@ def normalize_query_fields(fields):
             special_fields.append(field.lower())
         elif field.lower() in lowered_fields:
             corrected_fields.append(lowered_fields[field.lower()])
+            if field.lower() in ['studydate', 'studydescription']:
+                special_fields.append(field.lower())
         else:
             return (corrected_fields, special_fields, dict(
                 message=f'{field} is not a valid field.',
@@ -58,58 +60,81 @@ def normalize_query_fields(fields):
                     )
     return corrected_fields, special_fields, {}
 
-def add_counts_and_sizes(special_fields, query_info, data):
+def process_special_fields(special_fields, query_info, data):
     if special_fields:
         fields = set([field.lower() for field in data['request_data']['fields']])
-        # sql_string = query_info['query']['sql_string']
-        sql_string = 'SELECT'
+        sql_string = query_info['query']['sql_string']
+        # sql_string = 'SELECT'
+
+
         # Include counts if there is an explicit level
         if 'counts' in special_fields:
             if {'crdc_instance_uuid', 'sopinstanceuid'} & fields:
                 pass
-            elif {'crdc_sseries_uuid', 'seriesinstanceuid'} & fields:
-                sql_string = sql_string.replace('SELECT', 'SELECT count(DISTINCT dicom_pivot.SOPInstanceUID) instance_count,')
+            elif {'crdc_series_uuid', 'seriesinstanceuid'} & fields:
+                sql_string = sql_string.replace('SELECT', 'SELECT COUNT(DISTINCT dicom_pivot.SOPInstanceUID) instance_count,')
             elif {'crdc_study_uuid', 'studyinstanceuid'} & fields:
                 sql_string = sql_string.replace('SELECT', \
-        '''SELECT count(DISTINCT dicom_pivot.SeriesInstanceUID) series_count,
-        count(DISTINCT dicom_pivot.SOPInstanceUID) instance_count,''')
+        '''SELECT COUNT(DISTINCT dicom_pivot.SeriesInstanceUID) series_count,
+        COUNT(DISTINCT dicom_pivot.SOPInstanceUID) instance_count,''')
             elif {'patientid'} & fields:
                 sql_string = sql_string.replace('SELECT', \
-        '''SELECT count(DISTINCT dicom_pivot.StudyInstanceUID) study_count,
-        count(DISTINCT dicom_pivot.SeriesInstanceUID) series_count,
-        count(DISTINCT dicom_pivot.SOPInstanceUID) instance_count,''')
+        '''SELECT COUNT(DISTINCT dicom_pivot.StudyInstanceUID) study_count,
+        COUNT(DISTINCT dicom_pivot.SeriesInstanceUID) series_count,
+        COUNT(DISTINCT dicom_pivot.SOPInstanceUID) instance_count,''')
             elif {'collection_id'} & fields:
                 sql_string = sql_string.replace('SELECT', \
-        '''SELECT count(DISTINCT dicom_pivot.patientID) patient_count,
-        count(DISTINCT dicom_pivot.StudyInstanceUID) study_count,
-        count(DISTINCT dicom_pivot.SeriesInstanceUID) series_count,
-        count(DISTINCT dicom_pivot.SOPInstanceUID) instance_count,''')
+        '''SELECT COUNT(DISTINCT dicom_pivot.patientID) patient_count,
+        COUNT(DISTINCT dicom_pivot.StudyInstanceUID) study_count,
+        COUNT(DISTINCT dicom_pivot.SeriesInstanceUID) series_count,
+        COUNT(DISTINCT dicom_pivot.SOPInstanceUID) instance_count,''')
             else:
                 sql_string = sql_string.replace('SELECT', \
-        '''SELECT count(DISTINCT dicom_pivot.collection_id) collection_count, 
-        count(DISTINCT dicom_pivot.patientID) patient_count,
-        count(DISTINCT dicom_pivot.StudyInstanceUID) study_count,
-        count(DISTINCT dicom_pivot.SeriesInstanceUID) series_count,
-        count(DISTINCT dicom_pivot.SOPInstanceUID) instance_count,''')
+        '''SELECT COUNT(DISTINCT dicom_pivot.collection_id) collection_count, 
+        COUNT(DISTINCT dicom_pivot.patientID) patient_count,
+        COUNT(DISTINCT dicom_pivot.StudyInstanceUID) study_count,
+        COUNT(DISTINCT dicom_pivot.SeriesInstanceUID) series_count,
+        COUNT(DISTINCT dicom_pivot.SOPInstanceUID) instance_count,''')
 
         if 'sizes' in special_fields:
-            if 'sopinstanceuid' in fields:
+            if {'crdc_instance_uuid', 'sopinstanceuid'} & fields:
                 sql_string = sql_string.replace('SELECT', 'SELECT ROUND(sum(dicom_pivot.instance_size)/POW(10,6), 2) instance_size_MB,')
-            elif 'seriesinstanceuid' in fields:
+            elif {'crdc_series_uuid', 'seriesinstanceuid'} & fields:
                 sql_string = sql_string.replace('SELECT', 'SELECT ROUND(sum(dicom_pivot.instance_size)/POW(10,6), 2) series_size_MB,')
-            elif 'studyinstanceuid' in fields:
+            elif {'crdc_study_uuid', 'studyinstanceuid'} & fields:
                 sql_string = sql_string.replace('SELECT', 'SELECT ROUND(sum(dicom_pivot.instance_size)/POW(10,6), 2) study_size_MB,')
             elif 'patientid'  in fields:
                 sql_string = sql_string.replace('SELECT', 'SELECT ROUND(sum(dicom_pivot.instance_size)/POW(10,6), 2) patient_size_MB,')
             elif 'collection_id' in fields:
                 sql_string = sql_string.replace('SELECT', 'SELECT ROUND(sum(dicom_pivot.instance_size)/POW(10,6), 2) collection_size_MB,')
 
-        # Revise the query SQL with the additional fields
-        query_info['query']['sql_string'] = query_info['query']['sql_string'].replace('SELECT', sql_string)
+        if 'studydate' in special_fields:
+            # Replace the first instance of 'dicom_pivot.StudyDate' with an aggregation
+            sql_string = sql_string.replace('dicom_pivot.StudyDate', 'MIN(dicom_pivot.StudyDate) StudyDate', 1)
+            # Get the instance in the GROUP BY clause and delete it
+            offset = sql_string.find('dicom_pivot.StudyDate', sql_string.find('GROUP BY'))
+            sql_string = sql_string[:offset] + sql_string[offset:].replace('dicom_pivot.StudyDate', '', 1)
+            # Replace orphaned comma; make sure there a space
+            sql_string = sql_string[:offset] + sql_string[offset:].lstrip(" ,") + " "
+            offset = sql_string.find('dicom_pivot.StudyDate', sql_string.find('ORDER BY', offset))
+            sql_string = sql_string[:offset] + sql_string[offset:].replace('dicom_pivot.StudyDate', 'StudyDate', 1)
+
+        if 'studydescription' in special_fields:
+            # Replace the first instance of 'dicom_pivot.StudyDate' with an aggregation
+            sql_string = sql_string.replace('dicom_pivot.StudyDescription', \
+                'STRING_AGG(DISTINCT dicom_pivot.StudyDescription, "," ORDER BY dicom_pivot.StudyDescription) StudyDescription', 1)
+            # Get the instance in the GROUP BY clause and delete it
+            offset = sql_string.find('dicom_pivot.StudyDescription', sql_string.find('GROUP BY'))
+            sql_string = sql_string[:offset] + sql_string[offset:].replace('dicom_pivot.StudyDescription', '', 1)
+            # Replace orphaned comma; make sure there a space
+            sql_string = sql_string[:offset] + sql_string[offset:].lstrip(" ,") + " "
+            offset = sql_string.find('dicom_pivot.StudyDescription', sql_string.find('ORDER BY', offset))
+            sql_string = sql_string[:offset] + sql_string[offset:].replace('dicom_pivot.StudyDescription', 'StudyDescription', 1)
+
+        query_info['query']['sql_string'] = sql_string
         if query_info['cohort_def']['sql']:
             query_info['cohort_def']['sql'] = query_info['cohort_def']['sql'].replace('SELECT', sql_string)
     return query_info
-
 
 
 def perform_query(request, func, url, data=None, user=None): #, user=None):
@@ -137,7 +162,7 @@ def perform_query(request, func, url, data=None, user=None): #, user=None):
         if "message" in query_info:
             return query_info
 
-        query_info = add_counts_and_sizes(special_fields, query_info, data)
+        query_info = process_special_fields(special_fields, query_info, data)
 
         # Start the BQ job, but don't get any data results, just the job info.
         job_status = submit_BQ_job(query_info['query']['sql_string'],
