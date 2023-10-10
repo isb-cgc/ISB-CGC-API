@@ -15,48 +15,6 @@ COHORT_FILTERS_SCHEMA={
       },
       "minItems": 1
     },
-    "project_name": {
-      "type": "array",
-      "items": {
-        "type": "string"
-      },
-      "minItems": 1
-    },
-    "disease_code": {
-      "type": "array",
-      "items": {
-        "type": "string"
-      },
-      "minItems": 1
-    },
-    "gender": {
-      "type": "array",
-      "items": {
-        "type": "string"
-      },
-      "minItems": 1
-    },
-    "vital_status": {
-      "type": "array",
-      "items": {
-        "type": "string"
-      },
-      "minItems": 1
-    },
-    "race": {
-      "type": "array",
-      "items": {
-        "type": "string"
-      },
-      "minItems": 1
-    },
-    "ethnicity": {
-      "type": "array",
-      "items": {
-        "type": "string"
-      },
-      "minItems": 1
-    },
     "age_at_diagnosis": {
       "type": "array",
       "items": {
@@ -128,34 +86,6 @@ COHORT_FILTERS_SCHEMA={
       },
       "minItems": 1,
       "maxItems": 1
-    },
-    "pathologic_stage": {
-      "type": "array",
-      "items": {
-        "type": "string"
-      },
-      "minItems": 1
-    },
-    "tumor_tissue_site": {
-      "type": "array",
-      "items": {
-        "type": "string"
-      },
-      "minItems": 1
-    },
-    "country": {
-      "type": "array",
-      "items": {
-        "type": "string"
-      },
-      "minItems": 1
-    },
-    "histological_type": {
-      "type": "array",
-      "items": {
-        "type": "string"
-      },
-      "minItems": 1
     },
     "bmi": {
       "type": "array",
@@ -229,6 +159,90 @@ COHORT_FILTERS_SCHEMA={
       "minItems": 1,
       "maxItems": 1
     },
+    "country": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1
+    },
+    "disease_code": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1
+    },
+    "ethnicity": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1
+    },
+    "gender": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1
+    },
+    "histological_type": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1
+    },
+    "pathologic_stage": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1
+    },
+    "project_name": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1
+    },
+    "race": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1
+    },
+    "tumor_tissue_site": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1
+    },
+    "vital_status": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1
+    },
+    "analysis_results_id": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1
+    },
+    "AnatomicRegionSequence": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1
+    },
     "Apparent_Diffusion_Coefficient": {
       "type": "array",
       "items": {
@@ -301,119 +315,33 @@ COHORT_FILTERS_SCHEMA={
       "minItems": 1,
       "maxItems": 1
     },
-    "tcia_species": {
+    "BodyPartExamined": {
       "type": "array",
       "items": {
         "type": "string"
       },
       "minItems": 1
     },
-    "Modality": {
+    "Calcification": {
       "type": "array",
       "items": {
         "type": "string"
       },
       "minItems": 1
     },
-    "tcia_tumorLocation": {
+    "CancerType": {
       "type": "array",
       "items": {
         "type": "string"
       },
       "minItems": 1
     },
-    "AnatomicRegionSequence": {
+    "collection_id": {
       "type": "array",
       "items": {
         "type": "string"
       },
       "minItems": 1
-    },
-    "SegmentedPropertyCategoryCodeSequence": {
-      "type": "array",
-      "items": {
-        "type": "string"
-      },
-      "minItems": 1
-    },
-    "SegmentedPropertyTypeCodeSequence": {
-      "type": "array",
-      "items": {
-        "type": "string"
-      },
-      "minItems": 1
-    },
-    "Volume": {
-      "type": "array",
-      "items": {
-        "type": "number"
-      },
-      "minItems": 1,
-      "maxItems": 1
-    },
-    "Volume_lt": {
-      "type": "array",
-      "items": {
-        "type": "number"
-      },
-      "minItems": 1,
-      "maxItems": 1
-    },
-    "Volume_lte": {
-      "type": "array",
-      "items": {
-        "type": "number"
-      },
-      "minItems": 1,
-      "maxItems": 1
-    },
-    "Volume_btw": {
-      "type": "array",
-      "items": {
-        "type": "number"
-      },
-      "minItems": 2,
-      "maxItems": 2
-    },
-    "Volume_ebtw": {
-      "type": "array",
-      "items": {
-        "type": "number"
-      },
-      "minItems": 2,
-      "maxItems": 2
-    },
-    "Volume_ebtwe": {
-      "type": "array",
-      "items": {
-        "type": "number"
-      },
-      "minItems": 2,
-      "maxItems": 2
-    },
-    "Volume_btwe": {
-      "type": "array",
-      "items": {
-        "type": "number"
-      },
-      "minItems": 2,
-      "maxItems": 2
-    },
-    "Volume_gte": {
-      "type": "array",
-      "items": {
-        "type": "number"
-      },
-      "minItems": 1,
-      "maxItems": 1
-    },
-    "Volume_gt": {
-      "type": "array",
-      "items": {
-        "type": "number"
-      },
-      "minItems": 1,
-      "maxItems": 1
     },
     "Diameter": {
       "type": "array",
@@ -487,77 +415,12 @@ COHORT_FILTERS_SCHEMA={
       "minItems": 1,
       "maxItems": 1
     },
-    "Surface_area_of_mesh": {
+    "illuminationType": {
       "type": "array",
       "items": {
-        "type": "number"
+        "type": "string"
       },
-      "minItems": 1,
-      "maxItems": 1
-    },
-    "Surface_area_of_mesh_lt": {
-      "type": "array",
-      "items": {
-        "type": "number"
-      },
-      "minItems": 1,
-      "maxItems": 1
-    },
-    "Surface_area_of_mesh_lte": {
-      "type": "array",
-      "items": {
-        "type": "number"
-      },
-      "minItems": 1,
-      "maxItems": 1
-    },
-    "Surface_area_of_mesh_btw": {
-      "type": "array",
-      "items": {
-        "type": "number"
-      },
-      "minItems": 2,
-      "maxItems": 2
-    },
-    "Surface_area_of_mesh_ebtw": {
-      "type": "array",
-      "items": {
-        "type": "number"
-      },
-      "minItems": 2,
-      "maxItems": 2
-    },
-    "Surface_area_of_mesh_ebtwe": {
-      "type": "array",
-      "items": {
-        "type": "number"
-      },
-      "minItems": 2,
-      "maxItems": 2
-    },
-    "Surface_area_of_mesh_btwe": {
-      "type": "array",
-      "items": {
-        "type": "number"
-      },
-      "minItems": 2,
-      "maxItems": 2
-    },
-    "Surface_area_of_mesh_gte": {
-      "type": "array",
-      "items": {
-        "type": "number"
-      },
-      "minItems": 1,
-      "maxItems": 1
-    },
-    "Surface_area_of_mesh_gt": {
-      "type": "array",
-      "items": {
-        "type": "number"
-      },
-      "minItems": 1,
-      "maxItems": 1
+      "minItems": 1
     },
     "Internal_structure": {
       "type": "array",
@@ -566,14 +429,7 @@ COHORT_FILTERS_SCHEMA={
       },
       "minItems": 1
     },
-    "Sphericity": {
-      "type": "array",
-      "items": {
-        "type": "string"
-      },
-      "minItems": 1
-    },
-    "Calcification": {
+    "license_short_name": {
       "type": "array",
       "items": {
         "type": "string"
@@ -587,184 +443,7 @@ COHORT_FILTERS_SCHEMA={
       },
       "minItems": 1
     },
-    "Spiculation": {
-      "type": "array",
-      "items": {
-        "type": "string"
-      },
-      "minItems": 1
-    },
-    "Margin": {
-      "type": "array",
-      "items": {
-        "type": "string"
-      },
-      "minItems": 1
-    },
-    "Texture": {
-      "type": "array",
-      "items": {
-        "type": "string"
-      },
-      "minItems": 1
-    },
-    "Subtlety_score": {
-      "type": "array",
-      "items": {
-        "type": "string"
-      },
-      "minItems": 1
-    },
     "Malignancy": {
-      "type": "array",
-      "items": {
-        "type": "string"
-      },
-      "minItems": 1
-    },
-    "BodyPartExamined": {
-      "type": "array",
-      "items": {
-        "type": "string"
-      },
-      "minItems": 1
-    },
-    "SOPClassUID": {
-      "type": "array",
-      "items": {
-        "type": "string"
-      },
-      "minItems": 1
-    },
-    "collection_id": {
-      "type": "array",
-      "items": {
-        "type": "string"
-      },
-      "minItems": 1
-    },
-    "StudyDescription": {
-      "type": "array",
-      "items": {
-        "type": "string"
-      },
-      "minItems": 1
-    },
-    "StudyInstanceUID": {
-      "type": "array",
-      "items": {
-        "type": "string"
-      },
-      "minItems": 1
-    },
-    "PatientID": {
-      "type": "array",
-      "items": {
-        "type": "string"
-      },
-      "minItems": 1
-    },
-    "SeriesInstanceUID": {
-      "type": "array",
-      "items": {
-        "type": "string"
-      },
-      "minItems": 1
-    },
-    "SOPInstanceUID": {
-      "type": "array",
-      "items": {
-        "type": "string"
-      },
-      "minItems": 1
-    },
-    "SeriesDescription": {
-      "type": "array",
-      "items": {
-        "type": "string"
-      },
-      "minItems": 1
-    },
-    "SliceThickness": {
-      "type": "array",
-      "items": {
-        "type": "number"
-      },
-      "minItems": 1,
-      "maxItems": 1
-    },
-    "SliceThickness_lt": {
-      "type": "array",
-      "items": {
-        "type": "number"
-      },
-      "minItems": 1,
-      "maxItems": 1
-    },
-    "SliceThickness_lte": {
-      "type": "array",
-      "items": {
-        "type": "number"
-      },
-      "minItems": 1,
-      "maxItems": 1
-    },
-    "SliceThickness_btw": {
-      "type": "array",
-      "items": {
-        "type": "number"
-      },
-      "minItems": 2,
-      "maxItems": 2
-    },
-    "SliceThickness_ebtw": {
-      "type": "array",
-      "items": {
-        "type": "number"
-      },
-      "minItems": 2,
-      "maxItems": 2
-    },
-    "SliceThickness_ebtwe": {
-      "type": "array",
-      "items": {
-        "type": "number"
-      },
-      "minItems": 2,
-      "maxItems": 2
-    },
-    "SliceThickness_btwe": {
-      "type": "array",
-      "items": {
-        "type": "number"
-      },
-      "minItems": 2,
-      "maxItems": 2
-    },
-    "SliceThickness_gte": {
-      "type": "array",
-      "items": {
-        "type": "number"
-      },
-      "minItems": 1,
-      "maxItems": 1
-    },
-    "SliceThickness_gt": {
-      "type": "array",
-      "items": {
-        "type": "number"
-      },
-      "minItems": 1,
-      "maxItems": 1
-    },
-    "SeriesNumber": {
-      "type": "array",
-      "items": {
-        "type": "string"
-      },
-      "minItems": 1
-    },
-    "StudyDate": {
       "type": "array",
       "items": {
         "type": "string"
@@ -785,264 +464,12 @@ COHORT_FILTERS_SCHEMA={
       },
       "minItems": 1
     },
-    "license_short_name": {
+    "Margin": {
       "type": "array",
       "items": {
         "type": "string"
       },
       "minItems": 1
-    },
-    "analysis_results_id": {
-      "type": "array",
-      "items": {
-        "type": "string"
-      },
-      "minItems": 1
-    },
-    "SamplesPerPixel": {
-      "type": "array",
-      "items": {
-        "type": "string"
-      },
-      "minItems": 1
-    },
-    "Volume_of_Mesh": {
-      "type": "array",
-      "items": {
-        "type": "number"
-      },
-      "minItems": 1,
-      "maxItems": 1
-    },
-    "Volume_of_Mesh_lt": {
-      "type": "array",
-      "items": {
-        "type": "number"
-      },
-      "minItems": 1,
-      "maxItems": 1
-    },
-    "Volume_of_Mesh_lte": {
-      "type": "array",
-      "items": {
-        "type": "number"
-      },
-      "minItems": 1,
-      "maxItems": 1
-    },
-    "Volume_of_Mesh_btw": {
-      "type": "array",
-      "items": {
-        "type": "number"
-      },
-      "minItems": 2,
-      "maxItems": 2
-    },
-    "Volume_of_Mesh_ebtw": {
-      "type": "array",
-      "items": {
-        "type": "number"
-      },
-      "minItems": 2,
-      "maxItems": 2
-    },
-    "Volume_of_Mesh_ebtwe": {
-      "type": "array",
-      "items": {
-        "type": "number"
-      },
-      "minItems": 2,
-      "maxItems": 2
-    },
-    "Volume_of_Mesh_btwe": {
-      "type": "array",
-      "items": {
-        "type": "number"
-      },
-      "minItems": 2,
-      "maxItems": 2
-    },
-    "Volume_of_Mesh_gte": {
-      "type": "array",
-      "items": {
-        "type": "number"
-      },
-      "minItems": 1,
-      "maxItems": 1
-    },
-    "Volume_of_Mesh_gt": {
-      "type": "array",
-      "items": {
-        "type": "number"
-      },
-      "minItems": 1,
-      "maxItems": 1
-    },
-    "Sphericity_quant": {
-      "type": "array",
-      "items": {
-        "type": "number"
-      },
-      "minItems": 1,
-      "maxItems": 1
-    },
-    "Sphericity_quant_lt": {
-      "type": "array",
-      "items": {
-        "type": "number"
-      },
-      "minItems": 1,
-      "maxItems": 1
-    },
-    "Sphericity_quant_lte": {
-      "type": "array",
-      "items": {
-        "type": "number"
-      },
-      "minItems": 1,
-      "maxItems": 1
-    },
-    "Sphericity_quant_btw": {
-      "type": "array",
-      "items": {
-        "type": "number"
-      },
-      "minItems": 2,
-      "maxItems": 2
-    },
-    "Sphericity_quant_ebtw": {
-      "type": "array",
-      "items": {
-        "type": "number"
-      },
-      "minItems": 2,
-      "maxItems": 2
-    },
-    "Sphericity_quant_ebtwe": {
-      "type": "array",
-      "items": {
-        "type": "number"
-      },
-      "minItems": 2,
-      "maxItems": 2
-    },
-    "Sphericity_quant_btwe": {
-      "type": "array",
-      "items": {
-        "type": "number"
-      },
-      "minItems": 2,
-      "maxItems": 2
-    },
-    "Sphericity_quant_gte": {
-      "type": "array",
-      "items": {
-        "type": "number"
-      },
-      "minItems": 1,
-      "maxItems": 1
-    },
-    "Sphericity_quant_gt": {
-      "type": "array",
-      "items": {
-        "type": "number"
-      },
-      "minItems": 1,
-      "maxItems": 1
-    },
-    "illuminationType": {
-      "type": "array",
-      "items": {
-        "type": "string"
-      },
-      "minItems": 1
-    },
-    "primaryAnatomicStructure": {
-      "type": "array",
-      "items": {
-        "type": "string"
-      },
-      "minItems": 1
-    },
-    "ObjectiveLensPower": {
-      "type": "array",
-      "items": {
-        "type": "number"
-      },
-      "minItems": 1,
-      "maxItems": 1
-    },
-    "min_PixelSpacing": {
-      "type": "array",
-      "items": {
-        "type": "number"
-      },
-      "minItems": 1,
-      "maxItems": 1
-    },
-    "min_PixelSpacing_lt": {
-      "type": "array",
-      "items": {
-        "type": "number"
-      },
-      "minItems": 1,
-      "maxItems": 1
-    },
-    "min_PixelSpacing_lte": {
-      "type": "array",
-      "items": {
-        "type": "number"
-      },
-      "minItems": 1,
-      "maxItems": 1
-    },
-    "min_PixelSpacing_btw": {
-      "type": "array",
-      "items": {
-        "type": "number"
-      },
-      "minItems": 2,
-      "maxItems": 2
-    },
-    "min_PixelSpacing_ebtw": {
-      "type": "array",
-      "items": {
-        "type": "number"
-      },
-      "minItems": 2,
-      "maxItems": 2
-    },
-    "min_PixelSpacing_ebtwe": {
-      "type": "array",
-      "items": {
-        "type": "number"
-      },
-      "minItems": 2,
-      "maxItems": 2
-    },
-    "min_PixelSpacing_btwe": {
-      "type": "array",
-      "items": {
-        "type": "number"
-      },
-      "minItems": 2,
-      "maxItems": 2
-    },
-    "min_PixelSpacing_gte": {
-      "type": "array",
-      "items": {
-        "type": "number"
-      },
-      "minItems": 1,
-      "maxItems": 1
-    },
-    "min_PixelSpacing_gt": {
-      "type": "array",
-      "items": {
-        "type": "number"
-      },
-      "minItems": 1,
-      "maxItems": 1
     },
     "max_TotalPixelMatrixColumns": {
       "type": "array",
@@ -1188,12 +615,584 @@ COHORT_FILTERS_SCHEMA={
       "minItems": 1,
       "maxItems": 1
     },
-    "CancerType": {
+    "min_PixelSpacing": {
+      "type": "array",
+      "items": {
+        "type": "number"
+      },
+      "minItems": 1,
+      "maxItems": 1
+    },
+    "min_PixelSpacing_lt": {
+      "type": "array",
+      "items": {
+        "type": "number"
+      },
+      "minItems": 1,
+      "maxItems": 1
+    },
+    "min_PixelSpacing_lte": {
+      "type": "array",
+      "items": {
+        "type": "number"
+      },
+      "minItems": 1,
+      "maxItems": 1
+    },
+    "min_PixelSpacing_btw": {
+      "type": "array",
+      "items": {
+        "type": "number"
+      },
+      "minItems": 2,
+      "maxItems": 2
+    },
+    "min_PixelSpacing_ebtw": {
+      "type": "array",
+      "items": {
+        "type": "number"
+      },
+      "minItems": 2,
+      "maxItems": 2
+    },
+    "min_PixelSpacing_ebtwe": {
+      "type": "array",
+      "items": {
+        "type": "number"
+      },
+      "minItems": 2,
+      "maxItems": 2
+    },
+    "min_PixelSpacing_btwe": {
+      "type": "array",
+      "items": {
+        "type": "number"
+      },
+      "minItems": 2,
+      "maxItems": 2
+    },
+    "min_PixelSpacing_gte": {
+      "type": "array",
+      "items": {
+        "type": "number"
+      },
+      "minItems": 1,
+      "maxItems": 1
+    },
+    "min_PixelSpacing_gt": {
+      "type": "array",
+      "items": {
+        "type": "number"
+      },
+      "minItems": 1,
+      "maxItems": 1
+    },
+    "Modality": {
       "type": "array",
       "items": {
         "type": "string"
       },
       "minItems": 1
+    },
+    "ObjectiveLensPower": {
+      "type": "array",
+      "items": {
+        "type": "number"
+      },
+      "minItems": 1
+    },
+    "PatientID": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1
+    },
+    "primaryAnatomicStructure": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1
+    },
+    "SamplesPerPixel": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1
+    },
+    "SegmentedPropertyCategoryCodeSequence": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1
+    },
+    "SegmentedPropertyTypeCodeSequence": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1
+    },
+    "SeriesDescription": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1
+    },
+    "SeriesInstanceUID": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1
+    },
+    "SeriesNumber": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1
+    },
+    "SliceThickness": {
+      "type": "array",
+      "items": {
+        "type": "number"
+      },
+      "minItems": 1,
+      "maxItems": 1
+    },
+    "SliceThickness_lt": {
+      "type": "array",
+      "items": {
+        "type": "number"
+      },
+      "minItems": 1,
+      "maxItems": 1
+    },
+    "SliceThickness_lte": {
+      "type": "array",
+      "items": {
+        "type": "number"
+      },
+      "minItems": 1,
+      "maxItems": 1
+    },
+    "SliceThickness_btw": {
+      "type": "array",
+      "items": {
+        "type": "number"
+      },
+      "minItems": 2,
+      "maxItems": 2
+    },
+    "SliceThickness_ebtw": {
+      "type": "array",
+      "items": {
+        "type": "number"
+      },
+      "minItems": 2,
+      "maxItems": 2
+    },
+    "SliceThickness_ebtwe": {
+      "type": "array",
+      "items": {
+        "type": "number"
+      },
+      "minItems": 2,
+      "maxItems": 2
+    },
+    "SliceThickness_btwe": {
+      "type": "array",
+      "items": {
+        "type": "number"
+      },
+      "minItems": 2,
+      "maxItems": 2
+    },
+    "SliceThickness_gte": {
+      "type": "array",
+      "items": {
+        "type": "number"
+      },
+      "minItems": 1,
+      "maxItems": 1
+    },
+    "SliceThickness_gt": {
+      "type": "array",
+      "items": {
+        "type": "number"
+      },
+      "minItems": 1,
+      "maxItems": 1
+    },
+    "SOPClassUID": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1
+    },
+    "SOPInstanceUID": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1
+    },
+    "Sphericity": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1
+    },
+    "Sphericity_quant": {
+      "type": "array",
+      "items": {
+        "type": "number"
+      },
+      "minItems": 1,
+      "maxItems": 1
+    },
+    "Sphericity_quant_lt": {
+      "type": "array",
+      "items": {
+        "type": "number"
+      },
+      "minItems": 1,
+      "maxItems": 1
+    },
+    "Sphericity_quant_lte": {
+      "type": "array",
+      "items": {
+        "type": "number"
+      },
+      "minItems": 1,
+      "maxItems": 1
+    },
+    "Sphericity_quant_btw": {
+      "type": "array",
+      "items": {
+        "type": "number"
+      },
+      "minItems": 2,
+      "maxItems": 2
+    },
+    "Sphericity_quant_ebtw": {
+      "type": "array",
+      "items": {
+        "type": "number"
+      },
+      "minItems": 2,
+      "maxItems": 2
+    },
+    "Sphericity_quant_ebtwe": {
+      "type": "array",
+      "items": {
+        "type": "number"
+      },
+      "minItems": 2,
+      "maxItems": 2
+    },
+    "Sphericity_quant_btwe": {
+      "type": "array",
+      "items": {
+        "type": "number"
+      },
+      "minItems": 2,
+      "maxItems": 2
+    },
+    "Sphericity_quant_gte": {
+      "type": "array",
+      "items": {
+        "type": "number"
+      },
+      "minItems": 1,
+      "maxItems": 1
+    },
+    "Sphericity_quant_gt": {
+      "type": "array",
+      "items": {
+        "type": "number"
+      },
+      "minItems": 1,
+      "maxItems": 1
+    },
+    "Spiculation": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1
+    },
+    "StudyDate": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1
+    },
+    "StudyDescription": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1
+    },
+    "StudyInstanceUID": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1
+    },
+    "Subtlety_score": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1
+    },
+    "Surface_area_of_mesh": {
+      "type": "array",
+      "items": {
+        "type": "number"
+      },
+      "minItems": 1,
+      "maxItems": 1
+    },
+    "Surface_area_of_mesh_lt": {
+      "type": "array",
+      "items": {
+        "type": "number"
+      },
+      "minItems": 1,
+      "maxItems": 1
+    },
+    "Surface_area_of_mesh_lte": {
+      "type": "array",
+      "items": {
+        "type": "number"
+      },
+      "minItems": 1,
+      "maxItems": 1
+    },
+    "Surface_area_of_mesh_btw": {
+      "type": "array",
+      "items": {
+        "type": "number"
+      },
+      "minItems": 2,
+      "maxItems": 2
+    },
+    "Surface_area_of_mesh_ebtw": {
+      "type": "array",
+      "items": {
+        "type": "number"
+      },
+      "minItems": 2,
+      "maxItems": 2
+    },
+    "Surface_area_of_mesh_ebtwe": {
+      "type": "array",
+      "items": {
+        "type": "number"
+      },
+      "minItems": 2,
+      "maxItems": 2
+    },
+    "Surface_area_of_mesh_btwe": {
+      "type": "array",
+      "items": {
+        "type": "number"
+      },
+      "minItems": 2,
+      "maxItems": 2
+    },
+    "Surface_area_of_mesh_gte": {
+      "type": "array",
+      "items": {
+        "type": "number"
+      },
+      "minItems": 1,
+      "maxItems": 1
+    },
+    "Surface_area_of_mesh_gt": {
+      "type": "array",
+      "items": {
+        "type": "number"
+      },
+      "minItems": 1,
+      "maxItems": 1
+    },
+    "tcia_species": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1
+    },
+    "tcia_tumorLocation": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1
+    },
+    "Texture": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1
+    },
+    "Volume": {
+      "type": "array",
+      "items": {
+        "type": "number"
+      },
+      "minItems": 1,
+      "maxItems": 1
+    },
+    "Volume_lt": {
+      "type": "array",
+      "items": {
+        "type": "number"
+      },
+      "minItems": 1,
+      "maxItems": 1
+    },
+    "Volume_lte": {
+      "type": "array",
+      "items": {
+        "type": "number"
+      },
+      "minItems": 1,
+      "maxItems": 1
+    },
+    "Volume_btw": {
+      "type": "array",
+      "items": {
+        "type": "number"
+      },
+      "minItems": 2,
+      "maxItems": 2
+    },
+    "Volume_ebtw": {
+      "type": "array",
+      "items": {
+        "type": "number"
+      },
+      "minItems": 2,
+      "maxItems": 2
+    },
+    "Volume_ebtwe": {
+      "type": "array",
+      "items": {
+        "type": "number"
+      },
+      "minItems": 2,
+      "maxItems": 2
+    },
+    "Volume_btwe": {
+      "type": "array",
+      "items": {
+        "type": "number"
+      },
+      "minItems": 2,
+      "maxItems": 2
+    },
+    "Volume_gte": {
+      "type": "array",
+      "items": {
+        "type": "number"
+      },
+      "minItems": 1,
+      "maxItems": 1
+    },
+    "Volume_gt": {
+      "type": "array",
+      "items": {
+        "type": "number"
+      },
+      "minItems": 1,
+      "maxItems": 1
+    },
+    "Volume_of_Mesh": {
+      "type": "array",
+      "items": {
+        "type": "number"
+      },
+      "minItems": 1,
+      "maxItems": 1
+    },
+    "Volume_of_Mesh_lt": {
+      "type": "array",
+      "items": {
+        "type": "number"
+      },
+      "minItems": 1,
+      "maxItems": 1
+    },
+    "Volume_of_Mesh_lte": {
+      "type": "array",
+      "items": {
+        "type": "number"
+      },
+      "minItems": 1,
+      "maxItems": 1
+    },
+    "Volume_of_Mesh_btw": {
+      "type": "array",
+      "items": {
+        "type": "number"
+      },
+      "minItems": 2,
+      "maxItems": 2
+    },
+    "Volume_of_Mesh_ebtw": {
+      "type": "array",
+      "items": {
+        "type": "number"
+      },
+      "minItems": 2,
+      "maxItems": 2
+    },
+    "Volume_of_Mesh_ebtwe": {
+      "type": "array",
+      "items": {
+        "type": "number"
+      },
+      "minItems": 2,
+      "maxItems": 2
+    },
+    "Volume_of_Mesh_btwe": {
+      "type": "array",
+      "items": {
+        "type": "number"
+      },
+      "minItems": 2,
+      "maxItems": 2
+    },
+    "Volume_of_Mesh_gte": {
+      "type": "array",
+      "items": {
+        "type": "number"
+      },
+      "minItems": 1,
+      "maxItems": 1
+    },
+    "Volume_of_Mesh_gt": {
+      "type": "array",
+      "items": {
+        "type": "number"
+      },
+      "minItems": 1,
+      "maxItems": 1
     }
   },
   "additionalProperties": False,

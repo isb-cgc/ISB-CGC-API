@@ -17,10 +17,11 @@
 import logging
 from flask import jsonify
 from python_settings import settings
-from .schemas.queryfields import QUERY_FIELDS
+from .schemas.filters import COHORT_FILTERS_SCHEMA
 from .version_config import API_VERSION
-from . metadata_views import get_versions, get_filters, get_collections, get_analysis_results
+from . metadata_views import get_versions, get_filters, get_collections, get_analysis_results, get_fields
 from flask import Blueprint
+from google.cloud import bigquery
 
 logger = logging.getLogger(settings.LOGGER_NAME)
 
@@ -113,7 +114,23 @@ def analysis_results():
 
 @metadata_bp.route('/filters', methods=['GET'], strict_slashes=False)
 def filters():
-    """Retrieve a list of filters for the current IDC versions"""
+    # """Retrieve a list of filters for the current IDC versions"""
+    # "Retrieve a list of query fields for the current IDC versions"
+    # filters = [filter for filter in COHORT_FILTERS_SCHEMA['properties']]
+    #
+    #
+    # # response = jsonify({
+    # #     'code': 200,
+    # #     'queryFields': filters
+    # #     })
+    # # response.status_code = 200
+    # response = jsonify({
+    #     'code': 200,
+    #     'queryFields': filters
+    #     })
+    # return response
+
+
     try:
         results = get_filters()
 
@@ -137,19 +154,89 @@ def filters():
 
     return response
 
+# Get the accepted values of a categorical filter
+@metadata_bp.route('/filters/values/<string:filter_id>', methods=['GET'], strict_slashes=False)
+def categorical_values(filter_id):
+    client = bigquery.Client('idc-dev-etl')
 
-@metadata_bp.route('/queryFields', methods=['GET'], strict_slashes=False)
-def queryFields():
-    """Retrieve a list of query fields for the current IDC versions"""
-    fields = [field for field in QUERY_FIELDS['properties']['fields']['items']['enum']]
-    # fields = [field for field in QUERY_FIELDS['items']['enum']]
-    response = jsonify({
-        'code': 200,
-        'queryFields': fields
+    try:
+        results = get_filters()
+
+        if 'message' in results:
+            response = jsonify(results)
+            response.status_code = results['code']
+
+        for source in results['data_sources']:
+            filter = next((filter for filter in source['filters'] if filter['name'].lower() == filter_id.lower()), -1)
+            if filter == -1:
+                continue
+        if filter == -1:
+            response = jsonify({
+                'code': 500,
+                'message': 'Invalid filter ID'
+            })
+            response.status_code = 500
+            return response
+        if filter['data_type'] not in ['Categorical String', 'Categorical Number']:
+            response = jsonify({
+                'code': 500,
+                'message': f'Filter data type is {filter["data_type"]} not Categorical String or Categorical Number'
+            })
+            response.status_code = 500
+            return response
+        query = f"""
+        SELECT DISTINCT {filter['name']}
+        FROM `{source['data_source']}`
+        ORDER BY {filter['name']}
+        """
+        try:
+            values = [row[filter['name']] for row in client.query(query)]
+            response = jsonify({
+                'code': 200,
+                'values': values
+            })
+            response.status_code = 200
+        except Exception as exc:
+            response = jsonify({
+                'code': 500,
+                'message': f'Internal error obtaining accepted values'
+            })
+            response.status_code = 500
+    except Exception as e:
+        logger.error("[ERROR] While retrieving filters:")
+        logger.exception(e)
+        response = jsonify({
+            'code': 500,
+            'message': 'Encountered an error while retrieving filters.'
         })
-    response.status_code = 200
+        response.status_code = 500
 
     return response
 
+
+@metadata_bp.route('/queryFields', methods=['GET'], strict_slashes=False)
+def queryFields():
+    try:
+        results = get_fields()
+
+        if 'message' in results:
+            response = jsonify(results)
+            response.status_code = results['code']
+        else:
+            response = jsonify({
+                'code': 200,
+                **results
+            })
+            response.status_code = 200
+    except Exception as e:
+        logger.error("[ERROR] While retrieving queryFields:")
+        logger.exception(e)
+        response = jsonify({
+            'code': 500,
+            'message': 'Encountered an error while retrieving queryFields.'
+        })
+        response.status_code = 500
+
+    return response
 
 

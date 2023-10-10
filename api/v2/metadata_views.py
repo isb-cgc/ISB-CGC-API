@@ -59,83 +59,12 @@ def get_versions():
     return info
 
 
-def get_filters():
-    blacklist = re.compile(BLACKLIST_RE, re.UNICODE)
-    path_params = {
-        # "idc_data_version": "",
-        "data_source": ""
-    }
-
-    # Get and validate parameters
-    for key in request.args.keys():
-        match = blacklist.search(str(key))
-        if match:
-            return dict(
-                message="Argument {} contains invalid characters; please edit and resubmit. " +
-                        "[Saw {}]".format(str(key, match)),
-                code=400
-            )
-        if key in path_params:
-            path_params[key] = request.args.get(key)
-        else:
-            return dict(
-                message="Invalid argument {}".format((key)),
-                code=400
-            )
-
-    auth = get_auth()
-    response = requests.get(f"{settings.BASE_URL}/collections/api/{API_VERSION}/attributes/",
-                            params=path_params, headers=auth)
-    try:
-        info = response.json()
-        if response.status_code != 200:
-            logger.error("[ERROR] Error code in response from web app: {}".format(response.status_code))
-            logger.error("[ERROR] auth: {}".format(auth))
-            logger.error("[ERROR] Request headers: {}".format(response.request.headers))
-            logger.error("[ERROR] Content: {}".format(response.content))
-            return dict(
-                message="Encountered an error while retrieving the attributes list: {}".format(response.content),
-                code=response.status_code
-            )
-
-    except Exception as e:
-        logger.error("[ERROR] No content in response from web app")
-        logger.error("[ERROR] status_code: {}".format(response.status_code))
-        logger.exception(e)
-        return dict(
-            message="Encountered an error while retrieving the attributes list.",
-            code=response.status_code
-        )
-    return info
 
 
 def get_collections():
-    path_params = {
-        "idc_data_version": "",
-    }
-
-    blacklist = re.compile(BLACKLIST_RE, re.UNICODE)
-
-    # Get and validate parameters
-    for key in request.args.keys():
-        match = blacklist.search(str(key))
-        if match:
-            return dict(
-                message="Argument {} contains invalid characters; please edit and resubmit. " +
-                        "[Saw {}]".format(str(key, match)),
-                code=400
-            )
-        if key in path_params:
-            path_params[key] = request.args.get(key)
-        else:
-            return dict(
-                message="Invalid argument {}".format((key)),
-                code=400
-            )
-
     auth = get_auth()
     response = requests.get(f'{settings.BASE_URL}/collections/api/{API_VERSION}/',
-                            params=path_params, headers=auth)
+                            headers=auth)
     try:
         info = response.json()
         if response.status_code != 200:
@@ -159,30 +88,9 @@ def get_collections():
 
 
 def get_analysis_results():
-    path_params = {
-        "idc_data_version": "",
-    }
-    blacklist = re.compile(BLACKLIST_RE, re.UNICODE)
-    # Get and validate parameters
-    for key in request.args.keys():
-        match = blacklist.search(str(key))
-        if match:
-            return dict(
-                message="Argument {} contains invalid characters; please edit and resubmit. " +
-                        "[Saw {}]".format(str(key, match)),
-                code=400
-            )
-        if key in path_params:
-            path_params[key] = request.args.get(key)
-        else:
-            return dict(
-                message="Invalid argument {}".format((key)),
-                code=400
-            )
-
     auth = get_auth()
     response = requests.get(f"{settings.BASE_URL}/collections/api/{API_VERSION}/analysis_results/",
-                             params=path_params, headers=auth)
+                             headers=auth)
     try:
         info = response.json()
         if response.status_code != 200:
@@ -204,4 +112,54 @@ def get_analysis_results():
         )
     return info
 
+def get_filters():
+    auth = get_auth()
+    response = requests.get(f"{settings.BASE_URL}/collections/api/{API_VERSION}/attributes/",
+                            headers=auth)
+    try:
+        info = response.json()
+        if response.status_code != 200:
+            logger.error("[ERROR] Error code in response from web app: {}".format(response.status_code))
+            logger.error("[ERROR] auth: {}".format(auth))
+            logger.error("[ERROR] Request headers: {}".format(response.request.headers))
+            logger.error("[ERROR] Content: {}".format(response.content))
+            return dict(
+                message="Encountered an error while retrieving the attributes list: {}".format(response.content),
+                code=response.status_code
+            )
+
+    except Exception as e:
+        logger.error("[ERROR] No content in response from web app")
+        logger.error("[ERROR] status_code: {}".format(response.status_code))
+        logger.exception(e)
+        return dict(
+            message="Encountered an error while retrieving the attributes list.",
+            code=response.status_code
+        )
+    return info
+
+def get_fields():
+    auth = get_auth()
+    response = requests.get(f"{settings.BASE_URL}/collections/api/{API_VERSION}/fields/",
+                            headers=auth)
+    try:
+        info = response.json()
+        if response.status_code != 200:
+            logger.error("[ERROR] Error code in response from web app: {}".format(response.status_code))
+            logger.error("[ERROR] auth: {}".format(auth))
+            logger.error("[ERROR] Request headers: {}".format(response.request.headers))
+            logger.error("[ERROR] Content: {}".format(response.content))
+            return dict(
+                message="Encountered an error while retrieving the fields list: {}".format(response.content),
+                code=response.status_code
+            )
+    except Exception as e:
+        logger.error("[ERROR] No content in response from web app")
+        logger.error("[ERROR] status_code: {}".format(response.status_code))
+        logger.exception(e)
+        return dict(
+            message="Encountered an error while retrieving the fields list.",
+            code=response.status_code
+        )
+    return info
 
