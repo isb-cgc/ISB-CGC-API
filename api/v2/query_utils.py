@@ -46,7 +46,13 @@ def normalize_query_fields(fields):
     lowered_fields = {key.lower(): key for key in QUERY_FIELDS['properties']['fields']['items']['enum']}
     # lowered_fields = {key.lower(): key for key in QUERY_FIELDS['items']['enum']}
     for field in fields:
-        if field.lower() in ['counts', 'sizes']:
+        if field.lower() in [
+                'counts',
+                'group_size',
+                "patientage",
+                "patientsex",
+                "patientsize",
+                "patientweight"]:
             special_fields.append(field.lower())
         elif field.lower() in lowered_fields:
             corrected_fields.append(lowered_fields[field.lower()])
@@ -65,75 +71,106 @@ def process_special_fields(special_fields, query_info, data):
         fields = set([field.lower() for field in data['request_data']['fields']])
         sql_string = query_info['query']['sql_string']
         # sql_string = 'SELECT'
-
+        select_string = sql_string[0:sql_string.find('FROM')]
+        if 'WHERE' in sql_string:
+            from_string = sql_string[sql_string.find('FROM'):sql_string.find('WHERE')]
+            where_string =sql_string[sql_string.find('WHERE'):sql_string.find('GROUP')]
+        else:
+            from_string = sql_string[sql_string.find('FROM'):sql_string.find('GROUP')]
+            where_string = ""
+        group_by_string = sql_string[sql_string.find('GROUP'):sql_string.find('ORDER')]
+        order_by_string = sql_string[sql_string.find('ORDER'):]
 
         # Include counts if there is an explicit level
         if 'counts' in special_fields:
             if {'crdc_instance_uuid', 'sopinstanceuid'} & fields:
                 pass
+
             elif {'crdc_series_uuid', 'seriesinstanceuid'} & fields:
-                sql_string = sql_string.replace('SELECT', 'SELECT COUNT(DISTINCT dicom_pivot.SOPInstanceUID) instance_count,')
+                select_string = select_string.replace('SELECT', 'SELECT COUNT(DISTINCT dicom_pivot.SOPInstanceUID) instance_count,')
+
             elif {'crdc_study_uuid', 'studyinstanceuid'} & fields:
-                sql_string = sql_string.replace('SELECT', \
+                select_string = select_string.replace('SELECT', \
         '''SELECT COUNT(DISTINCT dicom_pivot.SeriesInstanceUID) series_count,
         COUNT(DISTINCT dicom_pivot.SOPInstanceUID) instance_count,''')
+
             elif {'patientid'} & fields:
-                sql_string = sql_string.replace('SELECT', \
+                select_string = select_string.replace('SELECT', \
         '''SELECT COUNT(DISTINCT dicom_pivot.StudyInstanceUID) study_count,
         COUNT(DISTINCT dicom_pivot.SeriesInstanceUID) series_count,
         COUNT(DISTINCT dicom_pivot.SOPInstanceUID) instance_count,''')
+
             elif {'collection_id'} & fields:
-                sql_string = sql_string.replace('SELECT', \
+                select_string = select_string.replace('SELECT', \
         '''SELECT COUNT(DISTINCT dicom_pivot.patientID) patient_count,
         COUNT(DISTINCT dicom_pivot.StudyInstanceUID) study_count,
         COUNT(DISTINCT dicom_pivot.SeriesInstanceUID) series_count,
         COUNT(DISTINCT dicom_pivot.SOPInstanceUID) instance_count,''')
+
             else:
-                sql_string = sql_string.replace('SELECT', \
+                select_string = select_string.replace('SELECT', \
         '''SELECT COUNT(DISTINCT dicom_pivot.collection_id) collection_count, 
         COUNT(DISTINCT dicom_pivot.patientID) patient_count,
         COUNT(DISTINCT dicom_pivot.StudyInstanceUID) study_count,
         COUNT(DISTINCT dicom_pivot.SeriesInstanceUID) series_count,
         COUNT(DISTINCT dicom_pivot.SOPInstanceUID) instance_count,''')
 
-        if 'sizes' in special_fields:
-            if {'crdc_instance_uuid', 'sopinstanceuid'} & fields:
-                sql_string = sql_string.replace('SELECT', 'SELECT ROUND(sum(dicom_pivot.instance_size)/POW(10,6), 2) instance_size_MB,')
-            elif {'crdc_series_uuid', 'seriesinstanceuid'} & fields:
-                sql_string = sql_string.replace('SELECT', 'SELECT ROUND(sum(dicom_pivot.instance_size)/POW(10,6), 2) series_size_MB,')
-            elif {'crdc_study_uuid', 'studyinstanceuid'} & fields:
-                sql_string = sql_string.replace('SELECT', 'SELECT ROUND(sum(dicom_pivot.instance_size)/POW(10,6), 2) study_size_MB,')
-            elif 'patientid'  in fields:
-                sql_string = sql_string.replace('SELECT', 'SELECT ROUND(sum(dicom_pivot.instance_size)/POW(10,6), 2) patient_size_MB,')
-            elif 'collection_id' in fields:
-                sql_string = sql_string.replace('SELECT', 'SELECT ROUND(sum(dicom_pivot.instance_size)/POW(10,6), 2) collection_size_MB,')
+        if 'group_size' in special_fields:
+            select_string = select_string.replace('SELECT', 'SELECT sum(dicom_pivot.instance_size) group_size,')
+            # if {'crdc_instance_uuid', 'sopinstanceuid'} & fields:
+            #     select_string = select_string.replace('SELECT', 'SELECT sum(dicom_pivot.instance_size) group_size,')
+            # elif {'crdc_series_uuid', 'seriesinstanceuid'} & fields:
+            #     select_string = select_string.replace('SELECT', 'SELECT sum(dicom_pivot.instance_size) group_size,')
+            # elif {'crdc_study_uuid', 'studyinstanceuid'} & fields:
+            #     select_string = select_string.replace('SELECT', 'SELECT sum(dicom_pivot.instance_size) group_size,')
+            # elif 'patientid'  in fields:
+            #     select_string = select_string.replace('SELECT', 'SELECT sum(dicom_pivot.instance_size) group_size,')
+            # elif 'collection_id' in fields:
+            #     select_string = select_string.replace('SELECT', 'SELECT sum(dicom_pivot.instance_size) group_size,')
 
         if 'studydate' in special_fields:
+            # The study date is grouped
             # Replace the first instance of 'dicom_pivot.StudyDate' with an aggregation
-            sql_string = sql_string.replace('dicom_pivot.StudyDate', 'MIN(dicom_pivot.StudyDate) StudyDate', 1)
+            select_string = select_string.replace('dicom_pivot.StudyDate', 'MIN(dicom_pivot.StudyDate) StudyDate', 1)
             # Get the instance in the GROUP BY clause and delete it
-            offset = sql_string.find('dicom_pivot.StudyDate', sql_string.find('GROUP BY'))
-            sql_string = sql_string[:offset] + sql_string[offset:].replace('dicom_pivot.StudyDate', '', 1)
-            # Replace orphaned comma; make sure there a space
-            sql_string = sql_string[:offset] + sql_string[offset:].lstrip(" ,") + " "
-            offset = sql_string.find('dicom_pivot.StudyDate', sql_string.find('ORDER BY', offset))
-            sql_string = sql_string[:offset] + sql_string[offset:].replace('dicom_pivot.StudyDate', 'StudyDate', 1)
+            offset = group_by_string.find('dicom_pivot.StudyDate', group_by_string.find('GROUP BY'))
+            group_by_string = group_by_string[:offset] + group_by_string[offset:].replace('dicom_pivot.StudyDate', '', 1)
+            # Replace orphaned comma, making sure there a space
+            group_by_string = group_by_string[:offset] + group_by_string[offset:].lstrip(" ,") + " "
+
+            order_by_string = order_by_string.replace('dicom_pivot.StudyDate', 'StudyDate', 1)
 
         if 'studydescription' in special_fields:
+            # The StudyDescription is grouped
             # Replace the first instance of 'dicom_pivot.StudyDate' with an aggregation
-            sql_string = sql_string.replace('dicom_pivot.StudyDescription', \
+            select_string = select_string.replace('dicom_pivot.StudyDescription', \
                 'STRING_AGG(DISTINCT dicom_pivot.StudyDescription, "," ORDER BY dicom_pivot.StudyDescription) StudyDescription', 1)
             # Get the instance in the GROUP BY clause and delete it
-            offset = sql_string.find('dicom_pivot.StudyDescription', sql_string.find('GROUP BY'))
-            sql_string = sql_string[:offset] + sql_string[offset:].replace('dicom_pivot.StudyDescription', '', 1)
+            offset = group_by_string.find('dicom_pivot.StudyDescription', group_by_string.find('GROUP BY'))
+            sql_string = group_by_string[:offset] + group_by_string[offset:].replace('dicom_pivot.StudyDescription', '', 1)
             # Replace orphaned comma; make sure there a space
-            sql_string = sql_string[:offset] + sql_string[offset:].lstrip(" ,") + " "
-            offset = sql_string.find('dicom_pivot.StudyDescription', sql_string.find('ORDER BY', offset))
-            sql_string = sql_string[:offset] + sql_string[offset:].replace('dicom_pivot.StudyDescription', 'StudyDescription', 1)
+            sql_string = group_by_string[:offset] + group_by_string[offset:].lstrip(" ,") + " "
 
-        query_info['query']['sql_string'] = sql_string
+            offset = order_by_string.find('dicom_pivot.StudyDescription', order_by_string.find('ORDER BY', offset))
+            order_by_string = order_by_string.replace('dicom_pivot.StudyDescription', 'StudyDescription', 1)
+
+        for field in [
+                "PatientAge",
+                "PatientSex",
+                "PatientSize",
+                "PatientWeight"]:
+            if field.lower() in special_fields:
+                select_string = select_string.replace("SELECT", f"SELECT dicom_pivot.{field}, ")
+                group_by_string = group_by_string.replace("GROUP BY", f"GROUP BY dicom_pivot.{field}, ")
+                order_by_string= order_by_string.replace("ORDER BY", f"ORDER BY dicom_pivot.{field}, ")
+
+        query_info['query']['sql_string'] = select_string + from_string + where_string + group_by_string + order_by_string
         if query_info['cohort_def']['sql']:
-            query_info['cohort_def']['sql'] = query_info['cohort_def']['sql'].replace('SELECT', sql_string)
+            query_info['cohort_def']['sql'] = \
+                select_string + \
+                query_info['cohort_def']['sql'][query_info['cohort_def']['sql'].find('FROM'):query_info['cohort_def']['sql'].find('GROUP BY')] + \
+                group_by_string + order_by_string
+                # query_info['cohort_def']['sql'].replace('SELECT', sql_string)
     return query_info
 
 

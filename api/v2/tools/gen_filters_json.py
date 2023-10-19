@@ -117,16 +117,6 @@ def write_filter(client, f, source, filter):
         items = 2 if name.split('_')[-1] in ['ebtwe', 'ebtw', 'btwe', 'btw'] else 1
         f.write(f'        minItems: {items}\n')
         f.write(f'        maxItems: {items}\n')
-    # elif filter['data_type'] in ['Categorical String', 'Categorical Numeric']:
-    #     accepted_values = get_accepted_values(client, source, filter)
-    #     f.write(f' "{data_type}"\n')
-    #     f.write(f'        enum: [\n')
-    #     for val in accepted_values[:-1]:
-    #         if  type(val) == str:
-    #             val = val.strip('"')
-    #         f.write((f'          "{val}",\n'))
-    #     f.write(f'        ]\n')
-    #     f.write(f'        minItems: 1\n')
     else:
         f.write(f' "{data_type}"\n')
         f.write('        minItems: 1\n')
@@ -157,6 +147,10 @@ def gen_filters_schema(args, filters):
 
 
 def gen_query_schema(args, fields):
+    all_fields = set()
+    for source in fields['data_sources']:
+        all_fields  = all_fields.union(source['queryFields'])
+
     with open(args.query_file, "w") as f:
         write_required_fields(f)
         f.write(
@@ -170,18 +164,8 @@ def gen_query_schema(args, fields):
           enum: [
 """
         )
-        for field in fields['queryFields']:
+        for field in sorted(list(all_fields), key=str.lower):
             f.write(f'            "{field}",\n')
-
-        # source = next(source for source in filters['data_sources'] if source['data_source'].find('dicom_pivot') != -1)
-        # for filter in source['filters']:
-        #     if filter['data_type'] != 'Continuous Numeric' or \
-        #             filter['name'].split('_')[-1] not in ('lt', 'lte', 'btw', 'ebtw', 'ebtwe', 'btwe', 'gte', 'gt'):
-        #         name = filter['name']
-        #         f.write(f'        "{name}",\n')
-        # # Add two additonal query fields
-        # f.write(f'        "counts",\n')
-        # f.write(f'        "sizes",\n')
         f.write(
             """      ]
             """
@@ -195,6 +179,15 @@ def gen_query_result_schema(args, fields, filters):
     client = bigquery.Client('idc-dev-etl')
     dicom_pivot = client.get_table('idc-dev-etl.idc_current.dicom_pivot')
     schema = {row.name: row for row in dicom_pivot.schema}
+    schema = {}
+    for source in filters['data_sources']:
+        table = client.get_table(source['data_source'])
+        t = {row.name: row for row in table.schema}
+        schema.update(t)
+
+    all_fields = set()
+    for source in fields['data_sources']:
+        all_fields  = all_fields.union(source['queryFields'])
 
     with open(args.query_result_file, "w") as f:
         write_required_fields(f)
@@ -209,7 +202,9 @@ def gen_query_result_schema(args, fields, filters):
           properties:
 """
         )
-        for field in fields['queryFields']:
+        # for source in fields['data_sources']:
+        #     for field in source['queryFields']:
+        for field in sorted(list(all_fields), key=str.lower):
             if field in schema:
                 data_type = {'STRING': 'string',
                              'FLOAT': 'number',
@@ -224,7 +219,7 @@ def gen_query_result_schema(args, fields, filters):
                         'gcs_generation': 'string',
                     }[field]
                 except Exception as exc:
-                    if field in ['counts', 'sizes']:
+                    if field in ['counts', 'group_size']:
                         continue
                     print(f'Unknown data type for field {field}; {exc}')
 
@@ -236,11 +231,7 @@ def gen_query_result_schema(args, fields, filters):
             'study_count',
             'patient_count',
             'collection_count',
-            'instance_size_MB',
-            'series_size_MB',
-            'study_size_MB',
-            'patient_size_MB',
-            'collection_size_MB',
+            'group_size',
         ]:
             f.write(f'            {field}:\n')
             f.write(f'              type:  "number"\n')

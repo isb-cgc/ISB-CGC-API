@@ -151,5 +151,8 @@ def test_queryFields(client, app):
     response = client.get(f'/{API_VERSION}/queryFields')
     assert response.status_code == 200
     fields = response.json
+    all_fields = set()
+    for source in fields['data_sources']:
+        all_fields  = all_fields.union(source['queryFields'])
 
-    assert set(fields['queryFields']) == set(QUERY_FIELDS["properties"]['fields']['items']['enum'])
+    assert set(all_fields) == set(QUERY_FIELDS["properties"]['fields']['items']['enum'])
