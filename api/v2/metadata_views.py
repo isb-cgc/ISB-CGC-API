@@ -84,6 +84,7 @@ def get_collections():
             message="Encountered an error while retrieving the collections list.",
             code=response.status_code
         )
+    info['collections'] = sorted(info['collections'], key = lambda id: id['collection_id'])
     return info
 
 

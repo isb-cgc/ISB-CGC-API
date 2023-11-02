@@ -15,7 +15,7 @@
 #
 import logging
 from flask import jsonify, request
-from .query_views import post_query_preview, post_query, get_query_next_page
+from .manifest_views import post_query_preview, post_query, get_query_next_page
 from .version_config import API_VERSION
 
 from .auth import auth_info, UserValidationException
@@ -25,9 +25,9 @@ logger = logging.getLogger(settings.LOGGER_NAME)
 
 from flask import Blueprint
 
-cohort_query_bp = Blueprint(f'query_bp_{API_VERSION}', __name__, url_prefix='/{}'.format(API_VERSION))
+cohort_manifest_bp = Blueprint(f'manifest_bp_{API_VERSION}', __name__, url_prefix='/{}'.format(API_VERSION))
 
-@cohort_query_bp.route('/cohorts/query/<int:cohort_id>', methods=['POST'], strict_slashes=False)
+@cohort_manifest_bp.route('/cohorts/manifest/<int:cohort_id>', methods=['POST'], strict_slashes=False)
 def cohorts_query(cohort_id):
     try:
         user_info = auth_info()
@@ -38,7 +38,7 @@ def cohorts_query(cohort_id):
             })
             response.status_code = 500
         else:
-            result = post_query(user_info["email"], cohort_id)
+            result = post_query(user_info, cohort_id)
             if result:
                 # Presence of a message means something went wrong with the filters we received
                 if 'message' in result:
@@ -75,11 +75,11 @@ def cohorts_query(cohort_id):
     return response
 
 
-@cohort_query_bp.route('/cohorts/query/preview', methods=['POST'], strict_slashes=False)
+@cohort_manifest_bp.route('/cohorts/manifest/preview', methods=['POST'], strict_slashes=False)
 def cohorts_preview_query():
     try:
         user_info = auth_info()
-        result = post_query_preview(user_info['email'])
+        result = post_query_preview(user_info)
         if result:
             # Presence of a message means something went wrong with the filters we received
             if 'message' in result:
@@ -116,11 +116,11 @@ def cohorts_preview_query():
     return response
 
 
-@cohort_query_bp.route('/cohorts/query/nextPage', methods=['GET'], strict_slashes=False)
+@cohort_manifest_bp.route('/cohorts/manifest/nextPage', methods=['GET'], strict_slashes=False)
 def cohorts_query_next_page():
     try:
         user_info = auth_info()
-        result = get_query_next_page(user_info['email'])
+        result = get_query_next_page(user_info)
         if result:
             # Presence of a message means something went wrong with the filters we received
             if 'message' in result:

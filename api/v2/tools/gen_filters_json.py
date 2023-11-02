@@ -113,10 +113,24 @@ def write_filter(client, f, source, filter):
           type:"""
     )
     if filter['data_type'] == 'Continuous Numeric':
-        f.write(f' "{data_type}"\n')
-        items = 2 if name.split('_')[-1] in ['ebtwe', 'ebtw', 'btwe', 'btw'] else 1
-        f.write(f'        minItems: {items}\n')
-        f.write(f'        maxItems: {items}\n')
+        if name.split('_')[-1] in ['ebtwe', 'ebtw', 'btwe', 'btw']:
+            f.write(
+""" "array"
+          items:
+            type: "number"
+          minItems: 2
+          maxItems: 2
+        minItems: 1
+""")
+        elif name.split('_')[-1] in ['lt', 'lte', 'gt', 'gte']:
+            f.write(f' "{data_type}"\n')
+            f.write(f'        minItems: 1\n')
+            f.write(f'        maxItems: 1\n')
+        else: # no suffix
+            f.write(f' "{data_type}"\n')
+            f.write(f'        minItems: 1\n')
+            f.write(f'        maxItems: 1\n')
+
     else:
         f.write(f' "{data_type}"\n')
         f.write('        minItems: 1\n')

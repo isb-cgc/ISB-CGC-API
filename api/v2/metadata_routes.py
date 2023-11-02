@@ -30,7 +30,6 @@ metadata_bp = Blueprint(f'metadata_bp_{API_VERSION}', __name__, url_prefix='/{}'
 @metadata_bp.route('/versions/', methods=['GET'], strict_slashes=False)
 def versions():
     """Retrieve a list of IDC versions"""
-
     response = None
 
     try:
@@ -114,23 +113,6 @@ def analysis_results():
 
 @metadata_bp.route('/filters', methods=['GET'], strict_slashes=False)
 def filters():
-    # """Retrieve a list of filters for the current IDC versions"""
-    # "Retrieve a list of query fields for the current IDC versions"
-    # filters = [filter for filter in COHORT_FILTERS_SCHEMA['properties']]
-    #
-    #
-    # # response = jsonify({
-    # #     'code': 200,
-    # #     'queryFields': filters
-    # #     })
-    # # response.status_code = 200
-    # response = jsonify({
-    #     'code': 200,
-    #     'queryFields': filters
-    #     })
-    # return response
-
-
     try:
         results = get_filters()
 
@@ -158,7 +140,6 @@ def filters():
 @metadata_bp.route('/filters/values/<string:filter_id>', methods=['GET'], strict_slashes=False)
 def categorical_values(filter_id):
     client = bigquery.Client('idc-dev-etl')
-
     try:
         results = get_filters()
 

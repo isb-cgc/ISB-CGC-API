@@ -101,8 +101,8 @@ def create_app(test_config=None):
     from .v1.metadata_routes import metadata_bp # as v1_metadata_bp
     app.register_blueprint(metadata_bp)
 
-    from .v2.query_routes import cohort_query_bp
-    app.register_blueprint(cohort_query_bp)
+    from .v2.manifest_routes import cohort_manifest_bp
+    app.register_blueprint(cohort_manifest_bp)
 
     from .v2.main_routes import main_bp # as v1_main_bp
     app.register_blueprint(main_bp)
