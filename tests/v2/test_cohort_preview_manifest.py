@@ -283,6 +283,7 @@ def test_basic(client, app):
     }
 
     fields = [
+        'collection_id',
         'crdc_study_uuid',
         'crdc_series_uuid',
         'crdc_instance_uuid',

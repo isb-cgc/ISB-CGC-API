@@ -50,9 +50,8 @@ def get_params(param_defaults):
     return params
 
 
-def post_query(user, cohort_id):
+def post_query(body, user, cohort_id):
     try:
-        body = request.get_json()
         body = validate_body(body)
         if 'message' in body:
             return body
@@ -74,9 +73,8 @@ def post_query(user, cohort_id):
     return query_info
 
 
-def post_query_preview(user=None):
+def post_query_preview(body, user=None):
     try:
-        body = request.get_json()
         if not "cohort_def" in body:
             param_info = dict(
                 message=f"'cohort_def' is required in the body",
@@ -135,11 +133,6 @@ def generate_user_sql_string(query_info):
                 query_info = dict(
                     message='Internal server error. Please report.',
                     code=400)
-    # Clean up the SQL string to make it easoier to use
-    sql = sql.replace('"', "'")
-    sql = sql.replace('\n', '')
-    sql = sql.replace('#standardSQL', '')
-    sql = sql.strip()
     query_info['cohort_def']['sql'] = sql
     return query_info
 

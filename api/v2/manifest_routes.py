@@ -17,6 +17,7 @@ import logging
 from flask import jsonify, request
 from .manifest_views import post_query_preview, post_query, get_query_next_page
 from .version_config import API_VERSION
+from werkzeug.exceptions import BadRequest
 
 from .auth import auth_info, UserValidationException
 from python_settings import settings
@@ -30,6 +31,7 @@ cohort_manifest_bp = Blueprint(f'manifest_bp_{API_VERSION}', __name__, url_prefi
 @cohort_manifest_bp.route('/cohorts/manifest/<int:cohort_id>', methods=['POST'], strict_slashes=False)
 def cohorts_query(cohort_id):
     try:
+        body = request.json
         user_info = auth_info()
         if not user_info:
             response = jsonify({
@@ -38,7 +40,7 @@ def cohorts_query(cohort_id):
             })
             response.status_code = 500
         else:
-            result = post_query(user_info, cohort_id)
+            result = post_query(body, user_info, cohort_id)
             if result:
                 # Presence of a message means something went wrong with the filters we received
                 if 'message' in result:
@@ -64,6 +66,11 @@ def cohorts_query(cohort_id):
                     'message': "Error trying to get metadata."})
                 response.status_code = 500
 
+    except BadRequest as exc:
+        response = jsonify({
+            'code': 400,
+            'message': exc.description})
+        response.status_code = 400
     except Exception as e:
         logger.exception(e)
         response = jsonify({
@@ -78,8 +85,9 @@ def cohorts_query(cohort_id):
 @cohort_manifest_bp.route('/cohorts/manifest/preview', methods=['POST'], strict_slashes=False)
 def cohorts_preview_query():
     try:
+        body = request.json
         user_info = auth_info()
-        result = post_query_preview(user_info)
+        result = post_query_preview(body, user_info)
         if result:
             # Presence of a message means something went wrong with the filters we received
             if 'message' in result:
@@ -104,7 +112,11 @@ def cohorts_preview_query():
                 'code': 404,
                 'message': "Error trying to get metadata."})
             response.status_code = 500
-
+    except BadRequest as exc:
+        response = jsonify({
+            'code': 400,
+            'message': exc.description})
+        response.status_code = 400
     except Exception as e:
         logger.exception(e)
         response = jsonify({

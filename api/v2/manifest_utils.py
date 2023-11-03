@@ -64,7 +64,6 @@ def encrypt_pageToken(user, jobReference, next_page, op):
 
 
 def decrypt_pageToken(user, cipher_jobReference, op):
-    # cipher_suite = Fernet(settings.PAGE_TOKEN_KEY)
     try:
         plain_jobDescription = cipher_suite.decrypt(cipher_jobReference.encode())
         jobDescription = json.loads(plain_jobDescription.decode())
@@ -81,7 +80,7 @@ def decrypt_pageToken(user, cipher_jobReference, op):
         elif jobDescription["op"] != op:
             # Caller's email doesn't match what was encrypted
             logger.error("Incorrect next_page endpoint for next_page token".format(
-                email, jobDescription['email']))
+                op, jobDescription['email']))
             return {}
         else:
             jobDescription.pop('email')
