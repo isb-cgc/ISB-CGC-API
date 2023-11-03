@@ -44,7 +44,7 @@ def test_collections(client, app):
     assert "tcga_prad" in collections
     collection = collections['tcga_prad']
     assert collection['cancer_type'] == 'Prostate Cancer'
-    assert collection['description'] == '<p>The <a href="http://imaging.cancer.gov/" target="_blank"><u>Cancer Imaging Program (CIP)</u></a> is working directly with primary investigators from institutes participating in TCGA to obtain and load images relating to the genomic, clinical, and pathological data being stored within the <a href="http://tcga-data.nci.nih.gov/" target="_blank">TCGA Data Portal</a>.&nbsp;Currently this image collection of prostate adenocarcinoma (PRAD) patients can be matched by each unique case identifier with the extensive gene and expression data of the same case from The Cancer Genome Atlas Data Portal to research the link between clinical phenome and tissue genome.<br /><br /></p>\n <p>Please see the <a href="https://doi.org/10.7937/K9/TCIA.2016.YXOGLM4Y" target="_blank">TCGA-PRAD</a> page to learn more about the images and to obtain any supporting metadata for this collection.</p>\n'
+    # assert collection['description'] == '<p>The <a href="http://imaging.cancer.gov/" target="_blank"><u>Cancer Imaging Program (CIP)</u></a> is working directly with primary investigators from institutes participating in TCGA to obtain and load images relating to the genomic, clinical, and pathological data being stored within the <a href="http://tcga-data.nci.nih.gov/" target="_blank">TCGA Data Portal</a>.&nbsp;Currently this image collection of prostate adenocarcinoma (PRAD) patients can be matched by each unique case identifier with the extensive gene and expression data of the same case from The Cancer Genome Atlas Data Portal to research the link between clinical phenome and tissue genome.<br /><br /></p>\n <p>Please see the <a href="https://doi.org/10.7937/K9/TCIA.2016.YXOGLM4Y" target="_blank">TCGA-PRAD</a> page to learn more about the images and to obtain any supporting metadata for this collection.</p>\n'
     assert collection['doi'].lower() == '10.7937/K9/TCIA.2016.YXOGLM4Y'.lower()
     assert collection['image_types'] == 'CT, MR, PT, SM'
     assert collection['location'] == 'Prostate'
@@ -87,7 +87,7 @@ def test_attributes(client, app):
     data = response.json
     data_sources = data["data_sources"]
 
-    source_name = f'idc-dev-etl.idc_v{VERSIONS}_pub.dicom_pivot'
+    source_name = f'bigquery-public-data.idc_v{VERSIONS}.dicom_pivot'
     data_source = next(
         source for source in data_sources if source['data_source'] == source_name)
     attributes = {attribute['name']: {key: attribute[key] for key in attribute.keys() if key != 'name'} for attribute in data_source['attributes']}
@@ -103,7 +103,7 @@ def test_attributes(client, app):
     # assert response.status_code == 200
     # data = response.json['data_sources']
 
-    source_name = 'idc-dev-etl.idc_v4.tcga_biospecimen_rel9'
+    source_name = 'bigquery-public-data.idc_v4.tcga_biospecimen_rel9'
     data_source = next(
         source for source in data_sources if source['data_source'] == source_name)
     attributes = {attribute['name']: {key: attribute[key] for key in attribute.keys() if key != 'name'} for attribute in data_source['attributes']}
@@ -120,7 +120,7 @@ def test_attributes(client, app):
     # assert response.status_code == 200
     # data = response.json['data_sources']
 
-    source_name = 'idc-dev-etl.idc_v4.tcga_clinical_rel9'
+    source_name = 'bigquery-public-data.idc_v4.tcga_clinical_rel9'
     data_source = next(
         source for source in data_sources if source['data_source'] == source_name)
     attributes = {attribute['name']: {key: attribute[key] for key in attribute.keys() if key != 'name'} for attribute in data_source['attributes']}

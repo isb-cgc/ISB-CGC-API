@@ -77,7 +77,7 @@ target/
 .env
 *.env
 *.yaml
-openapi-appengine.yaml
+openapi-appengine.yaml.20231026
 openapi-appengine*.yaml
 app.yaml
 scripts/metadata_featdef_tables.sql

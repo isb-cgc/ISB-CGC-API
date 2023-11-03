@@ -43,24 +43,6 @@ def account_details():
             response.status_code = 500
         else:
             results = get_account_details(user_info["email"])
-
-            # if account_info:
-            #     response_obj = {}
-            #     code = None
-            #
-            #     if 'message' in account_info:
-            #         code = 400
-            #     else:
-            #         code = 200
-            #     response_obj['data'] = account_info
-            #     response_obj['code'] = code
-            #     response = jsonify(response_obj)
-            #     response.status_code = code
-            # else:
-            #     response = jsonify({
-            #         'code': 404,
-            #         'message': "Unable to retrieve information for {}.".format(str(user_info['email']))})
-            #     response.status_code = 404
             if 'message' in results:
                 response = jsonify(results)
                 response.status_code = results['code']

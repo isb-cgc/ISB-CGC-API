@@ -19,33 +19,34 @@ import json
 from testing_config import VERSIONS, API_VERSION
 from testing_config import VERSIONS
 from api.v2.schemas.filters import COHORT_FILTERS_SCHEMA
+from api.v2.manifest_utils import process_special_fields, normalize_query_fields
 
 levels = ["collections", "patients", "studies", "series", "instances"]
 
 
-def gen_query(filter_set, query_string):
+def gen_query(manifestPreviewBody):
     schema = {
     }
     for filter, value in COHORT_FILTERS_SCHEMA['properties'].items():
         schema[filter.lower()] = value
 
     query = f"""
-SELECT DISTINCT @fields
-FROM `idc-dev-etl.idc_v{VERSIONS}_pub.dicom_pivot{'_v'+VERSIONS if VERSIONS < 15 else ''}` da
-LEFT JOIN `idc-dev-etl.idc_v{VERSIONS}_pub.tcga_clinical_rel9` tc
-ON da.PatientID = tc.case_barcode
+SELECT @fields
+FROM `idc-dev-etl.idc_v{VERSIONS}_pub.dicom_pivot{'_v'+VERSIONS if VERSIONS < 15 else ''}` dicom_pivot
+LEFT JOIN `idc-dev-etl.idc_v{VERSIONS}_pub.tcga_clinical_rel9` tcga_clinical
+ON dicom_pivot.PatientID = tcga_clinical.case_barcode
 WHERE @filters
+GROUP BY @fields
+ORDER BY @fields
             """
-    fields = ", ".join([key for key, value in query_string.items() if value in [True,'True'] and \
-                        key not in ['sql', 'gcs_bucket', 'aws_bucket']])
-    if 'gcs_bucket' in query_string.keys():
-        fields = f"{fields}, REGEXP_EXTRACT(gcs_url, r'^gs://([a-zA-Z0-9-]+)') gcs_bucket"
-    if 'aws_bucket' in query_string.keys():
-        fields = f"{fields}, REGEXP_EXTRACT(aws_url, r'^s3://([a-zA-Z0-9-]+)') aws_bucket"
-
-    query = query.replace('@fields', fields)
+    # fields = ", ".join([key for key, value in query_string.items() if value in [True,'True'] and \
+    #                     key not in ['sql', 'gcs_bucket', 'aws_bucket']])
+    # if 'gcs_bucket' in query_string.keys():
+    #     fields = f"{fields}, REGEXP_EXTRACT(gcs_url, r'^gs://([a-zA-Z0-9-]+)') gcs_bucket"
+    # if 'aws_bucket' in query_string.keys():
+    #     fields = f"{fields}, REGEXP_EXTRACT(aws_url, r'^s3://([a-zA-Z0-9-]+)') aws_bucket"
     filters = []
-    for filter, value in filter_set.items():
+    for filter, value in manifestPreviewBody['cohort_def']['filters'].items():
         try:
             property = schema[filter.lower()]
             if property["items"]["type"] == "number":
@@ -73,7 +74,52 @@ WHERE @filters
                 filters.append(f"(lower({filter}) in {str(value).lower()})".replace('[', '(').replace(']',')'))
         except Exception as exc:
             print(f'{exc}')
+
     query = query.replace('@filters', '\nAND '.join(filters))
+
+    # Now deal with 'special fields
+
+    fields = manifestPreviewBody['fields']
+    normalized_fields, special_fields, dummy = normalize_query_fields(fields)
+    query = query.replace('@fields', ", ".join(normalized_fields))
+
+    query_info = {
+        'query': {
+            'sql_string': query
+        },
+        'cohort_def': {
+            'sql': query
+        }
+    }
+    try:
+        if eval(repr(manifestPreviewBody).lower().replace('true','True').replace('false','False'))['counts']:
+            special_fields.append('counts')
+    except:
+        pass
+    try:
+        if eval(repr(manifestPreviewBody).lower().replace('true','True').replace('false','False'))['group_size']:
+            special_fields.append('group_size')
+    except:
+        pass
+    try:
+        if 'studydate' in eval(repr(manifestPreviewBody['cohort_def']['filters']).lower()):
+            special_fields.append('studydate')
+    except:
+        pass
+    try:
+        if 'studydescription' in eval(repr(manifestPreviewBody['cohort_def']['filters']).lower()):
+            special_fields.append('studydescription')
+    except:
+        pass
+
+    data = {
+        'request_data': {
+            'fields': fields
+        }
+    }
+    if special_fields:
+        query_info = process_special_fields(special_fields, query_info, data)
+        query = query_info['query']['sql_string']
     return query
 
 def pretty_print_cohortObjects(cohortObjects, indent=4):
@@ -128,7 +174,7 @@ def create_cohort_for_test_get_cohort_xxx(client, filters=None):
             "collection_id": ["TCGA-READ"],
             "Modality": ["CT", "MR"],
             "race": ["WHITE"],
-            "age_at_diagnosis_btw": [1, 100],
+            "age_at_diagnosis_btw": [[1, 100]],
         }
 
         cohortSpec = {"name": "testcohort",

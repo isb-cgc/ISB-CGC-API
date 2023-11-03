@@ -19,7 +19,8 @@ import requests
 from flask import request
 from werkzeug.exceptions import BadRequest
 from python_settings import settings
-from .cohort_utils import get_manifest, get_manifest_nextpage, validate_cohort_definition
+# from .cohort_utils import get_manifest, get_manifest_nextpage, validate_cohort_definition
+from .manifest_utils import validate_cohort_def
 from .auth import get_auth
 from .version_config import API_VERSION
 
@@ -31,13 +32,13 @@ MAX_FETCH_COUNT = 5000
 def create_cohort(user):
     try:
         try:
-            request_data, cohort_info = validate_cohort_definition(request.get_json())
-            if 'message' in cohort_info:
-                return cohort_info
+            cohort_def = validate_cohort_def(request.get_json())
+            if 'message' in cohort_def:
+                return cohort_def
 
             auth = get_auth()
             data = {
-                "request_data": request_data,
+                "request_data": cohort_def,
                 "email": user
             }
             response = requests.post(f"{settings.BASE_URL}/cohorts/api/{API_VERSION}/save_cohort/",
@@ -63,43 +64,6 @@ def create_cohort(user):
             'code': 400
         }
     return cohort_info
-
-
-def get_cohort_manifest(user, cohort_id):
-    data = {
-        "email": user
-    }
-    manifest_info = get_manifest(request,
-                                 func=requests.get,
-                                 url=f"{settings.BASE_URL}/cohorts/api/{API_VERSION}/{cohort_id}/manifest/",
-                                 data = data)
-                                 # user=user)
-    return manifest_info
-
-def get_cohort_preview_manifest(user):
-    try:
-        request_data, cohort_info = validate_cohort_definition(request.get_json())
-        if 'message' in cohort_info:
-            return cohort_info
-        data = {
-            "request_data": request_data,
-            "email": user
-        }
-        manifest_info = get_manifest(request, func=requests.post,
-                             url=f"{settings.BASE_URL}/cohorts/api/{API_VERSION}/preview/manifest/", data=data)
-                             # user=user)
-    except BadRequest as e:
-        logger.warning("[WARNING] Received bad request - couldn't load JSON.")
-        manifest_info = dict(
-            message='The JSON provided in this request appears to be improperly formatted.',
-            code = 400)
-
-    return manifest_info
-
-
-def get_cohort_manifest_nextpage(user):
-    manifest_info = get_manifest_nextpage(request, user=user)
-    return manifest_info
 
 
 def get_cohort_list(user):

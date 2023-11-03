@@ -21,86 +21,63 @@ from testing_config import VERSIONS, API_VERSION
 
 from testing_utils import current_version, create_cohort, delete_cohort
 
+mimetype = ' application/json'
+headers = {
+    'Content-Type': mimetype,
+    'Accept': mimetype
+}
 
-# Test filter schema validation
-def test_create_cohort_schema_validation(client, app):
-    # Create an invalid filter set
+
+def test_invalid_keys(client, app):
     filters = {
-        "collection_id": ["tcga_luad", "tcga_kirc"],
-        # Undefined attribute
-        "Modalityx": ["CT", "MR"],
-        "race": ["WHITE"]}
-
-    cohortSpec = {"name":"testcohort",
-                  "description":"Test description",
-                  "filters":filters}
-
-    mimetype = ' application/json'
-    headers = {
-        'Content-Type': mimetype,
-        'Accept': mimetype,
+        "age_at_diagnosis_btw": [[65, 75], [35, 45]],
+        "collection_id": ["TCGA-READ"],
+        "Modality": ["ct", "mR"],
+        "RACE": ["WHITE"]
+        # "age_at_diagnosis_btw": [0, 100]
     }
 
-    response = client.post(f'/{API_VERSION}/cohorts', data=json.dumps(cohortSpec), headers=headers)
+    cohort_def = {"Name": "testcohort",
+                  "description": "Test description",
+                  "filters": filters}
+
+    # Get a guid manifest of the cohort's instances
+    response = client.post(f'{API_VERSION}/cohorts/',
+                           data=json.dumps(cohort_def),
+                           headers=headers)
+
     assert response.content_type == 'application/json'
     assert response.status_code == 400
-    cohortResponse = response.json
-    assert cohortResponse['message']=='Modalityx is not a valid filter.'
+    assert response.json['message'] == "'Name' is an invalid cohort_def key"
 
-    # Create an invalid filter set
-    filters = {
-        "collection_id": ["tcga_luad", "tcga_kirc"],
-        # Undefined attribute
-        "Modality": [],
-        "race": ["WHITE"]}
+    cohort_def = {"name": "testcohort",
+                  "Description": "Test description",
+                  "filters": filters}
 
-    cohortSpec = {"name":"testcohort",
-                  "description":"Test description",
-                  "filters":filters}
+    # Get a guid manifest of the cohort's instances
+    response = client.post(f'{API_VERSION}/cohorts/',
+                           data=json.dumps(cohort_def),
+                           headers=headers)
 
-    mimetype = ' application/json'
-    headers = {
-        'Content-Type': mimetype,
-        'Accept': mimetype,
-    }
-
-    response = client.post(f'/{API_VERSION}/cohorts', data=json.dumps(cohortSpec), headers=headers)
     assert response.content_type == 'application/json'
     assert response.status_code == 400
-    cohortResponse = response.json
-    assert cohortResponse['message']=='''[WARNING] [] is too short
+    assert response.json['message'] == "'Description' is an invalid cohort_def key"
 
-Failed validating \'minItems\' in schema[\'properties\'][\'Modality\']:
-    {\'items\': {\'type\': \'string\'}, \'minItems\': 1, \'type\': \'array\'}
+    cohort_def = {"name": "testcohort",
+                  "description": "Test description",
+                  # "Filters": filters
+                  }
 
-On instance[\'Modality\']:
-    []'''
+    # Get a guid manifest of the cohort's instances
+    response = client.post(f'{API_VERSION}/cohorts/',
+                            data = json.dumps(cohort_def),
+                            headers=headers)
 
-    # Create a valid filter set
-    filters = {
-        "collection_id": ["tcga_luad", "tcga_kirc"],
-        "Modality": ["CT", "MR"],
-        "race": ["WHITE"]}
-
-    cohortSpec = {"name":"testcohort",
-                  "description":"Test description",
-                  "filterSet":filters}
-
-    mimetype = ' application/json'
-    headers = {
-        'Content-Type': mimetype,
-        'Accept': mimetype,
-    }
-
-    data = json.dumps(cohortSpec)
-    # Corrupt the formatting
-    data = data.replace('["CT"', '"CT"')
-
-    response = client.post(f'/{API_VERSION}/cohorts', data=data, headers=headers)
     assert response.content_type == 'application/json'
     assert response.status_code == 400
-    cohortResponse = response.json
-    assert cohortResponse['message']=='[WARNING] 400 Bad Request: Failed to decode JSON object: Expecting \':\' delimiter: line 1 column 140 (char 139)'
+    assert response.json['message'] == "'filters' is a required cohort_def key"
+
+    return
 
 
 # Test basic cohort creation.
@@ -110,7 +87,7 @@ def test_create_cohort(client, app):
         "Collection_ID": ["tcga_luad", "tcga_kirc"],
         "Modality": ["cT", "Mr"],
         "RaCe": ["WHITE"],
-        "age_at_diagnosis_btw": [1, 100],
+        "age_at_diagnosis_btw": [[1, 100]],
     }
 
     cohortSpec = {"name":"testcohort",
@@ -237,7 +214,3 @@ def test_delete_cohorts(client, app):
     cohorts = response.json['cohorts']
     assert len([cohort for cohort in cohorts
                 if cohort['cohort_id']==int(cohort0) or cohort['cohort_id']==int(cohort1)]) == 0
-
-
-
-

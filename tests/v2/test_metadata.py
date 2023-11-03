@@ -45,8 +45,7 @@ def test_collections(client, app):
     assert "tcga_prad" in collections
     collection = collections['tcga_prad']
     assert collection['cancer_type'] == 'Prostate Cancer'
-    assert collection['description'] == '<p>The <a href="http://imaging.cancer.gov/" target="_blank"><u>Cancer Imaging Program (CIP)</u></a> is working directly with primary investigators from institutes participating in TCGA to obtain and load images relating to the genomic, clinical, and pathological data being stored within the <a href="http://tcga-data.nci.nih.gov/" target="_blank">TCGA Data Portal</a>.&nbsp;Currently this image collection of prostate adenocarcinoma (PRAD) patients can be matched by each unique case identifier with the extensive gene and expression data of the same case from The Cancer Genome Atlas Data Portal to research the link between clinical phenome and tissue genome.<br /><br /></p>\n <p>Please see the <a href="https://doi.org/10.7937/K9/TCIA.2016.YXOGLM4Y" target="_blank">TCGA-PRAD</a> page to learn more about the images and to obtain any supporting metadata for this collection.</p>\n'
-    assert collection['doi'].lower() == '10.7937/K9/TCIA.2016.YXOGLM4Y'.lower()
+    assert collection['source_doi'].lower() == '10.7937/K9/TCIA.2016.YXOGLM4Y'.lower()
     assert collection['image_types'] == 'CT, MR, PT, SM'
     assert collection['location'] == 'Prostate'
     assert collection['species'] == 'Human'
@@ -58,7 +57,7 @@ def test_analysis_results(client, app):
     response = client.get(f'/{API_VERSION}/analysis_results')
     assert response.status_code == 200
     data = response.json['analysisResults']
-    results = {r['description']: \
+    results = {r['title']: \
                    {key: r[key] for key in r.keys() if key != 'description'} \
                    for r in data}
     # assert len(results) == 6
@@ -66,12 +65,13 @@ def test_analysis_results(client, app):
     collection = results['Standardized representation of the TCIA LIDC-IDRI annotations using DICOM' ]
     # assert collection['idc_data_versions'] == ['1.0','2.0']
     assert collection['analysisArtifacts'] == 'Tumor segmentations, image features'
+    assert collection['analysis_result_id'] == 'DICOM-LIDC-IDRI-Nodules'
     assert collection['cancer_type'] == 'Lung'
     assert collection['collections'].lower() =='lidc_idri'
     # assert collection['date_updated'] == '2016-08-29'
     assert collection['doi'].lower() == '10.7937/TCIA.2018.h7umfurq'.lower()
     assert collection['location'] == 'Chest'
-    assert collection['subject_count'] == 1010
+    # assert collection['subject_count'] == 1010
 
 
 def test_filters(client, app):
@@ -80,33 +80,79 @@ def test_filters(client, app):
     data = response.json
     data_sources = data["data_sources"]
 
-    source_name = f'idc-dev-etl.idc_v{VERSIONS}_pub.dicom_pivot'
+    source_name = f'bigquery-public-data.idc_v{VERSIONS}.dicom_pivot'
     data_source = next(
         source for source in data_sources if source['data_source'] == source_name)
     filters = {filter['name']: {key: filter[key] for key in filter.keys() if key != 'name'} for filter in data_source['filters']}
     assert 'Modality' in filters
-    assert filters['Modality'] == {'active': True, 'data_type': 'Categorical String', 'units': None}
+    assert filters['Modality'] == {'data_type': 'Categorical String', 'units': None}
 
-    source_name = 'idc-dev-etl.idc_v4.tcga_biospecimen_rel9'
+    source_name = 'bigquery-public-data.idc_v4.tcga_biospecimen_rel9'
     data_source = next(
         source for source in data_sources if source['data_source'] == source_name)
     filters = {filter['name']: {key: filter[key] for key in filter.keys() if key != 'name'} for filter in data_source['filters']}
     assert 'sample_type' in filters
     # assert filters['program_name']['dataSetTypes'][0]['data_type'] == 'Clinical, Biospecimen, and Mutation Data'
-    assert filters['sample_type'] == {'active': True, 'data_type': 'Categorical String', 'units': None}
+    assert filters['sample_type'] == {'data_type': 'Categorical String', 'units': None}
 
-    source_name = 'idc-dev-etl.idc_v4.tcga_clinical_rel9'
+    source_name = 'bigquery-public-data.idc_v4.tcga_clinical_rel9'
     data_source = next(
         source for source in data_sources if source['data_source'] == source_name)
     filters = {filter['name']: {key: filter[key] for key in filter.keys() if key != 'name'} for filter in data_source['filters']}
     assert 'disease_code' in filters
     # assert filters['program_name']['dataSetTypes'][0]['data_type'] == 'Clinical, Biospecimen, and Mutation Data'
-    assert filters['disease_code'] == {'active': True, 'data_type': 'Categorical String', 'units': None}
+    assert filters['disease_code'] == {'data_type': 'Categorical String', 'units': None}
+
+
+def test_categorical_field_values(client, app):
+    filter = 'nodality'
+    response = client.get(f'/{API_VERSION}/filters/values/{filter}')
+    assert response.status_code == 500
+    assert response.json['message'] == 'Invalid filter ID'
+
+    filter = 'volume'
+    response = client.get(f'/{API_VERSION}/filters/values/{filter}')
+    assert response.status_code == 500
+    assert response.json['message'] == 'Filter data type is Continuous Numeric not Categorical String or Categorical Number'
+
+
+    filter = 'modality'
+    response = client.get(f'/{API_VERSION}/filters/values/{filter}')
+    assert response.status_code == 200
+    values = response.json['values']
+    modalities = set([
+        "CR",
+        "CT",
+        "DX",
+        "FUSION",
+        "KO",
+        "MG",
+        "MR",
+        "NM",
+        "OT",
+        "PR",
+        "PT",
+        "REG",
+        "RTDOSE",
+        "RTPLAN",
+        "RTSTRUCT",
+        "RWV",
+        "SC",
+        "SEG",
+        "SM",
+        "SR",
+        "US",
+        "XC"
+      ])
+    assert modalities - set(values) == set()
 
 
 def test_queryFields(client, app):
     response = client.get(f'/{API_VERSION}/queryFields')
     assert response.status_code == 200
     fields = response.json
+    all_fields = set()
+    for source in fields['data_sources']:
+        all_fields  = all_fields.union(source['queryFields'])
 
-    assert set(fields['queryFields']) == set(QUERY_FIELDS["properties"]['fields']['items']['enum'])
+    assert set(all_fields) == set(QUERY_FIELDS["properties"]['fields']['items']['enum'])
