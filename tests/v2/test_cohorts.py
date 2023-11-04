@@ -30,11 +30,10 @@ headers = {
 
 def test_invalid_keys(client, app):
     filters = {
-        "age_at_diagnosis_btw": [[65, 75], [35, 45]],
+        "age_at_diagnosis_btw": [65, 75],
         "collection_id": ["TCGA-READ"],
         "Modality": ["ct", "mR"],
         "RACE": ["WHITE"]
-        # "age_at_diagnosis_btw": [0, 100]
     }
 
     cohort_def = {"Name": "testcohort",
@@ -65,7 +64,6 @@ def test_invalid_keys(client, app):
 
     cohort_def = {"name": "testcohort",
                   "description": "Test description",
-                  # "Filters": filters
                   }
 
     # Get a guid manifest of the cohort's instances
@@ -87,7 +85,7 @@ def test_create_cohort(client, app):
         "Collection_ID": ["tcga_luad", "tcga_kirc"],
         "Modality": ["cT", "Mr"],
         "RaCe": ["WHITE"],
-        "age_at_diagnosis_btw": [[1, 100]],
+        "age_at_diagnosis_btw": [1, 100],
     }
 
     cohortSpec = {"name":"testcohort",
