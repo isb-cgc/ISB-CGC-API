@@ -15,7 +15,6 @@
 #
 
 import logging
-import re
 import json
 import requests
 from .auth import get_auth
@@ -26,7 +25,6 @@ from werkzeug.exceptions import BadRequest
 from python_settings import settings
 from .manifest_utils import validate_body, validate_cohort_def, process_special_fields, encrypt_pageToken, decrypt_pageToken
 from jsonschema import validate as schema_validate, ValidationError
-# from .cohort_utils import validate_cohort_definition, encrypt_pageToken, decrypt_pageToken
 from .version_config import API_VERSION
 from google_helpers.bigquery.bq_support import BigQuerySupport
 BLACKLIST_RE = settings.BLACKLIST_RE
