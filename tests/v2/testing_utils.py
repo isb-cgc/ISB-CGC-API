@@ -174,7 +174,7 @@ def create_cohort_for_test_get_cohort_xxx(client, filters=None):
             "collection_id": ["TCGA-READ"],
             "Modality": ["CT", "MR"],
             "race": ["WHITE"],
-            "age_at_diagnosis_btw": [[1, 100]],
+            "age_at_diagnosis_btw": [1, 100],
         }
 
         cohortSpec = {"name": "testcohort",

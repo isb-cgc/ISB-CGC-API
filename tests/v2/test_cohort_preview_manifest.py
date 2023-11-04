@@ -24,11 +24,10 @@ from google.cloud import bigquery
 
 def test_invalid_keys(client, app):
     filters = {
-        "age_at_diagnosis_btw": [[65, 75], [35, 45]],
+        "age_at_diagnosis_btw": [65, 75],
         "collection_id": ["TCGA-READ"],
         "Modality": ["ct", "mR"],
         "RACE": ["WHITE"]
-        # "age_at_diagnosis_btw": [0, 100]
     }
 
     cohort_def = {"name": "testcohort",
@@ -266,7 +265,7 @@ def test_basic(client, app):
     bq_client = bigquery.Client(project='idc-dev-etl')
 
     filters = {
-        "age_at_diagnosis_btw": [[65, 75], [35, 45]],
+        "age_at_diagnosis_btw": [65, 75],
         "collection_id": ["TCGA-RE%"],
         "Modality": ["ct", "mR"],
         "RACE": ["WHITE"]
@@ -334,7 +333,7 @@ def test_special_fields(client, app):
         "collection_id": ["TCGA-READ"],
         "Modality": ["ct", "mR"],
         "RACE": ["WHITE"],
-        "age_at_diagnosis_btw": [[65,75],[35, 45]]
+        "age_at_diagnosis_btw": [65,75]
     }
     cohort_def = {"name": "testcohort",
                   "description": "Test description",
@@ -397,11 +396,10 @@ def test_series_granularity(client, app):
     bq_client = bigquery.Client(project='idc-dev-etl')
 
     filters = {
-        "age_at_diagnosis_btw": [[65, 75], [35, 45]],
+        "age_at_diagnosis_btw": [65, 75],
         "collection_id": ["TCGA-READ"],
         "Modality": ["ct", "mR"],
-        "RACE": ["WHITE"],
-        "age_at_diagnosis_btw": [[65,75],[35, 45]]
+        "RACE": ["WHITE"]
     }
     cohort_def = {"name": "testcohort",
                   "description": "Test description",
@@ -462,7 +460,7 @@ def test_study_granularity(client, app):
     bq_client = bigquery.Client(project='idc-dev-etl')
 
     filters = {
-        "age_at_diagnosis_btw": [[65, 75], [35, 45]],
+        "age_at_diagnosis_btw": [65, 75],
         "collection_id": ["TCGA-READ"],
         "Modality": ["ct", "mR"],
         "RACE": ["WHITE"]
@@ -526,7 +524,7 @@ def test_patient_granularity(client, app):
     bq_client = bigquery.Client(project='idc-dev-etl')
 
     filters = {
-        "age_at_diagnosis_btw": [[65, 75], [35, 45]],
+        "age_at_diagnosis_btw": [65, 75],
         "collection_id": ["TCGA-READ"],
         "Modality": ["ct", "mR"],
         "RACE": ["WHITE"]
@@ -591,7 +589,7 @@ def test_collection_granularity(client, app):
     bq_client = bigquery.Client(project='idc-dev-etl')
 
     filters = {
-        "age_at_diagnosis_btw": [[65, 75], [35, 45]],
+        "age_at_diagnosis_btw": [65, 75],
         "collection_id": ["TCGA-READ"],
         "Modality": ["ct", "mR"],
         "RACE": ["WHITE"]
@@ -659,7 +657,7 @@ def test_version_granularity(client, app):
     bq_client = bigquery.Client(project='idc-dev-etl')
 
     filters = {
-        "age_at_diagnosis_btw": [[65, 75], [35, 45]],
+        "age_at_diagnosis_btw": [65, 75],
         "collection_id": ["TCGA-READ"],
         "Modality": ["ct", "mR"],
         "RACE": ["WHITE"]
@@ -729,7 +727,7 @@ def test_paged(client, app):
         "collection_id": ["TCGA-READ"],
         "Modality": ["ct", "mR"],
         "RACE": ["WHITE"],
-        "age_at_diagnosis_btw": [[1,100]]
+        "age_at_diagnosis_btw": [1,100]
     }
 
     cohort_def = {"name": "testcohort",
