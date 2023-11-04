@@ -18,7 +18,6 @@ from __future__ import absolute_import
 import logging
 import re
 import json
-import requests
 
 from cryptography.fernet import Fernet, InvalidToken
 
