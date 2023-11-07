@@ -107,15 +107,15 @@ def normalize_query_fields(fields):
                 code=400
             )
 
-        if field.lower() in [
-                'counts',
-                'group_size',
-                "patientage",
-                "patientsex",
-                "patientsize",
-                "patientweight"]:
-            special_fields.append(field.lower())
-        elif field.lower() in lowered_fields:
+        # if field.lower() in [
+        #         'counts',
+        #         'group_size',
+        #         "patientage",
+        #         "patientsex",
+        #         "patientsize",
+        #         "patientweight"]:
+        #     special_fields.append(field.lower())
+        if field.lower() in lowered_fields:
             corrected_fields.append(lowered_fields[field.lower()])
             if field.lower() in ['studydate', 'studydescription']:
                 special_fields.append(field.lower())
@@ -199,18 +199,18 @@ def process_special_fields(special_fields, query_info, data):
             offset = order_by_string.find('dicom_pivot.StudyDescription', order_by_string.find('ORDER BY', offset))
             order_by_string = order_by_string.replace('dicom_pivot.StudyDescription', 'StudyDescription', 1)
 
-        for field in [
-                "PatientAge",
-                "PatientSex",
-                "PatientSize",
-                "PatientWeight"]:
-            if field.lower() in special_fields:
-                select_string = select_string.replace("SELECT", f"SELECT dicom_pivot.{field}, ")
-                group_by_string = group_by_string.replace("GROUP BY", f"GROUP BY dicom_pivot.{field}, ")
-                order_by_string= order_by_string.replace("ORDER BY", f"ORDER BY dicom_pivot.{field}, ")
+        # for field in [
+        #         "PatientAge",
+        #         "PatientSex",
+        #         "PatientSize",
+        #         "PatientWeight"]:
+        #     if field.lower() in special_fields:
+        #         select_string = select_string.replace("SELECT", f"SELECT dicom_pivot.{field}, ")
+        #         group_by_string = group_by_string.replace("GROUP BY", f"GROUP BY dicom_pivot.{field}, ")
+        #         order_by_string= order_by_string.replace("ORDER BY", f"ORDER BY dicom_pivot.{field}, ")
 
         query_info['query']['sql_string'] = select_string + from_string + where_string + group_by_string + order_by_string
-        if query_info['cohort_def']['sql']:
+        if 'sql' in query_info['cohort_def'] and query_info['cohort_def']['sql']:
             query_info['cohort_def']['sql'] = \
                 select_string + \
                 query_info['cohort_def']['sql'][query_info['cohort_def']['sql'].find('FROM'):query_info['cohort_def']['sql'].find('GROUP BY')] + \
