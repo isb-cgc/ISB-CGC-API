@@ -67,8 +67,6 @@ def create_cohort(user):
 
 
 def get_cohort_list(user):
-    cohort_list = None
-
     try:
         auth = get_auth()
         # path_params = {'email': user}
@@ -78,7 +76,12 @@ def get_cohort_list(user):
         cohort_list = results.json()
     except Exception as e:
         logger.exception(e)
-
+        logger.error(f"results={results}")
+        cohort_info = {
+            "message": f"Failed request: {results}",
+            'code': 500
+        }
+        return cohort_info
     return cohort_list
 
 

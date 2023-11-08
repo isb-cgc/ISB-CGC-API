@@ -178,14 +178,16 @@ def categorical_values(filter_id):
             })
             response.status_code = 200
         except Exception as exc:
+            logger.error(f"[ERROR] While retrieving filters categorical values from BQ")
+            logger.exception(exc)
             response = jsonify({
                 'code': 500,
-                'message': f'Internal error obtaining accepted values'
+                'message': f'Internal error obtaining accepted values: {exc}'
             })
             response.status_code = 500
-    except Exception as e:
-        logger.error("[ERROR] While retrieving filters:")
-        logger.exception(e)
+    except Exception as exc:
+        logger.error(f"[ERROR] While retrieving filters: {e}")
+        logger.exception(exc)
         response = jsonify({
             'code': 500,
             'message': 'Encountered an error while retrieving filters.'
