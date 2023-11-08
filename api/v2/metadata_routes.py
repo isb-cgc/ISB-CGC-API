@@ -22,6 +22,8 @@ from .version_config import API_VERSION
 from . metadata_views import get_versions, get_filters, get_collections, get_analysis_results, get_fields
 from flask import Blueprint
 from google.cloud import bigquery
+from google_helpers.bigquery.bq_support import BigQuerySupport
+from .manifest_views import submit_BQ_job, is_job_done, get_query_job_results
 
 logger = logging.getLogger(settings.LOGGER_NAME)
 
@@ -171,14 +173,18 @@ def categorical_values(filter_id):
         ORDER BY {filter['name']}
         """
         try:
-            values = [row[filter['name']] for row in client.query(query)]
+            job_status = submit_BQ_job(query, [])
+            jobReference = job_status['jobReference']
+            job_status = BigQuerySupport.wait_for_done(query_job={'jobReference': jobReference})
+            results = BigQuerySupport.get_job_result_page(job_ref=jobReference, page_token=None)
+            values = [row['f'][0]['v'] for row in results['current_page_rows']]
             response = jsonify({
                 'code': 200,
                 'values': values
             })
             response.status_code = 200
         except Exception as exc:
-            logger.error(f"[ERROR] While retrieving filters categorical values from BQ")
+            logger.error(f"[ERROR] While retrieving categorical filter values from BQ")
             logger.exception(exc)
             response = jsonify({
                 'code': 500,
