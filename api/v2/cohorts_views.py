@@ -73,9 +73,8 @@ def get_cohort_list(user):
         auth = get_auth()
         # path_params = {'email': user}
         data = {'email': user}
-        results = requests.get(f"{settings.BASE_URL}/cohorts/api/{API_VERSION}/".format(settings.BASE_URL, ''),
-            json=data, headers=auth)
-            # params = path_params, headers = auth)
+        results = requests.get(f"{settings.BASE_URL}/cohorts/api/{API_VERSION}/",
+                    json=data, headers=auth)
         cohort_list = results.json()
     except Exception as e:
         logger.exception(e)
@@ -113,7 +112,6 @@ def _delete_cohorts(user, cohort_ids):
             "email": user
         }
         results = requests.delete(f"{settings.BASE_URL}/cohorts/api/{API_VERSION}/delete_cohort/",
-                    # params=path_params, json=data, headers=auth)
                    json=data, headers=auth)
         cohort_list = results.json()
     except Exception as e:

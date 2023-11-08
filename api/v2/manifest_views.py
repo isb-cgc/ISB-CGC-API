@@ -60,6 +60,8 @@ def post_query(body, user, cohort_id):
                              body,
                              special_fields,
                              user=user)
+        if "message" in query_info:
+            return query_info
         query_info['cohort_def']['user_email'] = user['email']
 
     except BadRequest as e:
