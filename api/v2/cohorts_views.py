@@ -72,7 +72,8 @@ def get_cohort_list(user):
         # path_params = {'email': user}
         data = {'email': user}
         results = requests.get(f"{settings.BASE_URL}/cohorts/api/{API_VERSION}/",
-                    json=data, headers=auth)
+                    # json=data, headers=auth)
+            headers = auth)
         cohort_list = results.json()
     except Exception as e:
         logger.exception(e)
