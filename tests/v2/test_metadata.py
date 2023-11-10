@@ -15,16 +15,23 @@
 #
 
 import json
-# from settings import API_VERSION
-from testing_config import VERSIONS, API_VERSION
-from testing_config import VERSIONS, NUM_COLLECTIONS
+# from settings import API_URL
+from testing_config import VERSIONS, NUM_COLLECTIONS, API_URL
+from testing_utils import  _testMode, get_data
 from api.v2.schemas.queryfields import QUERY_FIELDS
 
+mimetype = 'application/json'
+headers = {
+    'Accept': mimetype,
+    'Content-Type': mimetype
+}
 
+@_testMode
 def test_versions(client, app):
-    response = client.get(f'/{API_VERSION}/versions')
+    response = client.get(f'{API_URL}/versions',
+                          headers=headers)
     assert response.status_code == 200
-    data = response.json['versions']
+    data = get_data(response)['versions']
     versions = {version['idc_data_version']: {key: version[key] for key in version.keys() if key != 'version_number'} for version in data}
     assert len(versions) == VERSIONS
     for version in range(1, VERSIONS+1):
@@ -33,11 +40,12 @@ def test_versions(client, app):
         assert versions[v]['active'] == (version == VERSIONS)
 
 
+@_testMode
 def test_collections(client, app):
 
-    response = client.get(f'/{API_VERSION}/collections')
+    response = client.get(f'{API_URL}/collections')
     assert response.status_code == 200
-    data = response.json['collections']
+    data = get_data(response)['collections']
     collections = {collection['collection_id']: \
                    {key: collection[key] for key in collection.keys() if key != 'collection_id'} \
                    for collection in data}
@@ -53,10 +61,11 @@ def test_collections(client, app):
     assert collection['supporting_data'] == 'Clinical, Genomics'
 
 
+@_testMode
 def test_analysis_results(client, app):
-    response = client.get(f'/{API_VERSION}/analysis_results')
+    response = client.get(f'{API_URL}/analysis_results')
     assert response.status_code == 200
-    data = response.json['analysisResults']
+    data = get_data(response)['analysisResults']
     results = {r['title']: \
                    {key: r[key] for key in r.keys() if key != 'description'} \
                    for r in data}
@@ -73,11 +82,11 @@ def test_analysis_results(client, app):
     assert collection['location'] == 'Chest'
     # assert collection['subject_count'] == 1010
 
-
+@_testMode
 def test_filters(client, app):
-    response = client.get(f'/{API_VERSION}/filters')
+    response = client.get(f'{API_URL}/filters')
     assert response.status_code == 200
-    data = response.json
+    data = get_data(response)
     data_sources = data["data_sources"]
 
     source_name = f'bigquery-public-data.idc_v{VERSIONS}.dicom_pivot'
@@ -104,22 +113,23 @@ def test_filters(client, app):
     assert filters['disease_code'] == {'data_type': 'Categorical String', 'units': None}
 
 
+@_testMode
 def test_categorical_field_values(client, app):
     filter = 'nodality'
-    response = client.get(f'/{API_VERSION}/filters/values/{filter}')
+    response = client.get(f'{API_URL}/filters/values/{filter}')
     assert response.status_code == 500
-    assert response.json['message'] == 'Invalid filter ID'
+    assert get_data(response)['message'] == 'Invalid filter ID'
 
     filter = 'volume'
-    response = client.get(f'/{API_VERSION}/filters/values/{filter}')
+    response = client.get(f'{API_URL}/filters/values/{filter}')
     assert response.status_code == 500
-    assert response.json['message'] == 'Filter data type is Continuous Numeric not Categorical String or Categorical Number'
+    assert get_data(response)['message'] == 'Filter data type is Continuous Numeric not Categorical String or Categorical Number'
 
 
     filter = 'modality'
-    response = client.get(f'/{API_VERSION}/filters/values/{filter}')
+    response = client.get(f'{API_URL}/filters/values/{filter}')
     assert response.status_code == 200
-    values = response.json['values']
+    values = get_data(response)['values']
     modalities = set([
         "CR",
         "CT",
@@ -147,10 +157,11 @@ def test_categorical_field_values(client, app):
     assert modalities - set(values) == set()
 
 
+@_testMode
 def test_queryFields(client, app):
-    response = client.get(f'/{API_VERSION}/queryFields')
+    response = client.get(f'{API_URL}/queryFields')
     assert response.status_code == 200
-    fields = response.json
+    fields = get_data(response)
     all_fields = set()
     for source in fields['data_sources']:
         all_fields  = all_fields.union(source['queryFields'])

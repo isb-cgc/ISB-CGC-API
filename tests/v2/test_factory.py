@@ -15,6 +15,8 @@
 #
 
 from api import create_app
+from testing_utils import _testMode
+
 
 
 def test_config():

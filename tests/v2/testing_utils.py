@@ -15,13 +15,27 @@
 #
 
 import json
-# from settings import API_VERSION
-from testing_config import VERSIONS, API_VERSION
-from testing_config import VERSIONS
 from api.v2.schemas.filters import COHORT_FILTERS_SCHEMA
 from api.v2.manifest_utils import process_special_fields, normalize_query_fields
+from testing_config import test_dev_api, dev_api_requester, API_URL, get_data, auth_header
+import functools
 
 levels = ["collections", "patients", "studies", "series", "instances"]
+
+mimetype = ' application/json'
+headers = {
+    'Content-Type': mimetype,
+    'Accept': mimetype
+}
+
+def _testMode(func):
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        if test_dev_api:
+            kwargs['client'] = dev_api_requester
+        result = func(*args, **kwargs)
+        return result
+    return wrapper
 
 
 def gen_query(manifestPreviewBody):
@@ -153,15 +167,16 @@ def create_cohort(client):
                   "description": "Test description",
                   "filters": filters}
 
-    mimetype = ' application/json'
+    mimetype = 'application/json'
     headers = {
         'Content-Type': mimetype,
         'Accept': mimetype
     }
-    response = client.post(f'/{API_VERSION}/cohorts', data=json.dumps(cohortSpec), headers=headers)
-    assert response.content_type == 'application/json'
+    response = client.post(f'{API_URL}/cohorts',
+                           data=json.dumps(cohortSpec),
+                           headers=headers | auth_header)
     assert response.status_code == 200
-    cohortResponse = response.json['cohort_properties']
+    cohortResponse = get_data(response)['cohort_properties']
 
     return cohortResponse, cohortSpec
 
@@ -181,85 +196,40 @@ def create_cohort_for_test_get_cohort_xxx(client, filters=None):
                   "description": "Test description",
                   "filters": filters}
 
-    mimetype = ' application/json'
+    mimetype = 'application/json'
     headers = {
         'Content-Type': mimetype,
         'Accept': mimetype
     }
-    response = client.post(f'/{API_VERSION}/cohorts', data=json.dumps(cohortSpec), headers=headers)
+    response = client.post(f'{API_URL}/cohorts',
+                           data=json.dumps(cohortSpec),
+                           headers=headers | auth_header)
     assert response.status_code == 200
-    cohortResponse = response.json['cohort_properties']
+    cohortResponse = get_data(response)['cohort_properties']
     id = cohortResponse['cohort_id']
     return (id, cohortSpec)
 
 
-# Find a previously created V1 cohort with filter expected by the test_get_cohort_xxx() functions
-def find_v1_cohort_for_test_get_cohort_xxx(client, filterset):
-
-    # Get a list of existing cohorts
-    response = client.get("{}/".format('v2/cohorts'))
-    cohorts = response.json['cohorts']
-
-    for cohort in cohorts:
-        # if cohort["filterSet"]["filters"] == filters and cohort["filterSet"]['idc_data_version'] == '1.0':
-        if cohort["filterSet"] == filterset:
-                return (cohort['cohort_id'], cohort["filterSet"])
-
-    # Didn't find a matching cohort
-    return(-1, -1)
-
-# Create a big cohort with filter as expected by the test_get_cohort_xxx() functions
-def create_big_cohort_for_test_get_cohort_xxx(client):
-    # Create a cohort to test against
-    filters = {
-        "collection_id": ["tcga_luad"],
-        "Modality": ["CT", "MR"],
-        "race": ["WHITE"]
-    }
-
-    cohortSpec = {"name": "testcohort",
-                  "description": "Test description",
-                  "filters": filters}
-
-    mimetype = ' application/json'
+# Utility to delete an existing cohort
+def delete_cohort(client, id):
+    mimetype = 'application/json'
     headers = {
         'Content-Type': mimetype,
         'Accept': mimetype
     }
-    response = client.post(f'/{API_VERSION}/cohorts', data=json.dumps(cohortSpec), headers=headers)
-    assert response.status_code == 200
-    cohortResponse = response.json['cohort_properties']
-    id = cohortResponse['cohort_id']
-    return (id, filters)
-
-# Find a previously created V1 cohort with filter expected by the test_get_cohort_xxx() functions
-def find_v1_big_cohort_for_test_get_cohort_xxx(client):
-    filters = {
-        "collection_id": ["tcga_luad"],
-        "Modality": ["CT", "MR"],
-        "race": ["WHITE"]
-    }
-
-    # Get a list of existing cohorts
-    response = client.get("{}/".format('v2/cohorts'))
-    cohorts = response.json['cohorts']
-
-    for cohort in cohorts:
-        if cohort["filterSet"]["filters"] == filters and cohort["filterSet"]['idc_data_version'] == '1.0':
-            return (cohort['cohort_id'], cohort["filterSet"])
-
-    # Didn't find a matching cohort
-    return(-1, -1)
-
-# Utility to delete an existing cohort
-def delete_cohort(client, id):
-    response = client.delete(f"{API_VERSION}/cohorts/{id}/")
-    assert response.content_type == 'application/json'
+    headers = headers | auth_header
+    response = client.delete(f"{API_URL}/cohorts/{id}/",
+                   headers=headers )
     assert response.status_code == 200
 
 def current_version(client):
-    response = client.get(f'/{API_VERSION}/versions')
-    data = response.json['versions']
+    mimetype = 'application/json'
+    headers = {
+        'Content-Type': mimetype,
+        'Accept': mimetype
+    }
+    response = client.get(f'{API_URL}/versions')
+    data = get_data(response)['versions']
     current = str(max([float(v['idc_data_version']) for v in data]))
     return current
 

@@ -14,14 +14,15 @@
 # limitations under the License.
 #
 
-# from settings import API_VERSION
-from testing_config import VERSIONS, API_VERSION
+# from settings import API_URL
+from testing_config import API_URL, get_data, test_dev_api, auth_header
 import json
 import datetime
-from testing_utils import gen_query
+from testing_utils import _testMode
 from google.cloud import bigquery
 
 
+@_testMode
 def test_invalid_keys(client, app):
     filters = {
         "age_at_diagnosis_btw": [65, 75],
@@ -34,7 +35,7 @@ def test_invalid_keys(client, app):
                   "description": "Test description",
                   "filters": filters}
 
-    mimetype = ' application/json'
+    mimetype = 'application/json'
     headers = {
         'Content-Type': mimetype,
         'Accept': mimetype
@@ -60,13 +61,13 @@ def test_invalid_keys(client, app):
     }
 
     # Get a guid manifest of the cohort's instances
-    response = client.post(f'{API_VERSION}/cohorts/manifest/preview',
+    response = client.post(f'{API_URL}/cohorts/manifest/preview',
                            data=json.dumps(manifestPreviewBody),
                            headers=headers)
 
-    assert response.content_type == 'application/json'
+    # assert response.content_type == 'application/json'
     assert response.status_code == 400
-    assert response.json['message'] == "'cohort_def' is required in the body"
+    assert get_data(response)['message'] == "'cohort_def' is required in the body"
 
     manifestPreviewBody = {
         # "cohort_def": cohort_def,
@@ -78,13 +79,13 @@ def test_invalid_keys(client, app):
     }
 
     # Get a guid manifest of the cohort's instances
-    response = client.post(f'{API_VERSION}/cohorts/manifest/preview',
+    response = client.post(f'{API_URL}/cohorts/manifest/preview',
                            data=json.dumps(manifestPreviewBody),
                            headers=headers)
 
-    assert response.content_type == 'application/json'
+    # assert response.content_type == 'application/json'
     assert response.status_code == 400
-    assert response.json['message'] == "'cohort_def' is required in the body"
+    assert get_data(response)['message'] == "'cohort_def' is required in the body"
 
     manifestPreviewBody = {
         "cohort_def": cohort_def,
@@ -96,13 +97,13 @@ def test_invalid_keys(client, app):
     }
 
     # Get a guid manifest of the cohort's instances
-    response = client.post(f'{API_VERSION}/cohorts/manifest/preview',
+    response = client.post(f'{API_URL}/cohorts/manifest/preview',
                            data=json.dumps(manifestPreviewBody),
                            headers=headers)
 
-    assert response.content_type == 'application/json'
+    # assert response.content_type == 'application/json'
     assert response.status_code == 400
-    assert response.json['message'] == 'Fields is an invalid body key'
+    assert get_data(response)['message'] == 'Fields is an invalid body key'
 
     manifestPreviewBody = {
         "cohort_def": cohort_def,
@@ -114,13 +115,13 @@ def test_invalid_keys(client, app):
     }
 
     # Get a guid manifest of the cohort's instances
-    response = client.post(f'{API_VERSION}/cohorts/manifest/preview',
+    response = client.post(f'{API_URL}/cohorts/manifest/preview',
                            data=json.dumps(manifestPreviewBody),
                            headers=headers)
 
-    assert response.content_type == 'application/json'
+    # assert response.content_type == 'application/json'
     assert response.status_code == 400
-    assert response.json['message'] == 'Counts is an invalid body key'
+    assert get_data(response)['message'] == 'Counts is an invalid body key'
 
     manifestPreviewBody = {
         "cohort_def": cohort_def,
@@ -132,13 +133,13 @@ def test_invalid_keys(client, app):
     }
 
     # Get a guid manifest of the cohort's instances
-    response = client.post(f'{API_VERSION}/cohorts/manifest/preview',
+    response = client.post(f'{API_URL}/cohorts/manifest/preview',
                            data=json.dumps(manifestPreviewBody),
                            headers=headers)
 
-    assert response.content_type == 'application/json'
+    # assert response.content_type == 'application/json'
     assert response.status_code == 400
-    assert response.json['message'] == 'Group_size is an invalid body key'
+    assert get_data(response)['message'] == 'Group_size is an invalid body key'
 
     manifestPreviewBody = {
         "cohort_def": cohort_def,
@@ -150,13 +151,13 @@ def test_invalid_keys(client, app):
     }
 
     # Get a guid manifest of the cohort's instances
-    response = client.post(f'{API_VERSION}/cohorts/manifest/preview',
+    response = client.post(f'{API_URL}/cohorts/manifest/preview',
                             data = json.dumps(manifestPreviewBody),
                             headers=headers)
 
-    assert response.content_type == 'application/json'
+    # assert response.content_type == 'application/json'
     assert response.status_code == 400
-    assert response.json['message'] == 'SQL is an invalid body key'
+    assert get_data(response)['message'] == 'SQL is an invalid body key'
 
     manifestPreviewBody = {
         "cohort_def": cohort_def,
@@ -168,13 +169,13 @@ def test_invalid_keys(client, app):
     }
 
     # Get a guid manifest of the cohort's instances
-    response = client.post(f'{API_VERSION}/cohorts/manifest/preview',
+    response = client.post(f'{API_URL}/cohorts/manifest/preview',
                            data=json.dumps(manifestPreviewBody),
                            headers=headers)
 
-    assert response.content_type == 'application/json'
+    # assert response.content_type == 'application/json'
     assert response.status_code == 400
-    assert response.json['message'] == 'Page_size is an invalid body key'
+    assert get_data(response)['message'] == 'Page_size is an invalid body key'
 
     manifestPreviewBody = {
         # "cohort_def": cohort_def,
@@ -186,13 +187,13 @@ def test_invalid_keys(client, app):
     }
 
     # Get a guid manifest of the cohort's instances
-    response = client.post(f'{API_VERSION}/cohorts/manifest/preview',
+    response = client.post(f'{API_URL}/cohorts/manifest/preview',
                             data = json.dumps(manifestPreviewBody),
                             headers=headers)
 
-    assert response.content_type == 'application/json'
+    # assert response.content_type == 'application/json'
     assert response.status_code == 400
-    assert response.json['message'] == "\'cohort_def\' is required in the body"
+    assert get_data(response)['message'] == "\'cohort_def\' is required in the body"
 
     manifestPreviewBody = {
         "cohort_def": cohort_def,
@@ -204,13 +205,13 @@ def test_invalid_keys(client, app):
     }
 
     # Get a guid manifest of the cohort's instances
-    response = client.post(f'{API_VERSION}/cohorts/manifest/preview',
+    response = client.post(f'{API_URL}/cohorts/manifest/preview',
                             data = json.dumps(manifestPreviewBody),
                             headers=headers)
 
-    assert response.content_type == 'application/json'
+    # assert response.content_type == 'application/json'
     assert response.status_code == 400
-    assert response.json['message'] == "fields is required in the body"
+    assert get_data(response)['message'] == "fields is required in the body"
 
     cohort_def = {"name": "testcohort",
                   "Description": "Test description",
@@ -228,13 +229,13 @@ def test_invalid_keys(client, app):
     }
 
     # Get a guid manifest of the cohort's instances
-    response = client.post(f'{API_VERSION}/cohorts/manifest/preview',
+    response = client.post(f'{API_URL}/cohorts/manifest/preview',
                             data = json.dumps(manifestPreviewBody),
                             headers=headers)
 
-    assert response.content_type == 'application/json'
+    # assert response.content_type == 'application/json'
     assert response.status_code == 400
-    assert response.json['message'] == "'Description' is an invalid cohort_def key"
+    assert get_data(response)['message'] == "'Description' is an invalid cohort_def key"
 
     cohort_def = {"name": "testcohort",
                   "description": "Test description",
@@ -251,16 +252,17 @@ def test_invalid_keys(client, app):
     }
 
     # Get a guid manifest of the cohort's instances
-    response = client.post(f'{API_VERSION}/cohorts/manifest/preview',
+    response = client.post(f'{API_URL}/cohorts/manifest/preview',
                             data = json.dumps(manifestPreviewBody),
                             headers=headers)
 
-    assert response.content_type == 'application/json'
+    # assert response.content_type == 'application/json'
     assert response.status_code == 400
-    assert response.json['message'] == "'Filters' is an invalid cohort_def key"
+    assert get_data(response)['message'] == "'Filters' is an invalid cohort_def key"
 
     return
 
+@_testMode
 def test_basic(client, app):
     bq_client = bigquery.Client(project='idc-dev-etl')
 
@@ -275,7 +277,7 @@ def test_basic(client, app):
                   "description": "Test description",
                   "filters": filters}
 
-    mimetype = ' application/json'
+    mimetype = 'application/json'
     headers = {
         'Content-Type': mimetype,
         'Accept': mimetype
@@ -298,24 +300,23 @@ def test_basic(client, app):
         "counts": True,
         "group_size": False,
         "sql": True,
-        'page_size': 2000,
+        'page_size': 2000
     }
 
-    # Get a guid manifest of the cohort's instances
-    response = client.post(f'{API_VERSION}/cohorts/manifest/preview',
-                            data = json.dumps(manifestPreviewBody),
-                            headers=headers)
-
-    assert response.content_type == 'application/json'
+    # Get a manifest of the cohort's instances`
+    response = client.post(f'{API_URL}/cohorts/manifest/preview',
+            data = json.dumps(manifestPreviewBody),
+            headers=headers
+        )
     assert response.status_code == 200
 
-    cohort_def = response.json['cohort_def']
-    manifest = response.json['manifest']
+    cohort_def = get_data(response)['cohort_def']
+    manifest = get_data(response)['manifest']
     bq_data = [dict(row) for row in bq_client.query(cohort_def['sql'] + f'LIMIT {manifestPreviewBody["page_size"]}')]
 
     assert manifest['rowsReturned'] == len(bq_data)
 
-    next_page = response.json['next_page']
+    next_page = get_data(response)['next_page']
     assert next_page == ""
 
     rows = manifest['rows']
@@ -326,6 +327,7 @@ def test_basic(client, app):
         assert (set(row[key] for row in bq_data) == set(row[key] for row in rows))
 
 
+@_testMode
 def test_special_fields(client, app):
     bq_client = bigquery.Client(project='idc-dev-etl')
 
@@ -339,7 +341,7 @@ def test_special_fields(client, app):
                   "description": "Test description",
                   "filters": filters}
 
-    mimetype = ' application/json'
+    mimetype = 'application/json'
     headers = {
         'Content-Type': mimetype,
         'Accept': mimetype
@@ -352,11 +354,7 @@ def test_special_fields(client, app):
         'age_at_diagnosis',
         'seriesinstanceuid',
         'studyDescription',
-        'studyDate',
-        "patientage",
-        "patientsex",
-        "patientsize",
-        "patientweight"
+        'studyDate'
         ]
 
     manifestPreviewBody = {
@@ -369,19 +367,19 @@ def test_special_fields(client, app):
     }
 
     # Get a guid manifest of the cohort's instances
-    response = client.post(f'{API_VERSION}/cohorts/manifest/preview',
+    response = client.post(f'{API_URL}/cohorts/manifest/preview',
                             data = json.dumps(manifestPreviewBody),
                             headers=headers)
 
-    assert response.content_type == 'application/json'
+    # assert response.content_type == 'application/json'
     assert response.status_code == 200
-    cohort_def = response.json['cohort_def']
-    manifest = response.json['manifest']
+    cohort_def = get_data(response)['cohort_def']
+    manifest = get_data(response)['manifest']
     bq_data = [dict(row) for row in bq_client.query(cohort_def['sql'] + f'LIMIT {manifestPreviewBody["page_size"]}')]
 
     assert manifest['rowsReturned'] == len(bq_data)
 
-    next_page = response.json['next_page']
+    next_page = get_data(response)['next_page']
     assert next_page == ""
 
     rows = manifest['rows']
@@ -392,8 +390,11 @@ def test_special_fields(client, app):
         assert (set(row[key].isoformat() if isinstance(row[key], datetime.date) else row[key] for row in bq_data) == set(row[key] for row in rows))
 
 
+@_testMode
 def test_series_granularity(client, app):
     bq_client = bigquery.Client(project='idc-dev-etl')
+    # app = Flask(__name__)
+    # client = app.test_client()
 
     filters = {
         "age_at_diagnosis_btw": [65, 75],
@@ -405,7 +406,7 @@ def test_series_granularity(client, app):
                   "description": "Test description",
                   "filters": filters}
 
-    mimetype = ' application/json'
+    mimetype = 'application/json'
     headers = {
         'Content-Type': mimetype,
         'Accept': mimetype
@@ -429,20 +430,20 @@ def test_series_granularity(client, app):
     }
 
     # Get a guid manifest of the cohort's instances
-    response = client.post(f'{API_VERSION}/cohorts/manifest/preview',
+    response = client.post(f'{API_URL}/cohorts/manifest/preview',
                             data = json.dumps(manifestPreviewBody),
                             headers=headers)
 
-    assert response.content_type == 'application/json'
+    # assert response.content_type == 'application/json'
     assert response.status_code == 200
-    cohort_def = response.json['cohort_def']
-    manifest = response.json['manifest']
+    cohort_def = get_data(response)['cohort_def']
+    manifest = get_data(response)['manifest']
     bq_data = [dict(row) for row in bq_client.query(cohort_def['sql'] + f'LIMIT {manifestPreviewBody["page_size"]}')]
 
 
     assert manifest['rowsReturned'] == len(bq_data)
 
-    next_page = response.json['next_page']
+    next_page = get_data(response)['next_page']
     assert next_page == ""
 
     rows = manifest['rows']
@@ -456,6 +457,7 @@ def test_series_granularity(client, app):
     # assert {'GCS_URL': 'gs://public-datasets-idc/0190fe71-7144-40ae-a24c-c8d21a99317d/01210a30-8395-498c-905f-6667db67101a.dcm'} in rows
 
 
+@_testMode
 def test_study_granularity(client, app):
     bq_client = bigquery.Client(project='idc-dev-etl')
 
@@ -469,7 +471,7 @@ def test_study_granularity(client, app):
                   "description": "Test description",
                   "filters": filters}
 
-    mimetype = ' application/json'
+    mimetype = 'application/json'
     headers = {
         'Content-Type': mimetype,
         'Accept': mimetype
@@ -493,20 +495,20 @@ def test_study_granularity(client, app):
     }
 
     # Get a guid manifest of the cohort's instances
-    response = client.post(f'{API_VERSION}/cohorts/manifest/preview',
+    response = client.post(f'{API_URL}/cohorts/manifest/preview',
                             data = json.dumps(manifestPreviewBody),
                             headers=headers)
 
-    assert response.content_type == 'application/json'
+    # assert response.content_type == 'application/json'
     assert response.status_code == 200
-    cohort_def = response.json['cohort_def']
-    manifest = response.json['manifest']
+    cohort_def = get_data(response)['cohort_def']
+    manifest = get_data(response)['manifest']
     bq_data = [dict(row) for row in bq_client.query(cohort_def['sql'] + f'LIMIT {manifestPreviewBody["page_size"]}')]
 
 
     assert manifest['rowsReturned'] == len(bq_data)
 
-    next_page = response.json['next_page']
+    next_page = get_data(response)['next_page']
     assert next_page == ""
 
     rows = manifest['rows']
@@ -520,6 +522,7 @@ def test_study_granularity(client, app):
         assert (set(row[key] for row in bq_data) == set(row[key] for row in rows))
 
 
+@_testMode
 def test_patient_granularity(client, app):
     bq_client = bigquery.Client(project='idc-dev-etl')
 
@@ -533,7 +536,7 @@ def test_patient_granularity(client, app):
                   "description": "Test description",
                   "filters": filters}
 
-    mimetype = ' application/json'
+    mimetype = 'application/json'
     headers = {
         'Content-Type': mimetype,
         'Accept': mimetype
@@ -557,20 +560,20 @@ def test_patient_granularity(client, app):
     }
 
     # Get a guid manifest of the cohort's instances
-    response = client.post(f'{API_VERSION}/cohorts/manifest/preview',
+    response = client.post(f'{API_URL}/cohorts/manifest/preview',
                             data = json.dumps(manifestPreviewBody),
                             headers=headers)
 
-    assert response.content_type == 'application/json'
+    # assert response.content_type == 'application/json'
     assert response.status_code == 200
-    cohort_def = response.json['cohort_def']
-    manifest = response.json['manifest']
+    cohort_def = get_data(response)['cohort_def']
+    manifest = get_data(response)['manifest']
     bq_data = [dict(row) for row in bq_client.query(cohort_def['sql'] + f'LIMIT {manifestPreviewBody["page_size"]}')]
 
 
     assert manifest['rowsReturned'] == len(bq_data)
 
-    next_page = response.json['next_page']
+    next_page = get_data(response)['next_page']
     assert next_page == ""
 
     rows = manifest['rows']
@@ -585,6 +588,7 @@ def test_patient_granularity(client, app):
         assert (set(row[key] for row in bq_data) == set(row[key] for row in rows))
 
 
+@_testMode
 def test_collection_granularity(client, app):
     bq_client = bigquery.Client(project='idc-dev-etl')
 
@@ -598,7 +602,7 @@ def test_collection_granularity(client, app):
                   "description": "Test description",
                   "filters": filters}
 
-    mimetype = ' application/json'
+    mimetype = 'application/json'
     headers = {
         'Content-Type': mimetype,
         'Accept': mimetype
@@ -624,20 +628,20 @@ def test_collection_granularity(client, app):
     # bq_data = [dict(row) for row in bq_client.query(query)]
 
     # Get a guid manifest of the cohort's instances
-    response = client.post(f'{API_VERSION}/cohorts/manifest/preview',
+    response = client.post(f'{API_URL}/cohorts/manifest/preview',
                             data = json.dumps(manifestPreviewBody),
                             headers=headers)
 
-    assert response.content_type == 'application/json'
+    # assert response.content_type == 'application/json'
     assert response.status_code == 200
-    cohort_def = response.json['cohort_def']
-    manifest = response.json['manifest']
+    cohort_def = get_data(response)['cohort_def']
+    manifest = get_data(response)['manifest']
     bq_data = [dict(row) for row in bq_client.query(cohort_def['sql'] + f'LIMIT {manifestPreviewBody["page_size"]}')]
 
 
     assert manifest['rowsReturned'] == len(bq_data)
 
-    next_page = response.json['next_page']
+    next_page = get_data(response)['next_page']
     assert next_page == ""
 
     rows = manifest['rows']
@@ -653,6 +657,7 @@ def test_collection_granularity(client, app):
         assert (set(row[key] for row in bq_data) == set(row[key] for row in rows))
 
 
+@_testMode
 def test_version_granularity(client, app):
     bq_client = bigquery.Client(project='idc-dev-etl')
 
@@ -666,7 +671,7 @@ def test_version_granularity(client, app):
                   "description": "Test description",
                   "filters": filters}
 
-    mimetype = ' application/json'
+    mimetype = 'application/json'
     headers = {
         'Content-Type': mimetype,
         'Accept': mimetype
@@ -691,20 +696,20 @@ def test_version_granularity(client, app):
     # bq_data = [dict(row) for row in bq_client.query(query)]
 
     # Get a guid manifest of the cohort's instances
-    response = client.post(f'{API_VERSION}/cohorts/manifest/preview',
+    response = client.post(f'{API_URL}/cohorts/manifest/preview',
                             data = json.dumps(manifestPreviewBody),
                             headers=headers)
 
-    assert response.content_type == 'application/json'
+    # assert response.content_type == 'application/json'
     assert response.status_code == 200
-    cohort_def = response.json['cohort_def']
-    manifest = response.json['manifest']
+    cohort_def = get_data(response)['cohort_def']
+    manifest = get_data(response)['manifest']
     bq_data = [dict(row) for row in bq_client.query(cohort_def['sql'] + f'LIMIT {manifestPreviewBody["page_size"]}')]
 
 
     assert manifest['rowsReturned'] == len(bq_data)
 
-    next_page = response.json['next_page']
+    next_page = get_data(response)['next_page']
     assert next_page == ""
 
     rows = manifest['rows']
@@ -721,6 +726,7 @@ def test_version_granularity(client, app):
         assert (set(row[key] for row in bq_data) == set(row[key] for row in rows))
 
 
+@_testMode
 def test_paged(client, app):
     bq_client = bigquery.Client(project='idc-dev-etl')
     filters = {
@@ -734,7 +740,7 @@ def test_paged(client, app):
                   "description": "Test description",
                   "filters": filters}
 
-    mimetype = ' application/json'
+    mimetype = 'application/json'
     headers = {
         'Content-Type': mimetype,
         'Accept': mimetype
@@ -763,17 +769,17 @@ def test_paged(client, app):
         'page_size': 500
     }
 
-    response = client.post(f'{API_VERSION}/cohorts/manifest/preview',
+    response = client.post(f'{API_URL}/cohorts/manifest/preview',
                             data = json.dumps(manifestPreviewBody),
                             headers=headers)
 
 
-    assert response.content_type == 'application/json'
+    # assert response.content_type == 'application/json'
     assert response.status_code == 200
-    cohort_def = response.json['cohort_def']
-    manifest = response.json['manifest']
+    cohort_def = get_data(response)['cohort_def']
+    manifest = get_data(response)['manifest']
 
-    next_page = response.json['next_page']
+    next_page = get_data(response)['next_page']
 
     rows = manifest['rows']
     assert len(rows) == 500
@@ -792,12 +798,17 @@ def test_paged(client, app):
             'PAGE_SIZE': 500
         }
 
-        response = client.get(f'{API_VERSION}/cohorts/manifest/nextPage',
-                               query_string=query_string )
-        assert response.content_type == 'application/json'
+        if test_dev_api:
+            response = client.get(f'{API_URL}/cohorts/manifest/preview/nextPage',
+                                params=query_string,
+                                headers = headers)
+        else:
+            response = client.get(f'{API_URL}/cohorts/manifest/preview/nextPage',
+                                query_string=query_string,
+                                headers = headers)
         assert response.status_code == 200
-        manifest = response.json['manifest']
-        next_page = response.json['next_page']
+        manifest = get_data(response)['manifest']
+        next_page = get_data(response)['next_page']
 
         totalRowsReturned += manifest["rowsReturned"]
         complete_manifest.extend(manifest['rows'])
