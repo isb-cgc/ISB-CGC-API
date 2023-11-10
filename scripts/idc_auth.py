@@ -74,15 +74,13 @@ from oauth2client import tools
 from oauth2client.file import Storage
 
 VERBOSE = False
-# CLIENT_ID = '198650116749-jold6g3160renk0nm566m7tguvpdktga.apps.googleusercontent.com'
-CLIENT_ID = '940486172223-j7gli4f67fb29dicuug89p89kuj23iuh.apps.googleusercontent.com' # dev
+CLIENT_ID = '198650116749-jold6g3160renk0nm566m7tguvpdktga.apps.googleusercontent.com'
 # Note: This script is for a "public client", where true secrets cannot be stored. The actual security of this OAuth flow
 # lies in the PKCE dynamically-generated secret, which this script is using. In this case, this so-called
 # "client secret" cannot be considered anything more than an additional piece of the public client ID. It is only
 # provided because Google still requires it to be present when an authorization code is exchanged for an access token.
 # Do not use this ID/secret pair in any OAuth2 flow that does not use PKCE.
-# CLIENT_SECRET = 'tQdFIEHMlueJAa0vnKNPfArS'
-CLIENT_SECRET = '0A_PGr4aZw1mV3X2oHV8ajtm'
+CLIENT_SECRET = 'tQdFIEHMlueJAa0vnKNPfArS'
 EMAIL_SCOPE = 'https://www.googleapis.com/auth/userinfo.email'
 CLOUD_PLATFORM_SCOPE='https://www.googleapis.com/auth/cloud-platform'
 DEFAULT_STORAGE_FILE = os.path.join(os.path.expanduser("~"), '.idc_credentials')
