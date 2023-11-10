@@ -177,7 +177,7 @@ def perform_query(url, body, special_fields, user):  # , user=None):
     except Exception as e:
         logger.exception(e)
         query_info = dict(
-            message='[ERROR] get_query(): Error trying to preview a cohort',
+            message='[ERROR] get_query(): Error trying to get a manifest',
             code=400)
 
     return query_info
