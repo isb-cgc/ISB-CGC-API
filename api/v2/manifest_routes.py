@@ -167,3 +167,44 @@ def cohorts_query_next_page():
         response.status_code = 500
 
     return response
+
+
+@cohort_manifest_bp.route('/cohorts/manifest/preview/nextPage', methods=['GET'], strict_slashes=False)
+def cohorts_query_preview_next_page():
+    try:
+        user_info = auth_info()
+        result = get_query_next_page(user_info)
+        if result:
+            # Presence of a message means something went wrong with the filters we received
+            if 'message' in result:
+                response = jsonify({
+                    **result
+                })
+                if 'code' in result:
+                    response.status_code = result['code']
+                else:
+                    response.status_code = 500
+            else:
+                code = 200
+                response = jsonify({
+                    'code': code,
+                    **result
+                })
+                response.status_code = code
+
+        # Lack of a valid object means something went wrong on the server
+        else:
+            response = jsonify({
+                'code': 404,
+                'message': "Error trying to get next query page."})
+            response.status_code = 500
+
+    except Exception as e:
+        logger.exception(e)
+        response = jsonify({
+            'code': 500,
+            'message': 'Encountered an error while attempting to get next query page.'
+        })
+        response.status_code = 500
+
+    return response

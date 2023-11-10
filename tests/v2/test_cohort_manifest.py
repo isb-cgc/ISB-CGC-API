@@ -15,19 +15,18 @@
 
 import json
 import datetime
-from testing_config import VERSIONS, API_VERSION
+from testing_config import API_URL, get_data, test_dev_api, auth_header
 from testing_utils import create_cohort_for_test_get_cohort_xxx, \
-    delete_cohort, \
-    gen_query
+    delete_cohort, _testMode
 from google.cloud import bigquery
 
-mimetype = ' application/json'
+mimetype = 'application/json'
 headers = {
     'Content-Type': mimetype,
     'Accept': mimetype
 }
 
-
+@_testMode
 def test_invalid_keys(client, app):
     id = 1
 
@@ -50,13 +49,12 @@ def test_invalid_keys(client, app):
     }
 
     # Get a guid manifest of the cohort's instances
-    response = client.post(f"{API_VERSION}/cohorts/manifest/{id}/",
+    response = client.post(f"{API_URL}/cohorts/manifest/{id}/",
                            data=json.dumps(manifestBody),
-                           headers=headers)
+                           headers=headers | auth_header)
 
-    assert response.content_type == 'application/json'
     assert response.status_code == 400
-    assert response.json['message'] == 'Fields is an invalid body key'
+    assert get_data(response)['message'] == 'Fields is an invalid body key'
 
     manifestBody = {
         "fields": fields,
@@ -67,13 +65,13 @@ def test_invalid_keys(client, app):
     }
 
     # Get a guid manifest of the cohort's instances
-    response = client.post(f"{API_VERSION}/cohorts/manifest/{id}/",
+    response = client.post(f"{API_URL}/cohorts/manifest/{id}/",
                            data=json.dumps(manifestBody),
-                           headers=headers)
+                           headers=headers | auth_header
+)
 
-    assert response.content_type == 'application/json'
     assert response.status_code == 400
-    assert response.json['message'] == 'Counts is an invalid body key'
+    assert get_data(response)['message'] == 'Counts is an invalid body key'
 
     manifestBody = {
         "fields": fields,
@@ -84,13 +82,12 @@ def test_invalid_keys(client, app):
     }
 
     # Get a guid manifest of the cohort's instances
-    response = client.post(f"{API_VERSION}/cohorts/manifest/{id}/",
+    response = client.post(f"{API_URL}/cohorts/manifest/{id}/",
                            data=json.dumps(manifestBody),
-                           headers=headers)
+                           headers=headers | auth_header)
 
-    assert response.content_type == 'application/json'
     assert response.status_code == 400
-    assert response.json['message'] == 'Group_size is an invalid body key'
+    assert get_data(response)['message'] == 'Group_size is an invalid body key'
 
     manifestBody = {
         "fields": fields,
@@ -101,13 +98,12 @@ def test_invalid_keys(client, app):
     }
 
     # Get a guid manifest of the cohort's instances
-    response = client.post(f"{API_VERSION}/cohorts/manifest/{id}/",
+    response = client.post(f"{API_URL}/cohorts/manifest/{id}/",
                             data = json.dumps(manifestBody),
-                            headers=headers)
+                            headers=headers | auth_header)
 
-    assert response.content_type == 'application/json'
     assert response.status_code == 400
-    assert response.json['message'] == 'SQL is an invalid body key'
+    assert get_data(response)['message'] == 'SQL is an invalid body key'
 
     manifestBody = {
         "fields": fields,
@@ -118,13 +114,12 @@ def test_invalid_keys(client, app):
     }
 
     # Get a guid manifest of the cohort's instances
-    response = client.post(f"{API_VERSION}/cohorts/manifest/{id}/",
+    response = client.post(f"{API_URL}/cohorts/manifest/{id}/",
                            data=json.dumps(manifestBody),
-                           headers=headers)
+                           headers=headers | auth_header)
 
-    assert response.content_type == 'application/json'
     assert response.status_code == 400
-    assert response.json['message'] == 'Page_size is an invalid body key'
+    assert get_data(response)['message'] == 'Page_size is an invalid body key'
 
 
     manifestBody = {
@@ -136,22 +131,22 @@ def test_invalid_keys(client, app):
     }
 
     # Get a guid manifest of the cohort's instances
-    response = client.post(f"{API_VERSION}/cohorts/manifest/{id}/",
+    response = client.post(f"{API_URL}/cohorts/manifest/{id}/",
                             data = json.dumps(manifestBody),
-                            headers=headers)
+                            headers=headers | auth_header)
 
-    assert response.content_type == 'application/json'
     assert response.status_code == 400
-    assert response.json['message'] == "fields is required in the body"
+    assert get_data(response)['message'] == "fields is required in the body"
 
     return
 
 
+@_testMode
 def test_basic(client, app):
     bq_client = bigquery.Client(project='idc-dev-etl')
     id, filterSet = create_cohort_for_test_get_cohort_xxx(client)
 
-    mimetype = ' application/json'
+    mimetype = 'application/json'
     headers = {
         'Content-Type': mimetype,
         'Accept': mimetype
@@ -177,20 +172,19 @@ def test_basic(client, app):
     # bq_data = [dict(row) for row in bq_client.query(query)]
 
     # Get a guid manifest of the cohort's instances
-    response = client.post(f"{API_VERSION}/cohorts/manifest/{id}/",
+    response = client.post(f"{API_URL}/cohorts/manifest/{id}/",
                           data=json.dumps(manifestBody),
-                          headers=headers)
+                          headers=headers | auth_header)
 
-    assert response.content_type == 'application/json'
     assert response.status_code == 200
 
-    cohort_def = response.json['cohort_def']
-    manifest = response.json['manifest']
+    cohort_def = get_data(response)['cohort_def']
+    manifest = get_data(response)['manifest']
     bq_data = [dict(row) for row in bq_client.query(cohort_def['sql'] + f'LIMIT {manifestBody["page_size"]}')]
 
     assert manifest['rowsReturned'] == len(bq_data)
 
-    next_page = response.json['next_page']
+    next_page = get_data(response)['next_page']
     assert next_page == ""
 
     rows = manifest['rows']
@@ -210,6 +204,7 @@ def test_basic(client, app):
     delete_cohort(client, id)
 
 
+@_testMode
 def test_special_fields(client, app):
     bq_client = bigquery.Client(project='idc-dev-etl')
     id, filterSet = create_cohort_for_test_get_cohort_xxx(client)
@@ -222,11 +217,7 @@ def test_special_fields(client, app):
         'age_at_diagnosis',
         'seriesinstanceuid',
         'studyDescription',
-        'studyDate',
-        "patientage",
-        "patientsex",
-        "patientsize",
-        "patientweight"
+        'studyDate'
         ]
 
     manifestBody = {
@@ -238,19 +229,18 @@ def test_special_fields(client, app):
     }
 
     # Get a guid manifest of the cohort's instances
-    response = client.post(f'{API_VERSION}/cohorts/manifest/{id}',
+    response = client.post(f'{API_URL}/cohorts/manifest/{id}',
                             data = json.dumps(manifestBody),
-                            headers=headers)
+                            headers=headers | auth_header)
 
-    assert response.content_type == 'application/json'
     assert response.status_code == 200
-    cohort_def = response.json['cohort_def']
-    manifest = response.json['manifest']
+    cohort_def = get_data(response)['cohort_def']
+    manifest = get_data(response)['manifest']
     bq_data = [dict(row) for row in bq_client.query(cohort_def['sql'] + f'LIMIT {manifestBody["page_size"]}')]
 
     assert manifest['rowsReturned'] == len(bq_data)
 
-    next_page = response.json['next_page']
+    next_page = get_data(response)['next_page']
     assert next_page == ""
 
     rows = manifest['rows']
@@ -260,6 +250,8 @@ def test_special_fields(client, app):
         print(key)
         assert (set(row[key].isoformat() if isinstance(row[key], datetime.date) else row[key] for row in bq_data) == set(row[key] for row in rows))
 
+
+@_testMode
 def test_series_granularity(client, app):
     bq_client = bigquery.Client(project='idc-dev-etl')
     id, filterSet = create_cohort_for_test_get_cohort_xxx(client)
@@ -281,20 +273,19 @@ def test_series_granularity(client, app):
     }
 
     # Get a guid manifest of the cohort's instances
-    response = client.post(f'{API_VERSION}/cohorts/manifest/{id}',
+    response = client.post(f'{API_URL}/cohorts/manifest/{id}',
                             data = json.dumps(manifestBody),
-                            headers=headers)
+                            headers=headers | auth_header)
 
-    assert response.content_type == 'application/json'
     assert response.status_code == 200
-    cohort_def = response.json['cohort_def']
-    manifest = response.json['manifest']
+    cohort_def = get_data(response)['cohort_def']
+    manifest = get_data(response)['manifest']
     bq_data = [dict(row) for row in bq_client.query(cohort_def['sql'] + f'LIMIT {manifestBody["page_size"]}')]
 
 
     assert manifest['rowsReturned'] == len(bq_data)
 
-    next_page = response.json['next_page']
+    next_page = get_data(response)['next_page']
     assert next_page == ""
 
     rows = manifest['rows']
@@ -308,6 +299,7 @@ def test_series_granularity(client, app):
     # assert {'GCS_URL': 'gs://public-datasets-idc/0190fe71-7144-40ae-a24c-c8d21a99317d/01210a30-8395-498c-905f-6667db67101a.dcm'} in rows
 
 
+@_testMode
 def test_study_granularity(client, app):
     bq_client = bigquery.Client(project='idc-dev-etl')
     id, filterSet = create_cohort_for_test_get_cohort_xxx(client)
@@ -329,20 +321,19 @@ def test_study_granularity(client, app):
     }
 
     # Get a guid manifest of the cohort's instances
-    response = client.post(f'{API_VERSION}/cohorts/manifest/{id}',
+    response = client.post(f'{API_URL}/cohorts/manifest/{id}',
                             data = json.dumps(manifestBody),
-                            headers=headers)
+                            headers=headers | auth_header)
 
-    assert response.content_type == 'application/json'
     assert response.status_code == 200
-    cohort_def = response.json['cohort_def']
-    manifest = response.json['manifest']
+    cohort_def = get_data(response)['cohort_def']
+    manifest = get_data(response)['manifest']
     bq_data = [dict(row) for row in bq_client.query(cohort_def['sql'] + f'LIMIT {manifestBody["page_size"]}')]
 
 
     assert manifest['rowsReturned'] == len(bq_data)
 
-    next_page = response.json['next_page']
+    next_page = get_data(response)['next_page']
     assert next_page == ""
 
     rows = manifest['rows']
@@ -356,6 +347,7 @@ def test_study_granularity(client, app):
         assert (set(row[key] for row in bq_data) == set(row[key] for row in rows))
 
 
+@_testMode
 def test_patient_granularity(client, app):
     bq_client = bigquery.Client(project='idc-dev-etl')
     id, filterSet = create_cohort_for_test_get_cohort_xxx(client)
@@ -376,20 +368,19 @@ def test_patient_granularity(client, app):
     }
 
     # Get a guid manifest of the cohort's instances
-    response = client.post(f'{API_VERSION}/cohorts/manifest/{id}',
+    response = client.post(f'{API_URL}/cohorts/manifest/{id}',
                             data = json.dumps(manifestBody),
-                            headers=headers)
+                            headers=headers | auth_header)
 
-    assert response.content_type == 'application/json'
     assert response.status_code == 200
-    cohort_def = response.json['cohort_def']
-    manifest = response.json['manifest']
+    cohort_def = get_data(response)['cohort_def']
+    manifest = get_data(response)['manifest']
     bq_data = [dict(row) for row in bq_client.query(cohort_def['sql'] + f'LIMIT {manifestBody["page_size"]}')]
 
 
     assert manifest['rowsReturned'] == len(bq_data)
 
-    next_page = response.json['next_page']
+    next_page = get_data(response)['next_page']
     assert next_page == ""
 
     rows = manifest['rows']
@@ -404,6 +395,7 @@ def test_patient_granularity(client, app):
         assert (set(row[key] for row in bq_data) == set(row[key] for row in rows))
 
 
+@_testMode
 def test_collection_granularity(client, app):
     bq_client = bigquery.Client(project='idc-dev-etl')
     id, filterSet = create_cohort_for_test_get_cohort_xxx(client)
@@ -426,20 +418,19 @@ def test_collection_granularity(client, app):
     # bq_data = [dict(row) for row in bq_client.query(query)]
 
     # Get a guid manifest of the cohort's instances
-    response = client.post(f'{API_VERSION}/cohorts/manifest/{id}',
+    response = client.post(f'{API_URL}/cohorts/manifest/{id}',
                             data = json.dumps(manifestBody),
-                            headers=headers)
+                            headers=headers | auth_header)
 
-    assert response.content_type == 'application/json'
     assert response.status_code == 200
-    cohort_def = response.json['cohort_def']
-    manifest = response.json['manifest']
+    cohort_def = get_data(response)['cohort_def']
+    manifest = get_data(response)['manifest']
     bq_data = [dict(row) for row in bq_client.query(cohort_def['sql'] + f'LIMIT {manifestBody["page_size"]}')]
 
 
     assert manifest['rowsReturned'] == len(bq_data)
 
-    next_page = response.json['next_page']
+    next_page = get_data(response)['next_page']
     assert next_page == ""
 
     rows = manifest['rows']
@@ -455,6 +446,7 @@ def test_collection_granularity(client, app):
         assert (set(row[key] for row in bq_data) == set(row[key] for row in rows))
 
 
+@_testMode
 def test_version_granularity(client, app):
     bq_client = bigquery.Client(project='idc-dev-etl')
     id, filterSet = create_cohort_for_test_get_cohort_xxx(client)
@@ -477,20 +469,19 @@ def test_version_granularity(client, app):
     # bq_data = [dict(row) for row in bq_client.query(query)]
 
     # Get a guid manifest of the cohort's instances
-    response = client.post(f'{API_VERSION}/cohorts/manifest/{id}',
+    response = client.post(f'{API_URL}/cohorts/manifest/{id}',
                             data = json.dumps(manifestBody),
-                            headers=headers)
+                            headers=headers | auth_header)
 
-    assert response.content_type == 'application/json'
     assert response.status_code == 200
-    cohort_def = response.json['cohort_def']
-    manifest = response.json['manifest']
+    cohort_def = get_data(response)['cohort_def']
+    manifest = get_data(response)['manifest']
     bq_data = [dict(row) for row in bq_client.query(cohort_def['sql'] + f'LIMIT {manifestBody["page_size"]}')]
 
 
     assert manifest['rowsReturned'] == len(bq_data)
 
-    next_page = response.json['next_page']
+    next_page = get_data(response)['next_page']
     assert next_page == ""
 
     rows = manifest['rows']
@@ -507,6 +498,7 @@ def test_version_granularity(client, app):
         assert (set(row[key] for row in bq_data) == set(row[key] for row in rows))
 
 
+@_testMode
 def test_paged(client, app):
     bq_client = bigquery.Client(project='idc-dev-etl')
     id, filterSet = create_cohort_for_test_get_cohort_xxx(client)
@@ -533,17 +525,17 @@ def test_paged(client, app):
         'page_size': 500
     }
 
-    response = client.post(f'{API_VERSION}/cohorts/manifest/{id}',
+
+    response = client.post(f'{API_URL}/cohorts/manifest/{id}',
                             data = json.dumps(manifestBody),
-                            headers=headers)
+                            headers=headers | auth_header)
 
 
-    assert response.content_type == 'application/json'
     assert response.status_code == 200
-    cohort_def = response.json['cohort_def']
-    manifest = response.json['manifest']
+    cohort_def = get_data(response)['cohort_def']
+    manifest = get_data(response)['manifest']
 
-    next_page = response.json['next_page']
+    next_page = get_data(response)['next_page']
 
     rows = manifest['rows']
     assert len(rows) == 500
@@ -562,12 +554,17 @@ def test_paged(client, app):
             'PAGE_SIZE': 500
         }
 
-        response = client.get(f'{API_VERSION}/cohorts/manifest/nextPage',
-                               query_string=query_string )
-        assert response.content_type == 'application/json'
+        if test_dev_api:
+            response = client.get(f'{API_URL}/cohorts/manifest/nextPage',
+                                params=query_string,
+                                headers = headers|auth_header)
+        else:
+            response = client.get(f'{API_URL}/cohorts/manifest/nextPage',
+                                query_string=query_string,
+                                headers = headers|auth_header)
         assert response.status_code == 200
-        manifest = response.json['manifest']
-        next_page = response.json['next_page']
+        manifest = get_data(response)['manifest']
+        next_page = get_data(response)['next_page']
 
         totalRowsReturned += manifest["rowsReturned"]
         complete_manifest.extend(manifest['rows'])

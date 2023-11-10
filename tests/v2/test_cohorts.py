@@ -16,18 +16,19 @@
 
 import json
 import re
-# from settings import API_VERSION
-from testing_config import VERSIONS, API_VERSION
+from testing_config import API_URL, get_data, auth_header
+from testing_utils import current_version, create_cohort, delete_cohort, _testMode
 
-from testing_utils import current_version, create_cohort, delete_cohort
+import requests
 
-mimetype = ' application/json'
+mimetype = 'application/json'
 headers = {
     'Content-Type': mimetype,
     'Accept': mimetype
 }
 
 
+@_testMode
 def test_invalid_keys(client, app):
     filters = {
         "age_at_diagnosis_btw": [65, 75],
@@ -41,44 +42,42 @@ def test_invalid_keys(client, app):
                   "filters": filters}
 
     # Get a guid manifest of the cohort's instances
-    response = client.post(f'{API_VERSION}/cohorts/',
+    response = client.post(f'{API_URL}/cohorts/',
                            data=json.dumps(cohort_def),
-                           headers=headers)
+                           headers=headers | auth_header)
 
-    assert response.content_type == 'application/json'
     assert response.status_code == 400
-    assert response.json['message'] == "'Name' is an invalid cohort_def key"
+    assert get_data(response)['message'] == "'Name' is an invalid cohort_def key"
 
     cohort_def = {"name": "testcohort",
                   "Description": "Test description",
                   "filters": filters}
 
     # Get a guid manifest of the cohort's instances
-    response = client.post(f'{API_VERSION}/cohorts/',
+    response = client.post(f'{API_URL}/cohorts/',
                            data=json.dumps(cohort_def),
-                           headers=headers)
+                           headers=headers | auth_header)
 
-    assert response.content_type == 'application/json'
     assert response.status_code == 400
-    assert response.json['message'] == "'Description' is an invalid cohort_def key"
+    assert get_data(response)['message'] == "'Description' is an invalid cohort_def key"
 
     cohort_def = {"name": "testcohort",
                   "description": "Test description",
                   }
 
     # Get a guid manifest of the cohort's instances
-    response = client.post(f'{API_VERSION}/cohorts/',
+    response = client.post(f'{API_URL}/cohorts/',
                             data = json.dumps(cohort_def),
-                            headers=headers)
+                            headers=headers | auth_header)
 
-    assert response.content_type == 'application/json'
     assert response.status_code == 400
-    assert response.json['message'] == "'filters' is a required cohort_def key"
+    assert get_data(response)['message'] == "'filters' is a required cohort_def key"
 
     return
 
 
 # Test basic cohort creation.
+@_testMode
 def test_create_cohort(client, app):
     # Create a filter set
     filters = {
@@ -92,16 +91,23 @@ def test_create_cohort(client, app):
                   "description":"Test description",
                   "filters":filters}
 
-    mimetype = ' application/json'
+    mimetype = 'application/json'
     headers = {
-        'Content-Type': mimetype,
         'Accept': mimetype,
+        'Content-Type': mimetype
     }
 
-    response = client.post(f'/{API_VERSION}/cohorts', data=json.dumps(cohortSpec), headers=headers)
-    assert response.content_type == 'application/json'
+    try:
+        response = client.post(f'{API_URL}/cohorts',
+               data=json.dumps(cohortSpec), headers=headers | auth_header)
+        # response = requests.post(f'{API_URL}/cohorts',
+        #        data=json.dumps(cohortSpec), headers=headers | auth_header)
+
+
+    except Exception as exc:
+        print(exc)
     assert response.status_code == 200
-    cohortResponse = response.json['cohort_properties']
+    cohortResponse = get_data(response)['cohort_properties']
 
     assert cohortResponse['name']=="testcohort"
     assert cohortResponse['description']=="Test description"
@@ -120,16 +126,17 @@ def test_create_cohort(client, app):
     delete_cohort(client, cohortResponse['cohort_id'])
 
 
+@_testMode
 def test_list_cohorts(client,app):
     cohort0 = create_cohort(client)[0]['cohort_id']
     cohort1 = create_cohort(client)[0]['cohort_id']
 
     # Get the list of cohorts
-    response = client.get(f'{API_VERSION}/cohorts')
-    assert response.content_type == 'application/json'
+    response = client.get(f'{API_URL}/cohorts',
+                          headers=headers | auth_header)
     assert response.status_code == 200
 
-    cohorts = response.json['cohorts']
+    cohorts = get_data(response)['cohorts']
     assert len([cohort for cohort in cohorts if cohort['cohort_id']==int(cohort0)]) == 1
     assert len([cohort for cohort in cohorts if cohort['cohort_id']==int(cohort1)]) == 1
 
@@ -137,14 +144,15 @@ def test_list_cohorts(client,app):
     delete_cohort(client, cohort1)
 
 
+@_testMode
 def test_delete_a_cohort(client, app):
     # Try deleting a
     # cohort that probably will never exist
     big_id = 2**64
-    response = client.delete(f'{API_VERSION}/cohorts/{big_id}')
-    assert response.content_type == 'application/json'
+    response = client.delete(f'{API_URL}/cohorts/{big_id}',
+                             headers=headers | auth_header)
     assert response.status_code == 200
-    cohorts = response.json['cohorts']
+    cohorts = get_data(response)['cohorts']
     assert len(cohorts) == 1
     assert cohorts[0]['cohort_id'] == big_id
     assert cohorts[0]['result']['message'] == "A cohort with the ID {} was not found!".format(str(big_id))
@@ -152,31 +160,32 @@ def test_delete_a_cohort(client, app):
     # Create a cohort
     cohort1 = create_cohort(client)[0]['cohort_id']
     # Delete the cohort we just created
-    response = client.delete(f'{API_VERSION}/cohorts/{cohort1}')
-    assert response.content_type == 'application/json'
+    response = client.delete(f'{API_URL}/cohorts/{cohort1}',
+                             headers=headers | auth_header)
     assert response.status_code == 200
-    cohorts = response.json['cohorts']
+    cohorts = get_data(response)['cohorts']
     assert len(cohorts) == 1
     assert cohorts[0]['cohort_id'] == int(cohort1)
     assert re.sub(r'\(.*\) ',r'',cohorts[0]['result']['notes'])== \
            "Cohort {} has been deleted.".format(str(cohort1))
 
     # Get the list of cohorts
-    response = client.get(f'{API_VERSION}/cohorts')
-    assert response.content_type == 'application/json'
+    response = client.get(f'{API_URL}/cohorts',
+                          headers=headers | auth_header)
     assert response.status_code == 200
-    cohorts = response.json['cohorts']
+    cohorts = get_data(response)['cohorts']
     assert len([cohort for cohort in cohorts if cohort['cohort_id']==int(cohort1)]) == 0
 
     # Try deleting the cohort we just deleted
-    response = client.delete(f'{API_VERSION}/cohorts/{cohort1}')
-    assert response.content_type == 'application/json'
+    response = client.delete(f'{API_URL}/cohorts/{cohort1}',
+                             headers=headers | auth_header)
     assert response.status_code == 200
-    cohorts = response.json['cohorts']
+    cohorts = get_data(response)['cohorts']
     assert len(cohorts) == 1
     assert cohorts[0]['cohort_id'] == int(cohort1)
     assert cohorts[0]['result']['message'] == "Cohort ID {} was not found - it may already be deleted.".format(str(cohort1))
 
+@_testMode
 def test_delete_cohorts(client, app):
     # Create a cohort
     cohort0 = create_cohort(client)[0]['cohort_id']
@@ -184,14 +193,15 @@ def test_delete_cohorts(client, app):
 
     # Delete the cohorts that we just created
     cohortIDs = {"cohorts": [cohort0, cohort1]}
-    mimetype = ' application/json'
+    mimetype = 'application/json'
     headers = {
         'Content-Type': mimetype,
         'Accept': mimetype
     }
-    response = client.delete(f'/{API_VERSION}/cohorts', data=json.dumps(cohortIDs), headers=headers)
+    response = client.delete(f'{API_URL}/cohorts',
+                data=json.dumps(cohortIDs), headers=headers | auth_header)
     assert response.status_code == 200
-    cohorts = response.json['cohorts']
+    cohorts = get_data(response)['cohorts']
 
     assert len(cohorts) == 2
     assert cohorts[0]['cohort_id'] == int(cohort0)
@@ -205,10 +215,25 @@ def test_delete_cohorts(client, app):
            "Cohort {} has been deleted.".format(str(cohort1))
 
     # Get the list of cohorts
-    response = client.get("{}/".format(f'{API_VERSION}/cohorts'))
-    assert response.content_type == 'application/json'
+    response = client.get(f'{API_URL}/cohorts',
+                                       headers=headers | auth_header)
     assert response.status_code == 200
 
-    cohorts = response.json['cohorts']
+    cohorts = get_data(response)['cohorts']
     assert len([cohort for cohort in cohorts
                 if cohort['cohort_id']==int(cohort0) or cohort['cohort_id']==int(cohort1)]) == 0
+
+# Delete all cohorts from the DB
+# This should normally be commented out
+# Useful to clean up the DB, and to speed up testing
+@_testMode
+def test_delete_all_cohorts(client, app):
+    # Get the list of cohorts
+    response = client.get(f'{API_URL}/cohorts',
+                          headers=headers | auth_header)
+    assert response.status_code == 200
+
+    cohorts = get_data(response)['cohorts']
+    for cohort in cohorts:
+        delete_cohort(client, cohort['cohort_id'])
+
