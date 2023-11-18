@@ -333,7 +333,7 @@ def form_rows_json(data, schema_names, schema):
         row_vals = [unpack(val) for val in row['f']]
         new_row = dict(zip(schema_names,row_vals))
         for field in integer_fields:
-            new_row[field] = int(new_row[field])
+            new_row[field] = int(new_row[field]) if not new_row[field] is None else None
         rows.append(new_row)
 
     return rows

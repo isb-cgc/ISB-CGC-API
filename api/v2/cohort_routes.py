@@ -80,7 +80,7 @@ def cohorts():
             'code': 403,
             'message': str(e)
         })
-        response.status_code = 500
+        response.status_code = 403
     except Exception as e:
         logger.exception(e)
         response = jsonify({
@@ -136,7 +136,7 @@ def cohort(cohort_id):
             'code': 403,
             'message': str(e)
         })
-        response.status_code = 500
+        response.status_code = 403
     except Exception as e:
         logger.exception(e)
         response = jsonify({

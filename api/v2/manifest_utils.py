@@ -136,7 +136,7 @@ def process_special_fields(special_fields, query_info, data):
 
         # Include counts if there is an explicit level
         if 'counts' in special_fields:
-            if {'crdc_instance_uuid', 'sopinstanceuid'} & fields:
+            if {'crdc_instance_uuid', 'sopinstanceuid', 'gcs_url', 'aws_url'} & fields:
                 pass
 
             elif {'crdc_series_uuid', 'seriesinstanceuid'} & fields:

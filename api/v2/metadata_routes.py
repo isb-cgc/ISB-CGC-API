@@ -155,17 +155,17 @@ def categorical_values(filter_id):
                 continue
         if filter == -1:
             response = jsonify({
-                'code': 500,
+                'code': 400,
                 'message': 'Invalid filter ID'
             })
-            response.status_code = 500
+            response.status_code = 400
             return response
         if filter['data_type'] not in ['Categorical String', 'Categorical Number']:
             response = jsonify({
-                'code': 500,
+                'code': 400,
                 'message': f'Filter data type is {filter["data_type"]} not Categorical String or Categorical Number'
             })
-            response.status_code = 500
+            response.status_code = 400
             return response
         query = f"""
         SELECT DISTINCT {filter['name']}
