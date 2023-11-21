@@ -319,7 +319,7 @@ def test_basic(client, app):
     next_page = get_data(response)['next_page']
     assert next_page == ""
 
-    rows = manifest['rows']
+    rows = manifest['manifest_data']
     assert len(rows) == len(bq_data)
     assert manifest['totalFound'] == len(bq_data)
     for key in bq_data[0]:
@@ -382,7 +382,7 @@ def test_special_fields(client, app):
     next_page = get_data(response)['next_page']
     assert next_page == ""
 
-    rows = manifest['rows']
+    rows = manifest['manifest_data']
     assert len(rows) == len(bq_data)
     assert manifest['totalFound'] == len(bq_data)
     for key in bq_data[0]:
@@ -446,7 +446,7 @@ def test_series_granularity(client, app):
     next_page = get_data(response)['next_page']
     assert next_page == ""
 
-    rows = manifest['rows']
+    rows = manifest['manifest_data']
     assert len(rows) == len(bq_data)
     assert manifest['totalFound'] == len(bq_data)
     assert 'group_size' in bq_data[0]
@@ -511,7 +511,7 @@ def test_study_granularity(client, app):
     next_page = get_data(response)['next_page']
     assert next_page == ""
 
-    rows = manifest['rows']
+    rows = manifest['manifest_data']
     assert len(rows) == len(bq_data)
     assert manifest['totalFound'] == len(bq_data)
     assert 'group_size' in bq_data[0]
@@ -576,7 +576,7 @@ def test_patient_granularity(client, app):
     next_page = get_data(response)['next_page']
     assert next_page == ""
 
-    rows = manifest['rows']
+    rows = manifest['manifest_data']
     assert len(rows) == len(bq_data)
     assert manifest['totalFound'] == len(bq_data)
     assert 'group_size' in bq_data[0]
@@ -644,7 +644,7 @@ def test_collection_granularity(client, app):
     next_page = get_data(response)['next_page']
     assert next_page == ""
 
-    rows = manifest['rows']
+    rows = manifest['manifest_data']
     assert len(rows) == len(bq_data)
     assert manifest['totalFound'] == len(bq_data)
     assert 'group_size' in bq_data[0]
@@ -712,7 +712,7 @@ def test_version_granularity(client, app):
     next_page = get_data(response)['next_page']
     assert next_page == ""
 
-    rows = manifest['rows']
+    rows = manifest['manifest_data']
     assert len(rows) == len(bq_data)
     assert manifest['totalFound'] == len(bq_data)
     assert 'group_size' in bq_data[0]
@@ -781,7 +781,7 @@ def test_paged(client, app):
 
     next_page = get_data(response)['next_page']
 
-    rows = manifest['rows']
+    rows = manifest['manifest_data']
     assert len(rows) == 500
     # assert manifest['totalFound'] == len(bq_data)
     assert manifest['rowsReturned'] ==500
@@ -789,7 +789,7 @@ def test_paged(client, app):
     assert next_page
 
     #Now get the remaining pages
-    complete_manifest = manifest['rows']
+    complete_manifest = manifest['manifest_data']
     totalRowsReturned = manifest['rowsReturned']
 
     while next_page:
@@ -811,7 +811,7 @@ def test_paged(client, app):
         next_page = get_data(response)['next_page']
 
         totalRowsReturned += manifest["rowsReturned"]
-        complete_manifest.extend(manifest['rows'])
+        complete_manifest.extend(manifest['manifest_data'])
 
     bq_data = [dict(row) for row in bq_client.query(cohort_def['sql'])]
 
