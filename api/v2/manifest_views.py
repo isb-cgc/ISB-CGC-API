@@ -107,7 +107,7 @@ def post_query_preview(body, user=None):
     except ValidationError as e:
         logger.warning('[WARNING] Filters rejected for improper formatting: {}'.format(e))
         query_info = dict(
-            message= 'Filters were improperly formatted.',
+            message= e.message,
             code = 400)
 
     return query_info
@@ -137,7 +137,6 @@ def generate_user_sql_string(query_info):
     return query_info
 
 
-# def perform_query(request, func, url, data=None, user=None): #, user=None):
 def perform_query(url, body, special_fields, user):  # , user=None):
     next_page = ""
     try:
@@ -320,7 +319,7 @@ def get_query_job_results(query_info, maxResults, jobReference, next_page):
                 rowsReturned = len(results["current_page_rows"])
     )
     rows = form_rows_json(results['current_page_rows'], schema_names, results['schema']['fields'])
-    query_info["manifest"]['rows'] = rows
+    query_info["manifest"]['manifest_data'] = rows
 
     return query_info, results['next_page']
 
