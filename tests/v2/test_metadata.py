@@ -18,7 +18,7 @@ import json
 # from settings import API_URL
 from testing_config import VERSIONS, NUM_COLLECTIONS, API_URL
 from testing_utils import  _testMode, get_data
-from api.v2.schemas.queryfields import QUERY_FIELDS
+from api.v2.schemas.fields import FIELDS
 
 mimetype = 'application/json'
 headers = {
@@ -89,13 +89,6 @@ def test_filters(client, app):
     data = get_data(response)
     data_sources = data["data_sources"]
 
-    source_name = f'bigquery-public-data.idc_v{VERSIONS}.dicom_pivot'
-    data_source = next(
-        source for source in data_sources if source['data_source'] == source_name)
-    filters = {filter['name']: {key: filter[key] for key in filter.keys() if key != 'name'} for filter in data_source['filters']}
-    assert 'Modality' in filters
-    assert filters['Modality'] == {'data_type': 'Categorical String', 'units': None}
-
     source_name = 'bigquery-public-data.idc_v4.tcga_biospecimen_rel9'
     data_source = next(
         source for source in data_sources if source['data_source'] == source_name)
@@ -112,17 +105,25 @@ def test_filters(client, app):
     # assert filters['program_name']['dataSetTypes'][0]['data_type'] == 'Clinical, Biospecimen, and Mutation Data'
     assert filters['disease_code'] == {'data_type': 'Categorical String', 'units': None}
 
+    source_name = f'bigquery-public-data.idc_v{VERSIONS}.dicom_pivot'
+    data_source = next(
+        source for source in data_sources if source['data_source'] == source_name)
+    filters = {filter['name']: {key: filter[key] for key in filter.keys() if key != 'name'} for filter in data_source['filters']}
+    assert 'Modality' in filters
+    assert filters['Modality'] == {'data_type': 'Categorical String', 'units': None}
+
+
 
 @_testMode
 def test_categorical_field_values(client, app):
     filter = 'nodality'
     response = client.get(f'{API_URL}/filters/values/{filter}')
-    assert response.status_code == 500
+    assert response.status_code == 400
     assert get_data(response)['message'] == 'Invalid filter ID'
 
     filter = 'volume'
     response = client.get(f'{API_URL}/filters/values/{filter}')
-    assert response.status_code == 500
+    assert response.status_code == 400
     assert get_data(response)['message'] == 'Filter data type is Continuous Numeric not Categorical String or Categorical Number'
 
 
@@ -158,12 +159,12 @@ def test_categorical_field_values(client, app):
 
 
 @_testMode
-def test_queryFields(client, app):
-    response = client.get(f'{API_URL}/queryFields')
+def test_fields(client, app):
+    response = client.get(f'{API_URL}/fields')
     assert response.status_code == 200
     fields = get_data(response)
     all_fields = set()
     for source in fields['data_sources']:
-        all_fields  = all_fields.union(source['queryFields'])
+        all_fields  = all_fields.union(source['fields'])
 
-    assert set(all_fields) == set(QUERY_FIELDS["properties"]['fields']['items']['enum'])
+    assert set(all_fields) == set(FIELDS["properties"]['fields']['items']['enum'])

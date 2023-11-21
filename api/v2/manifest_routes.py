@@ -155,14 +155,14 @@ def cohorts_query_next_page():
         else:
             response = jsonify({
                 'code': 404,
-                'message': "Error trying to get next query page."})
+                'message': "Error trying to get next manifest page."})
             response.status_code = 500
 
     except Exception as e:
         logger.exception(e)
         response = jsonify({
             'code': 500,
-            'message': 'Encountered an error while attempting to get next query page.'
+            'message': 'Encountered an error while attempting to get next manifest page.'
         })
         response.status_code = 500
 
@@ -196,14 +196,14 @@ def cohorts_query_preview_next_page():
         else:
             response = jsonify({
                 'code': 404,
-                'message': "Error trying to get next query page."})
+                'message': "Error trying to get next manifest page."})
             response.status_code = 500
 
     except Exception as e:
         logger.exception(e)
         response = jsonify({
             'code': 500,
-            'message': 'Encountered an error while attempting to get next query page.'
+            'message': 'Encountered an error while attempting to get next manifest page.'
         })
         response.status_code = 500
 

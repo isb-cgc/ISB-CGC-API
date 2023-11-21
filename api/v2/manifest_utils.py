@@ -23,7 +23,7 @@ from cryptography.fernet import Fernet, InvalidToken
 
 import settings
 
-from .schemas.queryfields import QUERY_FIELDS
+from .schemas.fields import FIELDS
 from .schemas.filters import COHORT_FILTERS_SCHEMA
 from jsonschema import validate as schema_validate, ValidationError
 
@@ -96,8 +96,7 @@ def normalize_query_fields(fields):
     blacklist = re.compile(BLACKLIST_RE, re.UNICODE)
     corrected_fields = []
     special_fields = []
-    lowered_fields = {key.lower(): key for key in QUERY_FIELDS['properties']['fields']['items']['enum']}
-    # lowered_fields = {key.lower(): key for key in QUERY_FIELDS['items']['enum']}
+    lowered_fields = {key.lower(): key for key in FIELDS['properties']['fields']['items']['enum']}
     for field in fields:
         match = blacklist.search(str(filter))
         if match:
@@ -136,7 +135,7 @@ def process_special_fields(special_fields, query_info, data):
 
         # Include counts if there is an explicit level
         if 'counts' in special_fields:
-            if {'crdc_instance_uuid', 'sopinstanceuid'} & fields:
+            if {'crdc_instance_uuid', 'sopinstanceuid', 'gcs_url', 'aws_url'} & fields:
                 pass
 
             elif {'crdc_series_uuid', 'seriesinstanceuid'} & fields:
@@ -312,8 +311,16 @@ def validate_body(body):
     for key in ['counts', 'group_size', 'sql']:
         if not key in body:
             body[key] = False
+        elif body[key] in [True, "True", "true"]:
+            body[key] = True
+        elif body[key] in [False, "False", "false"]:
+            body[key] = False
         else:
-            body[key] = bool(body[key])
+            error_info = dict(
+                message=f"{body[key]} is an invalid value for {key}",
+                code=400
+            )
+            return error_info
 
     if not 'page_size' in body:
         body['page_size'] = 1000

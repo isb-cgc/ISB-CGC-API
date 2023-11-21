@@ -1,4 +1,4 @@
-QUERY_FIELDS={
+FIELDS={
   "type": "object",
   "properties": {
     "fields": {

@@ -1,4 +1,7 @@
 #!/usr/bin/env bash
+
+# Generate JSON schemas that are used to validate parameterization
+
 set -x
 source ../venv/bin/activate
 #pip install openapi2jsonschema

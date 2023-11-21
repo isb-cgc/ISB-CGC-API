@@ -14,8 +14,7 @@
 # limitations under the License.
 #
 
-# Generate the 'filters' and queryFields schemas to be inserted in openapi-appengine.yaml and converted
-# to python schema for use in validating manifest and query requests.
+# Generate the 'filters' and fields definitions to be inserted in openapi-appengine.yaml.
 # Ideally, these could stay in a separate yaml file which openapi-appengine.yaml would reference,
 # but such external references are not support by Google appengine.
 # Therefore the schemas must be manually inserted into openapi-appengine.yaml.
@@ -37,7 +36,7 @@ def get_filter_metadata(args):
     return response
 
 def get_field_metadata(args):
-    url = 'http://localhost:8095/v2/queryFields'
+    url = 'http://localhost:8095/v2/fields'
     headers = {'accept': 'application/json'}
     response = requests.get(url).json()
     return response
@@ -154,7 +153,7 @@ def gen_query_schema(args, fields):
     with open(args.query_file, "w") as f:
         write_required_fields(f)
         f.write(
-"""  queryFields:
+"""  fields:
     type: "object"
     properties:
       fields:
@@ -174,7 +173,7 @@ def gen_query_schema(args, fields):
     return
 
 
-def gen_query_result_schema(args, fields, filters):
+def gen_manifest_data(args, fields, filters):
     pivot_filters = next(source for source in filters['data_sources'] if 'pivot' in source['data_source'])
     client = bigquery.Client('idc-dev-etl')
     dicom_pivot = client.get_table('idc-dev-etl.idc_current.dicom_pivot')
@@ -192,18 +191,13 @@ def gen_query_result_schema(args, fields, filters):
     with open(args.query_result_file, "w") as f:
         write_required_fields(f)
         f.write(
-"""  queryResults:
-    type: "object"
-    properties:
-      json:
-        type: "array"
-        items:
-          type: "object"
-          properties:
+"""  manifestData:
+    type: "array"
+    items:
+      type: "object"
+      properties:
 """
         )
-        # for source in fields['data_sources']:
-        #     for field in source['queryFields']:
         for field in sorted(list(all_fields), key=str.lower):
             if field in schema:
                 data_type = {'STRING': 'string',
@@ -223,8 +217,8 @@ def gen_query_result_schema(args, fields, filters):
                         continue
                     print(f'Unknown data type for field {field}; {exc}')
 
-            f.write(f'            {field}:\n')
-            f.write(f'              type:  "{data_type}"\n')
+            f.write(f'        {field}:\n')
+            f.write(f'          type:  "{data_type}"\n')
         for field in [
             'instance_count',
             'series_count',
@@ -233,8 +227,8 @@ def gen_query_result_schema(args, fields, filters):
             'collection_count',
             'group_size',
         ]:
-            f.write(f'            {field}:\n')
-            f.write(f'              type:  "number"\n')
+            f.write(f'        {field}:\n')
+            f.write(f'          type:  "number"\n')
 
 
     return
@@ -247,20 +241,18 @@ def gen_json(args):
     fields = get_field_metadata(args)
     gen_query_schema(args, fields)
 
-    gen_query_result_schema(args, fields, filters)
-    # gen_query_results_schema(args, filters)
+    gen_manifest_data(args, fields, filters)
+    # # gen_query_results_schema(args, filters)
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--filters_file', default='filters.yaml',
-                        help='File into which to save the generated yaml schema')
-    parser.add_argument('--query_file', default='queryfields.yaml',
-                        help='File into which to save the generated queryFields schema')
-    parser.add_argument('--query_result_file', default='queryfieldsresults.yaml',
-                        help='File into which to save the generated queryFieldsResults schema')
-    # parser.add_argument('--query_results_file', default='query_results_schema.yaml',
-    #                     help='File into which to save the generated queryResults schema')
+                        help='File into which to save the generated yaml')
+    parser.add_argument('--query_file', default='fields.yaml',
+                        help='File into which to save the generated fields yaml')
+    parser.add_argument('--query_result_file', default='manifest_data.yaml',
+                        help='File into which to save the generated manifest data yaml')
     args = parser.parse_args()
     print("{}".format(args), file=sys.stdout)
     gen_json(args)

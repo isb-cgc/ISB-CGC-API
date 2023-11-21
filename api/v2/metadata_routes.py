@@ -155,17 +155,17 @@ def categorical_values(filter_id):
                 continue
         if filter == -1:
             response = jsonify({
-                'code': 500,
+                'code': 400,
                 'message': 'Invalid filter ID'
             })
-            response.status_code = 500
+            response.status_code = 400
             return response
         if filter['data_type'] not in ['Categorical String', 'Categorical Number']:
             response = jsonify({
-                'code': 500,
+                'code': 400,
                 'message': f'Filter data type is {filter["data_type"]} not Categorical String or Categorical Number'
             })
-            response.status_code = 500
+            response.status_code = 400
             return response
         query = f"""
         SELECT DISTINCT {filter['name']}
@@ -203,8 +203,8 @@ def categorical_values(filter_id):
     return response
 
 
-@metadata_bp.route('/queryFields', methods=['GET'], strict_slashes=False)
-def queryFields():
+@metadata_bp.route('/fields', methods=['GET'], strict_slashes=False)
+def fields():
     try:
         results = get_fields()
 
@@ -218,11 +218,11 @@ def queryFields():
             })
             response.status_code = 200
     except Exception as e:
-        logger.error("[ERROR] While retrieving queryFields:")
+        logger.error("[ERROR] While retrieving fields:")
         logger.exception(e)
         response = jsonify({
             'code': 500,
-            'message': 'Encountered an error while retrieving queryFields.'
+            'message': 'Encountered an error while retrieving fields.'
         })
         response.status_code = 500
 
