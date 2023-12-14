@@ -148,7 +148,7 @@ def gen_filters_schema(args, filters):
 def gen_query_schema(args, fields):
     all_fields = set()
     for source in fields['data_sources']:
-        all_fields  = all_fields.union(source['queryFields'])
+        all_fields  = all_fields.union(source['fields'])
 
     with open(args.query_file, "w") as f:
         write_required_fields(f)
@@ -186,7 +186,7 @@ def gen_manifest_data(args, fields, filters):
 
     all_fields = set()
     for source in fields['data_sources']:
-        all_fields  = all_fields.union(source['queryFields'])
+        all_fields  = all_fields.union(source['fields'])
 
     with open(args.query_result_file, "w") as f:
         write_required_fields(f)
