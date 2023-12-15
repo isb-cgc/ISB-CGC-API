@@ -26,7 +26,7 @@ API_VERSION = 'v2'
 VERSIONS = 17
 NUM_COLLECTIONS = 142
 
-test_dev_api = False
+test_dev_api = True
 dev_api_requester = requests
 API_URL = f'https://dev-api.canceridc.dev/{API_VERSION}' if test_dev_api else f'{API_VERSION}'
 get_data = dev_response.json if test_dev_api else local_resonse.get_json
