@@ -16,22 +16,19 @@
 
 from python_settings import settings
 # from settings import API_VERSION
-from testing_config import VERSIONS, API_VERSION
+from testing_config import VERSIONS, API_URL, get_data
+from testing_utils import _testMode, auth_header
 
+@_testMode
 def test_about(client, app):
-    response = client.get(f'/{API_VERSION}/about')
-    assert client.get(f'/{API_VERSION}/about').status_code == 200
-    assert 'NCI IDC API' in response.json['message']
-
-
-def test_oauth2callback(client, app):
-    response = client.get(f'/{API_VERSION}/oauth2callback')
-    print(response)
-
-
-def test_user_info(client, app):
-    response = client.get(f'/{API_VERSION}/users/account_details')
+    response = client.get(f'{API_URL}/about')
     assert response.status_code == 200
-    user_details = response.json['user_details']
+    assert 'NCI IDC API' in get_data(response)['message']
+
+@_testMode
+def test_user_info(client, app):
+    response = client.get(f'{API_URL}/users/account_details', headers=auth_header)
+    assert response.status_code == 200
+    user_details = get_data(response)['user_details']
 
     assert user_details['email'] == settings.DEBUG_API_EMAIL

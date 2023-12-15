@@ -46,6 +46,7 @@ def test_invalid_filter(client, app):
 
         query_string = {
             'sql': True,
+            'patient_ID': True,
             'CRDC_Study_GUID': True,
             'CRDC_Series_GUID': True,
             'CRDC_Instance_GUID': True,

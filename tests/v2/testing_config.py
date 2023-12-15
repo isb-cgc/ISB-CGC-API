@@ -14,6 +14,37 @@
 # limitations under the License.
 #
 
+import os
+import requests
+from werkzeug.wrappers import Response as local_resonse
+from requests.models import Response as dev_response
+from scripts.idc_auth import get_credentials
+from oauth2client.file import Storage
+DEFAULT_STORAGE_FILE = os.path.join(os.path.expanduser("~"), '.idc_credentials')
+
 API_VERSION = 'v2'
-VERSIONS = 15
-NUM_COLLECTIONS = 135
+VERSIONS = 17
+NUM_COLLECTIONS = 142
+
+test_dev_api = True
+dev_api_requester = requests
+API_URL = f'https://dev-api.canceridc.dev/{API_VERSION}' if test_dev_api else f'{API_VERSION}'
+get_data = dev_response.json if test_dev_api else local_resonse.get_json
+
+if test_dev_api:
+    # storage = Storage(DEFAULT_STORAGE_FILE)
+    # credentials = storage.get()
+    # if credentials.access_token_expired:
+    #     # credentials have expired so use the refresh_tokem
+    #     token = credentials.refresh_token
+    # else:
+    #     # Still good; use the access token
+    #     token = credentials.access_token
+    storage = Storage(DEFAULT_STORAGE_FILE)
+    credentials = get_credentials(storage)
+    # token = credentials.access_token
+    token = credentials.token_response['id_token']
+    auth_header = {"Authorization": f'Bearer {token}'}
+else:
+    auth_header = {}
+
