@@ -3,7 +3,6 @@ mkdir ./txt
 
 gsutil cp "gs://${DEPLOYMENT_BUCKET}/${ENV_FILE}" ./.env
 gsutil cp "gs://${DEPLOYMENT_BUCKET}/${API_RUNTIME_SA_KEY}" ./privatekey.json
-#gsutil cp "gs://${DEPLOYMENT_BUCKET}/${OPEN_API_YAML}" ./openapi-appengine.yaml
 gsutil cp "gs://${DEPLOYMENT_BUCKET}/${OPEN_API_V1_YAML}" ./openapi-appengine.v1.yaml
 gsutil cp "gs://${DEPLOYMENT_BUCKET}/${OPEN_API_V2_YAML}" ./openapi-appengine.v2.yaml
 gsutil cp "gs://${DEPLOYMENT_BUCKET}/${OPEN_API_YAML}" ./api/api.yaml
