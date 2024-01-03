@@ -158,6 +158,13 @@ def test_categorical_field_values(client, app):
     assert modalities - set(values) == set()
 
 
+    filter = 'race'
+    response = client.get(f'{API_URL}/filters/values/{filter}')
+    assert response.status_code == 200
+    values = get_data(response)['values']
+    modalities = set([None, 'AMERICAN INDIAN OR ALASKA NATIVE', 'ASIAN', 'BLACK OR AFRICAN AMERICAN', 'NATIVE HAWAIIAN OR OTHER PACIFIC ISLANDER', 'WHITE'])
+    assert modalities - set(values) == set()
+
 @_testMode
 def test_fields(client, app):
     response = client.get(f'{API_URL}/fields')

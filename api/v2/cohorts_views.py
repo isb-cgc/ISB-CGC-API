@@ -76,9 +76,8 @@ def get_cohort_list(user):
         cohort_list = results.json()
     except Exception as e:
         logger.exception(e)
-        logger.error(f"results={results.text}")
         cohort_info = {
-            "message": f"Failed request: {results.text}",
+            "message": f"Failed request: {e.message}",
             'code': 500
         }
         return cohort_info
