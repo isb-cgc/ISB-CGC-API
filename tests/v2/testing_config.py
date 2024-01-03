@@ -27,8 +27,10 @@ VERSIONS = 17
 NUM_COLLECTIONS = 142
 
 test_dev_api = True
+dev_or_testing = 'testing'
+# dev_or_testing = 'testing'
 dev_api_requester = requests
-API_URL = f'https://dev-api.canceridc.dev/{API_VERSION}' if test_dev_api else f'{API_VERSION}'
+API_URL = f'https://{dev_or_testing}-api.canceridc.dev/{API_VERSION}' if test_dev_api else f'{API_VERSION}'
 get_data = dev_response.json if test_dev_api else local_resonse.get_json
 
 if test_dev_api:

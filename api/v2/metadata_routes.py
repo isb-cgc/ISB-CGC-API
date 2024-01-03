@@ -151,8 +151,8 @@ def categorical_values(filter_id):
 
         for source in results['data_sources']:
             filter = next((filter for filter in source['filters'] if filter['name'].lower() == filter_id.lower()), -1)
-            if filter == -1:
-                continue
+            if filter != -1:
+                break
         if filter == -1:
             response = jsonify({
                 'code': 400,
