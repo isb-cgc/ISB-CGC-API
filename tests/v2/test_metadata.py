@@ -105,7 +105,7 @@ def test_filters(client, app):
     # assert filters['program_name']['dataSetTypes'][0]['data_type'] == 'Clinical, Biospecimen, and Mutation Data'
     assert filters['disease_code'] == {'data_type': 'Categorical String', 'units': None}
 
-    source_name = f'bigquery-public-data.idc_v{VERSIONS}.dicom_pivot'
+    source_name = f'idc-dev-etl.idc_v{VERSIONS}_pub.dicom_pivot'
     data_source = next(
         source for source in data_sources if source['data_source'] == source_name)
     filters = {filter['name']: {key: filter[key] for key in filter.keys() if key != 'name'} for filter in data_source['filters']}
