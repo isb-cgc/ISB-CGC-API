@@ -70,7 +70,7 @@ def test_analysis_results(client, app):
     # assert collection['date_updated'] == '2016-08-29'
     assert collection['doi'].lower() == '10.7937/TCIA.2018.h7umfurq'.lower()
     assert collection['location'] == 'Chest'
-    assert collection['subject_count'] == 1010
+    assert collection['subject_count'] == 875
 
 
 def test_attributes(client, app):
@@ -87,7 +87,8 @@ def test_attributes(client, app):
     data = response.json
     data_sources = data["data_sources"]
 
-    source_name = f'bigquery-public-data.idc_v{VERSIONS}.dicom_pivot'
+    # source_name = f'bigquery-public-data.idc_v{VERSIONS}.dicom_pivot'
+    source_name = f'idc-dev-etl.idc_v{VERSIONS}_pub.dicom_pivot'
     data_source = next(
         source for source in data_sources if source['data_source'] == source_name)
     attributes = {attribute['name']: {key: attribute[key] for key in attribute.keys() if key != 'name'} for attribute in data_source['attributes']}
