@@ -1,2 +1,2 @@
 # IDC-API
-Google Endpoints API Used to Drive CGC Webapp
+Google Endpoints API Used to Drive IDC API

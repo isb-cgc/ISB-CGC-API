@@ -47,8 +47,6 @@ print("[STATUS] DEBUG mode is "+str(DEBUG))
 LOGGER_NAME = os.environ.get('API_LOGGER_NAME', 'main_logger')
 LOG_LEVEL                  = logging.DEBUG if DEBUG else logging.INFO
 
-# BASE_URL                = os.environ.get('BASE_URL', 'https://idc-dev.appspot.com')
-# BASE_API_URL            = os.environ.get('BASE_API_URL', 'https://api-dot-idc-dev.appspot.com')
 BASE_URL                = os.environ.get('BASE_URL', 'https://dev-portal.canceridc.dev')
 BASE_API_URL            = os.environ.get('BASE_API_URL', 'https://dev-portal.canceridc.dev')
 
@@ -58,6 +56,7 @@ SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', '')
 PAGE_TOKEN_KEY          = os.environ.get('PAGE_TOKEN_KEY', '')
 
 GOOGLE_APPLICATION_CREDENTIALS  = join(dirname(__file__), SECURE_LOCAL_PATH, os.environ.get('GOOGLE_APPLICATION_CREDENTIALS', ''))
+os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = GOOGLE_APPLICATION_CREDENTIALS
 # OAUTH2_CLIENT_ID                = os.environ.get('OAUTH2_CLIENT_ID', '')
 # OAUTH2_CLIENT_SECRET            = os.environ.get('OAUTH2_CLIENT_SECRET', '')
 
@@ -69,7 +68,7 @@ try:
 except Exception:
     print("[ERROR] Failed to load API auth token - authorized endpoints may fail!")
 API_AUTH_HEADER = os.environ.get('API_AUTH_HEADER')
-API_VERSION = 'v1'
+API_VERSION = 'v2'
 
 ##############################################################
 #   MAXes to prevent size-limited events from causing errors

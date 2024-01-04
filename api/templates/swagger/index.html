@@ -47,7 +47,13 @@
     }
 
     window.onload = function() {
-      var js_spec = JSON.parse('{{ load_spec()|safe }}');
+      let version = window.location.pathname.split("/")[1];
+      let js_spec = null;
+      if (version === "v1") {
+          js_spec = JSON.parse('{{ load_spec("v1")|safe }}');
+      } else {
+          js_spec = JSON.parse('{{ load_spec("v2")|safe }}');
+      }
       // Begin Swagger UI call region
       var ui = SwaggerUIBundle({
         spec: js_spec,
