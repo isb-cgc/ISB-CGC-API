@@ -16,8 +16,9 @@
 
 import json
 import re
-from testing_config import API_URL, get_data, auth_header
+from testing_config import API_URL, get_data, auth_header, test_remote_api
 from testing_utils import current_version, create_cohort, delete_cohort, _testMode
+from api.v2.metadata_views import integer_continuous_numerics
 
 import requests
 
@@ -29,7 +30,26 @@ headers = {
 
 
 @_testMode
-def test_invalid_keys(client, app):
+def test_invalid_params(client, app):
+    filters = {
+        "age_at_diagnosis_btw": [65.2, 75],
+        "collection_id": ["TCGA-READ"],
+        "Modality": ["ct", "mR"],
+        "RACE": ["WHITE"]
+    }
+
+    cohort_def = {"name": "testcohort",
+                  "description": "Test description",
+                  "filters": filters}
+
+    # Get a guid manifest of the cohort's instances
+    response = client.post(f'{API_URL}/cohorts/',
+                           data=json.dumps(cohort_def),
+                           headers=headers | auth_header)
+
+    assert response.status_code == 400
+    assert get_data(response)['message'].startswith("65.2 is not of type 'integer'")
+
     filters = {
         "age_at_diagnosis_btw": [65, 75],
         "collection_id": ["TCGA-READ"],
@@ -80,11 +100,60 @@ def test_invalid_keys(client, app):
 @_testMode
 def test_create_cohort(client, app):
     # Create a filter set
+    attribute = "age_at_diagnosis"
+    op = 'btwe'
+    _from = 1
+    _to = 100
     filters = {
         "Collection_ID": ["tcga_luad", "tcga_kirc"],
         "Modality": ["cT", "Mr"],
         "RaCe": ["WHITE"],
-        "age_at_diagnosis_btw": [1, 100],
+        f"{attribute}_{op}": [_from, _to],
+    }
+    cohortSpec = {"name":"testcohort",
+                  "description":"Test description",
+                  "filters":filters}
+
+    mimetype = 'application/json'
+    headers = {
+        'Accept': mimetype,
+        'Content-Type': mimetype
+    }
+
+    try:
+        response = client.post(f'{API_URL}/cohorts',
+               data=json.dumps(cohortSpec), headers=headers | auth_header)
+        # response = requests.post(f'{API_URL}/cohorts',
+        #        data=json.dumps(cohortSpec), headers=headers | auth_header)
+
+
+    except Exception as exc:
+        print(exc)
+    assert response.status_code == 200
+    cohortResponse = get_data(response)['cohort_properties']
+
+    assert cohortResponse['name']==cohortSpec["name"]
+    assert cohortResponse['description']==cohortSpec["description"]
+    assert cohortResponse["filterSet"]["idc_data_version"]==current_version(client)
+    map = {key.lower(): key for key in cohortResponse['filterSet']['filters'].keys()}
+    for key, value in filters.items():
+        assert key.lower() in map
+        assert [v.lower() if isinstance(v, str) else v for v in cohortResponse['filterSet']['filters'][map[key.lower()]]] == \
+               [v.lower() if isinstance(v, str) else v for v in value]
+
+    # Delete the cohort we just created
+    delete_cohort(client, cohortResponse['cohort_id'])
+
+    # Create a filter set
+    attribute = "age_at_diagnosis"
+    op = 'btwe'
+    _from = 1.
+    _to = 100
+    filters = {
+        "Collection_ID": ["tcga_luad", "tcga_kirc"],
+        "Modality": ["cT", "Mr"],
+        "RaCe": ["WHITE"],
+        f"{attribute}_{op}": [_from, _to],
     }
 
     cohortSpec = {"name":"testcohort",
@@ -109,22 +178,94 @@ def test_create_cohort(client, app):
     assert response.status_code == 200
     cohortResponse = get_data(response)['cohort_properties']
 
-    assert cohortResponse['name']=="testcohort"
-    assert cohortResponse['description']=="Test description"
-    # assert len(cohortResponse['filterSet']) == 1
+    assert cohortResponse['name']==cohortSpec["name"]
+    assert cohortResponse['description']==cohortSpec["description"]
     assert cohortResponse["filterSet"]["idc_data_version"]==current_version(client)
-    assert 'race' in cohortResponse['filterSet']['filters'] and \
-           cohortResponse['filterSet']['filters']['race'] == ['WHITE']
-    assert 'Modality' in cohortResponse['filterSet']['filters']
-    assert  set(value.lower() for value in cohortResponse['filterSet']['filters']['Modality']) == \
-            set(['ct', 'mr'])
-    assert 'collection_id' in cohortResponse['filterSet']['filters']
-    assert set(value.lower() for value in cohortResponse['filterSet']['filters']['collection_id']) == \
-           set(['tcga_luad', 'tcga_kirc'])
+    map = {key.lower(): key for key in cohortResponse['filterSet']['filters'].keys()}
+    for key, value in filters.items():
+        assert key.lower() in map
+        assert [v.lower() if isinstance(v, str) else v for v in cohortResponse['filterSet']['filters'][map[key.lower()]]] == \
+               [v.lower() if isinstance(v, str) else v for v in value]
 
     # Delete the cohort we just created
     delete_cohort(client, cohortResponse['cohort_id'])
 
+
+# Test basic cohort creation.
+@_testMode
+def test_ranged_filters(client, app):
+    # Get the available filters
+    response = client.get(f'{API_URL}/filters')
+    assert response.status_code == 200
+    data = get_data(response)
+    data_sources = data["data_sources"]
+    for data_source in data_sources:
+        for filter in data_source["filters"]:
+            if filter["data_type"] in ['Ranged Integer', 'Ranged Numeric']:
+                 # Create a filter set
+                attribute = filter["name"]
+                print(f"Testing {filter['data_type']} attribute {attribute}")
+
+                if attribute.split('_')[-1] in ['eq', 'lt', 'lte', 'gt', 'gte']:
+                     if filter["data_type"] == 'Ranged Integer':
+                         value = [1]
+                     else:
+                         value = [1.1]
+                else:
+                    if filter["data_type"] == 'Ranged Integer':
+                        value = [1, 100]
+                    else:
+                        value - [1.1, 100.1]
+
+                filters = {
+                    "Collection_ID": ["tcga_luad", "tcga_kirc"],
+                    "Modality": ["cT", "Mr"],
+                    "RaCe": ["WHITE"],
+                    attribute: value,
+                }
+                cohortSpec = {"name":"testcohort",
+                              "description":"Test description",
+                              "filters":filters}
+
+                mimetype = 'application/json'
+                headers = {
+                    'Accept': mimetype,
+                    'Content-Type': mimetype
+                }
+
+                try:
+                    response = client.post(f'{API_URL}/cohorts',
+                           data=json.dumps(cohortSpec), headers=headers | auth_header)
+                    # response = requests.post(f'{API_URL}/cohorts',
+                    #        data=json.dumps(cohortSpec), headers=headers | auth_header)
+
+                except Exception as exc:
+                    print(exc)
+                if response.status_code != 200:
+                    print(f"Status_code: {response.status_code}")
+                    pass
+                assert response.status_code == 200
+                cohortResponse = get_data(response)['cohort_properties']
+
+                assert cohortResponse['name']==cohortSpec["name"]
+                assert cohortResponse['description']==cohortSpec["description"]
+                assert cohortResponse["filterSet"]["idc_data_version"]==current_version(client)
+                map = {key.lower(): key for key in cohortResponse['filterSet']['filters'].keys()}
+                for key, value in filters.items():
+                    # assert key.lower() in map
+                    if not key.lower() in map:
+                        print(f"{key.lower()} not in map {map}")
+
+                    else:
+                       assert [v.lower() if isinstance(v, str) else v for v in cohortResponse['filterSet']['filters'][map[key.lower()]]] == \
+                           [v.lower() if isinstance(v, str) else v for v in value]
+                    # if [v.lower() if isinstance(v, str) else v for v in cohortResponse['filterSet']['filters'][map[key.lower()]]] != \
+                    #        [v.lower() if isinstance(v, str) else v for v in value]:
+                    #     print(f"OP mismatch: {[v.lower() if isinstance(v, str) else v for v in cohortResponse['filterSet']['filters'][map[key.lower()]]]} != \
+                    #        {[v.lower() if isinstance(v, str) else v for v in value]}")
+
+                # Delete the cohort we just created
+                delete_cohort(client, cohortResponse['cohort_id'])
 
 @_testMode
 def test_list_cohorts(client,app):
@@ -228,12 +369,16 @@ def test_delete_cohorts(client, app):
 # Useful to clean up the DB, and to speed up testing
 @_testMode
 def test_delete_all_cohorts(client, app):
-    # Get the list of cohorts
-    response = client.get(f'{API_URL}/cohorts',
-                          headers=headers | auth_header)
-    assert response.status_code == 200
+    if test_remote_api:
+        # Don't delete all the cohorts when the API is dev, test or prod
+        pass
+    else:
+        # Get the list of cohorts
+        response = client.get(f'{API_URL}/cohorts',
+                              headers=headers | auth_header)
+        assert response.status_code == 200
 
-    cohorts = get_data(response)['cohorts']
-    for cohort in cohorts:
-        delete_cohort(client, cohort['cohort_id'])
+        cohorts = get_data(response)['cohorts']
+        for cohort in cohorts:
+            delete_cohort(client, cohort['cohort_id'])
 

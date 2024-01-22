@@ -23,17 +23,19 @@ from oauth2client.file import Storage
 DEFAULT_STORAGE_FILE = os.path.join(os.path.expanduser("~"), '.idc_credentials')
 
 API_VERSION = 'v2'
-VERSIONS = 17
+VERSION = 17
 NUM_COLLECTIONS = 142
 
-test_dev_api = True
-dev_or_testing = 'dev'
-# dev_or_testing = 'testing'
-dev_api_requester = requests
-API_URL = f'https://{dev_or_testing}-api.canceridc.dev/{API_VERSION}' if test_dev_api else f'{API_VERSION}'
-get_data = dev_response.json if test_dev_api else local_resonse.get_json
+# True to access dev, testing or prod APIs, False to access local API
+test_remote_api = False
 
-if test_dev_api:
+# dev, testing or prod to access the corresponding API when test_dev_api is True
+dev_or_testing_or_prod = 'testing'
+dev_api_requester = requests
+API_URL = f'https://api.imaging.datacommons.cancer.gov/{API_VERSION}' if test_remote_api and dev_or_testing_or_prod == 'prod' else f'https://{dev_or_testing_or_prod}-api.canceridc.dev/{API_VERSION}' if test_remote_api else f'{API_VERSION}'
+get_data = dev_response.json if test_remote_api else local_resonse.get_json
+
+if test_remote_api:
     # storage = Storage(DEFAULT_STORAGE_FILE)
     # credentials = storage.get()
     # if credentials.access_token_expired:

@@ -17,7 +17,7 @@
 import json
 from api.v2.schemas.filters import COHORT_FILTERS_SCHEMA
 from api.v2.manifest_utils import process_special_fields, normalize_query_fields
-from testing_config import test_dev_api, dev_api_requester, API_URL, get_data, auth_header
+from testing_config import test_remote_api, dev_api_requester, API_URL, get_data, auth_header
 import functools
 
 levels = ["collections", "patients", "studies", "series", "instances"]
@@ -31,7 +31,7 @@ headers = {
 def _testMode(func):
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
-        if test_dev_api:
+        if test_remote_api:
             kwargs['client'] = dev_api_requester
         result = func(*args, **kwargs)
         return result
@@ -46,8 +46,8 @@ def gen_query(manifestPreviewBody):
 
     query = f"""
 SELECT @fields
-FROM `idc-dev-etl.idc_v{VERSIONS}_pub.dicom_pivot{'_v'+VERSIONS if VERSIONS < 15 else ''}` dicom_pivot
-LEFT JOIN `idc-dev-etl.idc_v{VERSIONS}_pub.tcga_clinical_rel9` tcga_clinical
+FROM `idc-dev-etl.idc_v{VERSION}_pub.dicom_pivot{'_v'+VERSION if VERSION < 15 else ''}` dicom_pivot
+LEFT JOIN `idc-dev-etl.idc_v{VERSION}_pub.tcga_clinical_rel9` tcga_clinical
 ON dicom_pivot.PatientID = tcga_clinical.case_barcode
 WHERE @filters
 GROUP BY @fields
@@ -161,7 +161,9 @@ def create_cohort(client):
     filters = {
         "collection_id": ["tcga_luad", "tcga_kirc"],
         "Modality": ["CT", "MR"],
-        "race": ["WHITE"]}
+        "race": ["WHITE"],
+        "age_at_diagnosis_btw": [1, 100],
+    }
 
     cohortSpec = {"name": "testcohort",
                   "description": "Test description",
@@ -188,13 +190,13 @@ def create_cohort_for_test_get_cohort_xxx(client, filters=None):
         filters = {
             "collection_id": ["TCGA-READ"],
             "Modality": ["CT", "MR"],
-            "race": ["WHITE"],
             "age_at_diagnosis_btw": [1, 100],
+            "race": ["WHITE"]
         }
 
-        cohortSpec = {"name": "testcohort",
-                  "description": "Test description",
-                  "filters": filters}
+    cohortSpec = {"name": "testcohort",
+              "description": "Test description",
+              "filters": filters}
 
     mimetype = 'application/json'
     headers = {
