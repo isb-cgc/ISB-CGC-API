@@ -15,7 +15,7 @@
 
 import json
 import datetime
-from testing_config import API_URL, get_data, test_dev_api, auth_header
+from testing_config import API_URL, get_data, test_remote_api, auth_header, VERSION
 from testing_utils import create_cohort_for_test_get_cohort_xxx, \
     delete_cohort, _testMode
 from google.cloud import bigquery
@@ -204,6 +204,200 @@ def test_basic(client, app):
     delete_cohort(client, id)
 
 
+# Test that the generated SQL is correct. Iterate over ranged filters
+@_testMode
+def test_sql_ranged_integer(client, app):
+    bq_client = bigquery.Client(project='idc-dev-etl')
+
+    attribute = "age_at_diagnosis"
+    ops = {
+        'eq': {
+            "values": [65],
+            "clause": f"tcga_clinical_rel9.{attribute} = 65"
+        },
+        'lt': {
+            "values": [75],
+            "clause": f"tcga_clinical_rel9.{attribute} < 75"
+        },
+        'lte': {
+            "values": [75],
+            "clause": f"tcga_clinical_rel9.{attribute} <= 75"
+        },
+        'gt': {
+            "values": [100],
+            "clause": f"tcga_clinical_rel9.{attribute} > 100"
+        },
+        'gte': {
+            "values": [100],
+            "clause": f"tcga_clinical_rel9.{attribute} >= 100"
+        },
+        'ebtw': {
+            "values": [65, 75],
+            "clause": f"tcga_clinical_rel9.{attribute} >= 65 AND tcga_clinical_rel9.{attribute} < 75"
+        },
+        'btw': {
+            "values": [65, 75],
+            "clause": f"tcga_clinical_rel9.{attribute} > 65 AND tcga_clinical_rel9.{attribute} < 75"
+        },
+        'btwe': {
+            "values": [65, 75],
+            "clause": f"tcga_clinical_rel9.{attribute} > 65 AND tcga_clinical_rel9.{attribute} <= 75"
+        },
+        'ebtwe': {
+            "values": [65, 75],
+            "clause": f"tcga_clinical_rel9.{attribute} BETWEEN 65 AND 75"
+        },
+    }
+    for op, val in ops.items():
+        print(f"Testing operand {op} with values {val}")
+        expected_sql = f"""\n            #standardSQL\n    \n        SELECT dicom_pivot.collection_id,dicom_pivot.crdc_study_uuid,dicom_pivot.crdc_series_uuid,dicom_pivot.crdc_instance_uuid,dicom_pivot.gcs_bucket,dicom_pivot.gcs_url,dicom_pivot.aws_bucket,dicom_pivot.aws_url,tcga_clinical_rel9.age_at_diagnosis\n        FROM `idc-dev-etl.idc_v{VERSION}_pub.dicom_pivot` dicom_pivot \n        \n        LEFT JOIN `bigquery-public-data.idc_v4.tcga_clinical_rel9` tcga_clinical_rel9\n        ON dicom_pivot.PatientID = tcga_clinical_rel9.case_barcode\n    \n        WHERE ((LOWER(dicom_pivot.Modality) IN UNNEST(["ct", "mr"]))) AND ((dicom_pivot.collection_id = "tcga_read")) AND (((tcga_clinical_rel9.race = "WHITE")) AND (({val['clause']})) OR tcga_clinical_rel9.case_barcode IS NULL)\n        \n        GROUP BY dicom_pivot.collection_id, dicom_pivot.crdc_study_uuid, dicom_pivot.crdc_series_uuid, dicom_pivot.crdc_instance_uuid, tcga_clinical_rel9.age_at_diagnosis, dicom_pivot.gcs_bucket, dicom_pivot.gcs_url, dicom_pivot.aws_bucket, dicom_pivot.aws_url\n        ORDER BY dicom_pivot.collection_id ASC, dicom_pivot.crdc_study_uuid ASC, dicom_pivot.crdc_series_uuid ASC, dicom_pivot.crdc_instance_uuid ASC, tcga_clinical_rel9.age_at_diagnosis ASC, dicom_pivot.gcs_bucket ASC, dicom_pivot.gcs_url ASC, dicom_pivot.aws_bucket ASC, dicom_pivot.aws_url ASC\n        \n        \n    """
+
+        filters = {
+            "collection_id": ["TCGA-read"],
+            "Modality": ["ct", "mR"],
+            f'{attribute}_{op}': val['values'],
+            "RACE": ["WHITE"]
+        }
+
+        id, filterSet = create_cohort_for_test_get_cohort_xxx(client, filters)
+
+        mimetype = 'application/json'
+        headers = {
+            'Content-Type': mimetype,
+            'Accept': mimetype
+        }
+
+        fields = [
+            'collection_id',
+            'crdc_study_uuid',
+            'crdc_series_uuid',
+            'crdc_instance_uuid',
+            'age_at_diagnosis',
+            'gcs_bucket',
+            'gcs_url',
+            'aws_bucket',
+            'aws_url'
+        ]
+
+        manifestBody = {
+            "fields": fields,
+            "counts": True,
+            "group_size": False,
+            "sql": True,
+            'page_size': 2000
+        }
+
+
+        # Get a manifest of the cohort's instances`
+        response = client.post(f'{API_URL}/cohorts/manifest/{id}',
+                data = json.dumps(manifestBody),
+                headers=headers
+            )
+
+        assert response.status_code == 200
+        cohort_def = get_data(response)['cohort_def']
+        assert cohort_def['sql'] == expected_sql
+
+        delete_cohort(client, id)
+
+
+# Test that the generated SQL is correct. Iterate over ranged filters
+@_testMode
+def test_sql_ranged_number(client, app):
+    bq_client = bigquery.Client(project='idc-dev-etl')
+
+    attribute = "bmi"
+    ops = {
+        'eq': {
+            "values": [65.1],
+            "clause": f"tcga_clinical_rel9.{attribute} = 65.1"
+        },
+        'lt': {
+            "values": [75.1],
+            "clause": f"tcga_clinical_rel9.{attribute} < 75.1"
+        },
+        'lte': {
+            "values": [75.1],
+            "clause": f"tcga_clinical_rel9.{attribute} <= 75.1"
+        },
+        'gt': {
+            "values": [100.1],
+            "clause": f"tcga_clinical_rel9.{attribute} > 100.1"
+        },
+        'gte': {
+            "values": [100.1],
+            "clause": f"tcga_clinical_rel9.{attribute} >= 100.1"
+        },
+        'ebtw': {
+            "values": [65.1, 75.1],
+            "clause": f"tcga_clinical_rel9.{attribute} >= 65.1 AND tcga_clinical_rel9.{attribute} < 75.1"
+        },
+        'btw': {
+            "values": [65.1, 75.1],
+            "clause": f"tcga_clinical_rel9.{attribute} > 65.1 AND tcga_clinical_rel9.{attribute} < 75.1"
+        },
+        'btwe': {
+            "values": [65.1, 75.1],
+            "clause": f"tcga_clinical_rel9.{attribute} > 65.1 AND tcga_clinical_rel9.{attribute} <= 75.1"
+        },
+        'ebtwe': {
+            "values": [65.1, 75.1],
+            "clause": f"tcga_clinical_rel9.{attribute} BETWEEN 65.1 AND 75.1"
+        },
+    }
+    for op, val in ops.items():
+        print(f"Testing operand {op} with values {val}")
+        expected_sql = f"""\n            #standardSQL\n    \n        SELECT dicom_pivot.collection_id,dicom_pivot.crdc_study_uuid,dicom_pivot.crdc_series_uuid,dicom_pivot.crdc_instance_uuid,dicom_pivot.gcs_bucket,dicom_pivot.gcs_url,dicom_pivot.aws_bucket,dicom_pivot.aws_url,tcga_clinical_rel9.age_at_diagnosis\n        FROM `idc-dev-etl.idc_v{VERSION}_pub.dicom_pivot` dicom_pivot \n        \n        LEFT JOIN `bigquery-public-data.idc_v4.tcga_clinical_rel9` tcga_clinical_rel9\n        ON dicom_pivot.PatientID = tcga_clinical_rel9.case_barcode\n    \n        WHERE ((LOWER(dicom_pivot.Modality) IN UNNEST(["ct", "mr"]))) AND ((dicom_pivot.collection_id = "tcga_read")) AND (((tcga_clinical_rel9.race = "WHITE")) AND (({val['clause']})) OR tcga_clinical_rel9.case_barcode IS NULL)\n        \n        GROUP BY dicom_pivot.collection_id, dicom_pivot.crdc_study_uuid, dicom_pivot.crdc_series_uuid, dicom_pivot.crdc_instance_uuid, tcga_clinical_rel9.age_at_diagnosis, dicom_pivot.gcs_bucket, dicom_pivot.gcs_url, dicom_pivot.aws_bucket, dicom_pivot.aws_url\n        ORDER BY dicom_pivot.collection_id ASC, dicom_pivot.crdc_study_uuid ASC, dicom_pivot.crdc_series_uuid ASC, dicom_pivot.crdc_instance_uuid ASC, tcga_clinical_rel9.age_at_diagnosis ASC, dicom_pivot.gcs_bucket ASC, dicom_pivot.gcs_url ASC, dicom_pivot.aws_bucket ASC, dicom_pivot.aws_url ASC\n        \n        \n    """
+
+        filters = {
+            "collection_id": ["TCGA-read"],
+            "Modality": ["ct", "mR"],
+            f'{attribute}_{op}': val['values'],
+            "RACE": ["WHITE"]
+        }
+
+        id, filterSet = create_cohort_for_test_get_cohort_xxx(client, filters)
+
+        mimetype = 'application/json'
+        headers = {
+            'Content-Type': mimetype,
+            'Accept': mimetype
+        }
+
+        fields = [
+            'collection_id',
+            'crdc_study_uuid',
+            'crdc_series_uuid',
+            'crdc_instance_uuid',
+            'age_at_diagnosis',
+            'gcs_bucket',
+            'gcs_url',
+            'aws_bucket',
+            'aws_url'
+        ]
+
+        manifestBody = {
+            "fields": fields,
+            "counts": True,
+            "group_size": False,
+            "sql": True,
+            'page_size': 2000
+        }
+
+
+        # Get a manifest of the cohort's instances`
+        response = client.post(f'{API_URL}/cohorts/manifest/{id}',
+                data = json.dumps(manifestBody),
+                headers=headers
+            )
+
+        assert response.status_code == 200
+        cohort_def = get_data(response)['cohort_def']
+        assert cohort_def['sql'] == expected_sql
+
+        delete_cohort(client, id)
+
+
 @_testMode
 def test_special_fields(client, app):
     bq_client = bigquery.Client(project='idc-dev-etl')
@@ -249,6 +443,8 @@ def test_special_fields(client, app):
     for key in bq_data[0]:
         print(key)
         assert (set(row[key].isoformat() if isinstance(row[key], datetime.date) else row[key] for row in bq_data) == set(row[key] for row in rows))
+
+    delete_cohort(client, id)
 
 
 @_testMode
@@ -298,6 +494,8 @@ def test_series_granularity(client, app):
         assert (set(row[key] for row in bq_data) == set(row[key] for row in rows))
     # assert {'GCS_URL': 'gs://public-datasets-idc/0190fe71-7144-40ae-a24c-c8d21a99317d/01210a30-8395-498c-905f-6667db67101a.dcm'} in rows
 
+    delete_cohort(client, id)
+
 
 @_testMode
 def test_study_granularity(client, app):
@@ -330,7 +528,6 @@ def test_study_granularity(client, app):
     manifest = get_data(response)['manifest']
     bq_data = [dict(row) for row in bq_client.query(cohort_def['sql'] + f'LIMIT {manifestBody["page_size"]}')]
 
-
     assert manifest['rowsReturned'] == len(bq_data)
 
     next_page = get_data(response)['next_page']
@@ -345,6 +542,8 @@ def test_study_granularity(client, app):
     for key in bq_data[0]:
         print(key)
         assert (set(row[key] for row in bq_data) == set(row[key] for row in rows))
+
+    delete_cohort(client, id)
 
 
 @_testMode
@@ -393,6 +592,8 @@ def test_patient_granularity(client, app):
     for key in bq_data[0]:
         print(key)
         assert (set(row[key] for row in bq_data) == set(row[key] for row in rows))
+
+    delete_cohort(client, id)
 
 
 @_testMode
@@ -444,6 +645,8 @@ def test_collection_granularity(client, app):
     for key in bq_data[0]:
         print(key)
         assert (set(row[key] for row in bq_data) == set(row[key] for row in rows))
+
+    delete_cohort(client, id)
 
 
 @_testMode
@@ -497,6 +700,8 @@ def test_version_granularity(client, app):
         print(key)
         assert (set(row[key] for row in bq_data) == set(row[key] for row in rows))
 
+    delete_cohort(client, id)
+
 
 @_testMode
 def test_paged(client, app):
@@ -525,11 +730,9 @@ def test_paged(client, app):
         'page_size': 500
     }
 
-
     response = client.post(f'{API_URL}/cohorts/manifest/{id}',
                             data = json.dumps(manifestBody),
                             headers=headers | auth_header)
-
 
     assert response.status_code == 200
     cohort_def = get_data(response)['cohort_def']
@@ -554,7 +757,7 @@ def test_paged(client, app):
             'PAGE_SIZE': 500
         }
 
-        if test_dev_api:
+        if test_remote_api:
             response = client.get(f'{API_URL}/cohorts/manifest/nextPage',
                                 params=query_string,
                                 headers = headers|auth_header)
@@ -575,3 +778,5 @@ def test_paged(client, app):
     for bq_key in bq_data[0]:
         api_key = next(api_key for api_key in rows[0].keys() if bq_key.lower()==api_key.lower())
         assert (set(row[bq_key] for row in bq_data) == set(row[api_key] for row in rows))
+
+    delete_cohort(client, id)

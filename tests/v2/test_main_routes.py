@@ -16,7 +16,7 @@
 
 from python_settings import settings
 # from settings import API_VERSION
-from testing_config import VERSIONS, API_URL, get_data
+from testing_config import VERSION, API_URL, get_data
 from testing_utils import _testMode, auth_header
 
 @_testMode
