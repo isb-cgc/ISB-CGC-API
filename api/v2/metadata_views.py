@@ -23,10 +23,18 @@ import requests
 from flask import request
 from .auth import get_auth
 from .version_config import API_VERSION
+from .schemas.filters import COHORT_FILTERS_SCHEMA
 from python_settings import settings
 logger = logging.getLogger(settings.LOGGER_NAME)
 
 BLACKLIST_RE = settings.BLACKLIST_RE
+
+integer_continuous_numerics = (
+    'age_at_diagnosis',
+    'max_TotalPixelMatrixColumns',
+    'max_TotalPixelMatrixRows',
+    'min_PixelSpacing'
+)
 
 def get_versions():
     auth = get_auth()
@@ -128,6 +136,11 @@ def get_filters():
                 message="Encountered an error while retrieving the attributes list: {}".format(response.content),
                 code=response.status_code
             )
+        for data_source in info["data_sources"]:
+            for filter in data_source['filters']:
+                if filter["data_type"] =="Continuous Numeric":
+                    # filter_data = COHORT_FILTERS_SCHEMA["properties"][filter["name"]]
+                    filter["data_type"] = "Ranged Integer" if filter["name"].rsplit('_',1)[0] in integer_continuous_numerics else "Ranged Number"
 
     except Exception as e:
         logger.error("[ERROR] No content in response from web app")
