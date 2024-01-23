@@ -282,9 +282,14 @@ def validate_cohort_def(cohort_def):
     try:
         schema_validate(cohort_def['filters'], COHORT_FILTERS_SCHEMA)
     except ValidationError as e:
-        logger.warning('[WARNING] Filters rejected for improper formatting: {}'.format(e))
+        logger.warning('[WARNING] Filters rejected for improper formatting: {}'.format(e.message))
+        # schema = "['"+"'],['".join(e.schema_path)+"']"
+        schema = ','.join(str(b) for b in [[a] for a in e.schema_path][0:-1])
+        # instance = "['"+"'],['".join(str(a) for a in e.path)+"']"
+        instance = ','.join(str(b) for b in [[a] for a in e.path])
+        message = f'{e.message}; Failed validating {e.schema_path[-1]} in schema {schema} on instance {instance}'
         result = dict(
-            message= 'Filters were improperly formatted.',
+            message= message,
             code = 400)
         return result
 
