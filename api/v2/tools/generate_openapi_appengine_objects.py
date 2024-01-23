@@ -27,6 +27,12 @@ import sys
 import argparse
 from google.cloud import bigquery
 
+integer_continuous_numerics = (
+    'age_at_diagnosis',
+    'max_TotalPixelMatrixColumns',
+    'max_TotalPixelMatrixRows',
+    'min_PixelSpacing'
+)
 
 def get_filter_metadata(args):
     url = 'http://localhost:8095/v2/filters'
@@ -97,12 +103,20 @@ def get_accepted_values(client, source, filter):
 def write_filter(client, f, source, filter):
     name = filter['name']
     data_type = {
-        'Continuous Numeric': 'number',
+        # 'Continuous Numeric': 'number',
+        'Ranged Number': 'number',
+        'Ranged Integer': 'integer',
         'Categorical Number': 'number',
         'Integer': 'integer',
         'Categorical String':'string',
         'String': 'string'
     }[filter['data_type']]
+    # integer_continuous_numerics = (
+    #     'age_at_diagnosis',
+    #     'max_TotalPixelMatrixColumns',
+    #     'max_TotalPixelMatrixRows',
+    #     'min_PixelSpacing'
+    # )
 
     f.write('      {}:'.format(name))
     f.write(
@@ -111,7 +125,11 @@ def write_filter(client, f, source, filter):
         items:
           type:"""
     )
-    if filter['data_type'] == 'Continuous Numeric':
+    if filter['data_type'].startswith('Ranged'):
+        # Some continuous numerics aren't really continuous
+        if name.startswith(integer_continuous_numerics):
+            data_type = 'integer'
+
         f.write(f' "{data_type}"\n')
         items = 2 if name.split('_')[-1] in ['ebtwe', 'ebtw', 'btwe', 'btw'] else 1
         f.write(f'        minItems: {items}\n')
