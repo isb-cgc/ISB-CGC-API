@@ -291,9 +291,10 @@ def test_sql_ranged_integer(client, app):
         # Get a manifest of the cohort's instances`
         response = client.post(f'{API_URL}/cohorts/manifest/{id}',
                 data = json.dumps(manifestBody),
-                headers=headers
+                headers=headers | auth_header
             )
-
+        if response.status_code != 200:
+            pass
         assert response.status_code == 200
         cohort_def = get_data(response)['cohort_def']
         assert cohort_def['sql'] == expected_sql
@@ -388,7 +389,7 @@ def test_sql_ranged_number(client, app):
         # Get a manifest of the cohort's instances`
         response = client.post(f'{API_URL}/cohorts/manifest/{id}',
                 data = json.dumps(manifestBody),
-                headers=headers
+                headers=headers | auth_header
             )
 
         assert response.status_code == 200
