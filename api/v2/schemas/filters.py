@@ -15,34 +15,10 @@ COHORT_FILTERS_SCHEMA={
       },
       "minItems": 1
     },
-    "age_at_diagnosis": {
-      "type": "array",
-      "items": {
-        "type": "number"
-      },
-      "minItems": 1,
-      "maxItems": 1
-    },
-    "age_at_diagnosis_lt": {
-      "type": "array",
-      "items": {
-        "type": "number"
-      },
-      "minItems": 1,
-      "maxItems": 1
-    },
-    "age_at_diagnosis_lte": {
-      "type": "array",
-      "items": {
-        "type": "number"
-      },
-      "minItems": 1,
-      "maxItems": 1
-    },
     "age_at_diagnosis_btw": {
       "type": "array",
       "items": {
-        "type": "number"
+        "type": "integer"
       },
       "minItems": 2,
       "maxItems": 2
@@ -50,15 +26,7 @@ COHORT_FILTERS_SCHEMA={
     "age_at_diagnosis_ebtw": {
       "type": "array",
       "items": {
-        "type": "number"
-      },
-      "minItems": 2,
-      "maxItems": 2
-    },
-    "age_at_diagnosis_ebtwe": {
-      "type": "array",
-      "items": {
-        "type": "number"
+        "type": "integer"
       },
       "minItems": 2,
       "maxItems": 2
@@ -66,7 +34,15 @@ COHORT_FILTERS_SCHEMA={
     "age_at_diagnosis_btwe": {
       "type": "array",
       "items": {
-        "type": "number"
+        "type": "integer"
+      },
+      "minItems": 2,
+      "maxItems": 2
+    },
+    "age_at_diagnosis_ebtwe": {
+      "type": "array",
+      "items": {
+        "type": "integer"
       },
       "minItems": 2,
       "maxItems": 2
@@ -74,7 +50,15 @@ COHORT_FILTERS_SCHEMA={
     "age_at_diagnosis_gte": {
       "type": "array",
       "items": {
-        "type": "number"
+        "type": "integer"
+      },
+      "minItems": 1,
+      "maxItems": 1
+    },
+    "age_at_diagnosis_lte": {
+      "type": "array",
+      "items": {
+        "type": "integer"
       },
       "minItems": 1,
       "maxItems": 1
@@ -82,31 +66,23 @@ COHORT_FILTERS_SCHEMA={
     "age_at_diagnosis_gt": {
       "type": "array",
       "items": {
-        "type": "number"
+        "type": "integer"
       },
       "minItems": 1,
       "maxItems": 1
     },
-    "bmi": {
+    "age_at_diagnosis_lt": {
       "type": "array",
       "items": {
-        "type": "number"
+        "type": "integer"
       },
       "minItems": 1,
       "maxItems": 1
     },
-    "bmi_lt": {
+    "age_at_diagnosis_eq": {
       "type": "array",
       "items": {
-        "type": "number"
-      },
-      "minItems": 1,
-      "maxItems": 1
-    },
-    "bmi_lte": {
-      "type": "array",
-      "items": {
-        "type": "number"
+        "type": "integer"
       },
       "minItems": 1,
       "maxItems": 1
@@ -127,7 +103,7 @@ COHORT_FILTERS_SCHEMA={
       "minItems": 2,
       "maxItems": 2
     },
-    "bmi_ebtwe": {
+    "bmi_btwe": {
       "type": "array",
       "items": {
         "type": "number"
@@ -135,7 +111,7 @@ COHORT_FILTERS_SCHEMA={
       "minItems": 2,
       "maxItems": 2
     },
-    "bmi_btwe": {
+    "bmi_ebtwe": {
       "type": "array",
       "items": {
         "type": "number"
@@ -151,7 +127,31 @@ COHORT_FILTERS_SCHEMA={
       "minItems": 1,
       "maxItems": 1
     },
+    "bmi_lte": {
+      "type": "array",
+      "items": {
+        "type": "number"
+      },
+      "minItems": 1,
+      "maxItems": 1
+    },
     "bmi_gt": {
+      "type": "array",
+      "items": {
+        "type": "number"
+      },
+      "minItems": 1,
+      "maxItems": 1
+    },
+    "bmi_lt": {
+      "type": "array",
+      "items": {
+        "type": "number"
+      },
+      "minItems": 1,
+      "maxItems": 1
+    },
+    "bmi_eq": {
       "type": "array",
       "items": {
         "type": "number"
@@ -243,30 +243,6 @@ COHORT_FILTERS_SCHEMA={
       },
       "minItems": 1
     },
-    "Apparent_Diffusion_Coefficient": {
-      "type": "array",
-      "items": {
-        "type": "number"
-      },
-      "minItems": 1,
-      "maxItems": 1
-    },
-    "Apparent_Diffusion_Coefficient_lt": {
-      "type": "array",
-      "items": {
-        "type": "number"
-      },
-      "minItems": 1,
-      "maxItems": 1
-    },
-    "Apparent_Diffusion_Coefficient_lte": {
-      "type": "array",
-      "items": {
-        "type": "number"
-      },
-      "minItems": 1,
-      "maxItems": 1
-    },
     "Apparent_Diffusion_Coefficient_btw": {
       "type": "array",
       "items": {
@@ -283,7 +259,7 @@ COHORT_FILTERS_SCHEMA={
       "minItems": 2,
       "maxItems": 2
     },
-    "Apparent_Diffusion_Coefficient_ebtwe": {
+    "Apparent_Diffusion_Coefficient_btwe": {
       "type": "array",
       "items": {
         "type": "number"
@@ -291,7 +267,7 @@ COHORT_FILTERS_SCHEMA={
       "minItems": 2,
       "maxItems": 2
     },
-    "Apparent_Diffusion_Coefficient_btwe": {
+    "Apparent_Diffusion_Coefficient_ebtwe": {
       "type": "array",
       "items": {
         "type": "number"
@@ -307,7 +283,31 @@ COHORT_FILTERS_SCHEMA={
       "minItems": 1,
       "maxItems": 1
     },
+    "Apparent_Diffusion_Coefficient_lte": {
+      "type": "array",
+      "items": {
+        "type": "number"
+      },
+      "minItems": 1,
+      "maxItems": 1
+    },
     "Apparent_Diffusion_Coefficient_gt": {
+      "type": "array",
+      "items": {
+        "type": "number"
+      },
+      "minItems": 1,
+      "maxItems": 1
+    },
+    "Apparent_Diffusion_Coefficient_lt": {
+      "type": "array",
+      "items": {
+        "type": "number"
+      },
+      "minItems": 1,
+      "maxItems": 1
+    },
+    "Apparent_Diffusion_Coefficient_eq": {
       "type": "array",
       "items": {
         "type": "number"
@@ -343,30 +343,6 @@ COHORT_FILTERS_SCHEMA={
       },
       "minItems": 1
     },
-    "Diameter": {
-      "type": "array",
-      "items": {
-        "type": "number"
-      },
-      "minItems": 1,
-      "maxItems": 1
-    },
-    "Diameter_lt": {
-      "type": "array",
-      "items": {
-        "type": "number"
-      },
-      "minItems": 1,
-      "maxItems": 1
-    },
-    "Diameter_lte": {
-      "type": "array",
-      "items": {
-        "type": "number"
-      },
-      "minItems": 1,
-      "maxItems": 1
-    },
     "Diameter_btw": {
       "type": "array",
       "items": {
@@ -383,7 +359,7 @@ COHORT_FILTERS_SCHEMA={
       "minItems": 2,
       "maxItems": 2
     },
-    "Diameter_ebtwe": {
+    "Diameter_btwe": {
       "type": "array",
       "items": {
         "type": "number"
@@ -391,7 +367,7 @@ COHORT_FILTERS_SCHEMA={
       "minItems": 2,
       "maxItems": 2
     },
-    "Diameter_btwe": {
+    "Diameter_ebtwe": {
       "type": "array",
       "items": {
         "type": "number"
@@ -407,7 +383,31 @@ COHORT_FILTERS_SCHEMA={
       "minItems": 1,
       "maxItems": 1
     },
+    "Diameter_lte": {
+      "type": "array",
+      "items": {
+        "type": "number"
+      },
+      "minItems": 1,
+      "maxItems": 1
+    },
     "Diameter_gt": {
+      "type": "array",
+      "items": {
+        "type": "number"
+      },
+      "minItems": 1,
+      "maxItems": 1
+    },
+    "Diameter_lt": {
+      "type": "array",
+      "items": {
+        "type": "number"
+      },
+      "minItems": 1,
+      "maxItems": 1
+    },
+    "Diameter_eq": {
       "type": "array",
       "items": {
         "type": "number"
@@ -471,34 +471,10 @@ COHORT_FILTERS_SCHEMA={
       },
       "minItems": 1
     },
-    "max_TotalPixelMatrixColumns": {
-      "type": "array",
-      "items": {
-        "type": "number"
-      },
-      "minItems": 1,
-      "maxItems": 1
-    },
-    "max_TotalPixelMatrixColumns_lt": {
-      "type": "array",
-      "items": {
-        "type": "number"
-      },
-      "minItems": 1,
-      "maxItems": 1
-    },
-    "max_TotalPixelMatrixColumns_lte": {
-      "type": "array",
-      "items": {
-        "type": "number"
-      },
-      "minItems": 1,
-      "maxItems": 1
-    },
     "max_TotalPixelMatrixColumns_btw": {
       "type": "array",
       "items": {
-        "type": "number"
+        "type": "integer"
       },
       "minItems": 2,
       "maxItems": 2
@@ -506,15 +482,7 @@ COHORT_FILTERS_SCHEMA={
     "max_TotalPixelMatrixColumns_ebtw": {
       "type": "array",
       "items": {
-        "type": "number"
-      },
-      "minItems": 2,
-      "maxItems": 2
-    },
-    "max_TotalPixelMatrixColumns_ebtwe": {
-      "type": "array",
-      "items": {
-        "type": "number"
+        "type": "integer"
       },
       "minItems": 2,
       "maxItems": 2
@@ -522,7 +490,15 @@ COHORT_FILTERS_SCHEMA={
     "max_TotalPixelMatrixColumns_btwe": {
       "type": "array",
       "items": {
-        "type": "number"
+        "type": "integer"
+      },
+      "minItems": 2,
+      "maxItems": 2
+    },
+    "max_TotalPixelMatrixColumns_ebtwe": {
+      "type": "array",
+      "items": {
+        "type": "integer"
       },
       "minItems": 2,
       "maxItems": 2
@@ -530,7 +506,15 @@ COHORT_FILTERS_SCHEMA={
     "max_TotalPixelMatrixColumns_gte": {
       "type": "array",
       "items": {
-        "type": "number"
+        "type": "integer"
+      },
+      "minItems": 1,
+      "maxItems": 1
+    },
+    "max_TotalPixelMatrixColumns_lte": {
+      "type": "array",
+      "items": {
+        "type": "integer"
       },
       "minItems": 1,
       "maxItems": 1
@@ -538,31 +522,23 @@ COHORT_FILTERS_SCHEMA={
     "max_TotalPixelMatrixColumns_gt": {
       "type": "array",
       "items": {
-        "type": "number"
+        "type": "integer"
       },
       "minItems": 1,
       "maxItems": 1
     },
-    "max_TotalPixelMatrixRows": {
+    "max_TotalPixelMatrixColumns_lt": {
       "type": "array",
       "items": {
-        "type": "number"
+        "type": "integer"
       },
       "minItems": 1,
       "maxItems": 1
     },
-    "max_TotalPixelMatrixRows_lt": {
+    "max_TotalPixelMatrixColumns_eq": {
       "type": "array",
       "items": {
-        "type": "number"
-      },
-      "minItems": 1,
-      "maxItems": 1
-    },
-    "max_TotalPixelMatrixRows_lte": {
-      "type": "array",
-      "items": {
-        "type": "number"
+        "type": "integer"
       },
       "minItems": 1,
       "maxItems": 1
@@ -570,7 +546,7 @@ COHORT_FILTERS_SCHEMA={
     "max_TotalPixelMatrixRows_btw": {
       "type": "array",
       "items": {
-        "type": "number"
+        "type": "integer"
       },
       "minItems": 2,
       "maxItems": 2
@@ -578,15 +554,7 @@ COHORT_FILTERS_SCHEMA={
     "max_TotalPixelMatrixRows_ebtw": {
       "type": "array",
       "items": {
-        "type": "number"
-      },
-      "minItems": 2,
-      "maxItems": 2
-    },
-    "max_TotalPixelMatrixRows_ebtwe": {
-      "type": "array",
-      "items": {
-        "type": "number"
+        "type": "integer"
       },
       "minItems": 2,
       "maxItems": 2
@@ -594,7 +562,15 @@ COHORT_FILTERS_SCHEMA={
     "max_TotalPixelMatrixRows_btwe": {
       "type": "array",
       "items": {
-        "type": "number"
+        "type": "integer"
+      },
+      "minItems": 2,
+      "maxItems": 2
+    },
+    "max_TotalPixelMatrixRows_ebtwe": {
+      "type": "array",
+      "items": {
+        "type": "integer"
       },
       "minItems": 2,
       "maxItems": 2
@@ -602,7 +578,15 @@ COHORT_FILTERS_SCHEMA={
     "max_TotalPixelMatrixRows_gte": {
       "type": "array",
       "items": {
-        "type": "number"
+        "type": "integer"
+      },
+      "minItems": 1,
+      "maxItems": 1
+    },
+    "max_TotalPixelMatrixRows_lte": {
+      "type": "array",
+      "items": {
+        "type": "integer"
       },
       "minItems": 1,
       "maxItems": 1
@@ -610,31 +594,23 @@ COHORT_FILTERS_SCHEMA={
     "max_TotalPixelMatrixRows_gt": {
       "type": "array",
       "items": {
-        "type": "number"
+        "type": "integer"
       },
       "minItems": 1,
       "maxItems": 1
     },
-    "min_PixelSpacing": {
+    "max_TotalPixelMatrixRows_lt": {
       "type": "array",
       "items": {
-        "type": "number"
+        "type": "integer"
       },
       "minItems": 1,
       "maxItems": 1
     },
-    "min_PixelSpacing_lt": {
+    "max_TotalPixelMatrixRows_eq": {
       "type": "array",
       "items": {
-        "type": "number"
-      },
-      "minItems": 1,
-      "maxItems": 1
-    },
-    "min_PixelSpacing_lte": {
-      "type": "array",
-      "items": {
-        "type": "number"
+        "type": "integer"
       },
       "minItems": 1,
       "maxItems": 1
@@ -642,7 +618,7 @@ COHORT_FILTERS_SCHEMA={
     "min_PixelSpacing_btw": {
       "type": "array",
       "items": {
-        "type": "number"
+        "type": "integer"
       },
       "minItems": 2,
       "maxItems": 2
@@ -650,15 +626,7 @@ COHORT_FILTERS_SCHEMA={
     "min_PixelSpacing_ebtw": {
       "type": "array",
       "items": {
-        "type": "number"
-      },
-      "minItems": 2,
-      "maxItems": 2
-    },
-    "min_PixelSpacing_ebtwe": {
-      "type": "array",
-      "items": {
-        "type": "number"
+        "type": "integer"
       },
       "minItems": 2,
       "maxItems": 2
@@ -666,7 +634,15 @@ COHORT_FILTERS_SCHEMA={
     "min_PixelSpacing_btwe": {
       "type": "array",
       "items": {
-        "type": "number"
+        "type": "integer"
+      },
+      "minItems": 2,
+      "maxItems": 2
+    },
+    "min_PixelSpacing_ebtwe": {
+      "type": "array",
+      "items": {
+        "type": "integer"
       },
       "minItems": 2,
       "maxItems": 2
@@ -674,7 +650,15 @@ COHORT_FILTERS_SCHEMA={
     "min_PixelSpacing_gte": {
       "type": "array",
       "items": {
-        "type": "number"
+        "type": "integer"
+      },
+      "minItems": 1,
+      "maxItems": 1
+    },
+    "min_PixelSpacing_lte": {
+      "type": "array",
+      "items": {
+        "type": "integer"
       },
       "minItems": 1,
       "maxItems": 1
@@ -682,7 +666,23 @@ COHORT_FILTERS_SCHEMA={
     "min_PixelSpacing_gt": {
       "type": "array",
       "items": {
-        "type": "number"
+        "type": "integer"
+      },
+      "minItems": 1,
+      "maxItems": 1
+    },
+    "min_PixelSpacing_lt": {
+      "type": "array",
+      "items": {
+        "type": "integer"
+      },
+      "minItems": 1,
+      "maxItems": 1
+    },
+    "min_PixelSpacing_eq": {
+      "type": "array",
+      "items": {
+        "type": "integer"
       },
       "minItems": 1,
       "maxItems": 1
@@ -757,30 +757,6 @@ COHORT_FILTERS_SCHEMA={
       },
       "minItems": 1
     },
-    "SliceThickness": {
-      "type": "array",
-      "items": {
-        "type": "number"
-      },
-      "minItems": 1,
-      "maxItems": 1
-    },
-    "SliceThickness_lt": {
-      "type": "array",
-      "items": {
-        "type": "number"
-      },
-      "minItems": 1,
-      "maxItems": 1
-    },
-    "SliceThickness_lte": {
-      "type": "array",
-      "items": {
-        "type": "number"
-      },
-      "minItems": 1,
-      "maxItems": 1
-    },
     "SliceThickness_btw": {
       "type": "array",
       "items": {
@@ -797,7 +773,7 @@ COHORT_FILTERS_SCHEMA={
       "minItems": 2,
       "maxItems": 2
     },
-    "SliceThickness_ebtwe": {
+    "SliceThickness_btwe": {
       "type": "array",
       "items": {
         "type": "number"
@@ -805,7 +781,7 @@ COHORT_FILTERS_SCHEMA={
       "minItems": 2,
       "maxItems": 2
     },
-    "SliceThickness_btwe": {
+    "SliceThickness_ebtwe": {
       "type": "array",
       "items": {
         "type": "number"
@@ -821,7 +797,31 @@ COHORT_FILTERS_SCHEMA={
       "minItems": 1,
       "maxItems": 1
     },
+    "SliceThickness_lte": {
+      "type": "array",
+      "items": {
+        "type": "number"
+      },
+      "minItems": 1,
+      "maxItems": 1
+    },
     "SliceThickness_gt": {
+      "type": "array",
+      "items": {
+        "type": "number"
+      },
+      "minItems": 1,
+      "maxItems": 1
+    },
+    "SliceThickness_lt": {
+      "type": "array",
+      "items": {
+        "type": "number"
+      },
+      "minItems": 1,
+      "maxItems": 1
+    },
+    "SliceThickness_eq": {
       "type": "array",
       "items": {
         "type": "number"
@@ -850,30 +850,6 @@ COHORT_FILTERS_SCHEMA={
       },
       "minItems": 1
     },
-    "Sphericity_quant": {
-      "type": "array",
-      "items": {
-        "type": "number"
-      },
-      "minItems": 1,
-      "maxItems": 1
-    },
-    "Sphericity_quant_lt": {
-      "type": "array",
-      "items": {
-        "type": "number"
-      },
-      "minItems": 1,
-      "maxItems": 1
-    },
-    "Sphericity_quant_lte": {
-      "type": "array",
-      "items": {
-        "type": "number"
-      },
-      "minItems": 1,
-      "maxItems": 1
-    },
     "Sphericity_quant_btw": {
       "type": "array",
       "items": {
@@ -890,7 +866,7 @@ COHORT_FILTERS_SCHEMA={
       "minItems": 2,
       "maxItems": 2
     },
-    "Sphericity_quant_ebtwe": {
+    "Sphericity_quant_btwe": {
       "type": "array",
       "items": {
         "type": "number"
@@ -898,7 +874,7 @@ COHORT_FILTERS_SCHEMA={
       "minItems": 2,
       "maxItems": 2
     },
-    "Sphericity_quant_btwe": {
+    "Sphericity_quant_ebtwe": {
       "type": "array",
       "items": {
         "type": "number"
@@ -914,7 +890,31 @@ COHORT_FILTERS_SCHEMA={
       "minItems": 1,
       "maxItems": 1
     },
+    "Sphericity_quant_lte": {
+      "type": "array",
+      "items": {
+        "type": "number"
+      },
+      "minItems": 1,
+      "maxItems": 1
+    },
     "Sphericity_quant_gt": {
+      "type": "array",
+      "items": {
+        "type": "number"
+      },
+      "minItems": 1,
+      "maxItems": 1
+    },
+    "Sphericity_quant_lt": {
+      "type": "array",
+      "items": {
+        "type": "number"
+      },
+      "minItems": 1,
+      "maxItems": 1
+    },
+    "Sphericity_quant_eq": {
       "type": "array",
       "items": {
         "type": "number"
@@ -957,30 +957,6 @@ COHORT_FILTERS_SCHEMA={
       },
       "minItems": 1
     },
-    "Surface_area_of_mesh": {
-      "type": "array",
-      "items": {
-        "type": "number"
-      },
-      "minItems": 1,
-      "maxItems": 1
-    },
-    "Surface_area_of_mesh_lt": {
-      "type": "array",
-      "items": {
-        "type": "number"
-      },
-      "minItems": 1,
-      "maxItems": 1
-    },
-    "Surface_area_of_mesh_lte": {
-      "type": "array",
-      "items": {
-        "type": "number"
-      },
-      "minItems": 1,
-      "maxItems": 1
-    },
     "Surface_area_of_mesh_btw": {
       "type": "array",
       "items": {
@@ -997,7 +973,7 @@ COHORT_FILTERS_SCHEMA={
       "minItems": 2,
       "maxItems": 2
     },
-    "Surface_area_of_mesh_ebtwe": {
+    "Surface_area_of_mesh_btwe": {
       "type": "array",
       "items": {
         "type": "number"
@@ -1005,7 +981,7 @@ COHORT_FILTERS_SCHEMA={
       "minItems": 2,
       "maxItems": 2
     },
-    "Surface_area_of_mesh_btwe": {
+    "Surface_area_of_mesh_ebtwe": {
       "type": "array",
       "items": {
         "type": "number"
@@ -1021,7 +997,31 @@ COHORT_FILTERS_SCHEMA={
       "minItems": 1,
       "maxItems": 1
     },
+    "Surface_area_of_mesh_lte": {
+      "type": "array",
+      "items": {
+        "type": "number"
+      },
+      "minItems": 1,
+      "maxItems": 1
+    },
     "Surface_area_of_mesh_gt": {
+      "type": "array",
+      "items": {
+        "type": "number"
+      },
+      "minItems": 1,
+      "maxItems": 1
+    },
+    "Surface_area_of_mesh_lt": {
+      "type": "array",
+      "items": {
+        "type": "number"
+      },
+      "minItems": 1,
+      "maxItems": 1
+    },
+    "Surface_area_of_mesh_eq": {
       "type": "array",
       "items": {
         "type": "number"
@@ -1050,30 +1050,6 @@ COHORT_FILTERS_SCHEMA={
       },
       "minItems": 1
     },
-    "Volume": {
-      "type": "array",
-      "items": {
-        "type": "number"
-      },
-      "minItems": 1,
-      "maxItems": 1
-    },
-    "Volume_lt": {
-      "type": "array",
-      "items": {
-        "type": "number"
-      },
-      "minItems": 1,
-      "maxItems": 1
-    },
-    "Volume_lte": {
-      "type": "array",
-      "items": {
-        "type": "number"
-      },
-      "minItems": 1,
-      "maxItems": 1
-    },
     "Volume_btw": {
       "type": "array",
       "items": {
@@ -1090,7 +1066,7 @@ COHORT_FILTERS_SCHEMA={
       "minItems": 2,
       "maxItems": 2
     },
-    "Volume_ebtwe": {
+    "Volume_btwe": {
       "type": "array",
       "items": {
         "type": "number"
@@ -1098,7 +1074,7 @@ COHORT_FILTERS_SCHEMA={
       "minItems": 2,
       "maxItems": 2
     },
-    "Volume_btwe": {
+    "Volume_ebtwe": {
       "type": "array",
       "items": {
         "type": "number"
@@ -1114,6 +1090,14 @@ COHORT_FILTERS_SCHEMA={
       "minItems": 1,
       "maxItems": 1
     },
+    "Volume_lte": {
+      "type": "array",
+      "items": {
+        "type": "number"
+      },
+      "minItems": 1,
+      "maxItems": 1
+    },
     "Volume_gt": {
       "type": "array",
       "items": {
@@ -1122,7 +1106,7 @@ COHORT_FILTERS_SCHEMA={
       "minItems": 1,
       "maxItems": 1
     },
-    "Volume_of_Mesh": {
+    "Volume_lt": {
       "type": "array",
       "items": {
         "type": "number"
@@ -1130,15 +1114,7 @@ COHORT_FILTERS_SCHEMA={
       "minItems": 1,
       "maxItems": 1
     },
-    "Volume_of_Mesh_lt": {
-      "type": "array",
-      "items": {
-        "type": "number"
-      },
-      "minItems": 1,
-      "maxItems": 1
-    },
-    "Volume_of_Mesh_lte": {
+    "Volume_eq": {
       "type": "array",
       "items": {
         "type": "number"
@@ -1162,7 +1138,7 @@ COHORT_FILTERS_SCHEMA={
       "minItems": 2,
       "maxItems": 2
     },
-    "Volume_of_Mesh_ebtwe": {
+    "Volume_of_Mesh_btwe": {
       "type": "array",
       "items": {
         "type": "number"
@@ -1170,7 +1146,7 @@ COHORT_FILTERS_SCHEMA={
       "minItems": 2,
       "maxItems": 2
     },
-    "Volume_of_Mesh_btwe": {
+    "Volume_of_Mesh_ebtwe": {
       "type": "array",
       "items": {
         "type": "number"
@@ -1186,7 +1162,31 @@ COHORT_FILTERS_SCHEMA={
       "minItems": 1,
       "maxItems": 1
     },
+    "Volume_of_Mesh_lte": {
+      "type": "array",
+      "items": {
+        "type": "number"
+      },
+      "minItems": 1,
+      "maxItems": 1
+    },
     "Volume_of_Mesh_gt": {
+      "type": "array",
+      "items": {
+        "type": "number"
+      },
+      "minItems": 1,
+      "maxItems": 1
+    },
+    "Volume_of_Mesh_lt": {
+      "type": "array",
+      "items": {
+        "type": "number"
+      },
+      "minItems": 1,
+      "maxItems": 1
+    },
+    "Volume_of_Mesh_eq": {
       "type": "array",
       "items": {
         "type": "number"
