@@ -16,7 +16,7 @@
 
 import json
 # from settings import API_URL
-from testing_config import VERSIONS, NUM_COLLECTIONS, API_URL
+from testing_config import VERSION, NUM_COLLECTIONS, API_URL
 from testing_utils import  _testMode, get_data
 from api.v2.schemas.fields import FIELDS
 
@@ -33,11 +33,11 @@ def test_versions(client, app):
     assert response.status_code == 200
     data = get_data(response)['versions']
     versions = {version['idc_data_version']: {key: version[key] for key in version.keys() if key != 'version_number'} for version in data}
-    assert len(versions) == VERSIONS
-    for version in range(1, VERSIONS+1):
+    assert len(versions) == VERSION
+    for version in range(1, VERSION+1):
         v = f"{version}.0"
         assert v in versions
-        assert versions[v]['active'] == (version == VERSIONS)
+        assert versions[v]['active'] == (version == VERSION)
 
 
 @_testMode
@@ -105,7 +105,7 @@ def test_filters(client, app):
     # assert filters['program_name']['dataSetTypes'][0]['data_type'] == 'Clinical, Biospecimen, and Mutation Data'
     assert filters['disease_code'] == {'data_type': 'Categorical String', 'units': None}
 
-    source_name = f'idc-dev-etl.idc_v{VERSIONS}_pub.dicom_pivot'
+    source_name = f'idc-dev-etl.idc_v{VERSION}_pub.dicom_pivot'
     data_source = next(
         source for source in data_sources if source['data_source'] == source_name)
     filters = {filter['name']: {key: filter[key] for key in filter.keys() if key != 'name'} for filter in data_source['filters']}
@@ -121,11 +121,15 @@ def test_categorical_field_values(client, app):
     assert response.status_code == 400
     assert get_data(response)['message'] == 'Invalid filter ID'
 
-    filter = 'volume'
+    filter = 'volume_eq'
     response = client.get(f'{API_URL}/filters/values/{filter}')
     assert response.status_code == 400
-    assert get_data(response)['message'] == 'Filter data type is Continuous Numeric not Categorical String or Categorical Number'
+    assert get_data(response)['message'] == 'Filter data type is Ranged Number not Categorical String or Categorical Number'
 
+    filter = 'age_at_diagnosis_eq'
+    response = client.get(f'{API_URL}/filters/values/{filter}')
+    assert response.status_code == 400
+    assert get_data(response)['message'] == 'Filter data type is Ranged Integer not Categorical String or Categorical Number'
 
     filter = 'modality'
     response = client.get(f'{API_URL}/filters/values/{filter}')
