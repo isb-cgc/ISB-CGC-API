@@ -27,10 +27,10 @@ VERSION = 17
 NUM_COLLECTIONS = 142
 
 # True to access dev, testing or prod APIs, False to access local API
-test_remote_api = True
+test_remote_api = False
 
 # dev, testing or prod to access the corresponding API when test_dev_api is True
-dev_or_testing_or_prod = 'dev'
+dev_or_testing_or_prod = 'prod'
 dev_api_requester = requests
 API_URL = f'https://api.imaging.datacommons.cancer.gov/{API_VERSION}' if test_remote_api and dev_or_testing_or_prod == 'prod' else f'https://{dev_or_testing_or_prod}-api.canceridc.dev/{API_VERSION}' if test_remote_api else f'{API_VERSION}'
 get_data = dev_response.json if test_remote_api else local_resonse.get_json
