@@ -161,8 +161,12 @@ def get_fields(version):
             code=400
         )
         return result
-    version = version.strip()
-    version = "" if version=='undefined' else version
+    if not version:
+        result = dict(
+            message=f"No version was provided",
+            code=400
+        )
+        return result
     response = requests.get(f"{settings.BASE_URL}/collections/api/{API_VERSION}/fields/{version}",
                             headers=auth)
     try:
