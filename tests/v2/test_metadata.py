@@ -192,8 +192,12 @@ def test_fields(client, app):
 
     # The empty string is an error
     response = client.get(f'{API_URL}/fields/')
-    assert response.status_code == 400
-    assert get_data(response)['message'] == "No version was provided"
+    if test_branch=="LOCAL":
+        assert response.status_code == 400
+        assert get_data(response)['message'] == 'No version was provided'
+    else:
+        assert response.status_code == 404
+        assert get_data(response)['message'] == "Method does not exist."
 
     # Leading whitespace is an error
     response = client.get(f'{API_URL}/fields/ 17.0')
