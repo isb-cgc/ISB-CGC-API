@@ -183,25 +183,35 @@ def test_fields(client, app):
     # An integer is not a version
     response = client.get(f'{API_URL}/fields/14')
     assert response.status_code == 400
-    assert get_data(response)['message'] == "Supplied idc_data_version 14 is invalid. Query the /versions endpoint for defined versions."
+    assert get_data(response)['message'] == "Supplied idc_data_version '14' is invalid. Query the /versions endpoint for defined versions."
 
     # No arbitrary strings
     response = client.get(f'{API_URL}/fields/foo')
     assert response.status_code == 400
-    assert get_data(response)['message'] == "Supplied idc_data_version foo is invalid. Query the /versions endpoint for defined versions."
+    assert get_data(response)['message'] == "Supplied idc_data_version 'foo' is invalid. Query the /versions endpoint for defined versions."
 
-    # The empty string returns fields of the current version
+    # The empty string is an error
     response = client.get(f'{API_URL}/fields/')
+    assert response.status_code == 400
+    assert get_data(response)['message'] == "No version was provided"
+
+    # Leading whitespace is an error
+    response = client.get(f'{API_URL}/fields/ 17.0')
+    assert response.status_code == 400
+    assert get_data(response)['message'] == "Supplied idc_data_version ' 17.0' is invalid. Query the /versions endpoint for defined versions."
+
+    # Trailing whitespace is ignored
+    response = client.get(f'{API_URL}/fields/17.0 ')
     fields = get_data(response)
-    assert fields['idc_data_version'] == f'{VERSION}.0'
     all_fields = set()
     for source in fields['data_sources']:
         all_fields  = all_fields.union(source['fields'])
     assert set(all_fields) == set(FIELDS["properties"]['fields']['items']['enum'])
 
-    # Whitespace is ignored
-    response = client.get(f'{API_URL}/fields/17.0 ')
+    # 'current' gets tjhe current version
+    response = client.get(f'{API_URL}/fields/current')
     fields = get_data(response)
+    assert fields['idc_data_version'] == f'{VERSION}.0'
     all_fields = set()
     for source in fields['data_sources']:
         all_fields  = all_fields.union(source['fields'])
