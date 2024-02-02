@@ -26,7 +26,6 @@ from .version_config import API_VERSION
 from .schemas.filters import COHORT_FILTERS_SCHEMA
 from python_settings import settings
 logger = logging.getLogger(settings.LOGGER_NAME)
-
 BLACKLIST_RE = settings.BLACKLIST_RE
 
 integer_continuous_numerics = (
@@ -152,9 +151,19 @@ def get_filters():
         )
     return info
 
-def get_fields():
+def get_fields(version):
+    blacklist = re.compile(BLACKLIST_RE, re.UNICODE)
     auth = get_auth()
-    response = requests.get(f"{settings.BASE_URL}/collections/api/{API_VERSION}/fields/",
+    match = blacklist.search(str(version))
+    if match:
+        result = dict(
+            message=f"Version '{version}' contains invalid characters; please edit and resubmit." ,
+            code=400
+        )
+        return result
+    version = version.strip()
+    version = "" if version=='undefined' else version
+    response = requests.get(f"{settings.BASE_URL}/collections/api/{API_VERSION}/fields/{version}",
                             headers=auth)
     try:
         info = response.json()

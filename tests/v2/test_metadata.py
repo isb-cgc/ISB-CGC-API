@@ -171,11 +171,58 @@ def test_categorical_field_values(client, app):
 
 @_testMode
 def test_fields(client, app):
-    response = client.get(f'{API_URL}/fields')
-    assert response.status_code == 200
+    #Test the current version
+    response = client.get(f'{API_URL}/fields/{VERSION}.0')
+    fields = get_data(response)
+    all_fields = set()
+    assert fields['idc_data_version'] == f'{VERSION}.0'
+    for source in fields['data_sources']:
+        all_fields  = all_fields.union(source['fields'])
+    assert set(all_fields) == set(FIELDS["properties"]['fields']['items']['enum'])
+
+    # An integer is not a version
+    response = client.get(f'{API_URL}/fields/14')
+    assert response.status_code == 400
+    assert get_data(response)['message'] == "Supplied idc_data_version 14 is invalid. Query the /versions endpoint for defined versions."
+
+    # No arbitrary strings
+    response = client.get(f'{API_URL}/fields/foo')
+    assert response.status_code == 400
+    assert get_data(response)['message'] == "Supplied idc_data_version foo is invalid. Query the /versions endpoint for defined versions."
+
+    # The empty string returns fields of the current version
+    response = client.get(f'{API_URL}/fields/')
+    fields = get_data(response)
+    assert fields['idc_data_version'] == f'{VERSION}.0'
+    all_fields = set()
+    for source in fields['data_sources']:
+        all_fields  = all_fields.union(source['fields'])
+    assert set(all_fields) == set(FIELDS["properties"]['fields']['items']['enum'])
+
+    # Whitespace is ignored
+    response = client.get(f'{API_URL}/fields/17.0 ')
     fields = get_data(response)
     all_fields = set()
     for source in fields['data_sources']:
         all_fields  = all_fields.union(source['fields'])
-
     assert set(all_fields) == set(FIELDS["properties"]['fields']['items']['enum'])
+
+    # Returns something for each version
+    response = client.get(f'{API_URL}/versions',
+                          headers=headers)
+    data = get_data(response)['versions']
+    versions = {version['idc_data_version']: {key: version[key] for key in version.keys() if key != 'version_number'} for version in data}
+    for version in versions:
+        response = client.get(f'{API_URL}/fields/{version} ')
+        assert response.status_code == 200
+        fields = get_data(response)
+        assert fields['idc_data_version'] == version
+        print(f'Version: {version}')
+        for source in fields['data_sources']:
+            print(f"\t{source['data_source']}")
+            n=1
+            for field in source['fields']:
+                print(f'\t\t{n} {field}')
+                n+=1
+
+
