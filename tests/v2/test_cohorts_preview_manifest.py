@@ -14,8 +14,8 @@
 # limitations under the License.
 #
 
-# from settings import API_URL
-from testing_config import API_URL, get_data, test_remote_api, VERSION, auth_header, dev_or_testing_or_prod
+from testing_branch import test_branch
+from testing_config import API_URL, get_data, VERSION
 import json
 import datetime
 from testing_utils import _testMode
@@ -419,7 +419,7 @@ def test_sql_ranged_integer(client, app):
     }
     for op, val in ops.items():
         print(f"Testing operand {op} with values {val}")
-        pivot = f'bigquery-public-data.idc_v{VERSION}.dicom_pivot' if dev_or_testing_or_prod=='prod' and test_remote_api else f'idc-dev-etl.idc_v{VERSION}_pub.dicom_pivot'
+        pivot = f'bigquery-public-data.idc_v{VERSION}.dicom_pivot' if test_branch=='PROD' else f'idc-dev-etl.idc_v{VERSION}_pub.dicom_pivot'
         expected_sql = f"""\n            #standardSQL\n    \n        SELECT dicom_pivot.collection_id,dicom_pivot.crdc_study_uuid,dicom_pivot.crdc_series_uuid,dicom_pivot.crdc_instance_uuid,dicom_pivot.gcs_bucket,dicom_pivot.gcs_url,dicom_pivot.aws_bucket,dicom_pivot.aws_url,tcga_clinical_rel9.age_at_diagnosis\n        FROM `{pivot}` dicom_pivot \n        \n        LEFT JOIN `bigquery-public-data.idc_v4.tcga_clinical_rel9` tcga_clinical_rel9\n        ON dicom_pivot.PatientID = tcga_clinical_rel9.case_barcode\n    \n        WHERE ((dicom_pivot.collection_id = "tcga_read")) AND ((LOWER(dicom_pivot.Modality) IN UNNEST(["ct", "mr"]))) AND ((({val['clause']})) AND ((tcga_clinical_rel9.race = "WHITE")) OR tcga_clinical_rel9.case_barcode IS NULL)\n        \n        GROUP BY dicom_pivot.collection_id, dicom_pivot.crdc_study_uuid, dicom_pivot.crdc_series_uuid, dicom_pivot.crdc_instance_uuid, tcga_clinical_rel9.age_at_diagnosis, dicom_pivot.gcs_bucket, dicom_pivot.gcs_url, dicom_pivot.aws_bucket, dicom_pivot.aws_url\n        ORDER BY dicom_pivot.collection_id ASC, dicom_pivot.crdc_study_uuid ASC, dicom_pivot.crdc_series_uuid ASC, dicom_pivot.crdc_instance_uuid ASC, tcga_clinical_rel9.age_at_diagnosis ASC, dicom_pivot.gcs_bucket ASC, dicom_pivot.gcs_url ASC, dicom_pivot.aws_bucket ASC, dicom_pivot.aws_url ASC\n        \n        \n    """
 
         filters = {
@@ -519,7 +519,7 @@ def test_sql_ranged_number(client, app):
     }
     for op, val in ops.items():
         print(f"Testing operand {op} with values {val}")
-        pivot = f'bigquery-public-data.idc_v{VERSION}.dicom_pivot' if dev_or_testing_or_prod=='prod' and test_remote_api else f'idc-dev-etl.idc_v{VERSION}_pub.dicom_pivot'
+        pivot = f'bigquery-public-data.idc_v{VERSION}.dicom_pivot' if test_branch=="PROD" else f'idc-dev-etl.idc_v{VERSION}_pub.dicom_pivot'
         expected_sql = f"""\n            #standardSQL\n    \n        SELECT dicom_pivot.collection_id,dicom_pivot.crdc_study_uuid,dicom_pivot.crdc_series_uuid,dicom_pivot.crdc_instance_uuid,dicom_pivot.gcs_bucket,dicom_pivot.gcs_url,dicom_pivot.aws_bucket,dicom_pivot.aws_url,tcga_clinical_rel9.age_at_diagnosis\n        FROM `{pivot}` dicom_pivot \n        \n        LEFT JOIN `bigquery-public-data.idc_v4.tcga_clinical_rel9` tcga_clinical_rel9\n        ON dicom_pivot.PatientID = tcga_clinical_rel9.case_barcode\n    \n        WHERE ((dicom_pivot.collection_id = "tcga_read")) AND ((LOWER(dicom_pivot.Modality) IN UNNEST(["ct", "mr"]))) AND ((({val['clause']})) AND ((tcga_clinical_rel9.race = "WHITE")) OR tcga_clinical_rel9.case_barcode IS NULL)\n        \n        GROUP BY dicom_pivot.collection_id, dicom_pivot.crdc_study_uuid, dicom_pivot.crdc_series_uuid, dicom_pivot.crdc_instance_uuid, tcga_clinical_rel9.age_at_diagnosis, dicom_pivot.gcs_bucket, dicom_pivot.gcs_url, dicom_pivot.aws_bucket, dicom_pivot.aws_url\n        ORDER BY dicom_pivot.collection_id ASC, dicom_pivot.crdc_study_uuid ASC, dicom_pivot.crdc_series_uuid ASC, dicom_pivot.crdc_instance_uuid ASC, tcga_clinical_rel9.age_at_diagnosis ASC, dicom_pivot.gcs_bucket ASC, dicom_pivot.gcs_url ASC, dicom_pivot.aws_bucket ASC, dicom_pivot.aws_url ASC\n        \n        \n    """
 
         filters = {
@@ -1044,7 +1044,7 @@ def test_paged(client, app):
             'PAGE_SIZE': 500
         }
 
-        if test_remote_api:
+        if test_branch != "LOCAL":
             response = client.get(f'{API_URL}/cohorts/manifest/preview/nextPage',
                                 params=query_string,
                                 headers = headers)

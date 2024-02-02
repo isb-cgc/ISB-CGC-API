@@ -16,11 +16,9 @@
 
 import json
 import re
-from testing_config import API_URL, get_data, auth_header, test_remote_api
+from testing_branch import test_branch
+from testing_config import API_URL, get_data, auth_header
 from testing_utils import current_version, create_cohort, delete_cohort, _testMode
-from api.v2.metadata_views import integer_continuous_numerics
-
-import requests
 
 mimetype = 'application/json'
 headers = {
@@ -369,7 +367,7 @@ def test_delete_cohorts(client, app):
 # Useful to clean up the DB, and to speed up testing
 @_testMode
 def test_delete_all_cohorts(client, app):
-    if test_remote_api:
+    if test_branch != "LOCAL":
         # Don't delete all the cohorts when the API is dev, test or prod
         pass
     else:
