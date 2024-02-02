@@ -14,6 +14,7 @@
 # limitations under the License.
 #
 
+import re
 import logging
 from flask import jsonify
 from python_settings import settings
@@ -26,6 +27,7 @@ from google_helpers.bigquery.bq_support import BigQuerySupport
 from .manifest_views import submit_BQ_job, is_job_done, get_query_job_results
 
 logger = logging.getLogger(settings.LOGGER_NAME)
+BLACKLIST_RE = settings.BLACKLIST_RE
 
 metadata_bp = Blueprint(f'metadata_bp_{API_VERSION}', __name__, url_prefix='/{}'.format(API_VERSION))
 
@@ -141,6 +143,15 @@ def filters():
 # Get the accepted values of a categorical filter
 @metadata_bp.route('/filters/values/<string:filter_id>', methods=['GET'], strict_slashes=False)
 def categorical_values(filter_id):
+    blacklist = re.compile(BLACKLIST_RE, re.UNICODE)
+    match = blacklist.search(str(filter_id))
+    if match:
+        result = dict(
+            message=f"Filter '{filter_id}' contains invalid characters; please edit and resubmit." ,
+            code=400
+        )
+        return result
+
     client = bigquery.Client('idc-dev-etl')
     try:
         results = get_filters()
@@ -203,10 +214,11 @@ def categorical_values(filter_id):
     return response
 
 
-@metadata_bp.route('/fields', methods=['GET'], strict_slashes=False)
-def fields():
+@metadata_bp.route('/fields/', methods=['GET'], strict_slashes=False, defaults ={'version': ''})
+@metadata_bp.route('/fields/<string:version>', methods=['GET'], strict_slashes=False)
+def fields(version):
     try:
-        results = get_fields()
+        results = get_fields(version)
 
         if 'message' in results:
             response = jsonify(results)
