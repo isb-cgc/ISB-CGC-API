@@ -14,9 +14,8 @@
 # limitations under the License.
 #
 
-import json
-# from settings import API_URL
-from testing_config import VERSION, NUM_COLLECTIONS, API_URL, test_remote_api, dev_or_testing_or_prod
+from testing_branch import test_branch
+from testing_config import VERSION, NUM_COLLECTIONS, API_URL
 from testing_utils import  _testMode, get_data
 from api.v2.schemas.fields import FIELDS
 
@@ -105,7 +104,7 @@ def test_filters(client, app):
     # assert filters['program_name']['dataSetTypes'][0]['data_type'] == 'Clinical, Biospecimen, and Mutation Data'
     assert filters['disease_code'] == {'data_type': 'Categorical String', 'units': None}
 
-    source_name = f'bigquery-public-data.idc_v{VERSION}.dicom_pivot' if dev_or_testing_or_prod == 'prod' and test_remote_api else f'idc-dev-etl.idc_v{VERSION}_pub.dicom_pivot'
+    source_name = f'bigquery-public-data.idc_v{VERSION}.dicom_pivot' if test_branch=="PROD" else f'idc-dev-etl.idc_v{VERSION}_pub.dicom_pivot'
     # source_name = f'idc-dev-etl.idc_v{VERSION}_pub.dicom_pivot'
     data_source = next(
         source for source in data_sources if source['data_source'] == source_name)
@@ -172,11 +171,72 @@ def test_categorical_field_values(client, app):
 
 @_testMode
 def test_fields(client, app):
-    response = client.get(f'{API_URL}/fields')
-    assert response.status_code == 200
+    #Test the current version
+    response = client.get(f'{API_URL}/fields/{VERSION}.0')
+    fields = get_data(response)
+    all_fields = set()
+    assert fields['idc_data_version'] == f'{VERSION}.0'
+    for source in fields['data_sources']:
+        all_fields  = all_fields.union(source['fields'])
+    assert set(all_fields) == set(FIELDS["properties"]['fields']['items']['enum'])
+
+    # An integer is not a version
+    response = client.get(f'{API_URL}/fields/14')
+    assert response.status_code == 400
+    assert get_data(response)['message'] == "Supplied idc_data_version '14' is invalid. Query the /versions endpoint for defined versions."
+
+    # No arbitrary strings
+    response = client.get(f'{API_URL}/fields/foo')
+    assert response.status_code == 400
+    assert get_data(response)['message'] == "Supplied idc_data_version 'foo' is invalid. Query the /versions endpoint for defined versions."
+
+    # The empty string is an error
+    response = client.get(f'{API_URL}/fields/')
+    if test_branch=="LOCAL":
+        assert response.status_code == 400
+        assert get_data(response)['message'] == 'No version was provided'
+    else:
+        assert response.status_code == 404
+        assert get_data(response)['message'] == "Method does not exist."
+
+    # Leading whitespace is an error
+    response = client.get(f'{API_URL}/fields/ 17.0')
+    assert response.status_code == 400
+    assert get_data(response)['message'] == "Supplied idc_data_version ' 17.0' is invalid. Query the /versions endpoint for defined versions."
+
+    # Trailing whitespace is ignored
+    response = client.get(f'{API_URL}/fields/17.0 ')
     fields = get_data(response)
     all_fields = set()
     for source in fields['data_sources']:
         all_fields  = all_fields.union(source['fields'])
-
     assert set(all_fields) == set(FIELDS["properties"]['fields']['items']['enum'])
+
+    # 'current' gets tjhe current version
+    response = client.get(f'{API_URL}/fields/current')
+    fields = get_data(response)
+    assert fields['idc_data_version'] == f'{VERSION}.0'
+    all_fields = set()
+    for source in fields['data_sources']:
+        all_fields  = all_fields.union(source['fields'])
+    assert set(all_fields) == set(FIELDS["properties"]['fields']['items']['enum'])
+
+    # Returns something for each version
+    response = client.get(f'{API_URL}/versions',
+                          headers=headers)
+    data = get_data(response)['versions']
+    versions = {version['idc_data_version']: {key: version[key] for key in version.keys() if key != 'version_number'} for version in data}
+    for version in versions:
+        response = client.get(f'{API_URL}/fields/{version} ')
+        assert response.status_code == 200
+        fields = get_data(response)
+        assert fields['idc_data_version'] == version
+        print(f'Version: {version}')
+        for source in fields['data_sources']:
+            print(f"\t{source['data_source']}")
+            n=1
+            for field in source['fields']:
+                print(f'\t\t{n} {field}')
+                n+=1
+
+

@@ -67,6 +67,7 @@
 from argparse import ArgumentParser
 import os
 
+import httplib2
 import pkg_resources
 pkg_resources.require("oauth2client==4.1.3")
 from oauth2client.client import OAuth2WebServerFlow
@@ -95,7 +96,12 @@ def get_credentials(storage=None):
     if storage is None:
         storage = Storage(DEFAULT_STORAGE_FILE)
     credentials = storage.get()
-    if not credentials or credentials.invalid or credentials.access_token_expired:
+    # if not credentials or credentials.invalid or credentials.access_token_expired:
+    if credentials.access_token_expired:
+        if credentials.access_token_expired:
+            h = httplib2.Http()
+            credentials.refresh(h)
+    elif not credentials or credentials.invalid:
         maybe_print('credentials missing/invalid/expired, kicking off OAuth flow')
         flow = OAuth2WebServerFlow(CLIENT_ID, CLIENT_SECRET, EMAIL_SCOPE, pkce = True)
         credentials = tools.run_flow(flow, storage)

@@ -98,12 +98,12 @@ def normalize_query_fields(fields):
     special_fields = []
     lowered_fields = {key.lower(): key for key in FIELDS['properties']['fields']['items']['enum']}
     for field in fields:
-        match = blacklist.search(str(filter))
+        match = blacklist.search(str(field))
         if match:
-            result = dict(
-                message="Field '{}' contains invalid characters; please edit and resubmit. " +
-                        "[Saw {}]".format(str(field, match)),
+            return (corrected_fields, special_fields, dict(
+                message=f"Field '{field}' contains invalid characters; please edit and resubmit. ",
                 code=400
+                )
             )
 
         if field.lower() in lowered_fields:
@@ -114,8 +114,8 @@ def normalize_query_fields(fields):
             return (corrected_fields, special_fields, dict(
                 message=f'{field} is not a valid field.',
                 code=400
+                )
             )
-                    )
     return corrected_fields, special_fields, {}
 
 def process_special_fields(special_fields, query_info, data):
@@ -207,8 +207,7 @@ def validate_key(key):
     match = blacklist.search(str(key))
     if match:
         result =  dict(
-            message = "Key '{}' contains invalid characters; please edit and resubmit. " +
-                       "[Saw {}]".format(str(key, match)),
+            message = f"Key '{key}' contains invalid characters; please edit and resubmit. ",
             code = 400
         )
     return result
@@ -222,17 +221,19 @@ def normalize_filterset(filterset):
         match = blacklist.search(str(filter))
         if match:
             result = dict(
-                message="Filter '{}' contains invalid characters; please edit and resubmit. " +
-                        "[Saw {}]".format(str(filter, match)),
+                message=f"Filter '{filter}' contains invalid characters; please edit and resubmit. ",
                 code=400
             )
+            return result
+
         match = blacklist.search(str(value))
         if match:
             result = dict(
-                message="Value '{}' of filter '{}' contains invalid characters; please edit and resubmit. " +
-                        "[Saw {}]".format(str(value, filter, match)),
+                message=f"Value '{value}' of filter '{filter}' contains invalid characters; please edit and resubmit. ",
                 code=400
             )
+            return result
+
         if filter.lower() in lowered_filters:
             corrected_filters[lowered_filters[filter.lower()]] = value
         else:
@@ -277,7 +278,7 @@ def validate_cohort_def(cohort_def):
     # Replace submitted filter IDs with normalized filter IDs
     cohort_def['filters'], filter_info = normalize_filterset(cohort_def['filters'])
     if 'message' in filter_info:
-        return(cohort_def, filter_info)
+        return(filter_info)
     # Validate the filterset
     try:
         schema_validate(cohort_def['filters'], COHORT_FILTERS_SCHEMA)
