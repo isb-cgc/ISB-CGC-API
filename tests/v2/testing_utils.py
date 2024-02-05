@@ -17,7 +17,8 @@
 import json
 from api.v2.schemas.filters import COHORT_FILTERS_SCHEMA
 from api.v2.manifest_utils import process_special_fields, normalize_query_fields
-from testing_config import test_remote_api, dev_api_requester, API_URL, get_data, auth_header
+from testing_branch import test_branch
+from testing_config import dev_api_requester, API_URL, get_data, auth_header
 import functools
 
 levels = ["collections", "patients", "studies", "series", "instances"]
@@ -31,7 +32,7 @@ headers = {
 def _testMode(func):
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
-        if test_remote_api:
+        if test_branch != "LOCAL":
             kwargs['client'] = dev_api_requester
         result = func(*args, **kwargs)
         return result
