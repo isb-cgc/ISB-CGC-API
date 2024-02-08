@@ -46,6 +46,7 @@ def auth_info():
     encoded_info = request.headers.get('X-Endpoint-API-UserInfo', None)
 
     if encoded_info:
+        logger.info("[STATUS] Using X-Endpoint-API-UserInfo info")
         info_json = _base64_decode(encoded_info)
         user_info = json.loads(info_json)
         if 'email' not in user_info:
