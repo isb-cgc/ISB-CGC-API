@@ -119,7 +119,6 @@ def analysis_results():
 def filters():
     try:
         results = get_filters()
-
         if 'message' in results:
             response = jsonify(results)
             response.status_code = results['code']

@@ -25,6 +25,46 @@ from google.cloud import bigquery
 @_testMode
 def test_invalid_params(client, app):
     filters = {
+        "age_at_diagnosis_btw": [65, 75],
+        "collection_id": ["TCGA-READ"],
+        "Modality": ["ct", "mR"],
+        "RACE": ["WHITE"]
+    }
+
+    cohort_def = {"name": "testcohort",
+                  "description": "Test description",
+                  "filters": filters}
+
+    mimetype = 'application/json'
+    headers = {
+        'Content-Type': mimetype,
+        'Accept': mimetype
+    }
+
+    fields = [
+    ]
+
+    manifestPreviewBody = {
+        "cohort_def": cohort_def,
+        "fields": fields,
+        "sql": True,
+        'page_size': 2000,
+    }
+
+    # Get a guid manifest of the cohort's instances
+    response = client.post(f'{API_URL}/cohorts/manifest/preview',
+                           data=json.dumps(manifestPreviewBody),
+                           headers=headers)
+
+    # assert response.content_type == 'application/json'
+    assert response.status_code == 400
+    assert get_data(response)[
+               'message'] == "If 'fields' is empty, then one or both of 'counts' and 'group_size' must be True"
+
+    # -----------------------------------------------------------------------------------------------------------------------
+
+
+    filters = {
         "age_at_diagnosis_btw": [65.1, 75],
         "collection_id": ["TCGA-READ"],
         "Modality": ["ct", "mR"],
@@ -67,7 +107,10 @@ def test_invalid_params(client, app):
 
     # assert response.content_type == 'application/json'
     assert response.status_code == 400
-    assert get_data(response)['message'] == '65.1 is not of type \'integer\'; Failed validating type in schema [\'properties\'],[\'age_at_diagnosis_btw\'],[\'items\'] on instance [\'age_at_diagnosis_btw\'],[0]'
+    assert get_data(response)[
+               'message'] == '65.1 is not of type \'integer\'; Failed validating type in schema [\'properties\'],[\'age_at_diagnosis_btw\'],[\'items\'] on instance [\'age_at_diagnosis_btw\'],[0]'
+
+# -----------------------------------------------------------------------------------------------------------------------
 
     filters = {
         "age_at_diagnosis_btw": [65, 75],
@@ -114,6 +157,8 @@ def test_invalid_params(client, app):
     assert response.status_code == 400
     assert get_data(response)['message'] == "'cohort_def' is required in the body"
 
+    # -----------------------------------------------------------------------------------------------------------------------
+
     manifestPreviewBody = {
         # "cohort_def": cohort_def,
         "fields": fields,
@@ -150,6 +195,8 @@ def test_invalid_params(client, app):
     assert response.status_code == 400
     assert get_data(response)['message'] == 'Fields is an invalid body key'
 
+    # -----------------------------------------------------------------------------------------------------------------------
+
     manifestPreviewBody = {
         "cohort_def": cohort_def,
         "fields": fields,
@@ -167,6 +214,8 @@ def test_invalid_params(client, app):
     # assert response.content_type == 'application/json'
     assert response.status_code == 400
     assert get_data(response)['message'] == 'Counts is an invalid body key'
+
+    # -----------------------------------------------------------------------------------------------------------------------
 
     manifestPreviewBody = {
         "cohort_def": cohort_def,
@@ -186,6 +235,8 @@ def test_invalid_params(client, app):
     assert response.status_code == 400
     assert get_data(response)['message'] == 'Group_size is an invalid body key'
 
+    # -----------------------------------------------------------------------------------------------------------------------
+
     manifestPreviewBody = {
         "cohort_def": cohort_def,
         "fields": fields,
@@ -203,6 +254,8 @@ def test_invalid_params(client, app):
     # assert response.content_type == 'application/json'
     assert response.status_code == 400
     assert get_data(response)['message'] == 'SQL is an invalid body key'
+
+    # -----------------------------------------------------------------------------------------------------------------------
 
     manifestPreviewBody = {
         "cohort_def": cohort_def,
@@ -222,6 +275,8 @@ def test_invalid_params(client, app):
     assert response.status_code == 400
     assert get_data(response)['message'] == 'Page_size is an invalid body key'
 
+    # -----------------------------------------------------------------------------------------------------------------------
+
     manifestPreviewBody = {
         # "cohort_def": cohort_def,
         "fields": fields,
@@ -239,6 +294,8 @@ def test_invalid_params(client, app):
     # assert response.content_type == 'application/json'
     assert response.status_code == 400
     assert get_data(response)['message'] == "\'cohort_def\' is required in the body"
+
+    # -----------------------------------------------------------------------------------------------------------------------
 
     manifestPreviewBody = {
         "cohort_def": cohort_def,
@@ -258,11 +315,12 @@ def test_invalid_params(client, app):
     assert response.status_code == 400
     assert get_data(response)['message'] == "fields is required in the body"
 
+    # -----------------------------------------------------------------------------------------------------------------------
+
     cohort_def = {"name": "testcohort",
                   "Description": "Test description",
                   "filters": filters
                   }
-
 
     manifestPreviewBody = {
         "cohort_def": cohort_def,
@@ -281,6 +339,8 @@ def test_invalid_params(client, app):
     # assert response.content_type == 'application/json'
     assert response.status_code == 400
     assert get_data(response)['message'] == "'Description' is an invalid cohort_def key"
+
+    # -----------------------------------------------------------------------------------------------------------------------
 
     cohort_def = {"name": "testcohort",
                   "description": "Test description",
@@ -304,6 +364,41 @@ def test_invalid_params(client, app):
     # assert response.content_type == 'application/json'
     assert response.status_code == 400
     assert get_data(response)['message'] == "'Filters' is an invalid cohort_def key"
+
+    # -----------------------------------------------------------------------------------------------------------------------
+
+    filters = {
+    }
+
+    cohort_def = {"name": "testcohort",
+                  "description": "Test description",
+                  "filters": filters}
+
+    mimetype = 'application/json'
+    headers = {
+        'Content-Type': mimetype,
+        'Accept': mimetype
+    }
+
+    fields = [
+    ]
+
+    manifestPreviewBody = {
+        "cohort_def": cohort_def,
+        "fields": fields,
+        "counts": True,
+        "group_size": False,
+        "sql": True,
+        'page_size': 2000
+    }
+
+    # Get a manifest of the cohort's instances`
+    response = client.post(f'{API_URL}/cohorts/manifest/preview',
+            data = json.dumps(manifestPreviewBody),
+            headers=headers
+        )
+    assert response.status_code == 400
+    assert get_data(response)['message'] == "'filters' must have at least one item"
 
     return
 
@@ -338,6 +433,60 @@ def test_basic(client, app):
         'gcs_url',
         'aws_bucket',
         'aws_url'
+    ]
+
+    manifestPreviewBody = {
+        "cohort_def": cohort_def,
+        "fields": fields,
+        "counts": True,
+        "group_size": False,
+        "sql": True,
+        'page_size': 2000
+    }
+
+    # Get a manifest of the cohort's instances`
+    response = client.post(f'{API_URL}/cohorts/manifest/preview',
+            data = json.dumps(manifestPreviewBody),
+            headers=headers
+        )
+    assert response.status_code == 200
+
+    cohort_def = get_data(response)['cohort_def']
+    manifest = get_data(response)['manifest']
+    bq_data = [dict(row) for row in bq_client.query(cohort_def['sql'] + f'LIMIT {manifestPreviewBody["page_size"]}')]
+
+    assert manifest['rowsReturned'] == len(bq_data)
+
+    next_page = get_data(response)['next_page']
+    assert next_page == ""
+
+    rows = manifest['manifest_data']
+    assert len(rows) == len(bq_data)
+    assert manifest['totalFound'] == len(bq_data)
+    for key in bq_data[0]:
+        print(key)
+        assert (set(row[key] for row in bq_data) == set(row[key] for row in rows))
+
+
+@_testMode
+def test_minimal(client, app):
+    bq_client = bigquery.Client(project='idc-dev-etl')
+
+    filters = {
+        "age_at_diagnosis_eq": [0]
+    }
+
+    cohort_def = {"name": "testcohort",
+                  "description": "Test description",
+                  "filters": filters}
+
+    mimetype = 'application/json'
+    headers = {
+        'Content-Type': mimetype,
+        'Accept': mimetype
+    }
+
+    fields = [
     ]
 
     manifestPreviewBody = {

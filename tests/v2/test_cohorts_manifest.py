@@ -205,6 +205,64 @@ def test_basic(client, app):
     delete_cohort(client, id)
 
 
+@_testMode
+def test_minimal(client, app):
+    bq_client = bigquery.Client(project='idc-dev-etl')
+    filters = {
+        "age_at_diagnosis_eq": [0]
+    }
+    id, filterSet = create_cohort_for_test_get_cohort_xxx(client, filters)
+
+    mimetype = 'application/json'
+    headers = {
+        'Content-Type': mimetype,
+        'Accept': mimetype
+    }
+    fields = [
+    ]
+
+    manifestBody = {
+        "fields": fields,
+        "group_size": True,
+        "sql": True,
+        'page_size': 2000,
+    }
+    # query = gen_query(filterSet['filters'], query_string)
+    # bq_data = [dict(row) for row in bq_client.query(query)]
+
+    # Get a guid manifest of the cohort's instances
+    response = client.post(f"{API_URL}/cohorts/manifest/{id}/",
+                          data=json.dumps(manifestBody),
+                          headers=headers | auth_header)
+
+    assert response.status_code == 200
+
+    cohort_def = get_data(response)['cohort_def']
+    manifest = get_data(response)['manifest']
+    bq_data = [dict(row) for row in bq_client.query(cohort_def['sql'] + f'LIMIT {manifestBody["page_size"]}')]
+
+    assert manifest['rowsReturned'] == len(bq_data)
+
+    next_page = get_data(response)['next_page']
+    assert next_page == ""
+
+    rows = manifest['manifest_data']
+    assert len(rows) == len(bq_data)
+    assert manifest['totalFound'] == len(bq_data)
+    for key in bq_data[0]:
+        print(key)
+        assert (set(row[key] for row in bq_data) == set(row[key] for row in rows))
+
+    # json_manifest = manifest['json_manifest']
+    # assert len(json_manifest) == len(bq_data)
+    # assert manifest['totalFound'] == len(bq_data)
+    # for key in bq_data[0]:
+    #     print(key)
+    #     assert (set(row[key] for row in bq_data) == set(row[key] for row in json_manifest))
+
+    delete_cohort(client, id)
+
+
 # Test that the generated SQL is correct. Iterate over ranged filters
 @_testMode
 def test_sql_ranged_integer(client, app):
