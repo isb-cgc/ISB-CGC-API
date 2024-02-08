@@ -23,29 +23,13 @@ from flask import request
 from werkzeug.exceptions import BadRequest
 
 from python_settings import settings
-from .manifest_utils import validate_body, validate_cohort_def, process_special_fields, encrypt_pageToken, decrypt_pageToken
+from .manifest_utils import validate_body, validate_cohort_def, process_special_fields, encrypt_pageToken, decrypt_pageToken, remove_modality
 from jsonschema import validate as schema_validate, ValidationError
 from .version_config import API_VERSION
 from google_helpers.bigquery.bq_support import BigQuerySupport
 BLACKLIST_RE = settings.BLACKLIST_RE
 
 logger = logging.getLogger(settings.LOGGER_NAME)
-
-def convert_to_bool(s):
-    if s in ['True']:
-        s = True
-    elif s in ['False']:
-        s = False
-    return s
-
-
-def get_params(param_defaults):
-    params = {}
-    for key in param_defaults:
-        params[key] = request.args.get(key)
-        if params[key] == None:
-            params[key] = param_defaults[key]
-    return params
 
 
 def post_query(body, user, cohort_id):
@@ -146,14 +130,25 @@ def perform_query(url, body, special_fields, user):  # , user=None):
         }
 
         auth = get_auth()
-        results = requests.post(url, json=data, headers=auth)
-        query_info = results.json()
-        if "message" in query_info:
-            return query_info
+        if not "Modality" in data["request_data"]["fields"]:
+            # We ensure that there is at least one field from dicom_pivot
+            # This ensures the the webapp will generated a fully formed SQL string
+            data["request_data"]["fields"].append("Modality")
+            # Now we have to remove Modality from the generated SQL
+            results = requests.post(url, json=data, headers=auth)
+            query_info = results.json()
+            if "message" in query_info:
+                return query_info
+            query_info, data = remove_modality(query_info, data)
+        else:
+            results = requests.post(url, json=data, headers=auth)
+            query_info = results.json()
+            if "message" in query_info:
+                return query_info
 
+        query_info = process_special_fields(special_fields, query_info, data)
         if data['request_data']['sql']:
             generate_user_sql_string(query_info)
-        query_info = process_special_fields(special_fields, query_info, data)
 
         # Start the BQ job, but don't get any data results, just the job info.
         job_status = submit_BQ_job(query_info['query']['sql_string'],
@@ -279,7 +274,6 @@ def is_job_done(job_is_done, query_info, jobReference, user):
                 code=500)
         else:
             # Don't return the query in this form
-
             query_info.pop('query', None)
     else:
         # We timed out waiting for the BQ job to complete.
