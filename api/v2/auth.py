@@ -20,6 +20,7 @@ import json
 import os
 from flask import request
 from python_settings import settings
+import settings
 
 logger = logging.getLogger(settings.LOGGER_NAME)
 
@@ -49,16 +50,11 @@ def auth_info():
         user_info = json.loads(info_json)
         if 'email' not in user_info:
             raise UserValidationException("Couldn't obtain user email - the correct scopes may not have been provided during authorization!")
-        user_info['remote_addr'] = request.headers.environ.get('REMOTE_ADDR')
-    elif os.getenv("DEBUG"):
+    elif settings.BASE_URL == 'http://localhost:8086':
         logger.info("[STATUS] Using debug API user info")
         user_info = {
             'id' : settings.DEBUG_API_ID,
             'email' : settings.DEBUG_API_EMAIL,
-            'remote_addr': request.headers.environ.get('REMOTE_ADDR')
-
-        # 'id': os.getenv('DEBUG_API_ID'),
-            # 'email': os.getenv('DEBUG_API_EMAIL')
         }
     else:
         logger.info("[STATUS] No user encoded info found.")
