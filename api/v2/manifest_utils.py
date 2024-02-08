@@ -119,20 +119,20 @@ def normalize_query_fields(fields):
     return corrected_fields, special_fields, {}
 
 def process_special_fields(special_fields, query_info, data):
-    if special_fields:
-        fields = set([field.lower() for field in data['request_data']['fields']])
-        sql_string = query_info['query']['sql_string']
-        # sql_string = 'SELECT'
-        select_string = sql_string[0:sql_string.find('FROM')]
-        if 'WHERE' in sql_string:
-            from_string = sql_string[sql_string.find('FROM'):sql_string.find('WHERE')]
-            where_string =sql_string[sql_string.find('WHERE'):sql_string.find('GROUP')]
-        else:
-            from_string = sql_string[sql_string.find('FROM'):sql_string.find('GROUP')]
-            where_string = ""
-        group_by_string = sql_string[sql_string.find('GROUP'):sql_string.find('ORDER')]
-        order_by_string = sql_string[sql_string.find('ORDER'):]
+    fields = set([field.lower() for field in data['request_data']['fields']])
+    sql_string = query_info['query']['sql_string']
+    # sql_string = 'SELECT'
+    select_string = sql_string[0:sql_string.find('FROM')]
+    if 'WHERE' in sql_string:
+        from_string = sql_string[sql_string.find('FROM'):sql_string.find('WHERE')]
+        where_string =sql_string[sql_string.find('WHERE'):sql_string.find('GROUP')]
+    else:
+        from_string = sql_string[sql_string.find('FROM'):sql_string.find('GROUP')]
+        where_string = ""
+    group_by_string = sql_string[sql_string.find('GROUP'):sql_string.find('ORDER')]
+    order_by_string = sql_string[sql_string.find('ORDER'):]
 
+    if special_fields:
         # Include counts if there is an explicit level
         if 'counts' in special_fields:
             if {'crdc_instance_uuid', 'sopinstanceuid', 'gcs_url', 'aws_url'} & fields:
@@ -190,14 +190,17 @@ def process_special_fields(special_fields, query_info, data):
             offset = order_by_string.find('dicom_pivot.StudyDescription', order_by_string.find('ORDER BY', offset))
             order_by_string = order_by_string.replace('dicom_pivot.StudyDescription', 'StudyDescription', 1)
 
+        # Remove trailing commas
+        select_string = re.sub(r',( *\n *)$', r'\1', select_string, 1)
+        group_by_string = re.sub(r',( *\n *)$', r'\1', group_by_string, 1)
+        order_by_string = re.sub(r',( *\n *)$', r'\1', order_by_string, 1)
 
-        query_info['query']['sql_string'] = select_string + from_string + where_string + group_by_string + order_by_string
-        if 'sql' in query_info['cohort_def'] and query_info['cohort_def']['sql']:
-            query_info['cohort_def']['sql'] = \
-                select_string + \
-                query_info['cohort_def']['sql'][query_info['cohort_def']['sql'].find('FROM'):query_info['cohort_def']['sql'].find('GROUP BY')] + \
-                group_by_string + order_by_string
-                # query_info['cohort_def']['sql'].replace('SELECT', sql_string)
+    # If group_by has not elements, delete it
+    group_by_string = re.sub(r'GROUP BY *\n *$', '', group_by_string)
+    # If order_by has not elements, delete it
+    order_by_string = re.sub(r'ORDER BY[ *\n]* *$', '', order_by_string)
+
+    query_info['query']['sql_string'] = select_string + from_string + where_string + group_by_string + order_by_string
     return query_info
 
 
@@ -257,6 +260,13 @@ def validate_cohort_def(cohort_def):
     if not 'filters' in cohort_def:
         param_info = dict(
             message=f"'filters' is a required cohort_def key",
+            code=400
+        )
+        return param_info
+
+    if cohort_def['filters'] == {}:
+        param_info = dict(
+            message=f"'filters' must have at least one item",
             code=400
         )
         return param_info
@@ -346,14 +356,58 @@ def validate_body(body):
         return error_info
     body['special_fields'] = special_fields
 
-    if not body['fields']:
-        manifest_info = dict(
-            message=f'At least one query parameter must be True.',
+    if not body['fields'] and not body["counts"] and not body["group_size"]:
+        body = dict(
+            message=f"If 'fields' is empty, then one or both of 'counts' and 'group_size' must be True",
             code=400
         )
 
     return body
 
+def remove_modality(query_info, data):
+    data["request_data"]["fields"].remove("Modality")
+    sql_string = query_info['query']['sql_string']
+    # sql_string = 'SELECT'
+    select_string = sql_string[0:sql_string.find('FROM')]
+    if 'WHERE' in sql_string:
+        from_string = sql_string[sql_string.find('FROM'):sql_string.find('WHERE')]
+        where_string = sql_string[sql_string.find('WHERE'):sql_string.find('GROUP')]
+    else:
+        from_string = sql_string[sql_string.find('FROM'):sql_string.find('GROUP')]
+        where_string = ""
+    group_by_string = sql_string[sql_string.find('GROUP'):sql_string.find('ORDER')]
+    order_by_string = sql_string[sql_string.find('ORDER'):]
+
+    # Delete if first item in list
+    select_string = re.sub('dicom_pivot.Modality *,','',select_string,1)
+    # or if its not the first item
+    select_string = re.sub(', *dicom_pivot.Modality','',select_string,1)
+    # or if its the only item
+    select_string = re.sub('dicom_pivot.Modality','',select_string,1)
+
+    # Delete if first item in list
+    group_by_string = re.sub('dicom_pivot.Modality *,','',group_by_string,1)
+    # or if its not the first item
+    group_by_string = re.sub(r', *dicom_pivot.Modality','',group_by_string,1)
+    # or if its the only item
+    group_by_string = re.sub(r'dicom_pivot.Modality','',group_by_string,1)
+
+    # Delete if first item in list
+    order_by_string = re.sub('dicom_pivot.Modality *ASC *,','',order_by_string,1)
+    # or if its not the first item
+    order_by_string = re.sub(r', *dicom_pivot.Modality *ASC','',order_by_string,1)
+    # or if its the only item
+    order_by_string = re.sub(r'dicom_pivot.Modality *ASC','',order_by_string,1)
+
+    # Remove trailing commas
+    select_string = re.sub(r',( *\n *)$', r'\1', select_string, 1)
+    group_by_string = re.sub(r',( *\n *)$', r'\1', group_by_string, 1)
+    order_by_string = re.sub(r',( *\n *)$', r'\1', order_by_string, 1)
+
+    query_info['query'][
+            'sql_string'] = select_string + from_string + where_string + group_by_string + order_by_string
+
+    return query_info, data
 
 
 

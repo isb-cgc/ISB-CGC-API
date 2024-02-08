@@ -187,7 +187,7 @@ def create_cohort(client):
 # Create a cohort with filter as expected by the test_get_cohort_xxx() functions
 def create_cohort_for_test_get_cohort_xxx(client, filters=None):
     # Create a cohort to test against
-    if not filters:
+    if filters == None:
         filters = {
             "collection_id": ["TCGA-READ"],
             "Modality": ["CT", "MR"],
