@@ -50,7 +50,6 @@ def encrypt_pageToken(user, jobReference, next_page, op):
     # cipher_suite = Fernet(settings.PAGE_TOKEN_KEY)
     jobDescription = dict(
         email = user['email'],
-        remote_addr = user['remote_addr'],
         jobReference = jobReference,
         next_page = next_page,
         op = op
@@ -71,11 +70,6 @@ def decrypt_pageToken(user, cipher_jobReference, op):
             logger.error("Caller's email, {}, doesn't match what was encrypted: {}".format(
                 user['email'], jobDescription['email']))
             return {}
-        elif jobDescription["remote_addr"] != user['remote_addr']:
-            # Caller's email doesn't match what was encrypted
-            logger.error("Caller's remote_addr, {}, doesn't match what was encrypted: {}".format(
-                user['remote_addr'], jobDescription['remote_addr']))
-            return {}
         elif jobDescription["op"] != op:
             # Caller's email doesn't match what was encrypted
             logger.error("Incorrect next_page endpoint for next_page token".format(
@@ -83,7 +77,6 @@ def decrypt_pageToken(user, cipher_jobReference, op):
             return {}
         else:
             jobDescription.pop('email')
-            jobDescription.pop('remote_addr')
             jobDescription.pop('op')
             return jobDescription
     except InvalidToken:
