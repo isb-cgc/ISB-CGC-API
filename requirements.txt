@@ -30,7 +30,7 @@ GoogleAppEngineCloudStorageClient==1.9.22.1
 grpcio==1.53.2
 grpcio-status==1.51.3
 httplib2==0.21.0
-idna==3.4
+idna==3.7
 importlib-metadata==6.0.0
 iniconfig==2.0.0
 itsdangerous==2.1.2
@@ -68,7 +68,7 @@ ruamel.yaml==0.17.21
 ruamel.yaml.clib==0.2.7
 simplejson==3.18.3
 six==1.16.0
-sqlparse==0.4.4
+sqlparse==0.5.0
 tomli==2.0.1
 uritemplate==4.1.1
 urllib3==2.1.0
