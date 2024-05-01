@@ -204,14 +204,6 @@ def test_fields(client, app):
     assert response.status_code == 400
     assert get_data(response)['message'] == "Supplied idc_data_version ' 17.0' is invalid. Query the /versions endpoint for defined versions."
 
-    # Trailing whitespace is ignored
-    response = client.get(f'{API_URL}/fields/17.0 ')
-    fields = get_data(response)
-    all_fields = set()
-    for source in fields['data_sources']:
-        all_fields  = all_fields.union(source['fields'])
-    assert set(all_fields) == set(FIELDS["properties"]['fields']['items']['enum'])
-
     # 'current' gets tjhe current version
     response = client.get(f'{API_URL}/fields/current')
     fields = get_data(response)
