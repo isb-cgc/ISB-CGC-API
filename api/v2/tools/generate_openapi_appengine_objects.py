@@ -42,7 +42,7 @@ def get_filter_metadata(args):
     return response
 
 def get_field_metadata(args):
-    url = 'http://localhost:8095/v2/fields'
+    url = 'http://localhost:8095/v2/fields/current'
     headers = {'accept': 'application/json'}
     response = requests.get(url).json()
     return response
@@ -163,7 +163,7 @@ def gen_filters_schema(args, filters):
     return
 
 
-def gen_filters_schema(args, fields):
+def gen_fields_schema(args, fields):
     all_fields = set()
     for source in fields['data_sources']:
         all_fields  = all_fields.union(source['fields'])
@@ -257,7 +257,7 @@ def gen_json(args):
     gen_filters_schema(args, filters)
 
     fields = get_field_metadata(args)
-    gen_filters_schema(args, fields)
+    gen_fields_schema(args, fields)
 
     # gen_manifest_data(args, fields, filters)
     # # # gen_query_results_schema(args, filters)
