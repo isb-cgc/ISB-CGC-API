@@ -52,6 +52,7 @@ FIELDS={
           "race",
           "sample_type",
           "SamplesPerPixel",
+          "SegmentAlgorithmName",
           "SegmentAlgorithmType",
           "SegmentedPropertyCategoryCodeSequence",
           "SegmentedPropertyTypeCodeSequence",
