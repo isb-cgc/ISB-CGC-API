@@ -722,6 +722,20 @@ COHORT_FILTERS_SCHEMA={
       },
       "minItems": 1
     },
+    "SegmentAlgorithmName": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1
+    },
+    "SegmentAlgorithmType": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1
+    },
     "SegmentedPropertyCategoryCodeSequence": {
       "type": "array",
       "items": {

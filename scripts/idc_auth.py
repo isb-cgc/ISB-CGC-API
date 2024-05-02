@@ -75,7 +75,6 @@ pkg_resources.require("oauth2client==4.1.3")
 from oauth2client.client import OAuth2WebServerFlow
 from oauth2client import tools
 from oauth2client.file import Storage
-from scripts.idc_auth import get_credentials
 
 VERBOSE = False
 CLIENT_ID = '198650116749-jold6g3160renk0nm566m7tguvpdktga.apps.googleusercontent.com'

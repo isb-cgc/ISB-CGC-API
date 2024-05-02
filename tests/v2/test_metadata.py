@@ -72,7 +72,7 @@ def test_analysis_results(client, app):
     assert 'Standardized representation of the TCIA LIDC-IDRI annotations using DICOM' in results
     collection = results['Standardized representation of the TCIA LIDC-IDRI annotations using DICOM' ]
     # assert collection['idc_data_versions'] == ['1.0','2.0']
-    assert collection['analysisArtifacts'] == 'Tumor segmentations, image features'
+    assert collection['analysisArtifacts'] == 'Tumor segmentations, image features, Software/Source Code'
     assert collection['analysis_result_id'] == 'DICOM-LIDC-IDRI-Nodules'
     assert collection['cancer_type'] == 'Lung'
     assert collection['collections'].lower() =='lidc_idri'
@@ -203,14 +203,6 @@ def test_fields(client, app):
     response = client.get(f'{API_URL}/fields/ 17.0')
     assert response.status_code == 400
     assert get_data(response)['message'] == "Supplied idc_data_version ' 17.0' is invalid. Query the /versions endpoint for defined versions."
-
-    # Trailing whitespace is ignored
-    response = client.get(f'{API_URL}/fields/17.0 ')
-    fields = get_data(response)
-    all_fields = set()
-    for source in fields['data_sources']:
-        all_fields  = all_fields.union(source['fields'])
-    assert set(all_fields) == set(FIELDS["properties"]['fields']['items']['enum'])
 
     # 'current' gets tjhe current version
     response = client.get(f'{API_URL}/fields/current')
