@@ -191,65 +191,65 @@ def gen_fields_schema(args, fields):
     return
 
 
-# def gen_manifest_data(args, fields, filters):
-#     pivot_filters = next(source for source in filters['data_sources'] if 'pivot' in source['data_source'])
-#     client = bigquery.Client('idc-dev-etl')
-#     dicom_pivot = client.get_table('idc-dev-etl.idc_current.dicom_pivot')
-#     schema = {row.name: row for row in dicom_pivot.schema}
-#     schema = {}
-#     for source in filters['data_sources']:
-#         table = client.get_table(source['data_source'])
-#         t = {row.name: row for row in table.schema}
-#         schema.update(t)
-#
-#     all_fields = set()
-#     for source in fields['data_sources']:
-#         all_fields  = all_fields.union(source['fields'])
-#
-#     with open(args.query_result_file, "w") as f:
-#         write_required_fields(f)
-#         f.write(
-# """  manifestData:
-#     type: "array"
-#     items:
-#       type: "object"
-#       properties:
-# """
-#         )
-#         for field in sorted(list(all_fields), key=str.lower):
-#             if field in schema:
-#                 data_type = {'STRING': 'string',
-#                              'FLOAT': 'number',
-#                              'DATE': 'string',
-#                              'INTEGER': 'integer',
-#                              'NUMERIC': 'number'}[schema[field].field_type]
-#
-#             else:
-#                 try:
-#                     data_type = {
-#                         'CancerType': 'string',
-#                         'gcs_generation': 'string',
-#                     }[field]
-#                 except Exception as exc:
-#                     if field in ['counts', 'group_size']:
-#                         continue
-#                     print(f'Unknown data type for field {field}; {exc}')
-#
-#             f.write(f'        {field}:\n')
-#             f.write(f'          type:  "{data_type}"\n')
-#         for field in [
-#             'instance_count',
-#             'series_count',
-#             'study_count',
-#             'patient_count',
-#             'collection_count',
-#             'group_size',
-#         ]:
-#             f.write(f'        {field}:\n')
-#             f.write(f'          type:  "number"\n')
-#
-#
-#     return
+def gen_manifest_data(args, fields, filters):
+    pivot_filters = next(source for source in filters['data_sources'] if 'pivot' in source['data_source'])
+    client = bigquery.Client('idc-dev-etl')
+    dicom_pivot = client.get_table('idc-dev-etl.idc_current.dicom_pivot')
+    schema = {row.name: row for row in dicom_pivot.schema}
+    schema = {}
+    for source in filters['data_sources']:
+        table = client.get_table(source['data_source'])
+        t = {row.name: row for row in table.schema}
+        schema.update(t)
+
+    all_fields = set()
+    for source in fields['data_sources']:
+        all_fields  = all_fields.union(source['fields'])
+
+    with open(args.query_result_file, "w") as f:
+        write_required_fields(f)
+        f.write(
+"""  manifestData:
+    type: "array"
+    items:
+      type: "object"
+      properties:
+"""
+        )
+        for field in sorted(list(all_fields), key=str.lower):
+            if field in schema:
+                data_type = {'STRING': 'string',
+                             'FLOAT': 'number',
+                             'DATE': 'string',
+                             'INTEGER': 'integer',
+                             'NUMERIC': 'number'}[schema[field].field_type]
+
+            else:
+                try:
+                    data_type = {
+                        'CancerType': 'string',
+                        'gcs_generation': 'string',
+                    }[field]
+                except Exception as exc:
+                    if field in ['counts', 'group_size']:
+                        continue
+                    print(f'Unknown data type for field {field}; {exc}')
+
+            f.write(f'        {field}:\n')
+            f.write(f'          type:  "{data_type}"\n')
+        for field in [
+            'instance_count',
+            'series_count',
+            'study_count',
+            'patient_count',
+            'collection_count',
+            'group_size',
+        ]:
+            f.write(f'        {field}:\n')
+            f.write(f'          type:  "number"\n')
+
+
+    return
 
 
 def gen_json(args):
@@ -259,8 +259,7 @@ def gen_json(args):
     fields = get_field_metadata(args)
     gen_fields_schema(args, fields)
 
-    # gen_manifest_data(args, fields, filters)
-    # # # gen_query_results_schema(args, filters)
+    gen_manifest_data(args, fields, filters)
 
 
 if __name__ == '__main__':
@@ -269,8 +268,8 @@ if __name__ == '__main__':
                         help='File into which to save the generated yaml')
     parser.add_argument('--query_file', default='fields.yaml',
                         help='File into which to save the generated fields yaml')
-    # parser.add_argument('--query_result_file', default='manifest_data.yaml',
-    #                     help='File into which to save the generated manifest data yaml')
+    parser.add_argument('--query_result_file', default='manifest_data.yaml',
+                        help='File into which to save the generated manifest data yaml')
     args = parser.parse_args()
     print("{}".format(args), file=sys.stdout)
     gen_json(args)
