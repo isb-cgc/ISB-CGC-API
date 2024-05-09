@@ -18,14 +18,16 @@ import os
 import requests
 from werkzeug.wrappers import Response as local_resonse
 from requests.models import Response as dev_response
-from scripts.idc_auth import get_credentials
+from scripts.idc_auth import get_credentials as get_prod_credentials
+from scripts.idc_auth_master import get_credentials as get_master_credentials
+from scripts.idc_auth_test import get_credentials as get_test_credentials
 from oauth2client.file import Storage
 from testing_branch import test_branch
 # DEFAULT_STORAGE_FILE = os.path.join(os.path.expanduser("~"), '.idc_credentials')
 
 API_VERSION = 'v2'
-VERSION = 17
-NUM_COLLECTIONS = 142
+VERSION = 18
+NUM_COLLECTIONS = 143
 
 # # True to access dev, testing or prod APIs, False to access local API
 # test_remote_api = True
@@ -60,7 +62,13 @@ if test_branch != "LOCAL":
     #     # Still good; use the access token
     #     token = credentials.access_token
     storage = Storage(DEFAULT_STORAGE_FILE)
-    credentials = get_credentials(storage)
+    if test_branch == "MASTER":
+        credentials = get_master_credentials(storage)
+    elif test_branch == "TEST":
+        credentials = get_test_credentials(storage)
+    else:
+        credentials = get_prod_credentials(storage)
+
     # token = credentials.access_token
     token = credentials.token_response['id_token']
     auth_header = {"Authorization": f'Bearer {token}'}
