@@ -453,21 +453,12 @@ if IS_DEV:
 #   End django-allauth   #
 ##########################
 
-# Path to application runtime JSON key
-GOOGLE_APPLICATION_CREDENTIALS        = join(dirname(__file__), './{}{}'.format(SECURE_LOCAL_PATH,os.environ.get('GOOGLE_APPLICATION_CREDENTIALS', '')))
+# Deployed systems have app credentials on the VM, but a local system will need a JSON key present to
+# download anything necessary, like the SQL table file.
+GOOGLE_APPLICATION_CREDENTIALS = os.environ.get('GOOGLE_APPLICATION_CREDENTIALS', '')
 
 if not exists(GOOGLE_APPLICATION_CREDENTIALS):
     print("[ERROR] Google application credentials file wasn't found! Provided path: {}".format(GOOGLE_APPLICATION_CREDENTIALS))
-    exit(1)
-
-# GCP monitoring Service Account, needed for template display
-MONITORING_SA_CLIENT_EMAIL            = os.environ.get('MONITORING_SA_CLIENT_EMAIL', '')
-
-# GCP monitoring Service Account key
-MONITORING_SA_ACCESS_CREDENTIALS      = join(dirname(__file__), './{}{}'.format(SECURE_LOCAL_PATH,os.environ.get('MONITORING_SA_ACCESS_CREDENTIALS', '')))
-
-if not exists(MONITORING_SA_ACCESS_CREDENTIALS):
-    print("[ERROR] Monitoring service account credentials file wasn't found! Provided path: {}".format(MONITORING_SA_ACCESS_CREDENTIALS))
     exit(1)
 
 # Client ID used for OAuth2 - this is for IGV and the test database
@@ -489,15 +480,6 @@ SUPERADMIN_FOR_REPORTS                  = os.environ.get('SUPERADMIN_FOR_REPORTS
 
 # Log name for ERA login views
 LOG_NAME_ERA_LOGIN_VIEW                  = os.environ.get('LOG_NAME_ERA_LOGIN_VIEW', '')
-
-# Service account blacklist file path
-SERVICE_ACCOUNT_BLACKLIST_PATH           = os.environ.get('SERVICE_ACCOUNT_BLACKLIST_PATH', '')
-
-# Google Org whitelist file path
-GOOGLE_ORG_WHITELIST_PATH                = os.environ.get('GOOGLE_ORG_WHITELIST_PATH', '')
-
-# Managed Service Account file path
-MANAGED_SERVICE_ACCOUNTS_PATH            = os.environ.get('MANAGED_SERVICE_ACCOUNTS_PATH', '')
 
 # DCF Phase I enable flag
 DCF_TEST                                 = bool(os.environ.get('DCF_TEST', 'False') == 'True')

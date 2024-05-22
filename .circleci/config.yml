@@ -171,6 +171,7 @@ jobs:
             - ./.dockerignore
             - ./app.yaml
             - ./openapi-appengine.yaml
+            - ./dispatch.yaml
             - ./gunicorn.conf.py
             - ./settings.py
             - ./txt
@@ -198,7 +199,7 @@ jobs:
             sudo -E rm -rf ./lib
             sudo -E /bin/bash ./shell/unpack_for_deployment.sh
             sudo -E gcloud endpoints services deploy ./openapi-appengine.yaml
-            sudo -E gcloud app deploy --verbosity=debug ./app.yaml --quiet
+            sudo -E gcloud app deploy --verbosity=debug ./app.yaml ./dispatch.yaml
 workflows:
   version: 2
   build_and_deploy:
