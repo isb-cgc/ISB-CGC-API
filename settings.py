@@ -461,6 +461,9 @@ if not exists(GOOGLE_APPLICATION_CREDENTIALS):
     print("[ERROR] Google application credentials file wasn't found! Provided path: {}".format(GOOGLE_APPLICATION_CREDENTIALS))
     exit(1)
 
+# Stub to allow deployments until we're ready to remove the old services
+MONITORING_SA_ACCESS_CREDENTIALS      = os.environ.get('GOOGLE_APPLICATION_CREDENTIALS', '')
+
 # Client ID used for OAuth2 - this is for IGV and the test database
 OAUTH2_CLIENT_ID = os.environ.get('OAUTH2_CLIENT_ID', '')
 
