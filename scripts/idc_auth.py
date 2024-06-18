@@ -134,7 +134,7 @@ def main():
 def parse_args():
     parser = ArgumentParser()
     # parser.add_argument('--storage_file', '-s', default=DEFAULT_STORAGE_FILE, help='storage file to use for the credentials (default is {})'.format(DEFAULT_STORAGE_FILE))
-    parser.add_argument('--storage_file', '-s', default='/Users/BillClifford/.idc_credentials', help='storage file to use for the credentials (default is {})'.format(DEFAULT_STORAGE_FILE))
+    parser.add_argument('--storage_file', '-s', default='/Users/BillClifford/.idc_credentials_test', help='storage file to use for the credentials (default is {})'.format(DEFAULT_STORAGE_FILE))
     parser.add_argument('--verbose', '-v', dest='verbose', action='store_false', help='display credentials storage location, access token, and refresh token')
     parser.set_defaults(verbose=False)
     parser.add_argument('--client_id', default=CLIENT_ID)
