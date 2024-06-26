@@ -23,6 +23,7 @@ import json
 from flask import Flask, jsonify, request
 from flask_cors import cross_origin
 from flask_talisman import Talisman
+import google.cloud.logging
 
 app = Flask(__name__, static_folder='api_static')
 
@@ -48,6 +49,11 @@ from sample_case_routes import *
 from file_routes import *
 from user_routes import *
 from deprecated.user_routes import *
+
+# We need to hook up Python logging to Google Cloud Logging for AppEngine (or nothing will be logged)
+client = google.cloud.logging.Client()
+client.get_default_handler()
+client.setup_logging()
 
 logger = logging.getLogger(settings.LOGGER_NAME)
 

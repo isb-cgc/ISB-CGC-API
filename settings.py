@@ -68,11 +68,15 @@ DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
 
 LOGGER_NAME = os.environ.get('API_LOGGER_NAME', 'main_logger')
 
+# Project ID of the project for thid app
 GCLOUD_PROJECT_ID              = os.environ.get('GCLOUD_PROJECT_ID', '')
+# Project Number of the runtime project for this app
 GCLOUD_PROJECT_NUMBER          = os.environ.get('GCLOUD_PROJECT_NUMBER', '')
+# Where BQ jobs run/data is exported
 BIGQUERY_PROJECT_ID            = os.environ.get('BIGQUERY_PROJECT_ID', GCLOUD_PROJECT_ID)
-BIGQUERY_DATASET_V1            = os.environ.get('BIGQUERY_DATASET_V1', '')
+# Where data pulled from BQ is stored
 BIGQUERY_DATA_PROJECT_ID       = os.environ.get('BIGQUERY_DATA_PROJECT_ID', GCLOUD_PROJECT_ID)
+
 BIGQUERY_FEEDBACK_DATASET      = os.environ.get('BIGQUERY_FEEDBACK_DATASET', '')
 BIGQUERY_FEEDBACK_TABLE        = os.environ.get('BIGQUERY_FEEDBACK_TABLE', '')
 
@@ -80,12 +84,9 @@ BIGQUERY_FEEDBACK_TABLE        = os.environ.get('BIGQUERY_FEEDBACK_TABLE', '')
 CRON_MODULE             = os.environ.get('CRON_MODULE')
 
 # Log Names
-SERVICE_ACCOUNT_LOG_NAME = os.environ.get('SERVICE_ACCOUNT_LOG_NAME', 'local_dev_logging')
 WEBAPP_LOGIN_LOG_NAME = os.environ.get('WEBAPP_LOGIN_LOG_NAME', 'local_dev_logging')
 API_ACTIVITY_LOG_NAME = os.environ.get('API_ACTIVITY_LOG_NAME', 'local_dev_logging')
-GCP_ACTIVITY_LOG_NAME = os.environ.get('GCP_ACTIVITY_LOG_NAME', 'local_dev_logging')
 DCF_REFRESH_LOG_NAME = os.environ.get('DCF_REFRESH_LOG_NAME', 'local_dev_logging')
-DCF_SA_REG_LOG_NAME = os.environ.get('DCF_SA_REG_LOG_NAME', 'local_dev_logging')
 
 BASE_URL                = os.environ.get('BASE_URL', 'https://dev.isb-cgc.org')
 BASE_API_URL            = os.environ.get('BASE_API_URL', 'https://api-dev.isb-cgc.org/v4')
@@ -94,41 +95,8 @@ BASE_API_URL            = os.environ.get('BASE_API_URL', 'https://api-dev.isb-cg
 OPEN_DATA_BUCKET        = os.environ.get('OPEN_DATA_BUCKET', '')
 GCLOUD_BUCKET           = os.environ.get('GOOGLE_STORAGE_BUCKET')
 
-# BigQuery cohort storage settings
-BIGQUERY_COHORT_DATASET_ID           = os.environ.get('BIGQUERY_COHORT_DATASET_ID', 'cohort_dataset')
-BIGQUERY_COHORT_TABLE_ID    = os.environ.get('BIGQUERY_COHORT_TABLE_ID', 'developer_cohorts')
-BIGQUERY_COSMIC_DATASET_ID    = os.environ.get('BIGQUERY_COSMIC_DATASET_ID', '')
-BIGQUERY_CGC_TABLE_ID    = os.environ.get('BIGQUERY_CGC_TABLE_ID', '')
-BQ_FILE_MANIFEST_TABLE_ID_HG19 = os.environ.get('BQ_FILE_MANIFEST_TABLE_ID_HG19', '')
-BQ_FILE_MANIFEST_TABLE_ID_HG38 = os.environ.get('BQ_FILE_MANIFEST_TABLE_ID_HG38', '')
-
-BQ_TCGA_BIOCLIN_TABLE_ID = os.environ.get('BQ_TCGA_BIOCLIN_TABLE_ID', '')
-BQ_TARGET_BIOCLIN_TABLE_ID = os.environ.get('BQ_TARGET_BIOCLIN_TABLE_ID', '')
-BQ_CCLE_BIOCLIN_TABLE_ID = os.environ.get('BQ_CCLE_BIOCLIN_TABLE_ID', '')
-BQ_BEATAML_BIOCLIN_TABLE_ID = os.environ.get('BQ_BEATAML_BIOCLIN_TABLE_ID', '')
-BQ_FM_BIOCLIN_TABLE_ID = os.environ.get('BQ_FM_BIOCLIN_TABLE_ID', '')
-BQ_OHSU_BIOCLIN_TABLE_ID = os.environ.get('BQ_OHSU_BIOCLIN_TABLE_ID', '')
-BQ_MMRF_BIOCLIN_TABLE_ID = os.environ.get('BQ_MMRF_BIOCLIN_TABLE_ID', '')
-BQ_GPRP_BIOCLIN_TABLE_ID = os.environ.get('BQ_GPRP_BIOCLIN_TABLE_ID', '')
-
 MAX_BQ_INSERT               = int(os.environ.get('MAX_BQ_INSERT', '500'))
 
-USER_DATA_ON            = bool(os.environ.get('USER_DATA_ON', False))
-
-BQ_FILE_MANIFEST_TABLE_ID = {
-    'HG19': BQ_FILE_MANIFEST_TABLE_ID_HG19,
-    'HG38': BQ_FILE_MANIFEST_TABLE_ID_HG38
-}
-BQ_PROG_BIOCLIN_TABLE_ID = {
-    'TCGA': BQ_TCGA_BIOCLIN_TABLE_ID,
-    'TARGET': BQ_TARGET_BIOCLIN_TABLE_ID,
-    'CCLE': BQ_CCLE_BIOCLIN_TABLE_ID,
-    'BEATAML1.0': BQ_BEATAML_BIOCLIN_TABLE_ID,
-    'FM': BQ_FM_BIOCLIN_TABLE_ID,
-    'OHSU': BQ_OHSU_BIOCLIN_TABLE_ID,
-    'MMRF': BQ_MMRF_BIOCLIN_TABLE_ID,
-    'GPRP': BQ_GPRP_BIOCLIN_TABLE_ID
-}
 database_config = {
     'default': {
         'ENGINE': os.environ.get('DATABASE_ENGINE', 'django.db.backends.mysql'),
@@ -158,8 +126,8 @@ DB_SOCKET = database_config['default']['HOST'] if 'cloudsql' in database_config[
 
 IS_DEV = (os.environ.get('IS_DEV', 'False') == 'True')
 IS_UAT = (os.environ.get('IS_UAT', 'False') == 'True')
-IS_APP_ENGINE_FLEX = os.getenv('GAE_INSTANCE', '').startswith(APP_ENGINE_FLEX)
-IS_APP_ENGINE = os.getenv('SERVER_SOFTWARE', '').startswith(APP_ENGINE)
+IS_APP_ENGINE = bool(os.getenv('IS_APP_ENGINE', 'False') == 'True')
+IS_CI = bool(os.getenv('CI', None) is not None)
 
 # If this is a GAE-Flex deployment, we don't need to specify SSL; the proxy will take
 # care of that for us
@@ -175,42 +143,13 @@ if 'DB_SSL_CERT' in os.environ and not IS_APP_ENGINE_FLEX:
 # Default to localhost for the site ID
 SITE_ID = 3
 
-if IS_APP_ENGINE_FLEX or IS_APP_ENGINE:
+if IS_APP_ENGINE:
     print("[STATUS] AppEngine Flex detected.", file=sys.stdout)
     SITE_ID = 4
 
-
-def get_project_identifier():
-    return BIGQUERY_PROJECT_ID
-
-
-# Set cohort table here
-if BIGQUERY_COHORT_TABLE_ID is None:
-    raise Exception("Developer-specific cohort table ID is not set.")
-
 BQ_MAX_ATTEMPTS             = int(os.environ.get('BQ_MAX_ATTEMPTS', '10'))
 
-
-# TODO Remove duplicate class.
-#
-# This class is retained here, as it is required by bq_data_access/v1.
-# bq_data_access/v2 uses the class from the bq_data_access/bigquery_cohorts module.
-class BigQueryCohortStorageSettings(object):
-    def __init__(self, dataset_id, table_id):
-        self.dataset_id = dataset_id
-        self.table_id = table_id
-
-
-def GET_BQ_COHORT_SETTINGS():
-    return BigQueryCohortStorageSettings(BIGQUERY_COHORT_DATASET_ID, BIGQUERY_COHORT_TABLE_ID)
-
 USE_CLOUD_STORAGE           = os.environ.get('USE_CLOUD_STORAGE', False)
-
-PROCESSING_ENABLED          = os.environ.get('PROCESSING_ENABLED', False)
-PROCESSING_JENKINS_URL      = os.environ.get('PROCESSING_JENKINS_URL', 'http://localhost/jenkins')
-PROCESSING_JENKINS_PROJECT  = os.environ.get('PROCESSING_JENKINS_PROJECT', 'cgc-processing')
-PROCESSING_JENKINS_USER     = os.environ.get('PROCESSING_JENKINS_USER', 'user')
-PROCESSING_JENKINS_PASSWORD = os.environ.get('PROCESSING_JENKINS_PASSWORD', '')
 
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
@@ -268,11 +207,7 @@ STATIC_ROOT = ''
 # URL prefix for static files.
 # Example: "http://media.lawrence.com/static/"
 STATIC_URL = os.environ.get('STATIC_URL', '/static/')
-
-BQ_ECOSYS_STATIC_URL = os.environ.get('BQ_ECOSYS_STATIC_URL', 'https://storage.googleapis.com/webapp-static-files-isb-cgc-dev/bq_ecosys/')
-
 CITATIONS_STATIC_URL = os.environ.get('CITATIONS_STATIC_URL', 'https://storage.googleapis.com/webapp-static-files-isb-cgc-dev/static/citations/')
-
 GCS_STORAGE_URI = os.environ.get('GCS_STORAGE_URI', 'https://storage.googleapis.com/')
 
 # Additional locations of static files
@@ -308,8 +243,7 @@ INSTALLED_APPS = (
     'django.contrib.admindocs',
     'sharing',
     'cohorts',
-    'projects',
-    'data_upload'
+    'projects'
 )
 
 TEST_RUNNER = 'django.test.runner.DiscoverRunner'
@@ -448,21 +382,26 @@ ACCOUNT_DEFAULT_HTTP_PROTOCOL = 'https'
 if IS_DEV:
     ACCOUNT_DEFAULT_HTTP_PROTOCOL = 'http'
 
-
 ##########################
 #   End django-allauth   #
 ##########################
 
-# Deployed systems have app credentials on the VM, but a local system will need a JSON key present to
-# download anything necessary, like the SQL table file.
-GOOGLE_APPLICATION_CREDENTIALS = os.environ.get('GOOGLE_APPLICATION_CREDENTIALS', '')
+# Deployed systems retrieve credentials from the metadata server, but a local VM build must provide a credentials file
+# for some actions. CircleCI needs SA access but can make use of the deployment SA's key.
+GOOGLE_APPLICATION_CREDENTIALS = None
 
-if not exists(GOOGLE_APPLICATION_CREDENTIALS):
-    print("[ERROR] Google application credentials file wasn't found! Provided path: {}".format(GOOGLE_APPLICATION_CREDENTIALS))
-    exit(1)
+if IS_DEV:
+    GOOGLE_APPLICATION_CREDENTIALS = os.environ.get('GOOGLE_APPLICATION_CREDENTIALS', '')
+elif IS_CI:
+    GOOGLE_APPLICATION_CREDENTIALS = "deployment.key.json"
 
-# Stub to allow deployments until we're ready to remove the old services
-MONITORING_SA_ACCESS_CREDENTIALS      = os.environ.get('GOOGLE_APPLICATION_CREDENTIALS', '')
+if not IS_APP_ENGINE:
+    if GOOGLE_APPLICATION_CREDENTIALS is not None and not exists(GOOGLE_APPLICATION_CREDENTIALS):
+        print("[ERROR] Google application credentials file wasn't found! Provided path: {}".format(GOOGLE_APPLICATION_CREDENTIALS))
+        exit(1)
+    print("[STATUS] GOOGLE_APPLICATION_CREDENTIALS: {}".format(GOOGLE_APPLICATION_CREDENTIALS))
+else:
+    print("[STATUS] AppEngine Flex detected--default credentials will be used.")
 
 # Client ID used for OAuth2 - this is for IGV and the test database
 OAUTH2_CLIENT_ID = os.environ.get('OAUTH2_CLIENT_ID', '')
@@ -484,23 +423,8 @@ SUPERADMIN_FOR_REPORTS                  = os.environ.get('SUPERADMIN_FOR_REPORTS
 # Log name for ERA login views
 LOG_NAME_ERA_LOGIN_VIEW                  = os.environ.get('LOG_NAME_ERA_LOGIN_VIEW', '')
 
-# Service account blacklist file path
-SERVICE_ACCOUNT_BLACKLIST_PATH           = os.environ.get('SERVICE_ACCOUNT_BLACKLIST_PATH', '')
-
-# Google Org whitelist file path
-GOOGLE_ORG_WHITELIST_PATH                = os.environ.get('GOOGLE_ORG_WHITELIST_PATH', '')
-
-# Managed Service Account file path
-MANAGED_SERVICE_ACCOUNTS_PATH            = os.environ.get('MANAGED_SERVICE_ACCOUNTS_PATH', '')
-
 # DCF Phase I enable flag
 DCF_TEST                                 = bool(os.environ.get('DCF_TEST', 'False') == 'True')
-
-# SA via DCF
-SA_VIA_DCF                               = bool(os.environ.get('SA_VIA_DCF', 'False') == 'True')
-
-# DCF Monitoring SA
-DCF_MONITORING_SA                        = os.environ.get('DCF_MONITORING_SA', '')
 
 #################################
 #   For DCF login               #
@@ -515,18 +439,20 @@ DCF_REVOKE_URL                           = os.environ.get('DCF_REVOKE_URL', '')
 DCF_LOGOUT_URL                           = os.environ.get('DCF_LOGOUT_URL', '')
 DCF_URL_URL                              = os.environ.get('DCF_URL_URL', '')
 DCF_CLIENT_SECRETS                       = os.environ.get('DCF_CLIENT_SECRETS', '')
-DCF_GOOGLE_SA_REGISTER_URL               = os.environ.get('DCF_GOOGLE_SA_REGISTER_URL', '')
 DCF_GOOGLE_SA_VERIFY_URL                 = os.environ.get('DCF_GOOGLE_SA_VERIFY_URL', '')
-DCF_GOOGLE_SA_MONITOR_URL                = os.environ.get('DCF_GOOGLE_SA_MONITOR_URL', '')
-DCF_GOOGLE_SA_URL                        = os.environ.get('DCF_GOOGLE_SA_URL', '')
 DCF_TOKEN_REFRESH_WINDOW_SECONDS         = int(os.environ.get('DCF_TOKEN_REFRESH_WINDOW_SECONDS', 86400))
 DCF_LOGIN_EXPIRATION_SECONDS             = int(os.environ.get('DCF_LOGIN_EXPIRATION_SECONDS', 86400))
 
 CONN_MAX_AGE = 60
 
-############################
-#   CUSTOM TEMPLATE CONTEXT
-############################
+################
+## django-otp
+################
+
+OTP_EMAIL_SENDER = os.environ.get('OTP_EMAIL_SENDER', SUPPORT_EMAIL)
+OTP_EMAIL_SUBJECT = os.environ.get('OTP_EMAIL_SUBJECT', "[ISB-CGC] Email Login Token")
+OTP_EMAIL_BODY_TEMPLATE_PATH = os.environ.get('OTP_EMAIL_BODY_TEMPLATE_PATH', 'isb_cgc/token.html')
+OTP_LOGIN_URL = os.environ.get('OTP_LOGIN_URL', '/otp_request/')
 
 ############################
 #   METRICS SETTINGS
