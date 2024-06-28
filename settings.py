@@ -232,6 +232,12 @@ SECURE_HSTS_INCLUDE_SUBDOMAINS = (os.environ.get('SECURE_HSTS_INCLUDE_SUBDOMAINS
 SECURE_HSTS_PRELOAD = (os.environ.get('SECURE_HSTS_PRELOAD','True') == 'True')
 SECURE_HSTS_SECONDS = int(os.environ.get('SECURE_HSTS_SECONDS','3600'))
 
+# We don't actually need middleware because this app doesn't run Django, just the ORM, however allauth as an
+# app will complain if it doesn't see itself in the middleware list.
+MIDDLEWARE = [
+    "allauth.account.middleware.AccountMiddleware"
+]
+
 INSTALLED_APPS = (
     'django.contrib.auth',
     'django.contrib.contenttypes',
