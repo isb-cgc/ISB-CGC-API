@@ -37,6 +37,7 @@ def programs():
     
     return response
 
+
 @app.route('/v4/data/available/', methods=['GET'], strict_slashes=False)
 def data(routes=None):
     """Retrieve the list of all data available via ISB-CGC"""

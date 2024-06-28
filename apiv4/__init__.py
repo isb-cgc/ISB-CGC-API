@@ -57,6 +57,7 @@ from file_routes import *
 from user_routes import *
 from deprecated.user_routes import *
 
+
 @app.context_processor
 def utilities():
     def load_spec():
