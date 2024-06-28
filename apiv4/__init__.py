@@ -30,8 +30,6 @@ client = google.cloud.logging.Client()
 client.get_default_handler()
 client.setup_logging()
 
-logger = logging.getLogger(settings.LOGGER_NAME)
-
 app = Flask(__name__, static_folder='api_static')
 
 Talisman(app, strict_transport_security_max_age=300, content_security_policy={
@@ -47,6 +45,8 @@ Talisman(app, strict_transport_security_max_age=300, content_security_policy={
 import django
 django.setup()
 from django.conf import settings
+
+logger = logging.getLogger(settings.LOGGER_NAME)
 
 from auth import auth_info
 from main_routes import *
