@@ -29,7 +29,7 @@ from django.conf import settings
 from cohorts.models import Cohort_Perms, Cohort
 from accounts.sa_utils import auth_dataset_whitelists_for_user
 from cohorts.file_helpers import cohort_files
-from cohorts.utils import get_sample_case_list_bq, create_cohort as make_cohort, delete_cohort
+from cohorts.utils import create_cohort as make_cohort, delete_cohort, get_cohort_cases, get_cohort_stats
 from projects.models import Program
 
 from jsonschema import validate as schema_validate, ValidationError
@@ -101,14 +101,14 @@ def get_cohort_info(cohort_id, get_barcodes=False):
         cohort = {
             'id': cohort_obj.id,
             'name': cohort_obj.name,
-            'case_count': cohort_obj.case_size(),
-            'sample_count': cohort_obj.sample_size(),
+            'case_count': cohort_obj.case_count,
+            'sample_count': cohort_obj.sample_count,
             'programs': cohort_obj.get_program_names(),
-            'filters': cohort_obj.get_current_filters(True)
+            'filters': cohort_obj.get_filters_for_ui()
         }
 
         if get_barcodes:
-            cohort['barcodes'] = get_sample_case_list_bq(cohort_id)
+            cohort['barcodes'] = get_cohort_cases(cohort_id)
 
     except ObjectDoesNotExist as e:
         logger.warn("Cohort with ID {} was not found!".format(str(cohort_id)))
@@ -131,7 +131,7 @@ def get_cohorts(user_email):
                 'id': cohort_perm.cohort.id,
                 'name': cohort_perm.cohort.name,
                 'permission': cohort_perm.perm,
-                'filters': cohort_perm.cohort.get_current_filters(True)
+                'filters': cohort_perm.get_filters_for_ui()
             })
 
     except ObjectDoesNotExist as e:
