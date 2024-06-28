@@ -412,6 +412,8 @@ OAUTH2_CLIENT_SECRET = os.environ.get('OAUTH2_CLIENT_SECRET', '')
 # OAuth2 client ID for the API
 API_CLIENT_ID                   = os.environ.get('API_CLIENT_ID', '') # Client ID for the API
 
+SUPPORT_EMAIL = os.environ.get('SUPPORT_EMAIL', 'info@isb-cgc.org')
+
 #################################
 #   For NIH/eRA Commons login   #
 #################################
