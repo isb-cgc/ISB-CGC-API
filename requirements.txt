@@ -13,7 +13,7 @@ rsa==4.7
 simplejson==3.8.1
 PyYAML==5.4
 six==1.13.0
-uritemplate==3.0.0
+uritemplate==4.1.1
 GoogleAppEngineCloudStorageClient==1.9.22.1
 django-dotenv==1.4.2
 django-allauth==0.43.0
