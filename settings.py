@@ -23,6 +23,7 @@ from os.path import join, dirname, exists
 import sys
 import dotenv
 from socket import gethostname, gethostbyname
+import google.cloud.logging
 
 
 SECURE_LOCAL_PATH = os.environ.get('SECURE_LOCAL_PATH', '')
@@ -38,6 +39,8 @@ dotenv.read_dotenv(join(dirname(__file__), './{}.env'.format(SECURE_LOCAL_PATH))
 
 APP_ENGINE_FLEX = 'aef-'
 APP_ENGINE = 'Google App Engine/'
+# AppEngine var is set in the app.yaml so this should be false for CI and local dev apps
+IS_APP_ENGINE = bool(os.getenv('IS_APP_ENGINE', 'False') == 'True')
 
 BASE_DIR                = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir)) + os.sep
 
@@ -67,6 +70,12 @@ MANAGERS                = ADMINS
 DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
 
 LOGGER_NAME = os.environ.get('API_LOGGER_NAME', 'main_logger')
+
+if IS_APP_ENGINE:
+    # We need to hook up Python logging to Google Cloud Logging for AppEngine (or nothing will be logged)
+    client = google.cloud.logging.Client()
+    client.get_default_handler()
+    client.setup_logging()
 
 GCLOUD_PROJECT_ID              = os.environ.get('GCLOUD_PROJECT_ID', '')
 GCLOUD_PROJECT_NUMBER          = os.environ.get('GCLOUD_PROJECT_NUMBER', '')
