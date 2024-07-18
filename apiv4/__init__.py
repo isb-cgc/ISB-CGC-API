@@ -24,6 +24,12 @@ from flask import Flask, jsonify, request
 from flask_cors import cross_origin
 from flask_talisman import Talisman
 
+import django
+django.setup()
+from django.conf import settings
+
+logger = logging.getLogger(settings.LOGGER_NAME)
+
 app = Flask(__name__, static_folder='api_static')
 
 Talisman(app, strict_transport_security_max_age=300, content_security_policy={
@@ -36,10 +42,6 @@ Talisman(app, strict_transport_security_max_age=300, content_security_policy={
     ]
 })
 
-import django
-django.setup()
-from django.conf import settings
-
 from auth import auth_info
 from main_routes import *
 from cohorts_routes import *
@@ -48,8 +50,6 @@ from sample_case_routes import *
 from file_routes import *
 from user_routes import *
 from deprecated.user_routes import *
-
-logger = logging.getLogger(settings.LOGGER_NAME)
 
 
 @app.context_processor
