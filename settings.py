@@ -25,7 +25,7 @@ from dotenv import load_dotenv
 from socket import gethostname, gethostbyname
 import google.cloud.logging
 
-SECURE_LOCAL_PATH = os.environ.get('SECURE_LOCAL_PATH', '../secure_files/')
+SECURE_LOCAL_PATH = os.environ.get('SECURE_LOCAL_PATH', '')
 
 if not exists(join(dirname(__file__), './{}.env'.format(SECURE_LOCAL_PATH))):
     print("[ERROR] Couldn't open .env file expected at {}!".format(
