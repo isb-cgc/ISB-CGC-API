@@ -27,14 +27,18 @@ import google.cloud.logging
 
 SECURE_LOCAL_PATH = os.environ.get('SECURE_LOCAL_PATH', '')
 
-if not exists(join(dirname(__file__), './{}.env'.format(SECURE_LOCAL_PATH))):
-    print("[ERROR] Couldn't open .env file expected at {}!".format(
-        join(dirname(__file__), './{}.env'.format(SECURE_LOCAL_PATH)))
-    )
+env_file_loc = join(dirname(__file__), './{}.env'.format(SECURE_LOCAL_PATH))
+
+if not exists(env_file_loc):
+    print("[ERROR] Couldn't open .env file expected at {}!".format(env_file_loc))
     print("[ERROR] Exiting settings.py load - check your Pycharm settings and secure_path.env file.")
     exit(1)
+else:
+    print("[STATUS] Loading env file at {}".format(env_file_loc))
 
-load_dotenv(dotenv_path=join(dirname(__file__), './{}.env'.format(SECURE_LOCAL_PATH)))
+load_dotenv(dotenv_path=env_file_loc)
+
+print("[STATUS] PYTHONPATH is {}".format(os.environ.get("PYTHONPATH")))
 
 # AppEngine var is set in the app.yaml so this should be false for CI and local dev apps
 IS_APP_ENGINE = bool(os.getenv('IS_APP_ENGINE', 'False') == 'True')
@@ -49,7 +53,7 @@ SHARED_SOURCE_DIRECTORIES = [
 
 # Add the shared Django application subdirectory to the Python module search path
 for directory_name in SHARED_SOURCE_DIRECTORIES:
-    print(os.path.join(BASE_DIR, directory_name))
+    print("Shared source directory: {}".format(os.path.join(BASE_DIR, directory_name)))
     sys.path.append(os.path.join(BASE_DIR, directory_name))
 
 DEBUG                   = (os.environ.get('DEBUG', 'False') == 'True')
