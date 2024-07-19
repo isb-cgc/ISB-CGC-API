@@ -32,6 +32,7 @@ if [ -n "$CI" ]; then
     fi
     echo "Cloning ISB-CGC-Common branch ${COMMON_BRANCH}..."
     git clone -b ${COMMON_BRANCH} https://github.com/isb-cgc/ISB-CGC-Common.git
+    ls -l ISB-CGC-Common
 else
     if ( "/home/vagrant/API/shell/get_env.sh" ) ; then
         export $(cat ${ENV_FILE_PATH} | grep -v ^# | xargs) 2> /dev/null
