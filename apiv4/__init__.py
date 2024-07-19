@@ -15,6 +15,7 @@
 #
 
 import logging
+from logging.config import dictConfig
 import os
 from os.path import join, dirname
 import sys
@@ -30,7 +31,26 @@ from django.conf import settings
 
 logger = logging.getLogger(settings.LOGGER_NAME)
 
+dictConfig({
+    'version': 1,
+    'formatters': {'default': {
+        'format': '[%(asctime)s] %(levelname)s in %(module)s: %(message)s',
+    }},
+    'handlers': {'wsgi': {
+        'class': 'logging.StreamHandler',
+        'stream': 'ext://flask.logging.wsgi_errors_stream',
+        'formatter': 'default'
+    }},
+    'root': {
+        'level': 'INFO',
+        'handlers': ['wsgi']
+    }
+})
+
 app = Flask(__name__, static_folder='api_static')
+
+app.logger.info("Flask logger")
+logger.info("Python Logger")
 
 if settings.IS_APP_ENGINE:
     Talisman(app, strict_transport_security_max_age=300, content_security_policy={
