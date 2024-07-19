@@ -15,7 +15,7 @@ PyYAML==5.4
 six==1.13.0
 uritemplate==4.1.1
 GoogleAppEngineCloudStorageClient==1.9.22.1
-django-dotenv==1.4.2
+python-dotenv==0.21.1
 django-allauth==0.43.0
 jsonschema==2.6.0
 Flask==2.2.5

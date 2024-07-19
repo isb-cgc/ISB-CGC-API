@@ -33,7 +33,7 @@ if [ -n "$CI" ]; then
     echo "Cloning ISB-CGC-Common branch ${COMMON_BRANCH}..."
     git clone -b ${COMMON_BRANCH} https://github.com/isb-cgc/ISB-CGC-Common.git
 else
-    if ( "/home/vagrant/www/shell/get_env.sh" ) ; then
+    if ( "/home/vagrant/API/shell/get_env.sh" ) ; then
         export $(cat ${ENV_FILE_PATH} | grep -v ^# | xargs) 2> /dev/null
         # Confirm some relevant values to ensure we found a valid .env
         if [ -z "${SECURE_LOCAL_PATH}" ] || [ "${SECURE_LOCAL_PATH}" == "" ] ; then
@@ -94,7 +94,7 @@ curl --silent https://bootstrap.pypa.io/get-pip.py | python3
 # If we're not on CircleCI, or we are but the lib directory isn't there (cache miss), install lib
 if [ -z "${CI}" ] || [ ! -d "lib" ]; then
     echo "Installing Python Libraries..."
-    pip install -r ${HOMEROOT}/requirements.txt -t ${HOMEROOT}/lib --upgrade --only-binary all
+    pip install -r ${HOMEROOT}/requirements.txt -t ${HOMEROOT}/lib
 else
     echo "Using restored cache for Python Libraries"
 fi

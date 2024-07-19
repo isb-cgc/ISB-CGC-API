@@ -21,12 +21,12 @@ from builtins import object
 import os
 from os.path import join, dirname, exists
 import sys
-import dotenv
+from dotenv import load_dotenv
 from socket import gethostname, gethostbyname
 import google.cloud.logging
 
 
-SECURE_LOCAL_PATH = os.environ.get('SECURE_LOCAL_PATH', '')
+SECURE_LOCAL_PATH = os.environ.get('SECURE_LOCAL_PATH', '../secure_files/')
 
 if not exists(join(dirname(__file__), './{}.env'.format(SECURE_LOCAL_PATH))):
     print("[ERROR] Couldn't open .env file expected at {}!".format(
@@ -35,14 +35,14 @@ if not exists(join(dirname(__file__), './{}.env'.format(SECURE_LOCAL_PATH))):
     print("[ERROR] Exiting settings.py load - check your Pycharm settings and secure_path.env file.")
     exit(1)
 
-dotenv.read_dotenv(join(dirname(__file__), './{}.env'.format(SECURE_LOCAL_PATH)))
+load_dotenv(dotenv_path=join(dirname(__file__), './{}.env'.format(SECURE_LOCAL_PATH)))
 
-APP_ENGINE_FLEX = 'aef-'
-APP_ENGINE = 'Google App Engine/'
 # AppEngine var is set in the app.yaml so this should be false for CI and local dev apps
 IS_APP_ENGINE = bool(os.getenv('IS_APP_ENGINE', 'False') == 'True')
+# temporary backwards compatibility
+IS_APP_ENGINE_FLEX = IS_APP_ENGINE
 
-BASE_DIR                = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir)) + os.sep
+BASE_DIR                = os.path.abspath(os.path.dirname(__file__)) + os.sep
 
 SHARED_SOURCE_DIRECTORIES = [
     'ISB-CGC-Common'
@@ -50,6 +50,7 @@ SHARED_SOURCE_DIRECTORIES = [
 
 # Add the shared Django application subdirectory to the Python module search path
 for directory_name in SHARED_SOURCE_DIRECTORIES:
+    print(os.path.join(BASE_DIR, directory_name))
     sys.path.append(os.path.join(BASE_DIR, directory_name))
 
 DEBUG                   = (os.environ.get('DEBUG', 'False') == 'True')
@@ -167,12 +168,10 @@ DB_SOCKET = database_config['default']['HOST'] if 'cloudsql' in database_config[
 
 IS_DEV = (os.environ.get('IS_DEV', 'False') == 'True')
 IS_UAT = (os.environ.get('IS_UAT', 'False') == 'True')
-IS_APP_ENGINE_FLEX = os.getenv('GAE_INSTANCE', '').startswith(APP_ENGINE_FLEX)
-IS_APP_ENGINE = os.getenv('SERVER_SOFTWARE', '').startswith(APP_ENGINE)
 
 # If this is a GAE-Flex deployment, we don't need to specify SSL; the proxy will take
 # care of that for us
-if 'DB_SSL_CERT' in os.environ and not IS_APP_ENGINE_FLEX:
+if 'DB_SSL_CERT' in os.environ and not IS_APP_ENGINE:
     DATABASES['default']['OPTIONS'] = {
         'ssl': {
             'ca': os.environ.get('DB_SSL_CA'),
@@ -184,7 +183,7 @@ if 'DB_SSL_CERT' in os.environ and not IS_APP_ENGINE_FLEX:
 # Default to localhost for the site ID
 SITE_ID = 3
 
-if IS_APP_ENGINE_FLEX or IS_APP_ENGINE:
+if IS_APP_ENGINE:
     print("[STATUS] AppEngine Flex detected.", file=sys.stdout)
     SITE_ID = 4
 
@@ -463,21 +462,19 @@ if IS_DEV:
 ##########################
 
 # Path to application runtime JSON key
-GOOGLE_APPLICATION_CREDENTIALS        = join(dirname(__file__), './{}{}'.format(SECURE_LOCAL_PATH,os.environ.get('GOOGLE_APPLICATION_CREDENTIALS', '')))
+GOOGLE_APPLICATION_CREDENTIALS        = os.environ.get('GOOGLE_APPLICATION_CREDENTIALS', '')
 
 if not exists(GOOGLE_APPLICATION_CREDENTIALS):
     print("[ERROR] Google application credentials file wasn't found! Provided path: {}".format(GOOGLE_APPLICATION_CREDENTIALS))
     exit(1)
+else:
+    print("[STATUS] GOOGLE_APPLICATION_CREDENTIALS found at {}".format(GOOGLE_APPLICATION_CREDENTIALS))
 
 # GCP monitoring Service Account, needed for template display
 MONITORING_SA_CLIENT_EMAIL            = os.environ.get('MONITORING_SA_CLIENT_EMAIL', '')
 
 # GCP monitoring Service Account key
-MONITORING_SA_ACCESS_CREDENTIALS      = join(dirname(__file__), './{}{}'.format(SECURE_LOCAL_PATH,os.environ.get('MONITORING_SA_ACCESS_CREDENTIALS', '')))
-
-if not exists(MONITORING_SA_ACCESS_CREDENTIALS):
-    print("[ERROR] Monitoring service account credentials file wasn't found! Provided path: {}".format(MONITORING_SA_ACCESS_CREDENTIALS))
-    exit(1)
+MONITORING_SA_ACCESS_CREDENTIALS      = GOOGLE_APPLICATION_CREDENTIALS
 
 # Client ID used for OAuth2 - this is for IGV and the test database
 OAUTH2_CLIENT_ID = os.environ.get('OAUTH2_CLIENT_ID', '')
