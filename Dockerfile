@@ -55,7 +55,7 @@ ADD . /app
 RUN pip install -r /app/requirements.txt -t /app/lib/ --upgrade
 RUN pip install gunicorn==21.2.0
 
-ENV PYTHONPATH=/app:/app/apiv4:/app/lib:/app/ISB-CGC-Common${PYTHONPATH+":"}${PYTHONPATH-}
+ENV PYTHONPATH=/app:/app/apiv4:/app/lib:/app/ISB-CGC-Common
 
 WORKDIR /app/
 
