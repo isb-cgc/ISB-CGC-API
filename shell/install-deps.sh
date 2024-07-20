@@ -26,6 +26,8 @@ if [ -n "$CI" ]; then
     # Clone dependencies
     COMMON_BRANCH=master
     if [[ ${CIRCLE_BRANCH} =~ (prod|uat|test).* ]]; then
+        COMMON_BRANCH=$(awk -F- '{print $1}' <<< ${CIRCLE_BRANCH})
+    elif [[ ${CIRCLE_BRANCH} =~ isb-cgc-(prod|uat|test).* ]]; then
         COMMON_BRANCH=$(awk -F- '{print $1"-"$2"-"$3}' <<< ${CIRCLE_BRANCH})
     elif [[ ${CIRCLE_BRANCH} == "expr" ]]; then
         COMMON_BRANCH=expr
