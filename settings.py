@@ -21,25 +21,31 @@ from builtins import object
 import os
 from os.path import join, dirname, exists
 import sys
-import dotenv
+from dotenv import load_dotenv
 from socket import gethostname, gethostbyname
-
+import google.cloud.logging
 
 SECURE_LOCAL_PATH = os.environ.get('SECURE_LOCAL_PATH', '')
 
-if not exists(join(dirname(__file__), './{}.env'.format(SECURE_LOCAL_PATH))):
-    print("[ERROR] Couldn't open .env file expected at {}!".format(
-        join(dirname(__file__), './{}.env'.format(SECURE_LOCAL_PATH)))
-    )
+env_file_loc = join(dirname(__file__), './{}.env'.format(SECURE_LOCAL_PATH))
+
+if not exists(env_file_loc):
+    print("[ERROR] Couldn't open .env file expected at {}!".format(env_file_loc))
     print("[ERROR] Exiting settings.py load - check your Pycharm settings and secure_path.env file.")
     exit(1)
+else:
+    print("[STATUS] Loading env file at {}".format(env_file_loc))
 
-dotenv.read_dotenv(join(dirname(__file__), './{}.env'.format(SECURE_LOCAL_PATH)))
+load_dotenv(dotenv_path=env_file_loc)
 
-APP_ENGINE_FLEX = 'aef-'
-APP_ENGINE = 'Google App Engine/'
+print("[STATUS] PYTHONPATH is {}".format(os.environ.get("PYTHONPATH")))
 
-BASE_DIR                = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir)) + os.sep
+# AppEngine var is set in the app.yaml so this should be false for CI and local dev apps
+IS_APP_ENGINE = bool(os.getenv('IS_APP_ENGINE', 'False') == 'True')
+# temporary backwards compatibility
+IS_APP_ENGINE_FLEX = IS_APP_ENGINE
+
+BASE_DIR                = os.path.abspath(os.path.dirname(__file__)) + os.sep
 
 SHARED_SOURCE_DIRECTORIES = [
     'ISB-CGC-Common'
@@ -47,6 +53,7 @@ SHARED_SOURCE_DIRECTORIES = [
 
 # Add the shared Django application subdirectory to the Python module search path
 for directory_name in SHARED_SOURCE_DIRECTORIES:
+    print("Shared source directory: {}".format(os.path.join(BASE_DIR, directory_name)))
     sys.path.append(os.path.join(BASE_DIR, directory_name))
 
 DEBUG                   = (os.environ.get('DEBUG', 'False') == 'True')
@@ -68,7 +75,12 @@ DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
 
 LOGGER_NAME = os.environ.get('API_LOGGER_NAME', 'main_logger')
 
-# Project ID of the project for thid app
+if IS_APP_ENGINE:
+    # We need to hook up Python logging to Google Cloud Logging for AppEngine (or nothing will be logged)
+    client = google.cloud.logging.Client()
+    client.get_default_handler()
+    client.setup_logging()
+
 GCLOUD_PROJECT_ID              = os.environ.get('GCLOUD_PROJECT_ID', '')
 # Project Number of the runtime project for this app
 GCLOUD_PROJECT_NUMBER          = os.environ.get('GCLOUD_PROJECT_NUMBER', '')
@@ -131,7 +143,7 @@ IS_CI = bool(os.getenv('CI', None) is not None)
 
 # If this is a GAE-Flex deployment, we don't need to specify SSL; the proxy will take
 # care of that for us
-if 'DB_SSL_CERT' in os.environ and not IS_APP_ENGINE_FLEX:
+if 'DB_SSL_CERT' in os.environ and not IS_APP_ENGINE:
     DATABASES['default']['OPTIONS'] = {
         'ssl': {
             'ca': os.environ.get('DB_SSL_CA'),
