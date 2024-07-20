@@ -25,14 +25,13 @@ if [ -n "$CI" ]; then
 
     # Clone dependencies
     COMMON_BRANCH=master
-    if [[ ${CIRCLE_BRANCH} =~ isb-cgc-(prod|uat|test).* ]]; then
+    if [[ ${CIRCLE_BRANCH} =~ (prod|uat|test).* ]]; then
         COMMON_BRANCH=$(awk -F- '{print $1"-"$2"-"$3}' <<< ${CIRCLE_BRANCH})
     elif [[ ${CIRCLE_BRANCH} == "expr" ]]; then
         COMMON_BRANCH=expr
     fi
     echo "Cloning ISB-CGC-Common branch ${COMMON_BRANCH}..."
     git clone -b ${COMMON_BRANCH} https://github.com/isb-cgc/ISB-CGC-Common.git
-    ls -l ISB-CGC-Common
 else
     if ( "/home/vagrant/API/shell/get_env.sh" ) ; then
         export $(cat ${ENV_FILE_PATH} | grep -v ^# | xargs) 2> /dev/null
