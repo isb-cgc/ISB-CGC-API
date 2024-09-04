@@ -9,11 +9,10 @@ charset-normalizer==3.0.1
 click
 colorama==0.4.6
 coverage==7.1.0
-cryptography==42.0.4
+cryptography==43.0.1
 Django==3.2.25
 exceptiongroup==1.1.0
 Flask==2.2.5
-Flask-Cors==4.0.1
 flask-talisman==1.0.0
 future==0.18.3
 google-api-core==2.11.0
