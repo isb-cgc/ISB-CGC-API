@@ -21,10 +21,7 @@ import sys
 import ruamel.yaml
 import json
 from flask import Flask, jsonify, request
-# from flask_cors import cross_origin
 from flask_talisman import Talisman
-# import v1
-# import v2
 
 import os
 
