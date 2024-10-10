@@ -60,7 +60,7 @@ def get_metadata(barcode=None, type=None):
                     result['notes'] = "Some {} barcodes provided were not found. See 'not_found' for a list.".format(type)
 
     except BadRequest as e:
-        logger.warn("[WARNING] Received bad request - couldn't load JSON.")
+        logger.warning("[WARNING] Received bad request - couldn't load JSON.")
         result = {
             'message': 'The JSON provided in this request appears to be improperly formatted.',
         }

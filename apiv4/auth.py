@@ -52,7 +52,7 @@ def auth_info():
         if 'email' not in user_info:
             raise UserValidationException("Couldn't obtain user email - the correct scopes may not have been provided during authorization!")
     else:
-        logger.warn("[WARNING] No user encoded info found.")
+        logger.warning("[WARNING] No user encoded info found.")
         user_info = {'id': 'anonymous', 'email': 'Anonymous'}
 
     return user_info
@@ -71,7 +71,7 @@ def get_user(user_email=None):
         user = Django_User.objects.get(email=user_email)
         logger.info("[USER API AUTH] User {} seen in API".format(user_email))
     except ObjectDoesNotExist as e:
-        logger.warn("User {} does not exist in our system.".format(user_email))
+        logger.warning("User {} does not exist in our system.".format(user_email))
         raise UserValidationException(
             "User {} wasn't found in our system.".format(user_email) +
             " Please register with our Web Application first: <https://isb-cgc.appspot.com>"
@@ -90,7 +90,7 @@ def validate_user(user_email=None, cohort_id=None, uuids=None):
         if cohort_id:
             Cohort_Perms.objects.get(cohort_id=cohort_id, user_id=user.id)
     except ObjectDoesNotExist as e:
-        logger.warn("Error retrieving cohort {} for user {}: {}".format(cohort_id, user_email, e))
+        logger.warning("Error retrieving cohort {} for user {}: {}".format(cohort_id, user_email, e))
         raise UserValidationException(
             "User {} does not have access to cohort {}.".format(user_email, cohort_id) +
             " Please contact this cohort owner to obtain permission."

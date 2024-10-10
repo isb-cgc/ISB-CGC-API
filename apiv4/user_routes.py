@@ -31,55 +31,11 @@ logger = logging.getLogger(settings.LOGGER_NAME)
 
 @app.route('/v4/users/account_details/', methods=['GET'], strict_slashes=False)
 def account_details():
-    """
-    GET: Retrieve extended information for a specific user
-    """
+    response = jsonify({
+        'code': 405,
+        'message': "The 'account details' path has been deprecated in version 4.2 due to the removal of controlled access data registration at ISB-CGC."
+    })
 
-    try:
-        user_info = auth_info()
-        user = get_user(user_info['email'])
-
-        response = None
-
-        if not user:
-            raise Exception("Encountered an error while attempting to identify this user.")
-        else:
-            st_logger.write_text_log_entry(log_name, user_activity_message.format(user_info['email'], request.method,
-                                                                                  request.full_path))
-            account_info = get_account_details(user)             
-
-            if account_info:
-                response_obj = {}
-                code = None
-
-                if 'message' in account_info:
-                    code = 400
-                else:
-                    code = 200
-                response_obj['data'] = account_info
-                response_obj['code'] = code
-                response = jsonify(response_obj)
-                response.status_code = code
-            else:
-                response = jsonify({
-                    'code': 404,
-                    'message': "Unable to retrieve information for {}.".format(str(user_info['email']))})
-                response.status_code = 404
-
-    except UserValidationException as e:
-        response = jsonify({
-            'code': 403,
-            'message': str(e)
-        })
-        response.status_code = 403
-    except Exception as e:
-        logger.exception(e)
-        response = jsonify({
-            'code': 500,
-            'message': 'Encountered an error while attempting to retrieve user information.'
-        })
-        response.status_code = 500
-    finally:
-        close_old_connections()
+    response.status_code = 405
 
     return response

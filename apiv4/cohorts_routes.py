@@ -45,7 +45,7 @@ def cohort(cohort_id):
             raise Exception('Encountered an error while attempting to identify this user.')
         else:
             if cohort_id <= 0:
-                logger.warn("[WARNING] Invalid cohort ID {}".format(str(cohort_id)))
+                logger.warning("[WARNING] Invalid cohort ID {}".format(str(cohort_id)))
                 code = 400
                 response_obj = {
                     'message': '"{}" is not a valid cohort ID.'.format(str(cohort_id))
@@ -167,7 +167,7 @@ def cohort_file_manifest(cohort_id):
             raise Exception('Encountered an error while attempting to identify this user.')
         else:
             if cohort_id <= 0:
-                logger.warn("[WARNING] Invalid cohort ID {}".format(str(cohort_id)))
+                logger.warning("[WARNING] Invalid cohort ID {}".format(str(cohort_id)))
                 code = 400
                 response_obj = {
                     'message': '"{}" is not a valid cohort ID.'.format(str(cohort_id))

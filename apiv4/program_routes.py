@@ -20,7 +20,7 @@ from flask import jsonify, request
 from apiv4 import app
 from django.conf import settings
 from django.db import close_old_connections
-from program_views import get_cohort_programs, get_dataset_for_reg
+from program_views import get_cohort_programs
 from api_logging import *
 
 logger = logging.getLogger(settings.LOGGER_NAME)
@@ -30,10 +30,10 @@ logger = logging.getLogger(settings.LOGGER_NAME)
 def programs():
     response = jsonify({
         'code': 405,
-        'message': "The 'programs' path has been deprecated in version 4.1 in favor of /data/availabile and subroutes."
+        'message': "The 'programs' path was deprecated in version 4.1 in favor of /data/availabile and subroutes."
     })
 
-    response.status_code=405
+    response.status_code = 405
     
     return response
 
@@ -72,12 +72,18 @@ def data(routes=None):
 
 @app.route('/v4/data/available/registration/', methods=['GET'], strict_slashes=False)
 def data_for_reg():
-    """Retrieve the list of all data available for GCP project and service account registration via ISB-CGC"""
-    return data(['registration'])
+    response = jsonify({
+        'code': 405,
+        'message': "The 'data/available/registration' path has been deprecated in version 4.2 due to the removal of controlled access data registration at ISB-CGC."
+    })
+
+    response.status_code = 405
+
+    return response
 
 
 @app.route('/v4/data/available/cohorts/', methods=['GET'], strict_slashes=False)
 def data_for_cohorts():
     """Retrieve the list of all data available for cohort creation via ISB-CGC"""
+    """This is a pass-through call to the primary /data/available view"""
     return data(['cohorts'])
-
