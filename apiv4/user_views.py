@@ -29,7 +29,7 @@ from django.conf import settings
 from accounts.sa_utils import auth_dataset_whitelists_for_user
 from accounts.models import AuthorizedDataset
 from projects.models import Program
-from auth import get_user_acls, UserValidationException
+from auth import UserValidationException
 
 from jsonschema import validate as schema_validate, ValidationError
 

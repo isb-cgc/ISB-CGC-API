@@ -24,7 +24,6 @@ from django.conf import settings
 from django.contrib.auth.models import User as Django_User
 from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 from cohorts.models import Cohort_Perms
-from accounts.sa_utils import auth_dataset_whitelists_for_user
 
 logger = logging.getLogger(settings.LOGGER_NAME)
 
@@ -64,8 +63,6 @@ def get_user(user_email=None):
     if not user_email:
         user_email = auth_info()['email']
 
-    user = None
-
     django.setup()
     try:
         user = Django_User.objects.get(email=user_email)
@@ -98,17 +95,5 @@ def validate_user(user_email=None, cohort_id=None, uuids=None):
 
     return user
 
-
-def get_user_acls(user):
-    user_acls = auth_dataset_whitelists_for_user(user.id)
-
-    if not user_acls:
-        raise UserValidationException(
-            "Couldn't verify user controlled data access for user {}.".format(user.email) +
-            " Please visit the web application at <https://isb-cgc.appspot.com> and attempt a login to DCF from" +
-            " your Account Settings page, then verify your controlled dataset access."
-        )
-
-    return user_acls
 
 # END METHODS

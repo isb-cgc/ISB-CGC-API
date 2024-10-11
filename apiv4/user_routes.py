@@ -19,7 +19,7 @@ import json
 from flask import jsonify, request, redirect, url_for
 from apiv4 import app
 from auth import auth_info, UserValidationException, validate_user, get_user
-from user_views import get_user_acls, get_account_details
+from user_views import get_account_details
 from django.conf import settings
 from django.db import close_old_connections
 from api_logging import *
