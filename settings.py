@@ -21,7 +21,7 @@ from builtins import object
 import os
 from os.path import join, dirname, exists
 import sys
-from dotenv import load_dotenv
+import dotenv
 from socket import gethostname, gethostbyname
 import google.cloud.logging
 
@@ -36,7 +36,7 @@ if not exists(env_file_loc):
 else:
     print("[STATUS] Loading env file at {}".format(env_file_loc))
 
-load_dotenv(dotenv_path=env_file_loc)
+dotenv.read_dotenv(env_file_loc)
 
 print("[STATUS] PYTHONPATH is {}".format(os.environ.get("PYTHONPATH")))
 
