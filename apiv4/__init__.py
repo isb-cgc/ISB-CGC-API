@@ -70,7 +70,7 @@ from program_routes import *
 from sample_case_routes import *
 from file_routes import *
 from user_routes import *
-from deprecated.user_routes import *
+from deprecated.user_routes import validate_gcp_old, user_gcp_old, user_gcps_old, make_405_response
 
 
 @app.context_processor
