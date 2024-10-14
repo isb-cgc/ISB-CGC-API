@@ -24,7 +24,7 @@ from auth import validate_user, UserValidationException
 from file_views import get_file_paths, get_signed_uris
 from api_logging import *
 
-logger = logging.getLogger(settings.LOGGER_NAME)
+logger = logging.getLogger(__name__)
 
 
 @app.route('/v4/files/paths/<file_uuid>/', methods=['GET'], strict_slashes=False)

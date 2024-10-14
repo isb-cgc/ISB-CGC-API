@@ -23,7 +23,7 @@ from django.db import close_old_connections
 from sample_case_views import get_metadata
 from api_logging import *
 
-logger = logging.getLogger(settings.LOGGER_NAME)
+logger = logging.getLogger(__name__)
 
 
 @app.route('/v4/cases/<case_barcode>/', methods=['GET'], strict_slashes=False)

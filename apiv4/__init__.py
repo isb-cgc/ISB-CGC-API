@@ -29,7 +29,7 @@ import django
 django.setup()
 from django.conf import settings
 
-logger = logging.getLogger(settings.LOGGER_NAME)
+logger = logging.getLogger(__name__)
 
 dictConfig({
     'version': 1,
@@ -42,7 +42,7 @@ dictConfig({
         'formatter': 'default'
     }},
     'root': {
-        'level': 'INFO',
+        'level': 'DEBUG',
         'handlers': ['wsgi']
     }
 })

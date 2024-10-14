@@ -21,7 +21,7 @@ from django.conf import settings
 from apiv4 import app
 from api_logging import *
 
-logger = logging.getLogger(settings.LOGGER_NAME)
+logger = logging.getLogger(__name__)
 
 SCOPE = 'https://www.googleapis.com/auth/userinfo.email'
 

@@ -24,7 +24,7 @@ from werkzeug.exceptions import BadRequest
 from django.conf import settings
 from cohorts.metadata_helpers import get_full_case_metadata, get_full_sample_metadata
 
-logger = logging.getLogger(settings.LOGGER_NAME)
+logger = logging.getLogger(__name__)
 
 
 def get_metadata(barcode=None, type=None):

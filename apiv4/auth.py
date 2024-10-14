@@ -25,7 +25,7 @@ from django.contrib.auth.models import User as Django_User
 from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 from cohorts.models import Cohort_Perms
 
-logger = logging.getLogger(settings.LOGGER_NAME)
+logger = logging.getLogger(__name__)
 
 
 class UserValidationException(Exception):

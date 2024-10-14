@@ -23,7 +23,7 @@ from django.db import close_old_connections
 from program_views import get_cohort_programs
 from api_logging import *
 
-logger = logging.getLogger(settings.LOGGER_NAME)
+logger = logging.getLogger(__name__)
 
 
 @app.route('/v4/data/available/', methods=['GET'], strict_slashes=False)

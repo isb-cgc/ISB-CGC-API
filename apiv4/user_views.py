@@ -35,7 +35,7 @@ from jsonschema import validate as schema_validate, ValidationError
 
 BLACKLIST_RE = settings.BLACKLIST_RE
 
-logger = logging.getLogger(settings.LOGGER_NAME)
+logger = logging.getLogger(__name__)
 
 
 def get_account_details(user):

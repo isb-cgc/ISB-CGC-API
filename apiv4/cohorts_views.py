@@ -36,7 +36,7 @@ from schemas.cohort_filter_schema import COHORT_FILTER_SCHEMA
 
 BLACKLIST_RE = settings.BLACKLIST_RE
 
-logger = logging.getLogger(settings.LOGGER_NAME)
+logger = logging.getLogger(__name__)
 
 
 def get_file_manifest(cohort_id, user):

@@ -26,7 +26,7 @@ from cohorts.metadata_helpers import get_paths_by_uuid
 
 from auth import UserValidationException
 
-logger = logging.getLogger(settings.LOGGER_NAME)
+logger = logging.getLogger(__name__)
 
 
 def get_file_paths(uuid=None):

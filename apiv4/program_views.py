@@ -24,7 +24,7 @@ from django.conf import settings
 
 from projects.models import Program, Project
 
-logger = logging.getLogger(settings.LOGGER_NAME)
+logger = logging.getLogger(__name__)
 
 
 def get_cohort_programs():
