@@ -69,9 +69,9 @@ from cohorts_routes import *
 from program_routes import *
 from sample_case_routes import *
 from file_routes import *
-from deprecated.user_routes import *
-from deprecated.sample_case_routes import *
-from deprecated.program_routes import *
+from old.user_routes import *
+from old.sample_case_routes import *
+from old.program_routes import *
 
 
 @app.context_processor
