@@ -101,7 +101,7 @@ API_ACTIVITY_LOG_NAME = os.environ.get('API_ACTIVITY_LOG_NAME', 'local_dev_loggi
 DCF_REFRESH_LOG_NAME = os.environ.get('DCF_REFRESH_LOG_NAME', 'local_dev_logging')
 
 BASE_URL                = os.environ.get('BASE_URL', 'https://dev.isb-cgc.org')
-BASE_API_URL            = os.environ.get('BASE_API_URL', 'https://api-dev.isb-cgc.org/v4')
+BASE_API_URL            = os.environ.get('BASE_API_URL', 'https://dev-api.isb-cgc.org/v4')
 
 # Data Buckets
 OPEN_DATA_BUCKET        = os.environ.get('OPEN_DATA_BUCKET', '')
