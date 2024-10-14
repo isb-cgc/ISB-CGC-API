@@ -69,8 +69,9 @@ from cohorts_routes import *
 from program_routes import *
 from sample_case_routes import *
 from file_routes import *
-from user_routes import *
-from deprecated.user_routes import validate_gcp_old, user_gcp_old, user_gcps_old, make_405_response
+from deprecated.user_routes import *
+from deprecated.sample_case_routes import *
+from deprecated.program_routes import *
 
 
 @app.context_processor

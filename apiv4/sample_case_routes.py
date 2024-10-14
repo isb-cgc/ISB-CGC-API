@@ -26,19 +26,6 @@ from api_logging import *
 logger = logging.getLogger(settings.LOGGER_NAME)
 
 
-@app.route('/v4/samples/<sample_barcode>/', methods=['GET'], strict_slashes=False)
-def sample_metadata(sample_barcode):
-    response = jsonify({
-        'code': 405,
-        'message': "/samples/ paths have been deprecated in version 4.2 due to the restructuring of data from multiple "
-            + "nodes and programs, some of which do not provide sample information. Please use the /cases/ path instead."
-    })
-
-    response.status_code = 405
-
-    return response
-
-
 @app.route('/v4/cases/<case_barcode>/', methods=['GET'], strict_slashes=False)
 def case_metadata(case_barcode):
 
@@ -78,20 +65,6 @@ def case_metadata(case_barcode):
     resp_obj['code'] = code
     response = jsonify(resp_obj)
     response.status_code = code
-
-    return response
-
-
-@app.route('/v4/samples/', methods=['POST'], strict_slashes=False)
-def sample_metadata_list():
-
-    response = jsonify({
-        'code': 405,
-        'message': "/samples/ paths have been deprecated in version 4.2 due to the restructuring of data from multiple "
-            + "nodes and programs, some of which do not provide sample information. Please use the /cases/ path instead."
-    })
-
-    response.status_code = 405
 
     return response
 

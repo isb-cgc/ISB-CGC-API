@@ -26,18 +26,6 @@ from api_logging import *
 logger = logging.getLogger(settings.LOGGER_NAME)
 
 
-@app.route('/v4/programs/', methods=['GET'], strict_slashes=False)
-def programs():
-    response = jsonify({
-        'code': 405,
-        'message': "The 'programs' path was deprecated in version 4.1 in favor of /data/availabile and subroutes."
-    })
-
-    response.status_code = 405
-    
-    return response
-
-
 @app.route('/v4/data/available/', methods=['GET'], strict_slashes=False)
 def data(routes=None):
     """Retrieve the list of all data available via ISB-CGC"""
@@ -66,18 +54,6 @@ def data(routes=None):
     response_obj['code'] = response_code
     response = jsonify(response_obj)
     response.status_code = response_code
-
-    return response
-
-
-@app.route('/v4/data/available/registration/', methods=['GET'], strict_slashes=False)
-def data_for_reg():
-    response = jsonify({
-        'code': 405,
-        'message': "The 'data/available/registration' path has been deprecated in version 4.2 due to the removal of controlled access data registration at ISB-CGC."
-    })
-
-    response.status_code = 405
 
     return response
 

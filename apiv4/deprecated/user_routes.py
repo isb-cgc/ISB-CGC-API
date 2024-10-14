@@ -17,19 +17,25 @@
 from apiv4 import app
 from . import make_405_response
 
-RESPONSE_MSG = "The 'gcp' path has been deprecated in version 4.1 in favor of /cloud_projects and subroutes."
+GCP_RESPONSE_MSG = "The 'gcp' path has been deprecated in version 4.1 in favor of /cloud_projects and subroutes."
 
 
 @app.route('/v4/users/gcp/validate/<gcp_id>/', methods=['GET'], strict_slashes=False)
 def validate_gcp_old(gcp_id):
-    return make_405_response(RESPONSE_MSG)
+    return make_405_response(GCP_RESPONSE_MSG)
 
 
 @app.route('/v4/users/gcp/<gcp_id>/', methods=['DELETE', 'PATCH', 'GET'], strict_slashes=False)
 def user_gcp_old(gcp_id):
-    return make_405_response(RESPONSE_MSG)
+    return make_405_response(GCP_RESPONSE_MSG)
 
 
 @app.route('/v4/users/gcp/', methods=['POST', 'GET'], strict_slashes=False)
 def user_gcps_old():
-    return make_405_response(RESPONSE_MSG)
+    return make_405_response(GCP_RESPONSE_MSG)
+
+
+@app.route('/v4/users/account_details/', methods=['GET'], strict_slashes=False)
+def account_details():
+    return make_405_response("The 'account details' path has been deprecated in version 4.2 due to the removal of " +
+                             "controlled access data registration at ISB-CGC.")
