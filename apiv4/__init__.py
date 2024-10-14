@@ -52,27 +52,32 @@ app = Flask(__name__, static_folder='api_static')
 app.logger.info("Flask logger")
 logger.info("Python Logger")
 
-if settings.IS_APP_ENGINE:
-    Talisman(app, strict_transport_security_max_age=300, content_security_policy={
-        'default-src': [
-            '\'self\'',
-            '*.googleapis.com',
-            '*.swagger.io',
-            '\'unsafe-inline\'',
-            'data:'
-        ]
-    })
+try:
 
-from auth import auth_info
-from main_routes import *
-from cohorts_routes import *
-from program_routes import *
-from sample_case_routes import *
-from file_routes import *
-from old.user_routes import *
-from old.sample_case_routes import *
-from old.program_routes import *
+    if settings.IS_APP_ENGINE:
+        Talisman(app, strict_transport_security_max_age=300, content_security_policy={
+            'default-src': [
+                '\'self\'',
+                '*.googleapis.com',
+                '*.swagger.io',
+                '\'unsafe-inline\'',
+                'data:'
+            ]
+        })
 
+    from auth import auth_info
+    from main_routes import *
+    from cohorts_routes import *
+    from program_routes import *
+    from sample_case_routes import *
+    from file_routes import *
+    from old.user_routes import *
+    from old.sample_case_routes import *
+    from old.program_routes import *
+
+except Exception as e:
+    app.logger.error("[ERROR] While importing routes:")
+    app.logger.exception(e)
 
 @app.context_processor
 def utilities():
