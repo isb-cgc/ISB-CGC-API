@@ -24,7 +24,7 @@ from werkzeug.exceptions import BadRequest
 from django.conf import settings
 from cohorts.metadata_helpers import get_full_case_metadata, get_full_sample_metadata
 
-logger = logging.getLogger(settings.LOGGER_NAME)
+logger = logging.getLogger(__name__)
 
 
 def get_metadata(barcode=None, type=None):
@@ -60,7 +60,7 @@ def get_metadata(barcode=None, type=None):
                     result['notes'] = "Some {} barcodes provided were not found. See 'not_found' for a list.".format(type)
 
     except BadRequest as e:
-        logger.warn("[WARNING] Received bad request - couldn't load JSON.")
+        logger.warning("[WARNING] Received bad request - couldn't load JSON.")
         result = {
             'message': 'The JSON provided in this request appears to be improperly formatted.',
         }

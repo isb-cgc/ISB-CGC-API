@@ -26,7 +26,7 @@ from cohorts.metadata_helpers import get_paths_by_uuid
 
 from auth import UserValidationException
 
-logger = logging.getLogger(settings.LOGGER_NAME)
+logger = logging.getLogger(__name__)
 
 
 def get_file_paths(uuid=None):
@@ -63,23 +63,9 @@ def get_file_paths(uuid=None):
                     result['not_found'] = not_found
 
     except BadRequest as e:
-        logger.warn("[WARNING] Received bad request - couldn't load JSON.")
+        logger.warning("[WARNING] Received bad request - couldn't load JSON.")
         result = {
             'message': 'The JSON provided in this request appears to be improperly formatted.',
         }
 
     return result
-
-
-def get_signed_uris(user, file_uuids):
-    # if not user:
-    #     logger.error("A user was not provided while attempting to obtained signed URIs!")
-    #     raise UserValidationException("A user was not provided while attempting to obtained signed URIs!")
-    # if not file_uuids or not len(file_uuids):
-    #     raise Exception("While attempting to obtain signed URIs, encountered an error: no file UUIDs were provided.")
-    # 
-    return []
-
-
-
-

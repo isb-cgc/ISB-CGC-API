@@ -3,10 +3,10 @@ if [ -n "$CI" ]; then
     export HOMEROOT=/home/circleci/${CIRCLE_PROJECT_REPONAME}
 else
     export HOME=/home/vagrant
-    export HOMEROOT=/home/vagrant/www
+    export HOMEROOT=/home/vagrant/API
 fi
 
-export PYTHONPATH=${HOMEROOT}:${HOMEROOT}/lib:${HOMEROOT}/ISB-CGC-Common
+export PYTHONPATH=${HOMEROOT}:${HOMEROOT}/lib:${HOMEROOT}/ISB-CGC-Common:${HOMEROOT}/apiv4
 export DJANGO_SETTINGS_MODULE=isb_cgc.settings
 echo "PYTHONPATH IS ${PYTHONPATH}"
 

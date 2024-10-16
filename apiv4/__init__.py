@@ -15,6 +15,7 @@
 #
 
 import logging
+from logging.config import dictConfig
 import os
 from os.path import join, dirname
 import sys
@@ -24,33 +25,59 @@ from flask import Flask, jsonify, request
 from flask_cors import cross_origin
 from flask_talisman import Talisman
 
-app = Flask(__name__, static_folder='api_static')
-
-Talisman(app, strict_transport_security_max_age=300, content_security_policy={
-    'default-src': [
-        '\'self\'',
-        '*.googleapis.com',
-        '*.swagger.io',
-        '\'unsafe-inline\'',
-        'data:'
-    ]
-})
-
 import django
 django.setup()
 from django.conf import settings
 
-from auth import auth_info
-from main_routes import *
-from cohorts_routes import *
-from program_routes import *
-from sample_case_routes import *
-from file_routes import *
-from user_routes import *
-from deprecated.user_routes import *
+logger = logging.getLogger(__name__)
 
-logger = logging.getLogger(settings.LOGGER_NAME)
+dictConfig({
+    'version': 1,
+    'formatters': {'default': {
+        'format': '[%(asctime)s] %(levelname)s in %(module)s: %(message)s',
+    }},
+    'handlers': {'wsgi': {
+        'class': 'logging.StreamHandler',
+        'stream': 'ext://sys.stdout',
+        'formatter': 'default'
+    }},
+    'root': {
+        'level': 'DEBUG',
+        'handlers': ['wsgi']
+    }
+})
 
+app = Flask(__name__, static_folder='api_static')
+
+app.logger.info("Flask logger")
+logger.info("Python Logger")
+
+try:
+
+    if settings.IS_APP_ENGINE:
+        Talisman(app, strict_transport_security_max_age=300, content_security_policy={
+            'default-src': [
+                '\'self\'',
+                '*.googleapis.com',
+                '*.swagger.io',
+                '\'unsafe-inline\'',
+                'data:'
+            ]
+        })
+
+    from auth import auth_info
+    from main_routes import *
+    from cohorts_routes import *
+    from program_routes import *
+    from sample_case_routes import *
+    from file_routes import *
+    from old.user_routes import *
+    from old.sample_case_routes import *
+    from old.program_routes import *
+
+except Exception as e:
+    app.logger.error("[ERROR] While importing routes:")
+    app.logger.exception(e)
 
 @app.context_processor
 def utilities():
