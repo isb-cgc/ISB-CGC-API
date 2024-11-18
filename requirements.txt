@@ -10,7 +10,7 @@ click
 colorama==0.4.6
 coverage==7.1.0
 cryptography==43.0.1
-Django==3.2.25
+Django==4.2.16
 exceptiongroup==1.1.0
 Flask==2.2.5
 flask-talisman==1.0.0
@@ -72,6 +72,6 @@ tomli==2.0.1
 uritemplate==4.1.1
 urllib3==2.2.2
 wcwidth==0.2.6
-Werkzeug==3.0.3
+Werkzeug==3.0.6
 zipp==3.19.1
 
