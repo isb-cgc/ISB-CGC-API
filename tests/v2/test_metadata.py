@@ -53,7 +53,7 @@ def test_collections(client, app):
     collection = collections['tcga_prad']
     assert collection['cancer_type'] == 'Prostate Cancer'
     assert collection['source_doi'].lower() == '10.7937/k9/tcia.2016.yxoglm4y 10.5281/zenodo.12689935 10.5281/zenodo.11099004'.lower()
-    assert collection['image_types'] == 'CT, MR, PT, SM, ANN'
+    assert collection['image_types'] == 'CT, MR, PT, SM, ANN, SEG'
     assert collection['location'] == 'Prostate'
     assert collection['species'] == 'Human'
     assert collection['subject_count'] == 500
