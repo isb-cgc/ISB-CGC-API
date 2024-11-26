@@ -16,4 +16,4 @@
 
 echo 'export PYTHONPATH=/home/vagrant/API:/home/vagrant/API/lib:/home/vagrant/API/apiv4:/home/vagrant/API/ISB-CGC-Common' | tee -a /home/vagrant/.bash_profile
 echo 'export SECURE_LOCAL_PATH=../parentDir/secure_files/' | tee -a /home/vagrant/.bash_profile
-chmod +x /home/vagrant/www/shell/python-su.sh
+chmod +x /home/vagrant/API/shell/python-su.sh
