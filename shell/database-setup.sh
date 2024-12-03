@@ -116,7 +116,7 @@ echo "Setting Up Social Application Login..."
 mysql -u$MYSQL_ROOT_USER -h $MYSQL_DB_HOST -p$MYSQL_ROOT_PASSWORD -D$DATABASE_NAME -e 'BEGIN; INSERT INTO socialaccount_socialapp (provider, provider_id, `name`, client_id, secret, `key`) VALUES("google", "google", "Google", "'$OAUTH2_CLIENT_ID'", "'$OAUTH2_CLIENT_SECRET'", " "); INSERT INTO socialaccount_socialapp_sites (socialapp_id, site_id) VALUES(1, 2), (1, 3), (1, 4); COMMIT;'
 
 # Setting up Cron token
-python3 ${HOMEROOT}/scripts/create_api_token.py
+python3 ${HOMEROOT}/scripts/create_cron_token.py
 
 # Check system config
 python3 ${HOMEROOT}/manage.py check

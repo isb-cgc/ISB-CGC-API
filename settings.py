@@ -122,7 +122,6 @@ database_config = {
 }
 
 # On the build system, we need to use build-system specific database information
-
 if os.environ.get('CI', None) is not None:
     database_config = {
         'default': {

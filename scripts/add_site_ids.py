@@ -29,11 +29,11 @@ cursor = None
 
 try:
 
-    db_settings = settings.get('DATABASE')['default']
-    ssl = None
-    if 'OPTIONS' in db_settings and 'ssl' in db_settings['OPTIONS']:
-        ssl = db_settings['OPTIONS']['ssl']
-    db = MySQLdb.connect(host=db_settings['HOST'], port=db_settings['PORT'], db=db_settings['NAME'], user=db_settings['USER'], passwd=db_settings['PASSWORD'], ssl=ssl)
+    db_settings = settings.DATABASES.get('default')
+    if not settings.CONNECTION_IS_LOCAL:
+        raise Exception("This script should never be run on a deployed system!")
+    ssl = db_settings.get('OPTIONS', {}).get('ssl', None)
+    db = MySQLdb.connect(host=db_settings['HOST'], db=db_settings['NAME'], user=db_settings['USER'], passwd=db_settings['PASSWORD'], ssl=ssl)
 
     delete_str = 'DELETE FROM django_site WHERE id in (2, 3, 4, 5);'
     insert_str = 'INSERT INTO django_site (id, domain, name) VALUES (%s, %s, %s), (%s, %s, %s), (%s, %s, %s);'
