@@ -3,7 +3,9 @@ django==3.2.25
 django-allauth==0.63.1
 django-allauth[socialaccount]
 django-anymail[mailgun]
-django-dotenv==1.4.2
+# Because flask wants python-dotenv, we cannot use django-dotenv in this app. Unlike the WebApp, the API must use
+# python-dotenv to read its env files.
+python-dotenv
 Flask==2.2.5
 flask-cors==4.0.2
 flask-talisman==1.0.0

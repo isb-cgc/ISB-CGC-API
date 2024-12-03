@@ -21,6 +21,8 @@ from builtins import object
 import os
 from os.path import join, dirname, exists
 import sys
+# Because flask installs python-dotenv, we cannot use django-dotenv in this app. Unlike the WebApp, the API must use
+# python-dotenv to read its env files.
 import dotenv
 from socket import gethostname, gethostbyname
 import google.cloud.logging
@@ -36,7 +38,7 @@ if not exists(env_file_loc):
 else:
     print("[STATUS] Loading env file at {}".format(env_file_loc))
 
-dotenv.read_dotenv(env_file_loc)
+dotenv.load_dotenv(env_file_loc)
 
 print("[STATUS] PYTHONPATH is {}".format(os.environ.get("PYTHONPATH")))
 
@@ -255,9 +257,6 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     'django.contrib.sites',
     'django.contrib.messages',
-    'django.contrib.staticfiles',
-    'django.contrib.admin',
-    'django.contrib.admindocs',
     'sharing',
     'cohorts',
     'projects'

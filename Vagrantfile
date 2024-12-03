@@ -34,8 +34,8 @@ Vagrant.configure(2) do |config|
 
     # To avoid issues with scripts getting Windows line terminators, always install dos2unix and convert the
     # shell directory before the rest of the provisioning scripts run
-    config.vm.provision :shell, inline: "sudo apt-get update"
-    config.vm.provision :shell, inline: "sudo apt-get install dos2unix"
+    config.vm.provision :shell, inline: "sudo apt-get update", :run => 'always'
+    config.vm.provision :shell, inline: "sudo apt-get install dos2unix", :run => 'always'
     config.vm.provision :shell, inline: "dos2unix /home/vagrant/API/shell/*.sh", :run => 'always'
     config.vm.provision :shell, inline: "echo 'source /home/vagrant/API/shell/env.sh' > /etc/profile.d/sa-environment.sh", :run => 'always'
     config.vm.provision "shell", path: 'shell/install-deps.sh', :run => 'always'
