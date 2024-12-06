@@ -54,7 +54,7 @@ def cohort(cohort_id):
                 st_logger.write_text_log_entry(log_name, user_activity_message.format(user_info['email'], request.method, request.full_path))
                 if request.method == 'GET':
                     include_barcodes = (request.args.get('include_barcodes', default="false", type=str).lower() == "true")
-                    cohort_info = get_cohort_info(cohort_id, include_barcodes)
+                    cohort_info = get_cohort_info(cohort_id, user, include_barcodes)
                 else:
                     cohort_info = edit_cohort(cohort_id, user, delete=(request.method == 'DELETE'))
 
