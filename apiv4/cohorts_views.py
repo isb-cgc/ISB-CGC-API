@@ -28,7 +28,7 @@ from django.conf import settings
 
 from cohorts.models import Cohort_Perms, Cohort
 from cohorts.file_helpers import cohort_files
-from cohorts.utils import create_cohort as make_cohort, delete_cohort, get_cohort_cases, get_cohort_stats
+from cohorts.utils import create_cohort as make_cohort, delete_cohort, get_cohort_cases, get_cohort_files
 from projects.models import Program
 
 from jsonschema import validate as schema_validate, ValidationError
@@ -39,14 +39,13 @@ BLACKLIST_RE = settings.BLACKLIST_RE
 logger = logging.getLogger(__name__)
 
 
+# Requires login
 def get_file_manifest(cohort_id, user):
     file_manifest = None
     inc_filters = {}
 
     try:
-
         params = {
-            'limit': settings.MAX_FILE_LIST_REQUEST
         }
 
         request_data = request.get_json()
@@ -61,7 +60,9 @@ def get_file_manifest(cohort_id, user):
             default = parameter['default']
             param_type = parameter['type']
             name = parameter['name']
-            params[name] = request_data[param] if (request_data and param in request_data) else request.args.get(param, default=default, type=param_type) if param in request.args else default
+            params[name] = request_data[param] if (request_data and param in request_data) else request.args.get(
+                param, default=default, type=param_type
+            ) if param in request.args else default
 
             if request_data:
                 inc_filters = {
@@ -70,7 +71,7 @@ def get_file_manifest(cohort_id, user):
                     if filter not in list(param_set.keys())
                 }
 
-        response = cohort_files(cohort_id, user=user, inc_filters=inc_filters, **params)
+        response = get_cohort_files(cohort_id, user=user, inc_filters=inc_filters, **params)
 
         file_manifest = response['file_list'] if response and response['file_list'] else None
 
@@ -86,10 +87,13 @@ def get_file_manifest(cohort_id, user):
     return file_manifest
 
 
-def get_cohort_info(cohort_id, get_barcodes=False):
+# Requires login
+def get_cohort_info(cohort_id, user, get_barcodes=False):
     cohort = None
+    cohort_obj = None
     try:
         cohort_obj = Cohort.objects.get(id=cohort_id)
+        Cohort_Perms.objects.get(cohort=cohort_obj, user=user, perm=Cohort_Perms.OWNER)
         cohort = {
             'id': cohort_obj.id,
             'name': cohort_obj.name,
@@ -103,13 +107,17 @@ def get_cohort_info(cohort_id, get_barcodes=False):
             cohort['barcodes'] = get_cohort_cases(cohort_id)
 
     except ObjectDoesNotExist as e:
-        logger.warning("Cohort with ID {} was not found!".format(str(cohort_id)))
+        if not cohort_obj:
+            logger.warning("Cohort with ID {} was not found!".format(str(cohort_id)))
+        else:
+            logger.error("User {} do not have access to cohort ID {}!".format(user.email if user else "Unknown", str(cohort_id)))
     except Exception as e:
         logger.exception(e)
 
     return cohort
 
 
+# Requires login
 def get_cohorts(user_email):
 
     cohort_list = None
@@ -132,6 +140,7 @@ def get_cohorts(user_email):
     return cohort_list
 
 
+# Preview method for a cohort, or to get a cohort's case listing; does not require login as it is filter-based
 def get_cohort_counts():
 
     cohort_counts = None
@@ -150,8 +159,9 @@ def get_cohort_counts():
             filters = {
                 "{}:{}".format(id_map[prog], attr): vals for prog, attrs in request_data['filters'].items() for attr, vals in attrs.items()
             }
-            print(filters)
             cohort_counts = get_cohort_cases(None, filters, True)
+            cohort_files = get_cohort_files(None, filters, True)
+            print(cohort_files)
 
             if cohort_counts:
                 for prog in cohort_counts:
@@ -175,6 +185,7 @@ def get_cohort_counts():
     return cohort_counts
 
 
+# Requires login
 def create_cohort(user):
     cohort_info = None
 
@@ -234,6 +245,7 @@ def create_cohort(user):
     return cohort_info
 
 
+# Requires login
 def edit_cohort(cohort_id, user, delete=False):
     match = None
     cohort_info = None

@@ -256,6 +256,7 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     'django.contrib.sites',
     'django.contrib.messages',
+    'rest_framework.authtoken',
     'sharing',
     'cohorts',
     'projects'

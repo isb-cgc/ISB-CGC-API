@@ -17,20 +17,10 @@
 from __future__ import print_function
 
 from builtins import str
-from builtins import object
-import datetime
-import logging
-import traceback
 import os
 from os.path import join, dirname
-import re
-import csv
-from argparse import ArgumentParser
-import sys
-import time
-from copy import deepcopy
 
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "isb_cgc.settings")
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "settings")
 
 import django
 django.setup()
