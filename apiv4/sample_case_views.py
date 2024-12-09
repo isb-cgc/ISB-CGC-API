@@ -27,14 +27,14 @@ from cohorts.metadata_helpers import get_full_case_metadata, get_full_sample_met
 logger = logging.getLogger(__name__)
 
 
-def get_metadata(barcode=None, type=None):
+def get_metadata(source, identifier=None, type=None):
 
     result = None
     barcodes = None
     
     try:
-        if barcode:
-            barcodes = [barcode]
+        if identifier:
+            barcodes = [identifier]
         else:
             request_data = request.get_json()
             if 'barcodes' in request_data:

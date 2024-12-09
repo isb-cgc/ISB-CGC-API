@@ -494,7 +494,7 @@ METRICS_BQ_DATASET = os.environ.get('METRICS_BQ_DATASET', '')
 # Google App Engine has a response size limit of 32M. ~65k entries from the cohort_filelist view will
 # equal just under the 32M limit. If each individual listing is ever lengthened or shortened this
 # number should be adjusted
-MAX_FILE_LIST_REQUEST = 65000
+MAX_FILE_LIST_REQUEST = 5000
 
 # IGV limit to prevent users from trying ot open dozens of files
 MAX_FILES_IGV = 5

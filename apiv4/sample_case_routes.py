@@ -25,16 +25,19 @@ from api_logging import *
 
 logger = logging.getLogger(__name__)
 
+NODES = ["PDC", "GDC", "IDC"]
 
-@app.route('/v4/cases/<case_barcode>/', methods=['GET'], strict_slashes=False)
-def case_metadata(case_barcode):
 
-    resp_obj = None
-
+@app.route('/v4/cases/<source>/<identifier>/', methods=['GET'], strict_slashes=False)
+def case_metadata(source, identifier):
     st_logger.write_text_log_entry(log_name, activity_message.format(request.method, request.full_path))
 
     try:
-        metadata = get_metadata(case_barcode, 'case')
+        metadata_from = 'program'
+        if source in NODES:
+            metadata_from = 'node'
+
+        metadata = get_metadata(source, identifier, metadata_from)
 
         if metadata:
             if 'message' in metadata:

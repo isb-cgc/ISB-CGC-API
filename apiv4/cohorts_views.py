@@ -70,10 +70,13 @@ def get_file_manifest(cohort_id, user):
                     for filter in request_data.keys()
                     if filter not in list(param_set.keys())
                 }
+        file_manifest = {}
+        if params['fetch_count'] >  settings.MAX_FILE_LIST_REQUEST:
+            params['fetch_count'] = min(settings.MAX_FILE_LIST_REQUEST, params['fetch_count'])
+            file_manifest['warning'] = "You have requested too many records. Please note the maximum number that may be retrieved in a single operation is 5000."
 
-        response = get_cohort_files(cohort_id, user=user, inc_filters=inc_filters, **params)
-
-        file_manifest = response['file_list'] if response and response['file_list'] else None
+        result = get_cohort_files(cohort_id, inc_filters=inc_filters, **params)
+        file_manifest.update(result)
 
     except BadRequest as e:
         logger.warning("[WARNING] Received bad request - couldn't load JSON.")
@@ -160,8 +163,6 @@ def get_cohort_counts():
                 "{}:{}".format(id_map[prog], attr): vals for prog, attrs in request_data['filters'].items() for attr, vals in attrs.items()
             }
             cohort_counts = get_cohort_cases(None, filters, True)
-            cohort_files = get_cohort_files(None, filters, True)
-            print(cohort_files)
 
             if cohort_counts:
                 for prog in cohort_counts:
