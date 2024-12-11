@@ -63,4 +63,4 @@ WORKDIR /app/
 # ISB
 # RUN python /app/manage.py migrate --noinput
 
-CMD gunicorn -c gunicorn.conf.py -b :$PORT apiv4:app -w 3 -t 70
+CMD gunicorn -c gunicorn.conf.py -b :$PORT "apiv4:create_app()" -w 3 -t 70
