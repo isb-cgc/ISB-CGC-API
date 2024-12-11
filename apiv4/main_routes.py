@@ -16,18 +16,19 @@
 
 import logging
 import json
-from flask import jsonify, request, render_template, redirect, url_for
+from flask import jsonify, request, render_template, redirect, url_for, Blueprint
 from django.conf import settings
-from apiv4 import app
 from api_logging import *
 
 logger = logging.getLogger(__name__)
 
 SCOPE = 'https://www.googleapis.com/auth/userinfo.email'
 
+main_bp = Blueprint(f'main_bp_v4', __name__, url_prefix='/{}'.format("v4"))
 
-@app.route('/v4/about/', methods=['GET'], strict_slashes=False)
-def apiv4():
+
+@main_bp.route('/about/', methods=['GET'], strict_slashes=False)
+def v4api():
     """Base response"""
 
     st_logger.write_text_log_entry(log_name, activity_message.format(request.method, request.full_path))
@@ -43,13 +44,13 @@ def apiv4():
 
 
 # Swagger UI
-@app.route('/v4/swagger/', methods=['GET'], strict_slashes=False)
+@main_bp.route('/swagger/', methods=['GET'], strict_slashes=False)
 def swagger():
     st_logger.write_text_log_entry(log_name, activity_message.format(request.method, request.full_path))
     return render_template('swagger/index.html')
 
 
-@app.route('/v4/oauth2callback/', strict_slashes=False)
+@main_bp.route('/oauth2callback/', strict_slashes=False)
 def oauth2callback():
     return render_template('swagger/oauth2-redirect.html')
 

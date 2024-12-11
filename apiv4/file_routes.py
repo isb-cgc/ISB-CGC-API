@@ -16,18 +16,19 @@
 
 import logging
 import json
-from flask import jsonify, request
-from apiv4 import app
+from flask import jsonify, request, Blueprint
 from django.conf import settings
 from django.db import close_old_connections
 from auth import validate_user, UserValidationException
-from file_views import get_file_paths, get_signed_uris
+from file_views import get_file_paths
 from api_logging import *
 
 logger = logging.getLogger(__name__)
 
+files_bp = Blueprint(f'files_bp_v4', __name__, url_prefix='/{}'.format("v4"))
 
-@app.route('/v4/files/paths/<file_uuid>/', methods=['GET'], strict_slashes=False)
+
+@files_bp.route('/files/paths/<file_uuid>/', methods=['GET'], strict_slashes=False)
 def file_path(file_uuid):
     resp_obj = None
     code = None
@@ -70,7 +71,7 @@ def file_path(file_uuid):
     return response
 
 
-@app.route('/v4/files/paths/', methods=['POST'], strict_slashes=False)
+@files_bp.route('/files/paths/', methods=['POST'], strict_slashes=False)
 def file_path_list():
 
     response_obj = None

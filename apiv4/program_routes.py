@@ -16,8 +16,7 @@
 
 import logging
 import json
-from flask import jsonify, request
-from apiv4 import app
+from flask import jsonify, request, Blueprint
 from django.conf import settings
 from django.db import close_old_connections
 from program_views import get_cohort_programs
@@ -25,8 +24,10 @@ from api_logging import *
 
 logger = logging.getLogger(__name__)
 
+program_bp = Blueprint(f'program_bp_v4', __name__, url_prefix='/{}'.format("v4"))
 
-@app.route('/v4/data/available/', methods=['GET'], strict_slashes=False)
+
+@program_bp.route('/data/available/', methods=['GET'], strict_slashes=False)
 def data(routes=None):
     """Retrieve the list of all data available via ISB-CGC"""
     response = None
@@ -58,7 +59,7 @@ def data(routes=None):
     return response
 
 
-@app.route('/v4/data/available/cohorts/', methods=['GET'], strict_slashes=False)
+@program_bp.route('/data/available/cohorts/', methods=['GET'], strict_slashes=False)
 def data_for_cohorts():
     """Retrieve the list of all data available for cohort creation via ISB-CGC"""
     """This is a pass-through call to the primary /data/available view"""

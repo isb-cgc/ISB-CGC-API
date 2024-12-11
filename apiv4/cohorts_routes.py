@@ -16,8 +16,7 @@
 
 import logging
 import json
-from flask import jsonify, request
-from apiv4 import app
+from flask import jsonify, request, Blueprint
 from cohorts_views import get_cohort_info, get_cohorts, get_file_manifest, get_cohort_counts, create_cohort, edit_cohort
 from auth import auth_info, UserValidationException, validate_user
 from django.conf import settings
@@ -26,8 +25,10 @@ from api_logging import *
 
 logger = logging.getLogger(__name__)
 
+cohorts_bp = Blueprint(f'cohorts_bp_v4', __name__, url_prefix='/{}'.format("v4"))
 
-@app.route('/v4/cohorts/<int:cohort_id>/', methods=['GET', 'PATCH', 'DELETE'], strict_slashes=False)
+
+@cohorts_bp.route('/cohorts/<int:cohort_id>/', methods=['GET', 'PATCH', 'DELETE'], strict_slashes=False)
 def cohort(cohort_id):
     """
     GET: Retrieve extended information for a specific cohort
@@ -92,7 +93,7 @@ def cohort(cohort_id):
     return response
 
 
-@app.route('/v4/cohorts/', methods=['GET', 'POST'], strict_slashes=False)
+@cohorts_bp.route('/cohorts/', methods=['GET', 'POST'], strict_slashes=False)
 def cohorts():
     """
     GET: Retrieve a user's list of cohorts
@@ -149,7 +150,7 @@ def cohorts():
     return response
 
 
-@app.route('/v4/cohorts/<int:cohort_id>/file_manifest/', methods=['POST', 'GET'], strict_slashes=False)
+@cohorts_bp.route('/cohorts/<int:cohort_id>/file_manifest/', methods=['POST', 'GET'], strict_slashes=False)
 def cohort_file_manifest(cohort_id):
     """
     GET: Retrieve a cohort's file manifest
@@ -209,7 +210,7 @@ def cohort_file_manifest(cohort_id):
     return response
 
 
-@app.route('/v4/cohorts/preview/', methods=['POST'], strict_slashes=False)
+@cohorts_bp.route('/cohorts/preview/', methods=['POST'], strict_slashes=False)
 def cohort_preview():
     """List the samples, cases, and counts a given set of cohort filters would produce"""
 
