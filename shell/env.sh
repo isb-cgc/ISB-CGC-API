@@ -21,7 +21,7 @@
 if [ ! -f "/home/vagrant/API/secure_path.env" ]; then
     echo "No secure_path.env found - using default value of /home/vagrant/secure_files/.env."
     echo "If your .env is not at this location, you must make a secure_path.env file with the SECURE_LOCAL_PATH"
-    echo "value as its only entry and place it in the root directory (/home/vagrant/www)."
+    echo "value as its only entry and place it in the root directory (/home/vagrant/API)."
     export ENV_FILE_PATH=/home/vagrant/secure_files/.env
 else
     echo "secure_path.env setting found."
