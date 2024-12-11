@@ -14,19 +14,22 @@
 # limitations under the License.
 #
 
-from apiv4 import app
+from flask import Blueprint
 from . import make_405_response
 
 RESPONSE_MSG = "/samples/ paths have been deprecated in version 4.2 due to the restructuring of data from multiple " \
             + "nodes and programs, some of which do not provide sample information. Please use the /cases/ path instead."
 
-@app.route('/v4/samples/', methods=['POST'], strict_slashes=False)
+samples_bp = Blueprint(f'samples_bp_v41', __name__, url_prefix='/{}'.format("v4"))
+
+
+@samples_bp.route('/samples/', methods=['POST'], strict_slashes=False)
 def sample_metadata_list():
 
     return make_405_response(RESPONSE_MSG)
 
 
-@app.route('/v4/samples/<sample_barcode>/', methods=['GET'], strict_slashes=False)
+@samples_bp.route('/samples/<sample_barcode>/', methods=['GET'], strict_slashes=False)
 def sample_metadata(sample_barcode):
 
     return make_405_response(RESPONSE_MSG)

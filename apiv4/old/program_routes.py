@@ -14,18 +14,20 @@
 # limitations under the License.
 #
 
-from apiv4 import app
+from flask import Blueprint
 from . import make_405_response
 
+old_program_bp = Blueprint(f'program_bp_v41', __name__, url_prefix='/{}'.format("v4"))
 
-@app.route('/v4/data/available/registration/', methods=['GET'], strict_slashes=False)
+
+@old_program_bp.route('/data/available/registration/', methods=['GET'], strict_slashes=False)
 def data_for_reg():
 
     return make_405_response("The 'data/available/registration' path has been deprecated in version 4.2 due to the " +
                              "removal of controlled access data registration at ISB-CGC.")
 
 
-@app.route('/v4/programs/', methods=['GET'], strict_slashes=False)
+@old_program_bp.route('/programs/', methods=['GET'], strict_slashes=False)
 def programs():
 
     return make_405_response("The 'programs' path was deprecated in version 4.1 in favor of /data/availabile and "+
