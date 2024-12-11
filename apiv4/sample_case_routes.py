@@ -98,7 +98,7 @@ def case_metadata_list():
                 if 'message' in metadata:
                     resp_obj = metadata
                     code = 400
-                    if 'barcodes_not_found' in metadata:
+                    if 'not_found' in metadata:
                         code = 404
                 else:
                     resp_obj = {

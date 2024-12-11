@@ -29,14 +29,17 @@ NODES = ["PDC", "GDC", "IDC"]
 
 def get_metadata(ids):
 
-    result = None
-    
+    results = {}
+    some_not_found = False
+
     try:
         for source_type, source_sets in ids.items():
+            results[source_type] = {}
             id_set_type = "{} {}s".format(source_type, "case barcode" if source_type == "program" else "uuid")
             for source, id_set in source_sets.items():
+                results[source_type][source] = {}
                 if not id_set or not len(id_set):
-                    result = {
+                    results[source_type][source] = {
                         'message': 'A list of {} was not found in this request. Please double-check the expected request JSON format.'.format(
                             id_set_type
                         )
@@ -52,10 +55,13 @@ def get_metadata(ids):
                     else:
                         if 'not_found' in result:
                             result['notes'] = "Some {} provided were not found. See 'not_found' for a list.".format(id_set_type)
-
+                            some_not_found = True
+                    results[source_type][source] = result
+        if some_not_found:
+            results['not_found'] = "Some ids provided were not found. See 'not_found' under each node or program for a list."
     except BadRequest as e:
         logger.warning("[WARNING] Received bad request - couldn't load JSON.")
-        result = {
+        results = {
             'message': 'The JSON provided in this request appears to be improperly formatted.',
         }
 
@@ -63,5 +69,4 @@ def get_metadata(ids):
         logger.error("[ERROR] While fetching {} metadata: ".format(type))
         logger.exception(e)
 
-    return result
-
+    return results
