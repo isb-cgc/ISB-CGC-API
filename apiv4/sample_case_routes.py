@@ -84,15 +84,14 @@ def case_metadata_list():
     try:
 
         request_data = request.get_json()
-        ids = request_data.get('id_list', {})
 
-        if not(ids.get('program', None) or ids.get('node', None)):
+        if not(request_data.get('program', None) or request_data.get('node', None)):
             resp_obj = {
                 'message': 'Please separate your lists by source type ("node" or "program").'
             }
             code = 400
         else:
-            metadata = get_metadata(ids)
+            metadata = get_metadata(request_data)
 
             if metadata:
                 if 'message' in metadata:
