@@ -1,5 +1,5 @@
 ###
-# Copyright 2015-2023, Institute for Systems Biology
+# Copyright 2015-2024, Institute for Systems Biology
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 ###
+
+#!/bin/bash -eo pipefail
 
 if [ -n "$CI" ]; then
     echo "Check our Python and Ubuntu versions since they keep getting updated without warning..."
@@ -56,11 +58,12 @@ export DEBIAN_FRONTEND=noninteractive
 # model has changed names it will cause various load failures
 find . -type f -name '*.pyc' -delete
 
+echo "Updating packing lists..."
 apt-get update -qq
 
 # Install and update apt-get info
-echo "Preparing System..."
-apt-get -y --force-yes install software-properties-common ca-certificates
+echo "Preparing System"
+apt-get -y --force-yes install software-properties-common ca-certificates gnupg
 
 apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 467B942D3A79BD29
 wget "https://repo.mysql.com/mysql-apt-config_0.8.29-1_all.deb" -P /tmp
@@ -68,11 +71,12 @@ dpkg --install /tmp/mysql-apt-config_0.8.29-1_all.deb
 
 apt-get update -qq
 
-apt-get install mysql-client
+echo "Installing MySQL Client"
+apt-get install -y --force-yes mysql-client
 
 # Install apt-get dependencies
 echo "Installing Dependencies..."
-apt-get install -y --force-yes unzip libffi-dev libssl-dev git ruby g++ curl dos2unix
+apt-get install -y --force-yes unzip libffi-dev libssl-dev git g++ curl dos2unix
 apt-get install -y --force-yes python3-distutils python3-mysqldb libmysqlclient-dev libpython3-dev build-essential
 apt-get install -y --force-yes python3-pip
 

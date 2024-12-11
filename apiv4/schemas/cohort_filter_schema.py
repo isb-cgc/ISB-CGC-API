@@ -159,10 +159,6 @@ COHORT_FILTER_SCHEMA = {
 								'type': ['array', 'string', 'integer'],
 								'items': { 'type': ['string', 'integer'] }
                             },
-                            'disease_code': {
-								'type': ['array', 'string'],
-                                'items': { 'type': 'string' }
-                            },
                             'max_percent_lymphocyte_infiltration': {
 								'type': ['array', 'string', 'number'],
                                 'items': { 'type': ['string', 'number'] }
@@ -967,10 +963,6 @@ COHORT_FILTER_SCHEMA = {
                             'sample_type': {
                                 'type': ['array', 'string'],
                                 'items': {'type': 'string'}
-                            },
-                            'disease_code': {
-								'type': ['array', 'string'],
-                                'items': { 'type': 'string' }
                             },
                             'tumor_code': {
 								'type': ['array', 'string'],

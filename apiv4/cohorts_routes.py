@@ -16,18 +16,19 @@
 
 import logging
 import json
-from flask import jsonify, request
-from apiv4 import app
+from flask import jsonify, request, Blueprint
 from cohorts_views import get_cohort_info, get_cohorts, get_file_manifest, get_cohort_counts, create_cohort, edit_cohort
 from auth import auth_info, UserValidationException, validate_user
 from django.conf import settings
 from django.db import close_old_connections
 from api_logging import *
 
-logger = logging.getLogger(settings.LOGGER_NAME)
+logger = logging.getLogger(__name__)
+
+cohorts_bp = Blueprint(f'cohorts_bp_v4', __name__, url_prefix='/{}'.format("v4"))
 
 
-@app.route('/v4/cohorts/<int:cohort_id>/', methods=['GET', 'PATCH', 'DELETE'], strict_slashes=False)
+@cohorts_bp.route('/cohorts/<int:cohort_id>/', methods=['GET', 'PATCH', 'DELETE'], strict_slashes=False)
 def cohort(cohort_id):
     """
     GET: Retrieve extended information for a specific cohort
@@ -45,7 +46,7 @@ def cohort(cohort_id):
             raise Exception('Encountered an error while attempting to identify this user.')
         else:
             if cohort_id <= 0:
-                logger.warn("[WARNING] Invalid cohort ID {}".format(str(cohort_id)))
+                logger.warning("[WARNING] Invalid cohort ID {}".format(str(cohort_id)))
                 code = 400
                 response_obj = {
                     'message': '"{}" is not a valid cohort ID.'.format(str(cohort_id))
@@ -54,7 +55,7 @@ def cohort(cohort_id):
                 st_logger.write_text_log_entry(log_name, user_activity_message.format(user_info['email'], request.method, request.full_path))
                 if request.method == 'GET':
                     include_barcodes = (request.args.get('include_barcodes', default="false", type=str).lower() == "true")
-                    cohort_info = get_cohort_info(cohort_id, include_barcodes)
+                    cohort_info = get_cohort_info(cohort_id, user, include_barcodes)
                 else:
                     cohort_info = edit_cohort(cohort_id, user, delete=(request.method == 'DELETE'))
 
@@ -92,7 +93,7 @@ def cohort(cohort_id):
     return response
 
 
-@app.route('/v4/cohorts/', methods=['GET', 'POST'], strict_slashes=False)
+@cohorts_bp.route('/cohorts/', methods=['GET', 'POST'], strict_slashes=False)
 def cohorts():
     """
     GET: Retrieve a user's list of cohorts
@@ -149,7 +150,7 @@ def cohorts():
     return response
 
 
-@app.route('/v4/cohorts/<int:cohort_id>/file_manifest/', methods=['POST', 'GET'], strict_slashes=False)
+@cohorts_bp.route('/cohorts/<int:cohort_id>/file_manifest/', methods=['POST', 'GET'], strict_slashes=False)
 def cohort_file_manifest(cohort_id):
     """
     GET: Retrieve a cohort's file manifest
@@ -167,7 +168,7 @@ def cohort_file_manifest(cohort_id):
             raise Exception('Encountered an error while attempting to identify this user.')
         else:
             if cohort_id <= 0:
-                logger.warn("[WARNING] Invalid cohort ID {}".format(str(cohort_id)))
+                logger.warning("[WARNING] Invalid cohort ID {}".format(str(cohort_id)))
                 code = 400
                 response_obj = {
                     'message': '"{}" is not a valid cohort ID.'.format(str(cohort_id))
@@ -209,7 +210,7 @@ def cohort_file_manifest(cohort_id):
     return response
 
 
-@app.route('/v4/cohorts/preview/', methods=['POST'], strict_slashes=False)
+@cohorts_bp.route('/cohorts/preview/', methods=['POST'], strict_slashes=False)
 def cohort_preview():
     """List the samples, cases, and counts a given set of cohort filters would produce"""
 

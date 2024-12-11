@@ -35,10 +35,6 @@ FILE_FILTER_SCHEMA = {
                     'type': ['array', 'string'],
                     'items': { 'type': 'string' }
                 },
-                'disease_code': {
-                    'type': ['array', 'string'],
-                    'items': { 'type': 'string' }
-                },
                 'experimental_strategy': {
                     'type': ['array', 'string'],
                     'items': { 'type': 'string' }

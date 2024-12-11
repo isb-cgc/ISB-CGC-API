@@ -16,109 +16,19 @@
 
 import logging
 import json
-from flask import jsonify, request
-from apiv4 import app
+from flask import jsonify, request, Blueprint
 from django.conf import settings
 from django.db import close_old_connections
 from auth import validate_user, UserValidationException
-from file_views import get_file_paths, get_signed_uris
+from file_views import get_file_paths
 from api_logging import *
 
-logger = logging.getLogger(settings.LOGGER_NAME)
+logger = logging.getLogger(__name__)
+
+files_bp = Blueprint(f'files_bp_v4', __name__, url_prefix='/{}'.format("v4"))
 
 
-# @app.route('/v4/files/signed_uris/<file_uuid>/', methods=['GET'], strict_slashes=False)
-# def signed_uri(file_uuid):
-#     response = None
-# 
-#     request_data = request.get_json()
-# 
-#     try:
-#         user = validate_user(uuids=[file_uuid])
-#         signed_uris = get_signed_uris(user, file_uuid)
-# 
-#         if signed_uris:
-#             response = jsonify({
-#                 'code': 200,
-#                 'data': signed_uris,
-#                 'README': ''
-#             })
-#             response.status_code = 200
-#         else:
-#             response = jsonify({
-#                 'code': 404,
-#                 'message': "File UUID {} was not found.".format(file_uuid)})
-#             response.status_code = 404
-# 
-#     except UserValidationException as e:
-#         response = jsonify({
-#             'code': 403,
-#             'message': str(e)
-#         })
-#         response.status_code = 403
-# 
-#     except Exception as e:
-#         logger.exception(e)
-#         response = jsonify({
-#             'code': 500,
-#             'message': 'Encountered an error while attempting to retrieve signed URIs for file UUID {}.'.format(file_uuid)
-#         })
-#         response.status_code = 500
-# 
-#     return response
-
-
-# @app.route('/v4/files/signed_uris/', methods=['POST'], strict_slashes=False)
-# def signed_uri_list():
-# 
-#     response = None
-# 
-#     request_data = request.get_json()
-# 
-#     try:
-# 
-#         if 'uuids' not in request_data:
-#             response = jsonify({
-#                 'code': 400,
-#                 'message': "File UUIDs not provided in data payload."
-#             })
-#             response.status_code = 400
-#         else:
-#             user = validate_user()
-#             signed_uris = get_signed_uris(user, request_data['uuids'])
-# 
-#             if signed_uris:
-#                 response = jsonify({
-#                     'code': 200,
-#                     'data': signed_uris,
-#                     'README': ''
-#                 })
-#                 response.status_code = 200
-#             else:
-#                 response = jsonify({
-#                     'code': 404,
-#                     'message': "The provided file UUIDs were not found."})
-#                 response.status_code = 404
-# 
-#     except UserValidationException as e:
-#         response = jsonify({
-#             'code': 403,
-#             'message': str(e)
-#         })
-#         response.status_code = 403
-# 
-#     except Exception as e:
-#         logger.exception(e)
-#         response = jsonify({
-#             'code': 500,
-#             'message': 'Encountered an error while attempting to retrieve signed URIs for these file UUIDs.'
-#         })
-#         response.status_code = 500
-# 
-#     return response
-
-
-@app.route('/v4/files/paths/<file_uuid>/', methods=['GET'], strict_slashes=False)
+@files_bp.route('/files/paths/<file_uuid>/', methods=['GET'], strict_slashes=False)
 def file_path(file_uuid):
     resp_obj = None
     code = None
@@ -161,7 +71,7 @@ def file_path(file_uuid):
     return response
 
 
-@app.route('/v4/files/paths/', methods=['POST'], strict_slashes=False)
+@files_bp.route('/files/paths/', methods=['POST'], strict_slashes=False)
 def file_path_list():
 
     response_obj = None

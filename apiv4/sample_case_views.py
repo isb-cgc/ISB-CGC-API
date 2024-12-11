@@ -20,47 +20,41 @@ import django
 
 from flask import request
 from werkzeug.exceptions import BadRequest
+from cohorts.metadata_counting import get_full_case_metadata
 
-from django.conf import settings
-from cohorts.metadata_helpers import get_full_case_metadata, get_full_sample_metadata
+logger = logging.getLogger(__name__)
 
-logger = logging.getLogger(settings.LOGGER_NAME)
+NODES = ["PDC", "GDC", "IDC"]
 
 
-def get_metadata(barcode=None, type=None):
+def get_metadata(ids):
 
     result = None
-    barcodes = None
     
     try:
-        if barcode:
-            barcodes = [barcode]
-        else:
-            request_data = request.get_json()
-            if 'barcodes' in request_data:
-                barcodes = request_data['barcodes']
-
-        if not barcodes or not len(barcodes):
-            result = {
-                'message': 'A list of {} barcodes was not found in this request. Please double-check the expected request JSON format.'.format(type)
-            }
-        else:
-            if type == 'sample':
-                result = get_full_sample_metadata(barcodes)
-            else:
-                result = get_full_case_metadata(barcodes)
-            if not result or not result['total_found']:
-                if not result:
-                    result = {}
+        for source_type, source_sets in ids.items():
+            id_set_type = "{} {}s".format(source_type, "case barcode" if source_type == "program" else "uuid")
+            for source, id_set in source_sets.items():
+                if not id_set or not len(id_set):
+                    result = {
+                        'message': 'A list of {} was not found in this request. Please double-check the expected request JSON format.'.format(
+                            id_set_type
+                        )
+                    }
                 else:
-                    del result['total_found']
-                result['message'] = "No metadata was found for the supplied {} barcodes.".format(type)
-            else:
-                if 'not_found' in result:
-                    result['notes'] = "Some {} barcodes provided were not found. See 'not_found' for a list.".format(type)
+                    result = get_full_case_metadata(id_set, source_type, source)
+                    if not result or not result['total_found']:
+                        if not result:
+                            result = {}
+                        else:
+                            del result['total_found']
+                        result['message'] = "No metadata was found for the supplied {}.".format(id_set_type)
+                    else:
+                        if 'not_found' in result:
+                            result['notes'] = "Some {} provided were not found. See 'not_found' for a list.".format(id_set_type)
 
     except BadRequest as e:
-        logger.warn("[WARNING] Received bad request - couldn't load JSON.")
+        logger.warning("[WARNING] Received bad request - couldn't load JSON.")
         result = {
             'message': 'The JSON provided in this request appears to be improperly formatted.',
         }

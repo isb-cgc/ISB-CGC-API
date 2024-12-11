@@ -29,32 +29,15 @@ from django.conf import settings
 from accounts.sa_utils import auth_dataset_whitelists_for_user
 from accounts.models import AuthorizedDataset
 from projects.models import Program
-from auth import get_user_acls, UserValidationException
+from auth import UserValidationException
 
 from jsonschema import validate as schema_validate, ValidationError
 
 BLACKLIST_RE = settings.BLACKLIST_RE
 
-logger = logging.getLogger(settings.LOGGER_NAME)
+logger = logging.getLogger(__name__)
 
 
 def get_account_details(user):
-    accounts_details = None
-
-    try:
-        whitelists = get_user_acls(user)
-
-        if whitelists:
-            uads = AuthorizedDataset.objects.filter(whitelist_id__in=whitelists)
-            accounts_details = {'dataset_access': [{'name': uad.name, 'whitelist_id': uad.whitelist_id} for uad in uads]}
-
-    except UserValidationException as u:
-        logger.warn(u)
-        accounts_details = {'message': str(u)}
-
-    except Exception as e:
-        logger.error("[ERROR] Encountered an error while retrieving user account details:")
-        logger.exception(e)
-        accounts_details = {'message': "Encountered an error while retrieving account details for {}.".format(user.email)}
-
-    return accounts_details
+    """stub left in case we bring this back"""
+    pass
