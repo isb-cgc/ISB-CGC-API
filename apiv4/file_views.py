@@ -59,7 +59,7 @@ def get_file_paths(uuid=None):
                     'paths': paths
                 }
                 if len(not_found):
-                    result['notes'] = "File paths were not found for all UUIDs. Please see 'uuids_not_found' for a list."
+                    result['notes'] = "One or more file paths were not found for these UUIDs. Please see 'not_found' for a list."
                     result['not_found'] = not_found
 
     except BadRequest as e:
