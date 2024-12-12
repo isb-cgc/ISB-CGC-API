@@ -15,7 +15,6 @@
 #
 
 import logging
-from logging.config import dictConfig
 import os
 from os.path import join, dirname
 import sys
@@ -29,31 +28,17 @@ import django
 django.setup()
 from django.conf import settings
 
-logger = logging.getLogger(__name__)
+if settings.IS_APP_ENGINE:
+    import google.cloud.logging
+    client = google.cloud.logging_v2.Client()
+    client.setup_logging()
 
-dictConfig({
-    'version': 1,
-    'formatters': {'default': {
-        'format': '[%(asctime)s] %(levelname)s in %(module)s: %(message)s',
-    }},
-    'handlers': {'wsgi': {
-        'class': 'logging.StreamHandler',
-        'stream': 'ext://sys.stdout',
-        'formatter': 'default'
-    }},
-    'root': {
-        'level': 'DEBUG',
-        'handlers': ['wsgi']
-    }
-})
+logger = logging.getLogger(__name__)
+logger.setLevel(settings.LOG_LEVEL)
 
 
 def create_app(test_config=None):
     app = Flask(__name__, static_folder='api_static')
-
-    app.logger.info("Flask logger")
-    logger.info("Python Logger")
-
     if settings.IS_APP_ENGINE:
         Talisman(app, strict_transport_security_max_age=300, content_security_policy={
             'default-src': [
@@ -127,7 +112,7 @@ def create_app(test_config=None):
     @app.errorhandler(500)
     def unexpected_error(e):
         """Handle exceptions by returning swagger-compliant json."""
-        logging.error('[ERROR] An error occurred while processing the request:')
+        logger.error('[ERROR] An error occurred while processing the request:')
         logger.exception(e)
         response = jsonify({
             'code': 500,
