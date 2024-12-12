@@ -26,6 +26,7 @@ import sys
 import dotenv
 from socket import gethostname, gethostbyname
 import google.cloud.logging
+import logging
 
 SECURE_LOCAL_PATH = os.environ.get('SECURE_LOCAL_PATH', '')
 
@@ -75,13 +76,8 @@ MANAGERS                = ADMINS
 # For Django 3.2, we need to specify our default auto-increment type for PKs
 DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
 
-LOGGER_NAME = os.environ.get('API_LOGGER_NAME', 'main_logger')
-
-if IS_APP_ENGINE:
-    # We need to hook up Python logging to Google Cloud Logging for AppEngine (or nothing will be logged)
-    client = google.cloud.logging.Client()
-    client.get_default_handler()
-    client.setup_logging()
+LOGGER_NAME = os.environ.get('API_LOGGER_NAME', 'apiv4')
+LOG_LEVEL = logging.DEBUG if DEBUG else logging.INFO
 
 GCLOUD_PROJECT_ID              = os.environ.get('GCLOUD_PROJECT_ID', '')
 # Project Number of the runtime project for this app
@@ -287,7 +283,7 @@ handlers = {
 
 if IS_APP_ENGINE:
     # We need to hook up Python logging to Google Cloud Logging for AppEngine (or nothing will be logged)
-    client = google.cloud.logging_v2.Client()
+    client = google.cloud.logging.Client()
     client.setup_logging()
     handler_set.append('stackdriver')
     handlers['stackdriver'] = {
