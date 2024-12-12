@@ -37,7 +37,6 @@ def case_metadata(source, identifier):
         if source in NODES:
             metadata_from = 'node'
 
-        print({metadata_from: {source: [identifier]}})
         metadata = get_metadata({metadata_from: {source: [identifier]}})
 
         if metadata:
