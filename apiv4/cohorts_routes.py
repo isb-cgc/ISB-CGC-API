@@ -57,6 +57,7 @@ def cohort(cohort_id):
                 if request.method == 'GET':
                     include_barcodes = (request.args.get('include_barcodes', default="false", type=str).lower() == "true")
                     cohort_info = get_cohort_info(cohort_id, user, include_barcodes)
+                    logger.info("[STATUS] Cohort in get: {}".format(cohort_info))
                 else:
                     cohort_info = edit_cohort(cohort_id, user, delete=(request.method == 'DELETE'))
 
@@ -65,7 +66,7 @@ def cohort(cohort_id):
                     code = 200
                     if 'message' in cohort_info:
                         code = 400
-                        if not cohort_info.get('delete_permission',False):
+                        if not cohort_info.get('delete_permission', False):
                             code = 403
                 else:
                     response_obj = {
