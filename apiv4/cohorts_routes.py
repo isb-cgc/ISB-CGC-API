@@ -38,8 +38,9 @@ def cohort(cohort_id):
     try:
         user_info = auth_info()
         user = validate_user(user_info['email'], cohort_id)
-        st_logger.write_text_log_entry(log_name, user_activity_message.format(user_info['email'], request.method,
-                                                                              request.full_path))
+        st_logger.write_text_log_entry(
+            log_name, user_activity_message.format(user_info['email'], request.method, request.full_path)
+        )
 
         code = None
         response_obj = None
