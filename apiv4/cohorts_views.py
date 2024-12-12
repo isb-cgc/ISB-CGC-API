@@ -29,7 +29,7 @@ from django.conf import settings
 from cohorts.models import Cohort_Perms, Cohort
 from cohorts.file_helpers import cohort_files
 from cohorts.utils import create_cohort as make_cohort, delete_cohort, get_cohort_cases, get_cohort_files
-from projects.models import Program
+from projects.models import Program, DataSource
 
 from jsonschema import validate as schema_validate, ValidationError
 from schemas.cohort_filter_schema import COHORT_FILTER_SCHEMA
@@ -84,7 +84,7 @@ def get_file_manifest(cohort_id, user):
             'message': 'The JSON provided in this request appears to be improperly formatted.',
         }
     except Exception as e:
-        logger.error("[ERROR] File trieving the file manifest for Cohort {}:".format(str(cohort_id)))
+        logger.error("[ERROR] While retrieving the file manifest for Cohort {}:".format(str(cohort_id)))
         logger.exception(e)
 
     return file_manifest
@@ -102,12 +102,12 @@ def get_cohort_info(cohort_id, user, get_barcodes=False):
             'name': cohort_obj.name,
             'case_count': cohort_obj.case_count,
             'sample_count': cohort_obj.sample_count,
-            'programs': cohort_obj.get_program_names(),
-            'filters': cohort_obj.get_filters_for_ui()
+            'programs': list(cohort_obj.get_program_names()),
+            'filters': cohort_obj.get_filters_as_dict_simple()
         }
 
         if get_barcodes:
-            cohort['barcodes'] = get_cohort_cases(cohort_id)
+            cohort['barcodes'] = get_cohort_cases(cohort_id, source=DataSource.BIGQUERY)
 
     except ObjectDoesNotExist as e:
         if not cohort_obj:
@@ -127,7 +127,8 @@ def get_cohorts(user_email):
 
     try:
         user = Django_User.objects.get(email=user_email)
-        cohort_perms = Cohort_Perms.objects.select_related('cohort').filter(user_id=user.id, cohort__active=1)
+        cohort_perms = Cohort_Perms.objects.select_related('cohort').filter(user=user, cohort__active=1)
+        logger.info("[STATUS] cohort perms: {}".format(cohort_perms))
         cohort_list = []
         for cohort_perm in cohort_perms:
             cohort_list.append({
@@ -137,8 +138,9 @@ def get_cohorts(user_email):
                 'filters': cohort_perm.cohort.get_filters_for_ui()
             })
 
-    except ObjectDoesNotExist as e:
-        logger.info("No cohorts found for user {}!".format(user_email))
+    except Exception as e:
+        logger.error("[ERROR] While retrieving cohorts for {}:".format(user_email))
+        logger.exception(e)
 
     return cohort_list
 
@@ -162,7 +164,7 @@ def get_cohort_counts():
             filters = {
                 "{}:{}".format(id_map[prog], attr): vals for prog, attrs in request_data['filters'].items() for attr, vals in attrs.items()
             }
-            cohort_counts = get_cohort_cases(None, filters, True)
+            cohort_counts = get_cohort_cases(None, filters, True, source=DataSource.BIGQUERY)
 
             if cohort_counts:
                 for prog in cohort_counts:

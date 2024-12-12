@@ -79,10 +79,6 @@ DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
 LOGGER_NAME = os.environ.get('API_LOGGER_NAME', 'apiv4')
 LOG_LEVEL = logging.DEBUG if DEBUG else logging.INFO
 
-if IS_APP_ENGINE:
-    client = google.cloud.logging_v2.Client()
-    client.setup_logging()
-
 GCLOUD_PROJECT_ID              = os.environ.get('GCLOUD_PROJECT_ID', '')
 # Project Number of the runtime project for this app
 GCLOUD_PROJECT_NUMBER          = os.environ.get('GCLOUD_PROJECT_NUMBER', '')

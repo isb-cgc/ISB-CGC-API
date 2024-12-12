@@ -30,10 +30,8 @@ cohorts_bp = Blueprint(f'cohorts_bp_v4', __name__, url_prefix='/{}'.format("v4")
 
 @cohorts_bp.route('/cohorts/<int:cohort_id>/', methods=['GET', 'PATCH', 'DELETE'], strict_slashes=False)
 def cohort(cohort_id):
-    """
-    GET: Retrieve extended information for a specific cohort
-    PATCH: Edit an extent cohort
-    """
+    # GET: Retrieve extended information for a specific cohort
+    # PATCH: Edit an extent cohort
 
     try:
         user_info = auth_info()
@@ -56,7 +54,7 @@ def cohort(cohort_id):
                 }
             else:
                 if request.method == 'GET':
-                    include_barcodes = (request.args.get('include_barcodes', default="false", type=str).lower() == "true")
+                    include_barcodes = bool(request.args.get('include_barcodes', default="false", type=str).lower() == "true")
                     cohort_info = get_cohort_info(cohort_id, user, include_barcodes)
                     logger.info("[STATUS] Cohort in get: {}".format(cohort_info))
                 else:
@@ -110,13 +108,14 @@ def cohorts():
     try:
         user_info = auth_info()
         user = validate_user(user_info['email'])
-        st_logger.write_text_log_entry(log_name, user_activity_message.format(user_info['email'], request.method,
-                                                                              request.full_path))
+        st_logger.write_text_log_entry(
+            log_name, user_activity_message.format(user.email, request.method, request.full_path)
+        )
 
         if not user:
             raise Exception('Encountered an error while attempting to identify this user.')
         else:
-            info = get_cohorts(user_info['email']) if request.method == 'GET' else create_cohort(user)
+            info = get_cohorts(user.email) if request.method == 'GET' else create_cohort(user)
 
             if info:
                 response_obj = {
