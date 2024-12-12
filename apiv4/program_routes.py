@@ -63,4 +63,5 @@ def data(routes=None):
 def data_for_cohorts():
     """Retrieve the list of all data available for cohort creation via ISB-CGC"""
     """This is a pass-through call to the primary /data/available view"""
+    st_logger.write_text_log_entry(log_name, activity_message.format(request.method, request.full_path))
     return data(['cohorts'])
