@@ -28,19 +28,17 @@ import django
 django.setup()
 from django.conf import settings
 
-logger = logging.getLogger(__name__)
-logger.setLevel(settings.LOG_LEVEL)
-
 if settings.IS_APP_ENGINE:
     import google.cloud.logging
     client = google.cloud.logging_v2.Client()
     client.setup_logging()
 
+logger = logging.getLogger(__name__)
+logger.setLevel(settings.LOG_LEVEL)
+
 
 def create_app(test_config=None):
     app = Flask(__name__, static_folder='api_static')
-    app.logger.info("App created.")
-    logger.info("But does logging work?")
     if settings.IS_APP_ENGINE:
         Talisman(app, strict_transport_security_max_age=300, content_security_policy={
             'default-src': [

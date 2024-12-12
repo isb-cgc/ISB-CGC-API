@@ -283,7 +283,7 @@ handlers = {
 
 if IS_APP_ENGINE:
     # We need to hook up Python logging to Google Cloud Logging for AppEngine (or nothing will be logged)
-    client = google.cloud.logging_v2.Client()
+    client = google.cloud.logging.Client()
     client.setup_logging()
     handler_set.append('stackdriver')
     handlers['stackdriver'] = {
