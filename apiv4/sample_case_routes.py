@@ -28,22 +28,18 @@ NODES = ["PDC", "GDC", "IDC"]
 cases_bp = Blueprint(f'cases_bp_v4', __name__, url_prefix='/{}'.format("v4"))
 
 
-@cases_bp.route('/cases/<source>/<identifier>/', methods=['GET'], strict_slashes=False)
-def case_metadata(source, identifier):
+@cases_bp.route('/cases/nodes/<source>/<identifier>/', methods=['GET'], strict_slashes=False)
+def case_metadata_node(source, identifier):
     st_logger.write_text_log_entry(log_name, activity_message.format(request.method, request.full_path))
 
     try:
-        metadata_from = 'program'
-        if source in NODES:
-            metadata_from = 'node'
-
-        metadata = get_metadata({metadata_from: {source: [identifier]}})
+        metadata = get_metadata({"node": {source: [identifier]}})
 
         if metadata:
             if 'message' in metadata:
                 resp_obj = metadata
                 code = 400
-                if 'barcodes_not_found' in metadata:
+                if 'not_found' in metadata:
                     code = 404
             else:
                 resp_obj = {
@@ -59,12 +55,52 @@ def case_metadata(source, identifier):
         logger.error("[ERROR] While fetching case metadata:")
         logger.exception(e)
         resp_obj = {
-            'message': 'Encountered an error while retrieving case metadata for {}.'.format(case_barcode)
+            'message': 'Encountered an error while retrieving case metadata for {}:{}.'.format(source, identifier)
         }
         code = 500
     finally:
         close_old_connections()
-        
+
+    resp_obj['code'] = code
+    response = jsonify(resp_obj)
+    response.status_code = code
+
+    return response
+
+
+@cases_bp.route('/cases/programs/<source>/<identifier>/', methods=['GET'], strict_slashes=False)
+def case_metadata_program(source, identifier):
+    st_logger.write_text_log_entry(log_name, activity_message.format(request.method, request.full_path))
+
+    try:
+        metadata = get_metadata({"program": {source: [identifier]}})
+
+        if metadata:
+            if 'message' in metadata:
+                resp_obj = metadata
+                code = 400
+                if 'not_found' in metadata:
+                    code = 404
+            else:
+                resp_obj = {
+                    'data': metadata
+                }
+                code = 200
+        else:
+            resp_obj = {
+                'message': 'Encountered an error while retrieving case metadata.'
+            }
+            code = 500
+    except Exception as e:
+        logger.error("[ERROR] While fetching case metadata:")
+        logger.exception(e)
+        resp_obj = {
+            'message': 'Encountered an error while retrieving case metadata for {}:{}.'.format(source, identifier)
+        }
+        code = 500
+    finally:
+        close_old_connections()
+
     resp_obj['code'] = code
     response = jsonify(resp_obj)
     response.status_code = code
