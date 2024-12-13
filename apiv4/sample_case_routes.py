@@ -39,7 +39,7 @@ def case_metadata_node(source, identifier):
             if 'message' in metadata:
                 resp_obj = metadata
                 code = 400
-                if 'barcodes_not_found' in metadata:
+                if 'not_found' in metadata:
                     code = 404
             else:
                 resp_obj = {
@@ -55,7 +55,7 @@ def case_metadata_node(source, identifier):
         logger.error("[ERROR] While fetching case metadata:")
         logger.exception(e)
         resp_obj = {
-            'message': 'Encountered an error while retrieving case metadata for {}: {}.'.format(source, identifier)
+            'message': 'Encountered an error while retrieving case metadata for {}:{}.'.format(source, identifier)
         }
         code = 500
     finally:
@@ -79,7 +79,7 @@ def case_metadata_program(source, identifier):
             if 'message' in metadata:
                 resp_obj = metadata
                 code = 400
-                if 'barcodes_not_found' in metadata:
+                if 'not_found' in metadata:
                     code = 404
             else:
                 resp_obj = {
@@ -95,7 +95,7 @@ def case_metadata_program(source, identifier):
         logger.error("[ERROR] While fetching case metadata:")
         logger.exception(e)
         resp_obj = {
-            'message': 'Encountered an error while retrieving case metadata for {}: {}.'.format(source, identifier)
+            'message': 'Encountered an error while retrieving case metadata for {}:{}.'.format(source, identifier)
         }
         code = 500
     finally:
