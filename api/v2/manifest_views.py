@@ -104,19 +104,18 @@ def get_query_next_page(user):
 
 def generate_user_sql_string(query_info):
     sql = query_info['query']['sql_string']
-    for param_list in query_info['query']['params']:
-        for param in param_list:
-            if param['parameterType']['type'] == 'STRING':
-                sql = sql.replace(f"@{param['name']}", f'"{param["parameterValue"]["value"]}"')
-            elif param['parameterType']['type'] == 'NUMERIC':
-                sql = sql.replace(f"@{param['name']}", str(param["parameterValue"]["value"]))
-            elif param['parameterType']['type'] == 'ARRAY' and param['parameterType']['arrayType']['type'] == 'STRING':
-                sql = sql.replace(f"@{param['name']}",json.dumps([value['value'] for value in param['parameterValue']['arrayValues']]))
-            else:
-                logger.warning("[WARNING] Unsupported SQL type")
-                query_info = dict(
-                    message='Internal server error. Please report.',
-                    code=400)
+    for param in query_info['query']['params']:
+        if param['parameterType']['type'] == 'STRING':
+            sql = sql.replace(f"@{param['name']}", f'"{param["parameterValue"]["value"]}"')
+        elif param['parameterType']['type'] == 'NUMERIC':
+            sql = sql.replace(f"@{param['name']}", str(param["parameterValue"]["value"]))
+        elif param['parameterType']['type'] == 'ARRAY' and param['parameterType']['arrayType']['type'] == 'STRING':
+            sql = sql.replace(f"@{param['name']}",json.dumps([value['value'] for value in param['parameterValue']['arrayValues']]))
+        else:
+            logger.warning("[WARNING] Unsupported SQL type")
+            query_info = dict(
+                message='Internal server error. Please report.',
+                code=400)
     query_info['cohort_def']['sql'] = sql
     return query_info
 
