@@ -276,7 +276,7 @@ def edit_cohort(cohort_id, user, delete=False):
                 if 'message' in result:
                     cohort_info = result
                 else:
-                    cohort_info = get_cohort_info(result['cohort_id'])
+                    cohort_info = get_cohort_info(result['cohort_id'], user)
 
     except BadRequest as e:
         logger.warning("[WARNING] Received bad request - couldn't load JSON.")

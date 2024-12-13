@@ -1889,9 +1889,12 @@ COHORT_FILTER_SCHEMA = {
                         }
                     },
                 },
-                "additionalProperties": False
+                "additionalProperties": True
             },
             'name': {
+                'type': 'string'
+            },
+            'description': {
                 'type': 'string'
             },
             'case_insensitive': {
