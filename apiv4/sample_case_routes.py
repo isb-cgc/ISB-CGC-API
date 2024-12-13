@@ -55,7 +55,7 @@ def case_metadata_node(source, identifier):
         logger.error("[ERROR] While fetching case metadata:")
         logger.exception(e)
         resp_obj = {
-            'message': 'Encountered an error while retrieving case metadata for {}.'.format(case_barcode)
+            'message': 'Encountered an error while retrieving case metadata for {}: {}.'.format(source, identifier)
         }
         code = 500
     finally:
@@ -95,7 +95,7 @@ def case_metadata_program(source, identifier):
         logger.error("[ERROR] While fetching case metadata:")
         logger.exception(e)
         resp_obj = {
-            'message': 'Encountered an error while retrieving case metadata for {}.'.format(case_barcode)
+            'message': 'Encountered an error while retrieving case metadata for {}: {}.'.format(source, identifier)
         }
         code = 500
     finally:
