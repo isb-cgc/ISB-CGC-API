@@ -29,7 +29,7 @@ from django.conf import settings
 from cohorts.models import Cohort_Perms, Cohort
 from cohorts.file_helpers import cohort_files
 from cohorts.utils import create_cohort as make_cohort, delete_cohort, get_cohort_cases, get_cohort_files
-from projects.models import Program, DataSource
+from projects.models import Program, DataSource, Attribute
 
 from jsonschema import validate as schema_validate, ValidationError
 from schemas.cohort_filter_schema import COHORT_FILTER_SCHEMA
@@ -37,6 +37,32 @@ from schemas.cohort_filter_schema import COHORT_FILTER_SCHEMA
 BLACKLIST_RE = settings.BLACKLIST_RE
 
 logger = logging.getLogger(__name__)
+
+
+def convert_api_filters(filter_obj, prog_by_attr=False, attr_to_id=False):
+    progs = Program.objects.filter(name__in=filter_obj.keys())
+    id_map = progs.name_id_map()
+    if prog_by_attr:
+        filters = {
+            "{}:{}".format(id_map[prog], attr): vals for prog, attrs in filter_obj.items() for attr, vals in
+            attrs.items()
+        }
+    else:
+        filters = {
+            id_map[prog]: prog_filters for prog, prog_filters in filter_obj.items()
+        }
+
+        if attr_to_id:
+            filters_by_id = {}
+            for prog, attr_filters in filters.items():
+                stripped_attrs = [attr if (not '_' in attr) else \
+                    attr if not attr.rsplit('_', 1)[1] in ['gt', 'gte', 'ebtwe', 'ebtw', 'btwe', 'btw', 'lte', 'lt',
+                                                           'eq'] else \
+                        attr.rsplit('_', 1)[0] for attr in attr_filters.keys()]
+                attrs = Attribute.objects.filter(name__in=stripped_attrs)
+                filters_by_id[prog] = {x.id: attr_filters[x.name] for x in attrs}
+
+    return filters
 
 
 # Requires login
@@ -159,11 +185,7 @@ def get_cohort_counts():
                 'message': 'No filters were provided; ensure that the request body contains a \'filters\' property.'
             }
         else:
-            progs = Program.objects.filter(name__in=request_data['filters'].keys())
-            id_map = progs.name_id_map()
-            filters = {
-                "{}:{}".format(id_map[prog], attr): vals for prog, attrs in request_data['filters'].items() for attr, vals in attrs.items()
-            }
+            filters = convert_api_filters(request_data['filters'], prog_by_attr=True)
             cohort_counts = get_cohort_cases(None, filters, True, source=DataSource.BIGQUERY)
 
             if cohort_counts:
@@ -210,11 +232,9 @@ def create_cohort(user):
             return cohort_info
 
         if request_data.get('description', None):
-            request_data['desc'] = request_data.get('description')
-        request_data.pop('description', None)
+            request_data['desc'] = request_data.pop('description')
 
-        filters = request_data.get('filters')
-        request_data['filters'] = {x.id: filters[x.name] for x in Program.objects.filter(name__in=filters.keys())}
+        request_data['filters'] = convert_api_filters(request_data['filters'], attr_to_id=True)
 
         blacklist = re.compile(BLACKLIST_RE, re.UNICODE)
         match_name = blacklist.search(str(request_data.get('name', '')))
