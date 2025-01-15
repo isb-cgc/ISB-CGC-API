@@ -61,6 +61,7 @@ def convert_api_filters(filter_obj, prog_by_attr=False, attr_to_id=False):
                         attr.rsplit('_', 1)[0] for attr in attr_filters.keys()]
                 attrs = Attribute.objects.filter(name__in=stripped_attrs)
                 filters_by_id[prog] = {x.id: attr_filters[x.name] for x in attrs}
+            filters = filters_by_id
 
     return filters
 
