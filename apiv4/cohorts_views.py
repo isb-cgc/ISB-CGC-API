@@ -209,18 +209,24 @@ def create_cohort(user):
             }
             return cohort_info
 
+        if request_data.get('description', None):
+            request_data['desc'] = request_data.get('description')
+        request_data.pop('description', None)
+
+        filters = request_data.get('filters')
+        request_data['filters'] = {x.id: filters[x.name] for x in Program.objects.filter(name__in=filters.keys())}
+
         blacklist = re.compile(BLACKLIST_RE, re.UNICODE)
-        match = blacklist.search(str(request_data['name']))
+        match_name = blacklist.search(str(request_data.get('name', '')))
+        match_desc = blacklist.search(str(request_data.get('description', '')))
 
-        if not match and 'desc' in request_data:
-            match = blacklist.search(str(request_data['desc']))
-
-        if match:
+        if match_name or match_desc:
+            matches = [x for x in [match_name.group() if match_name else None, match_desc.group() if match_name else None]
+                   if x is not None]
             cohort_info = {
                 'message': 'Your cohort\'s name or description contains invalid characters; please edit them and resubmit. ' +
-                    '[Saw {}]'.format(str(match)),
+                       '[Saw {}]'.format("; ".join(matches)),
             }
-
         else:
             case_insensitive = request_data['case_insensitive'] if (request_data and 'case_insensitive' in request_data) else request.args.get('case_insensitive', default="True", type=str) if 'case_insensitive' in request.args else "True"
             request_data.pop('case_insensitive', None)
@@ -270,12 +276,9 @@ def edit_cohort(cohort_id, user, delete=False):
                                '[Saw {}]'.format("; ".join(matches)),
                 }
             else:
-                request_data['desc'] = request_data.get('description', None)
-                del request_data['description']
-
-                filters = request_data.get('filters', None)
-                if filters:
-                    request_data['filters'] = {x.id: filters[x.name] for x in Program.objects.filter(name__in=filters.keys())}
+                if request_data.get('filters', None):
+                    request_data.pop('filters', None)
+                    logger.warning("[WARNING] Saw filters provided for a cohort edit--filters cannot be changed!")
                 result = make_cohort(user, source_id=cohort_id, **request_data)
                 if 'message' in result:
                     cohort_info = result
