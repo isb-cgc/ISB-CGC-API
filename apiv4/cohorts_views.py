@@ -59,6 +59,8 @@ def convert_api_filters(filter_obj, prog_by_attr=False, attr_to_id=False):
                 for api_attr in attr_filters.keys():
                     stripped_attr = api_attr if (not '_' in api_attr) else api_attr if not api_attr.rsplit('_', 1)[1] in ['gt', 'gte', 'ebtwe', 'ebtw', 'btwe', 'btw', 'lte', 'lt', 'eq'] else api_attr.rsplit('_', 1)[0]
                     stripped_attrs[stripped_attr] = api_attr
+                print(stripped_attrs)
+                print(attr_filters)
                 attrs = Attribute.objects.filter(name__in=stripped_attrs.keys())
                 filters_by_id[prog] = {x.id: attr_filters[stripped_attrs[x.name]] for x in attrs}
             filters = filters_by_id
