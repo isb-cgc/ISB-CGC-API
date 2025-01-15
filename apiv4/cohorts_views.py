@@ -53,7 +53,7 @@ def get_file_manifest(cohort_id, user):
         param_set = {
             'offset': {'default': 0, 'type': int, 'name': 'offset'},
             'page': {'default': 1, 'type': int, 'name': 'page'},
-            'fetch_count': {'default': 5000, 'type': int, 'name': 'limit'}
+            'fetch_count': {'default': 5000, 'type': int, 'name': 'fetch_count'}
         }
 
         for param, parameter in param_set.items():
@@ -71,7 +71,7 @@ def get_file_manifest(cohort_id, user):
                     if filter not in list(param_set.keys())
                 }
         file_manifest = {}
-        if params['fetch_count'] >  settings.MAX_FILE_LIST_REQUEST:
+        if params['fetch_count'] > settings.MAX_FILE_LIST_REQUEST:
             params['fetch_count'] = min(settings.MAX_FILE_LIST_REQUEST, params['fetch_count'])
             file_manifest['warning'] = "You have requested too many records. Please note the maximum number that may be retrieved in a single operation is 5000."
 
@@ -250,8 +250,6 @@ def create_cohort(user):
 
 # Requires login
 def edit_cohort(cohort_id, user, delete=False):
-    match = None
-    cohort_info = None
     try:
         if delete:
             cohort_info = delete_cohort(user, cohort_id)
@@ -272,6 +270,12 @@ def edit_cohort(cohort_id, user, delete=False):
                                '[Saw {}]'.format("; ".join(matches)),
                 }
             else:
+                request_data['desc'] = request_data.get('description', None)
+                del request_data['description']
+
+                filters = request_data.get('filters', None)
+                if filters:
+                    request_data['filters'] = {x.id: filters[x.name] for x in Program.objects.filter(name__in=filters.keys())}
                 result = make_cohort(user, source_id=cohort_id, **request_data)
                 if 'message' in result:
                     cohort_info = result
