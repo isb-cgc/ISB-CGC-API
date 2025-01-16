@@ -43,24 +43,24 @@ def convert_api_filters(filter_obj, by_prog=False, prog_by_attr=False, attr_to_i
     progs = Program.objects.filter(name__in=filter_obj.keys())
     id_map = progs.name_id_map()
     if by_prog:
-        filters = {
-            id_map[prog]: prog_filters for prog, prog_filters in filter_obj.items()
-        }
+        filters = {}
         if prog_by_attr:
-            for prog, prog_filters in filter_obj:
-                filters[prog] = {
-                    "{}:{}".format(prog, attr): vals for attr, vals in prog_filters.items()
+            for prog, prog_filters in filter_obj.items():
+                filters[id_map[prog]] = {
+                    "{}:{}".format(id_map[prog], attr): vals for attr, vals in prog_filters.items()
                 }
         elif attr_to_id:
-            filters_by_id = {}
-            for prog, attr_filters in filters.items():
+            for prog, attr_filters in filter_obj.items():
                 stripped_attrs = {}
                 for api_attr in attr_filters.keys():
                     stripped_attr = api_attr if (not '_' in api_attr) else api_attr if not api_attr.rsplit('_', 1)[1] in ['gt', 'gte', 'ebtwe', 'ebtw', 'btwe', 'btw', 'lte', 'lt', 'eq'] else api_attr.rsplit('_', 1)[0]
                     stripped_attrs[stripped_attr] = api_attr
                 attrs = Attribute.objects.filter(name__in=stripped_attrs.keys())
-                filters_by_id[prog] = {x.id: {'values': attr_filters[stripped_attrs[x.name]]} for x in attrs}
-            filters = filters_by_id
+                filters[id_map[prog]] = {x.id: {'values': attr_filters[stripped_attrs[x.name]]} for x in attrs}
+        else:
+            filters = {
+                id_map[prog]: prog_filters for prog, prog_filters in filter_obj.items()
+            }
     else:
         if prog_by_attr:
             filters = {
