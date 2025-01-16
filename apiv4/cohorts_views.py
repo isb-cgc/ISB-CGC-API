@@ -258,7 +258,8 @@ def create_cohort(user):
             case_insensitive = request_data['case_insensitive'] if (request_data and 'case_insensitive' in request_data) else request.args.get('case_insensitive', default="True", type=str) if 'case_insensitive' in request.args else "True"
             request_data.pop('case_insensitive', None)
             request_data['case_insens'] = bool(case_insensitive == 'True')
-            request_data['stats'] = get_cohort_stats(filters=convert_api_filters(request_filters, by_prog=True, prog_by_attr=True))
+            # TODO: need a BQ version of this method
+            # request_data['stats'] = get_cohort_stats(filters=convert_api_filters(request_filters, by_prog=True, prog_by_attr=True))
             result = make_cohort(user, **request_data)
 
             if 'message' in result:
