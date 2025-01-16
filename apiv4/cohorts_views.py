@@ -28,7 +28,7 @@ from django.conf import settings
 
 from cohorts.models import Cohort_Perms, Cohort
 from cohorts.file_helpers import cohort_files
-from cohorts.utils import create_cohort as make_cohort, delete_cohort, get_cohort_cases, get_cohort_files
+from cohorts.utils import create_cohort as make_cohort, delete_cohort, get_cohort_cases, get_cohort_files, get_cohort_stats
 from projects.models import Program, DataSource, Attribute
 
 from jsonschema import validate as schema_validate, ValidationError
@@ -39,20 +39,19 @@ BLACKLIST_RE = settings.BLACKLIST_RE
 logger = logging.getLogger(__name__)
 
 
-def convert_api_filters(filter_obj, prog_by_attr=False, attr_to_id=False):
+def convert_api_filters(filter_obj, by_prog=False, prog_by_attr=False, attr_to_id=False):
     progs = Program.objects.filter(name__in=filter_obj.keys())
     id_map = progs.name_id_map()
-    if prog_by_attr:
-        filters = {
-            "{}:{}".format(id_map[prog], attr): vals for prog, attrs in filter_obj.items() for attr, vals in
-            attrs.items()
-        }
-    else:
+    if by_prog:
         filters = {
             id_map[prog]: prog_filters for prog, prog_filters in filter_obj.items()
         }
-
-        if attr_to_id:
+        if prog_by_attr:
+            for prog, prog_filters in filter_obj:
+                filters[prog] = {
+                    "{}:{}".format(prog, attr): vals for attr, vals in prog_filters.items()
+                }
+        elif attr_to_id:
             filters_by_id = {}
             for prog, attr_filters in filters.items():
                 stripped_attrs = {}
@@ -62,6 +61,12 @@ def convert_api_filters(filter_obj, prog_by_attr=False, attr_to_id=False):
                 attrs = Attribute.objects.filter(name__in=stripped_attrs.keys())
                 filters_by_id[prog] = {x.id: {'values': attr_filters[stripped_attrs[x.name]]} for x in attrs}
             filters = filters_by_id
+    else:
+        if prog_by_attr:
+            filters = {
+                "{}:{}".format(id_map[prog], attr): vals for prog, attrs in filter_obj.items() for attr, vals in
+                attrs.items()
+            }
 
     return filters
 
@@ -235,7 +240,8 @@ def create_cohort(user):
         if request_data.get('description', None):
             request_data['desc'] = request_data.pop('description')
 
-        request_data['filters'] = convert_api_filters(request_data['filters'], attr_to_id=True)
+        request_filters = request_data['filters']
+        request_data['filters'] = convert_api_filters(request_filters, by_prog=True, attr_to_id=True)
 
         blacklist = re.compile(BLACKLIST_RE, re.UNICODE)
         match_name = blacklist.search(str(request_data.get('name', '')))
@@ -252,7 +258,7 @@ def create_cohort(user):
             case_insensitive = request_data['case_insensitive'] if (request_data and 'case_insensitive' in request_data) else request.args.get('case_insensitive', default="True", type=str) if 'case_insensitive' in request.args else "True"
             request_data.pop('case_insensitive', None)
             request_data['case_insens'] = bool(case_insensitive == 'True')
-
+            request_data['stats'] = get_cohort_stats(convert_api_filters(request_filters, by_prog=True, prog_by_attr=True))
             result = make_cohort(user, **request_data)
 
             if 'message' in result:
