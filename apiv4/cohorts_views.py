@@ -135,7 +135,7 @@ def get_cohort_info(cohort_id, user, get_barcodes=False):
             'case_count': cohort_obj.case_count,
             'sample_count': cohort_obj.sample_count,
             'programs': list(cohort_obj.get_program_names()),
-            'filters': cohort_obj.get_filters_as_dict_simple()
+            'filters': cohort_obj.get_filters_as_dict_simple(by_prog=True)
         }
 
         if get_barcodes:
