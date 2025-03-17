@@ -9,8 +9,8 @@ charset-normalizer==3.0.1
 click
 colorama==0.4.6
 coverage==7.1.0
-cryptography==43.0.1
-Django==4.2.17
+cryptography==44.0.1
+Django==4.2.20
 exceptiongroup==1.1.0
 Flask==3.1.0
 flask-talisman==1.0.0
@@ -33,7 +33,7 @@ idna==3.7
 importlib-metadata==6.0.0
 iniconfig==2.0.0
 itsdangerous==2.2.0
-Jinja2==3.1.5
+Jinja2==3.1.6
 jsonref==0.2
 jsonschema==4.17.3
 MarkupSafe==2.1.2
