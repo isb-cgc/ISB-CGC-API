@@ -221,9 +221,14 @@ def delete_cohort(client, id):
         'Accept': mimetype
     }
     headers = headers | auth_header
-    response = client.delete(f"{API_URL}/cohorts/{id}/",
+    try:
+        response = client.delete(f"{API_URL}/cohorts/{id}/",
                    headers=headers )
-    assert response.status_code == 200
+        assert response.status_code == 200
+    except Exception as exc:
+        print(f'Exception in delete_cohort(): {exc}')
+        print(response.status_code)
+        raise
 
 def current_version(client):
     mimetype = 'application/json'
