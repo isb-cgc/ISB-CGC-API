@@ -17,7 +17,6 @@ limitations under the License.
 import os
 from os.path import join, dirname, exists
 from dotenv import load_dotenv
-import google.cloud.logging
 import logging
 
 SECURE_LOCAL_PATH = os.environ.get('SECURE_LOCAL_PATH', '')
@@ -34,13 +33,6 @@ load_dotenv(dotenv_path=join(dirname(__file__), SECURE_LOCAL_PATH, '.env'))
 APP_ENGINE_FLEX = 'aef-'
 APP_ENGINE = 'Google App Engine/'
 API_VERSION = 'v1'
-
-# WJRL Pulled from ISB-CGC-API:
-# AppEngine var is set in the app.yaml so this should be false for CI and local dev apps
-IS_APP_ENGINE = bool(os.getenv('IS_APP_ENGINE', 'False') == 'True')
-# temporary backwards compatibility
-IS_APP_ENGINE_FLEX = IS_APP_ENGINE
-
 
 BASE_DIR                = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir)) + os.sep
 
@@ -61,10 +53,6 @@ BASE_API_URL            = os.environ.get('BASE_API_URL', 'https://dev-portal.can
 SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', '')
 
 PAGE_TOKEN_KEY          = os.environ.get('PAGE_TOKEN_KEY', '')
-
-# WJRL: 5/28/25 Dropping for keyless deployment. Now set below (env variable no longer set)
-#GOOGLE_APPLICATION_CREDENTIALS  = join(dirname(__file__), SECURE_LOCAL_PATH, os.environ.get('GOOGLE_APPLICATION_CREDENTIALS', ''))
-#os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = GOOGLE_APPLICATION_CREDENTIALS
 
 # OAUTH2_CLIENT_ID                = os.environ.get('OAUTH2_CLIENT_ID', '')
 # OAUTH2_CLIENT_SECRET            = os.environ.get('OAUTH2_CLIENT_SECRET', '')
@@ -117,100 +105,22 @@ BLACKLIST_RE = r'((?i)<script>|(?i)</script>|!\[\]|!!\[\]|\[\]\[\".*\"\]|(?i)<if
 STATIC_URL = os.environ.get('STATIC_URL', '/static/')
 
 IS_DEV = (os.environ.get('IS_DEV', 'False') == 'True')
-IS_CI = bool(os.getenv('CI', None) is not None)
-
 # WJRL Pulled from ISB-CGC-API:
+# AppEngine var is set in the app.yaml so this should be false for CI and local dev apps
+IS_APP_ENGINE = bool(os.getenv('IS_APP_ENGINE', 'False') == 'True')
+
 # Deployed systems retrieve credentials from the metadata server, but a local VM build must provide a credentials file
 # for some actions. CircleCI needs SA access but can make use of the deployment SA's key.
 GOOGLE_APPLICATION_CREDENTIALS = None
 
 if IS_DEV:
-    GOOGLE_APPLICATION_CREDENTIALS = os.environ.get('GOOGLE_APPLICATION_CREDENTIALS', '')
-elif IS_CI:
-    GOOGLE_APPLICATION_CREDENTIALS = "deployment.key.json"
-
-if not IS_APP_ENGINE:
+    GOOGLE_APPLICATION_CREDENTIALS = join(dirname(__file__), SECURE_LOCAL_PATH, os.environ.get('GOOGLE_APPLICATION_CREDENTIALS', ''))
+    os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = GOOGLE_APPLICATION_CREDENTIALS
     if GOOGLE_APPLICATION_CREDENTIALS is not None and not exists(GOOGLE_APPLICATION_CREDENTIALS):
         print("[ERROR] Google application credentials file wasn't found! Provided path: {}".format(GOOGLE_APPLICATION_CREDENTIALS))
         exit(1)
     print("[STATUS] GOOGLE_APPLICATION_CREDENTIALS: {}".format(GOOGLE_APPLICATION_CREDENTIALS))
-else:
-    print("[STATUS] AppEngine Flex detected--default credentials will be used.")
-
-
-handler_set = ['console_dev', 'console_prod']
-handlers = {
-    'mail_admins': {
-        'level': 'ERROR',
-        'filters': ['require_debug_false'],
-        'class': 'django.utils.log.AdminEmailHandler'
-    },
-    'console_dev': {
-        'level': 'DEBUG',
-        'filters': ['require_debug_true'],
-        'class': 'logging.StreamHandler',
-        'formatter': 'verbose',
-    },
-    'console_prod': {
-        'level': 'DEBUG',
-        'filters': ['require_debug_false'],
-        'class': 'logging.StreamHandler',
-        'formatter': 'simple',
-    },
-}
 
 if IS_APP_ENGINE:
-    # We need to hook up Python logging to Google Cloud Logging for AppEngine (or nothing will be logged)
-    client = google.cloud.logging.Client()
-    client.setup_logging()
-    handler_set.append('stackdriver')
-    handlers['stackdriver'] = {
-        'level': 'DEBUG',
-        'filters': ['require_debug_false'],
-        'class': 'google.cloud.logging_v2.handlers.CloudLoggingHandler',
-        'client': client,
-        'formatter': 'verbose'
-    }
-
-LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
-    'filters': {
-        'require_debug_false': {
-            '()': 'django.utils.log.RequireDebugFalse'
-        },
-        'require_debug_true': {
-            '()': 'django.utils.log.RequireDebugTrue'
-        },
-    },
-    'formatters': {
-        'verbose': {
-            'format': '[%(name)s] [%(levelname)s] @%(asctime)s in %(module)s/%(process)d/%(thread)d - %(message)s'
-        },
-        'simple': {
-            'format': '[%(name)s] [%(levelname)s] @%(asctime)s in %(module)s: %(message)s'
-        },
-    },
-    'handlers': handlers,
-    'root': {
-        'level': 'INFO',
-        'handlers': handler_set
-    },
-    'loggers': {
-        '': {
-            'level': 'INFO',
-            'handlers': handler_set,
-            'propagate': True
-        },
-        'django': {
-            'level': 'INFO',
-            'handlers': handler_set,
-            'propagate': False
-        },
-        'django.request': {
-            'handlers': ['mail_admins'],
-            'level': 'ERROR',
-            'propagate': True,
-        }
-    },
-}
+    os.unsetenv('GOOGLE_APPLICATION_CREDENTIALS')
+    print("[STATUS] AppEngine Flex detected--default credentials will be used.")
