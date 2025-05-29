@@ -65,9 +65,9 @@ apt-get update -qq
 echo "Preparing System"
 apt-get -y --force-yes install software-properties-common ca-certificates gnupg
 
-apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 467B942D3A79BD29
-wget "https://repo.mysql.com/mysql-apt-config_0.8.29-1_all.deb" -P /tmp
-dpkg --install /tmp/mysql-apt-config_0.8.29-1_all.deb
+apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv B7B3B788A8D3785C
+wget "https://repo.mysql.com/mysql-apt-config_0.8.30-1_all.deb" -P /tmp
+dpkg --install /tmp/mysql-apt-config_0.8.30-1_all.deb
 
 apt-get update -qq
 
@@ -76,7 +76,7 @@ apt-get install -y --force-yes mysql-client
 
 # Install apt-get dependencies
 echo "Installing Dependencies..."
-apt-get install -y --force-yes unzip libffi-dev libssl-dev git g++ curl dos2unix
+apt-get install -y --force-yes unzip libffi-dev libssl-dev git g++ curl dos2unix pkg-config
 apt-get install -y --force-yes python3-distutils python3-mysqldb libmysqlclient-dev libpython3-dev build-essential
 apt-get install -y --force-yes python3-pip
 
