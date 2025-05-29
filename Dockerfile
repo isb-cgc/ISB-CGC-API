@@ -1,6 +1,6 @@
 ###
 #
-# Copyright 2024, Institute for Systems Biology
+# Copyright 2025, Institute for Systems Biology
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -18,7 +18,7 @@
 
 # Dockerfile extending the Python Community image from Dockerhub with application files for a
 # single application.
-FROM python:3.9-bullseye
+FROM python:3.11-bookworm
 
 SHELL ["/bin/bash", "-c"]
 
