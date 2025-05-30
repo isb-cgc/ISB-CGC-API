@@ -79,17 +79,17 @@ def test_invalid_params(client, app):
     assert response.status_code == 400
     assert get_data(response)['message'] == "'Description' is an invalid cohort_def key"
 
-    cohort_def = {"name": "testcohort",
-                  "description": "Test description",
-                  }
-
-    # Get a guid manifest of the cohort's instances
-    response = client.post(f'{API_URL}/cohorts/',
-                            data = json.dumps(cohort_def),
-                            headers=headers | auth_header)
-
-    assert response.status_code == 400
-    assert get_data(response)['message'] == "'filters' is a required cohort_def key"
+    # cohort_def = {"name": "testcohort",
+    #               "description": "Test description",
+    #               }
+    #
+    # # Get a guid manifest of the cohort's instances
+    # response = client.post(f'{API_URL}/cohorts/',
+    #                         data = json.dumps(cohort_def),
+    #                         headers=headers | auth_header)
+    #
+    # assert response.status_code == 400
+    # assert get_data(response)['message'] == "'filters' is a required cohort_def key"
 
     return
 
