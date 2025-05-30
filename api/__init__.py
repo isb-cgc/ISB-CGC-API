@@ -27,11 +27,22 @@ import os
 
 from flask import Flask
 
+
+import logging
+import google.cloud.logging
+client = google.cloud.logging_v2.Client()
+client.setup_logging()
+
+
+
 from python_settings import settings
 import settings as api_settings
 
 settings.configure(api_settings)
 assert settings.configured
+
+logger = logging.getLogger(__name__)
+logger.setLevel(settings.LOG_LEVEL)
 
 
 def create_app(test_config=None):
