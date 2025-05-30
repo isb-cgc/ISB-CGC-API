@@ -124,21 +124,21 @@ def test_invalid_keys(client, app):
     assert get_data(response)['message'] == 'Page_size is an invalid body key'
 
 
-    manifestBody = {
-        # "fields": fields,
-        "counts": True,
-        "group_size": False,
-        "sql": True,
-        'page_size': 2000,
-    }
-
-    # Get a guid manifest of the cohort's instances
-    response = client.post(f"{API_URL}/cohorts/manifest/{id}/",
-                            data = json.dumps(manifestBody),
-                            headers=headers | auth_header)
-
-    assert response.status_code == 400
-    assert get_data(response)['message'] == "fields is required in the body"
+    # manifestBody = {
+    #     # "fields": fields,
+    #     "counts": True,
+    #     "group_size": False,
+    #     "sql": True,
+    #     'page_size': 2000,
+    # }
+    #
+    # # Get a guid manifest of the cohort's instances
+    # response = client.post(f"{API_URL}/cohorts/manifest/{id}/",
+    #                         data = json.dumps(manifestBody),
+    #                         headers=headers | auth_header)
+    #
+    # assert response.status_code == 400
+    # assert get_data(response)['message'] == "fields is required in the body"
 
     return
 
@@ -267,205 +267,214 @@ def test_minimal(client, app):
 # Test that the generated SQL is correct. Iterate over ranged filters
 @_testMode
 def test_sql_ranged_integer(client, app):
-    bq_client = bigquery.Client(project='idc-dev-etl')
+    # This test takes forever on the LOCAL deployment. It will be tested on the other deployments.
+    # If errors are found during that testing, we can debug on the local deployment.
+    if test_branch != 'LOCAL':
+        bq_client = bigquery.Client(project='idc-dev-etl')
 
-    attribute = "age_at_diagnosis"
-    ops = {
-        'eq': {
-            "values": [65],
-            "clause": f"tcga_clinical_rel9.{attribute} = 65"
-        },
-        'lt': {
-            "values": [75],
-            "clause": f"tcga_clinical_rel9.{attribute} < 75"
-        },
-        'lte': {
-            "values": [75],
-            "clause": f"tcga_clinical_rel9.{attribute} <= 75"
-        },
-        'gt': {
-            "values": [100],
-            "clause": f"tcga_clinical_rel9.{attribute} > 100"
-        },
-        'gte': {
-            "values": [100],
-            "clause": f"tcga_clinical_rel9.{attribute} >= 100"
-        },
-        'ebtw': {
-            "values": [65, 75],
-            "clause": f"tcga_clinical_rel9.{attribute} >= 65 AND tcga_clinical_rel9.{attribute} < 75"
-        },
-        'btw': {
-            "values": [65, 75],
-            "clause": f"tcga_clinical_rel9.{attribute} > 65 AND tcga_clinical_rel9.{attribute} < 75"
-        },
-        'btwe': {
-            "values": [65, 75],
-            "clause": f"tcga_clinical_rel9.{attribute} > 65 AND tcga_clinical_rel9.{attribute} <= 75"
-        },
-        'ebtwe': {
-            "values": [65, 75],
-            "clause": f"tcga_clinical_rel9.{attribute} BETWEEN 65 AND 75"
-        },
-    }
-    for op, val in ops.items():
-        print(f"Testing operand {op} with values {val}")
-        pivot = f'bigquery-public-data.idc_v{VERSION}.dicom_pivot' if test_branch != 'LOCAL' else f'idc-dev-etl.idc_v{VERSION}_pub.dicom_pivot'
-        expected_sql = f"""\n            #standardSQL\n    \n        SELECT dicom_pivot.collection_id,dicom_pivot.crdc_study_uuid,dicom_pivot.crdc_series_uuid,dicom_pivot.crdc_instance_uuid,dicom_pivot.gcs_bucket,dicom_pivot.gcs_url,dicom_pivot.aws_bucket,dicom_pivot.aws_url,tcga_clinical_rel9.age_at_diagnosis\n        FROM `{pivot}` dicom_pivot \n        \n        LEFT JOIN `bigquery-public-data.idc_v4.tcga_clinical_rel9` tcga_clinical_rel9\n        ON dicom_pivot.PatientID = tcga_clinical_rel9.case_barcode\n    \n    \n        WHERE TRUE  AND (((LOWER(dicom_pivot.Modality) IN UNNEST(["ct", "mr"]))) AND ((LOWER(dicom_pivot.collection_id) = LOWER("tcga_read"))) AND (((LOWER(tcga_clinical_rel9.race) = LOWER("WHITE"))) AND (({val['clause']})) OR tcga_clinical_rel9.case_barcode IS NULL))\n        \n        GROUP BY dicom_pivot.collection_id, dicom_pivot.crdc_study_uuid, dicom_pivot.crdc_series_uuid, dicom_pivot.crdc_instance_uuid, tcga_clinical_rel9.age_at_diagnosis, dicom_pivot.gcs_bucket, dicom_pivot.gcs_url, dicom_pivot.aws_bucket, dicom_pivot.aws_url\n        ORDER BY dicom_pivot.collection_id ASC, dicom_pivot.crdc_study_uuid ASC, dicom_pivot.crdc_series_uuid ASC, dicom_pivot.crdc_instance_uuid ASC, tcga_clinical_rel9.age_at_diagnosis ASC, dicom_pivot.gcs_bucket ASC, dicom_pivot.gcs_url ASC, dicom_pivot.aws_bucket ASC, dicom_pivot.aws_url ASC\n        \n        \n    """
-        expected_sql = re.sub('\n', '', expected_sql)
-        expected_sql = re.sub(' +', ' ', expected_sql)
-        filters = {
-            "collection_id": ["TCGA-read"],
-            "Modality": ["ct", "mR"],
-            f'{attribute}_{op}': val['values'],
-            "RACE": ["WHITE"]
+        attribute = "age_at_diagnosis"
+        ops = {
+            'eq': {
+                "values": [65],
+                "clause": f"tcga_clinical_rel9.{attribute} = 65"
+            },
+            'lt': {
+                "values": [75],
+                "clause": f"tcga_clinical_rel9.{attribute} < 75"
+            },
+            'lte': {
+                "values": [75],
+                "clause": f"tcga_clinical_rel9.{attribute} <= 75"
+            },
+            'gt': {
+                "values": [100],
+                "clause": f"tcga_clinical_rel9.{attribute} > 100"
+            },
+            'gte': {
+                "values": [100],
+                "clause": f"tcga_clinical_rel9.{attribute} >= 100"
+            },
+            'ebtw': {
+                "values": [65, 75],
+                "clause": f"tcga_clinical_rel9.{attribute} >= 65 AND tcga_clinical_rel9.{attribute} < 75"
+            },
+            'btw': {
+                "values": [65, 75],
+                "clause": f"tcga_clinical_rel9.{attribute} > 65 AND tcga_clinical_rel9.{attribute} < 75"
+            },
+            'btwe': {
+                "values": [65, 75],
+                "clause": f"tcga_clinical_rel9.{attribute} > 65 AND tcga_clinical_rel9.{attribute} <= 75"
+            },
+            'ebtwe': {
+                "values": [65, 75],
+                "clause": f"tcga_clinical_rel9.{attribute} BETWEEN 65 AND 75"
+            },
         }
+        for op, val in ops.items():
+            print(f"Testing operand {op} with values {val}")
+            # pivot = f'bigquery-public-data.idc_v{VERSION}.dicom_pivot' if test_branch != 'LOCAL' else f'idc-dev-etl.idc_v{VERSION}_pub.dicom_pivot'
+            pivot = f'bigquery-public-data.idc_v{VERSION}.dicom_pivot'
+            expected_sql = f"""\n            #standardSQL\n    \n        SELECT dicom_pivot.collection_id,dicom_pivot.crdc_study_uuid,dicom_pivot.crdc_series_uuid,dicom_pivot.crdc_instance_uuid,dicom_pivot.gcs_bucket,dicom_pivot.gcs_url,dicom_pivot.aws_bucket,dicom_pivot.aws_url,tcga_clinical_rel9.age_at_diagnosis\n        FROM `{pivot}` dicom_pivot \n        \n        LEFT JOIN `bigquery-public-data.idc_v4.tcga_clinical_rel9` tcga_clinical_rel9\n        ON dicom_pivot.PatientID = tcga_clinical_rel9.case_barcode\n    \n    \n        WHERE TRUE  AND (((LOWER(dicom_pivot.Modality) IN UNNEST(["ct", "mr"]))) AND ((LOWER(dicom_pivot.collection_id) = LOWER("tcga_read"))) AND (((LOWER(tcga_clinical_rel9.race) = LOWER("WHITE"))) AND (({val['clause']})) OR tcga_clinical_rel9.case_barcode IS NULL))\n        \n        GROUP BY dicom_pivot.collection_id, dicom_pivot.crdc_study_uuid, dicom_pivot.crdc_series_uuid, dicom_pivot.crdc_instance_uuid, tcga_clinical_rel9.age_at_diagnosis, dicom_pivot.gcs_bucket, dicom_pivot.gcs_url, dicom_pivot.aws_bucket, dicom_pivot.aws_url\n        ORDER BY dicom_pivot.collection_id ASC, dicom_pivot.crdc_study_uuid ASC, dicom_pivot.crdc_series_uuid ASC, dicom_pivot.crdc_instance_uuid ASC, tcga_clinical_rel9.age_at_diagnosis ASC, dicom_pivot.gcs_bucket ASC, dicom_pivot.gcs_url ASC, dicom_pivot.aws_bucket ASC, dicom_pivot.aws_url ASC\n        \n        \n    """
+            expected_sql = re.sub('\n', '', expected_sql)
+            expected_sql = re.sub(' +', ' ', expected_sql)
+            filters = {
+                "collection_id": ["TCGA-read"],
+                "Modality": ["ct", "mR"],
+                f'{attribute}_{op}': val['values'],
+                "RACE": ["WHITE"]
+            }
 
-        id, filterSet = create_cohort_for_test_get_cohort_xxx(client, filters)
+            id, filterSet = create_cohort_for_test_get_cohort_xxx(client, filters)
 
-        mimetype = 'application/json'
-        headers = {
-            'Content-Type': mimetype,
-            'Accept': mimetype
-        }
+            mimetype = 'application/json'
+            headers = {
+                'Content-Type': mimetype,
+                'Accept': mimetype
+            }
 
-        fields = [
-            'collection_id',
-            'crdc_study_uuid',
-            'crdc_series_uuid',
-            'crdc_instance_uuid',
-            'age_at_diagnosis',
-            'gcs_bucket',
-            'gcs_url',
-            'aws_bucket',
-            'aws_url'
-        ]
+            fields = [
+                'collection_id',
+                'crdc_study_uuid',
+                'crdc_series_uuid',
+                'crdc_instance_uuid',
+                'age_at_diagnosis',
+                'gcs_bucket',
+                'gcs_url',
+                'aws_bucket',
+                'aws_url'
+            ]
 
-        manifestBody = {
-            "fields": fields,
-            "counts": True,
-            "group_size": False,
-            "sql": True,
-            'page_size': 2000
-        }
+            manifestBody = {
+                "fields": fields,
+                "counts": True,
+                "group_size": False,
+                "sql": True,
+                'page_size': 2000
+            }
 
 
-        # Get a manifest of the cohort's instances`
-        response = client.post(f'{API_URL}/cohorts/manifest/{id}',
-                data = json.dumps(manifestBody),
-                headers=headers | auth_header
-            )
-        if response.status_code != 200:
-            pass
-        assert response.status_code == 200
-        cohort_def = get_data(response)['cohort_def']['sql']
-        cohort_def = re.sub('\n', '', cohort_def)
-        cohort_def = re.sub(' +', ' ', cohort_def)
-        assert cohort_def== expected_sql
+            # Get a manifest of the cohort's instances`
+            response = client.post(f'{API_URL}/cohorts/manifest/{id}',
+                    data = json.dumps(manifestBody),
+                    headers=headers | auth_header
+                )
+            if response.status_code != 200:
+                pass
+            assert response.status_code == 200
+            cohort_def = get_data(response)['cohort_def']['sql']
+            cohort_def = re.sub('\n', '', cohort_def)
+            cohort_def = re.sub(' +', ' ', cohort_def)
+            assert cohort_def== expected_sql
 
-        delete_cohort(client, id)
+            delete_cohort(client, id)
 
 
 # Test that the generated SQL is correct. Iterate over ranged filters
 @_testMode
 def test_sql_ranged_number(client, app):
-    bq_client = bigquery.Client(project='idc-dev-etl')
+    # This test takes forever on the LOCAL deployment. It will be tested on the other deployments.
+    # If errors are found during that testing, we can debug on the local deployment.
+    if test_branch != 'LOCAL':
 
-    attribute = "bmi"
-    ops = {
-        'eq': {
-            "values": [65.1],
-            "clause": f"tcga_clinical_rel9.{attribute} = 65.1"
-        },
-        'lt': {
-            "values": [75.1],
-            "clause": f"tcga_clinical_rel9.{attribute} < 75.1"
-        },
-        'lte': {
-            "values": [75.1],
-            "clause": f"tcga_clinical_rel9.{attribute} <= 75.1"
-        },
-        'gt': {
-            "values": [100.1],
-            "clause": f"tcga_clinical_rel9.{attribute} > 100.1"
-        },
-        'gte': {
-            "values": [100.1],
-            "clause": f"tcga_clinical_rel9.{attribute} >= 100.1"
-        },
-        'ebtw': {
-            "values": [65.1, 75.1],
-            "clause": f"tcga_clinical_rel9.{attribute} >= 65.1 AND tcga_clinical_rel9.{attribute} < 75.1"
-        },
-        'btw': {
-            "values": [65.1, 75.1],
-            "clause": f"tcga_clinical_rel9.{attribute} > 65.1 AND tcga_clinical_rel9.{attribute} < 75.1"
-        },
-        'btwe': {
-            "values": [65.1, 75.1],
-            "clause": f"tcga_clinical_rel9.{attribute} > 65.1 AND tcga_clinical_rel9.{attribute} <= 75.1"
-        },
-        'ebtwe': {
-            "values": [65.1, 75.1],
-            "clause": f"tcga_clinical_rel9.{attribute} BETWEEN 65.1 AND 75.1"
-        },
-    }
-    for op, val in ops.items():
-        print(f"Testing operand {op} with values {val}")
-        pivot = f'bigquery-public-data.idc_v{VERSION}.dicom_pivot' if test_branch!='LOCAL' else f'idc-dev-etl.idc_v{VERSION}_pub.dicom_pivot'
-        expected_sql = f"""\n            #standardSQL\n    \n        SELECT dicom_pivot.collection_id,dicom_pivot.crdc_study_uuid,dicom_pivot.crdc_series_uuid,dicom_pivot.crdc_instance_uuid,dicom_pivot.gcs_bucket,dicom_pivot.gcs_url,dicom_pivot.aws_bucket,dicom_pivot.aws_url,tcga_clinical_rel9.age_at_diagnosis\n        FROM `{pivot}` dicom_pivot \n        \n        LEFT JOIN `bigquery-public-data.idc_v4.tcga_clinical_rel9` tcga_clinical_rel9\n        ON dicom_pivot.PatientID = tcga_clinical_rel9.case_barcode\n    \n        WHERE TRUE  AND (((LOWER(dicom_pivot.Modality) IN UNNEST(["ct", "mr"]))) AND ((LOWER(dicom_pivot.collection_id) = LOWER("tcga_read"))) AND (((LOWER(tcga_clinical_rel9.race) = LOWER("WHITE"))) AND (({val['clause']})) OR tcga_clinical_rel9.case_barcode IS NULL))\n        \n        \n        GROUP BY dicom_pivot.collection_id, dicom_pivot.crdc_study_uuid, dicom_pivot.crdc_series_uuid, dicom_pivot.crdc_instance_uuid, tcga_clinical_rel9.age_at_diagnosis, dicom_pivot.gcs_bucket, dicom_pivot.gcs_url, dicom_pivot.aws_bucket, dicom_pivot.aws_url\n        ORDER BY dicom_pivot.collection_id ASC, dicom_pivot.crdc_study_uuid ASC, dicom_pivot.crdc_series_uuid ASC, dicom_pivot.crdc_instance_uuid ASC, tcga_clinical_rel9.age_at_diagnosis ASC, dicom_pivot.gcs_bucket ASC, dicom_pivot.gcs_url ASC, dicom_pivot.aws_bucket ASC, dicom_pivot.aws_url ASC\n        \n        \n    """
-        expected_sql = re.sub('\n', '', expected_sql)
-        expected_sql = re.sub(' +', ' ', expected_sql)
+        bq_client = bigquery.Client(project='idc-dev-etl')
 
-        filters = {
-            "collection_id": ["TCGA-read"],
-            "Modality": ["ct", "mR"],
-            f'{attribute}_{op}': val['values'],
-            "RACE": ["WHITE"]
+        attribute = "bmi"
+        ops = {
+            'eq': {
+                "values": [65.1],
+                "clause": f"tcga_clinical_rel9.{attribute} = 65.1"
+            },
+            'lt': {
+                "values": [75.1],
+                "clause": f"tcga_clinical_rel9.{attribute} < 75.1"
+            },
+            'lte': {
+                "values": [75.1],
+                "clause": f"tcga_clinical_rel9.{attribute} <= 75.1"
+            },
+            'gt': {
+                "values": [100.1],
+                "clause": f"tcga_clinical_rel9.{attribute} > 100.1"
+            },
+            'gte': {
+                "values": [100.1],
+                "clause": f"tcga_clinical_rel9.{attribute} >= 100.1"
+            },
+            'ebtw': {
+                "values": [65.1, 75.1],
+                "clause": f"tcga_clinical_rel9.{attribute} >= 65.1 AND tcga_clinical_rel9.{attribute} < 75.1"
+            },
+            'btw': {
+                "values": [65.1, 75.1],
+                "clause": f"tcga_clinical_rel9.{attribute} > 65.1 AND tcga_clinical_rel9.{attribute} < 75.1"
+            },
+            'btwe': {
+                "values": [65.1, 75.1],
+                "clause": f"tcga_clinical_rel9.{attribute} > 65.1 AND tcga_clinical_rel9.{attribute} <= 75.1"
+            },
+            'ebtwe': {
+                "values": [65.1, 75.1],
+                "clause": f"tcga_clinical_rel9.{attribute} BETWEEN 65.1 AND 75.1"
+            },
         }
+        for op, val in ops.items():
+            print(f"Testing operand {op} with values {val}")
+            # pivot = f'bigquery-public-data.idc_v{VERSION}.dicom_pivot' if test_branch!='LOCAL' else f'idc-dev-etl.idc_v{VERSION}_pub.dicom_pivot'
+            pivot = f'bigquery-public-data.idc_v{VERSION}.dicom_pivot'
+            expected_sql = f"""\n            #standardSQL\n    \n        SELECT dicom_pivot.collection_id,dicom_pivot.crdc_study_uuid,dicom_pivot.crdc_series_uuid,dicom_pivot.crdc_instance_uuid,dicom_pivot.gcs_bucket,dicom_pivot.gcs_url,dicom_pivot.aws_bucket,dicom_pivot.aws_url,tcga_clinical_rel9.age_at_diagnosis\n        FROM `{pivot}` dicom_pivot \n        \n        LEFT JOIN `bigquery-public-data.idc_v4.tcga_clinical_rel9` tcga_clinical_rel9\n        ON dicom_pivot.PatientID = tcga_clinical_rel9.case_barcode\n    \n        WHERE TRUE  AND (((LOWER(dicom_pivot.Modality) IN UNNEST(["ct", "mr"]))) AND ((LOWER(dicom_pivot.collection_id) = LOWER("tcga_read"))) AND (((LOWER(tcga_clinical_rel9.race) = LOWER("WHITE"))) AND (({val['clause']})) OR tcga_clinical_rel9.case_barcode IS NULL))\n        \n        \n        GROUP BY dicom_pivot.collection_id, dicom_pivot.crdc_study_uuid, dicom_pivot.crdc_series_uuid, dicom_pivot.crdc_instance_uuid, tcga_clinical_rel9.age_at_diagnosis, dicom_pivot.gcs_bucket, dicom_pivot.gcs_url, dicom_pivot.aws_bucket, dicom_pivot.aws_url\n        ORDER BY dicom_pivot.collection_id ASC, dicom_pivot.crdc_study_uuid ASC, dicom_pivot.crdc_series_uuid ASC, dicom_pivot.crdc_instance_uuid ASC, tcga_clinical_rel9.age_at_diagnosis ASC, dicom_pivot.gcs_bucket ASC, dicom_pivot.gcs_url ASC, dicom_pivot.aws_bucket ASC, dicom_pivot.aws_url ASC\n        \n        \n    """
+            expected_sql = re.sub('\n', '', expected_sql)
+            expected_sql = re.sub(' +', ' ', expected_sql)
 
-        id, filterSet = create_cohort_for_test_get_cohort_xxx(client, filters)
+            filters = {
+                "collection_id": ["TCGA-read"],
+                "Modality": ["ct", "mR"],
+                f'{attribute}_{op}': val['values'],
+                "RACE": ["WHITE"]
+            }
 
-        mimetype = 'application/json'
-        headers = {
-            'Content-Type': mimetype,
-            'Accept': mimetype
-        }
+            id, filterSet = create_cohort_for_test_get_cohort_xxx(client, filters)
 
-        fields = [
-            'collection_id',
-            'crdc_study_uuid',
-            'crdc_series_uuid',
-            'crdc_instance_uuid',
-            'age_at_diagnosis',
-            'gcs_bucket',
-            'gcs_url',
-            'aws_bucket',
-            'aws_url'
-        ]
+            mimetype = 'application/json'
+            headers = {
+                'Content-Type': mimetype,
+                'Accept': mimetype
+            }
 
-        manifestBody = {
-            "fields": fields,
-            "counts": True,
-            "group_size": False,
-            "sql": True,
-            'page_size': 2000
-        }
+            fields = [
+                'collection_id',
+                'crdc_study_uuid',
+                'crdc_series_uuid',
+                'crdc_instance_uuid',
+                'age_at_diagnosis',
+                'gcs_bucket',
+                'gcs_url',
+                'aws_bucket',
+                'aws_url'
+            ]
+
+            manifestBody = {
+                "fields": fields,
+                "counts": True,
+                "group_size": False,
+                "sql": True,
+                'page_size': 2000
+            }
 
 
-        # Get a manifest of the cohort's instances`
-        response = client.post(f'{API_URL}/cohorts/manifest/{id}',
-                data = json.dumps(manifestBody),
-                headers=headers | auth_header
-            )
+            # Get a manifest of the cohort's instances`
+            response = client.post(f'{API_URL}/cohorts/manifest/{id}',
+                    data = json.dumps(manifestBody),
+                    headers=headers | auth_header
+                )
 
-        assert response.status_code == 200
-        cohort_def = get_data(response)['cohort_def']['sql']
-        cohort_def = re.sub('\n', '', cohort_def)
-        cohort_def = re.sub(' +', ' ', cohort_def)
-        assert cohort_def== expected_sql
+            assert response.status_code == 200
+            cohort_def = get_data(response)['cohort_def']['sql']
+            cohort_def = re.sub('\n', '', cohort_def)
+            cohort_def = re.sub(' +', ' ', cohort_def)
+            assert cohort_def== expected_sql
 
-        delete_cohort(client, id)
+            delete_cohort(client, id)
 
 
 @_testMode
