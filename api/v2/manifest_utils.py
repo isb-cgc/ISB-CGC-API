@@ -251,18 +251,19 @@ def validate_cohort_def(cohort_def):
             return param_info
 
     if not 'filters' in cohort_def:
-        param_info = dict(
-            message=f"'filters' is a required cohort_def key",
-            code=400
-        )
-        return param_info
-
-    if cohort_def['filters'] == {}:
-        param_info = dict(
-            message=f"'filters' must have at least one item",
-            code=400
-        )
-        return param_info
+        # param_info = dict(
+        #     message=f"'filters' is a required cohort_def key",
+        #     code=400
+        # )
+        # return param_info
+        cohort_def['filters'] = {}
+    #
+    # if cohort_def['filters'] == {}:
+    #     param_info = dict(
+    #         message=f"'filters' must have at least one item",
+    #         code=400
+    #     )
+    #     return param_info
 
     if not "name" in cohort_def:
         cohort_def["name"] = ""
