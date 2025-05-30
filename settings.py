@@ -34,7 +34,6 @@ APP_ENGINE_FLEX = 'aef-'
 APP_ENGINE = 'Google App Engine/'
 API_VERSION = 'v1'
 
-
 BASE_DIR                = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir)) + os.sep
 
 DEBUG                   = (os.environ.get('DEBUG', 'False') == 'True')
@@ -55,8 +54,6 @@ SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', '')
 
 PAGE_TOKEN_KEY          = os.environ.get('PAGE_TOKEN_KEY', '')
 
-GOOGLE_APPLICATION_CREDENTIALS  = join(dirname(__file__), SECURE_LOCAL_PATH, os.environ.get('GOOGLE_APPLICATION_CREDENTIALS', ''))
-os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = GOOGLE_APPLICATION_CREDENTIALS
 # OAUTH2_CLIENT_ID                = os.environ.get('OAUTH2_CLIENT_ID', '')
 # OAUTH2_CLIENT_SECRET            = os.environ.get('OAUTH2_CLIENT_SECRET', '')
 
@@ -108,3 +105,22 @@ BLACKLIST_RE = r'((?i)<script>|(?i)</script>|!\[\]|!!\[\]|\[\]\[\".*\"\]|(?i)<if
 STATIC_URL = os.environ.get('STATIC_URL', '/static/')
 
 IS_DEV = (os.environ.get('IS_DEV', 'False') == 'True')
+# WJRL Pulled from ISB-CGC-API:
+# AppEngine var is set in the app.yaml so this should be false for CI and local dev apps
+IS_APP_ENGINE = bool(os.getenv('IS_APP_ENGINE', 'False') == 'True')
+
+# Deployed systems retrieve credentials from the metadata server, but a local VM build must provide a credentials file
+# for some actions. CircleCI needs SA access but can make use of the deployment SA's key.
+GOOGLE_APPLICATION_CREDENTIALS = None
+
+if IS_DEV:
+    GOOGLE_APPLICATION_CREDENTIALS = join(dirname(__file__), SECURE_LOCAL_PATH, os.environ.get('GOOGLE_APPLICATION_CREDENTIALS', ''))
+    os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = GOOGLE_APPLICATION_CREDENTIALS
+    if GOOGLE_APPLICATION_CREDENTIALS is not None and not exists(GOOGLE_APPLICATION_CREDENTIALS):
+        print("[ERROR] Google application credentials file wasn't found! Provided path: {}".format(GOOGLE_APPLICATION_CREDENTIALS))
+        exit(1)
+    print("[STATUS] GOOGLE_APPLICATION_CREDENTIALS: {}".format(GOOGLE_APPLICATION_CREDENTIALS))
+
+if IS_APP_ENGINE:
+    os.unsetenv('GOOGLE_APPLICATION_CREDENTIALS')
+    print("[STATUS] AppEngine Flex detected--default credentials will be used.")
