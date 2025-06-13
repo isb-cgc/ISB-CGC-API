@@ -44,7 +44,7 @@ DEBUG_API_EMAIL            = os.getenv('DEBUG_API_EMAIL','')
 print("[STATUS] DEBUG mode is "+str(DEBUG))
 
 LOGGER_NAME = os.environ.get('API_LOGGER_NAME', 'main_logger')
-LOG_LEVEL                  = logging.DEBUG # if DEBUG else logging.INFO
+LOG_LEVEL                  = logging.DEBUG if DEBUG else logging.INFO
 
 BASE_URL                = os.environ.get('BASE_URL', 'https://dev-portal.canceridc.dev')
 BASE_API_URL            = os.environ.get('BASE_API_URL', 'https://dev-portal.canceridc.dev')
@@ -98,7 +98,7 @@ BIGQUERY_DATA_PROJECT_ID       = os.environ.get('BIGQUERY_DATA_PROJECT_ID', GCLO
 
 
 # Explicitly check for known items
-BLACKLIST_RE = r'((?i)<script>|(?i)</script>|!\[\]|!!\[\]|\[\]\[\".*\"\]|(?i)<iframe>|(?i)</iframe>)'
+BLACKLIST_RE = r'(<script>|</script>|!\[\]|!!\[\]|\[\]\[\".*\"\]|<iframe>|</iframe>)'
 
 # URL prefix for static files.
 # Example: "http://media.lawrence.com/static/"
