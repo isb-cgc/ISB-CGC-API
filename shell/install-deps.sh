@@ -25,7 +25,12 @@ apt-get update -qq
 
 # Install and update apt-get info
 echo "Preparing System..."
-apt-get -y install software-properties-common
+apt-get -y --force-yes install software-properties-common ca-certificates gnupg
+apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv B7B3B788A8D3785C
+wget "https://repo.mysql.com/mysql-apt-config_0.8.30-1_all.deb" -P /tmp
+dpkg --install /tmp/mysql-apt-config_0.8.30-1_all.deb
+
+apt-get update -qq
 
 if [ -n "$CI" ]; then
     echo 'download mysql public build key'
@@ -38,15 +43,22 @@ fi
 
 apt-get update -qq
 
+apt-get install mysql-client
+
 # Install apt-get dependencies
 echo "Installing Dependencies..."
-if [ -n "$CI" ]; then
-apt-get install -y --force-yes unzip libffi-dev libssl-dev libmysqlclient-dev python3-mysqldb python3-dev libpython3-dev git ruby g++ curl dos2unix python3.5
-apt-get install -y --force-yes mysql-client
-else
-    apt-get install -qq -y --force-yes unzip libffi-dev libssl-dev libmysqlclient-dev python3-mysqldb python3-dev libpython3-dev git ruby g++ curl dos2unix python3.5 mysql-client-5.7
-fi
-echo "Dependencies Installed"
+apt-get install -y --force-yes unzip libffi-dev libssl-dev git g++ curl dos2unix pkg-config
+
+
+## Install apt-get dependencies
+#echo "Installing Dependencies..."
+#if [ -n "$CI" ]; then
+#apt-get install -y --force-yes unzip libffi-dev libssl-dev libmysqlclient-dev python3-mysqldb python3-dev libpython3-dev git ruby g++ curl dos2unix python3.5
+#apt-get install -y --force-yes mysql-client
+#else
+#    apt-get install -qq -y --force-yes unzip libffi-dev libssl-dev libmysqlclient-dev python3-mysqldb python3-dev libpython3-dev git ruby g++ curl dos2unix python3.5 mysql-client-5.7
+#fi
+#echo "Dependencies Installed"
 
 # If this is local development, clean out lib for a re-structuring
 if [ -z "${CI}" ]; then
