@@ -27,7 +27,7 @@ import os
 
 from flask import Flask
 
-import logging
+# import logging
 import google.cloud.logging
 client = google.cloud.logging_v2.Client()
 client.setup_logging()
@@ -37,9 +37,11 @@ import settings as api_settings
 
 settings.configure(api_settings)
 assert settings.configured
+LOG_LEVEL = logging.DEBUG # if settings.DEBUG else logging.INFO
 
 logger = logging.getLogger(__name__)
-logger.setLevel(settings.LOG_LEVEL)
+logger.setLevel(LOG_LEVEL)
+logger.debug('Logger test')
 
 def create_app(test_config=None):
     # create and configure the app
@@ -87,7 +89,8 @@ def create_app(test_config=None):
 
     print("testing pre-flask C")
     logger = logging.getLogger(settings.LOGGER_NAME)
-    logger.setLevel(settings.LOG_LEVEL)
+    logger.setLevel(LOG_LEVEL)
+
     ch = logging.StreamHandler()
     ch.setLevel(logging.DEBUG)
     formatter = logging.Formatter('%(name)s:%(levelname)s [%(filename)s:%(funcName)s:%(lineno)s] %(message)s')
