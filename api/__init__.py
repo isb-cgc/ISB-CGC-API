@@ -174,7 +174,8 @@ def create_app(test_config=None):
         response.status_code = 500
         return response
 
-    print("testing pre-flask G", app)
+    dir(app)
+    print("testing pre-flask G", dir(app))
     return app
 
 if __name__ == '__main__':
