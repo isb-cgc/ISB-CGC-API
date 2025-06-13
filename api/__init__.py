@@ -14,31 +14,27 @@
 # limitations under the License.
 #
 
-import logging
 import os
-from os.path import join, dirname
-import sys
+from os.path import dirname
 import ruamel.yaml
 import json
-from flask import Flask, jsonify, request
+from flask import jsonify
 from flask_talisman import Talisman
-
-import os
 
 from flask import Flask
 
-# import logging
-import google.cloud.logging
-client = google.cloud.logging_v2.Client()
-client.setup_logging()
-
 from python_settings import settings
 import settings as api_settings
-
 settings.configure(api_settings)
 assert settings.configured
-LOG_LEVEL = logging.DEBUG # if settings.DEBUG else logging.INFO
 
+if settings.IS_APP_ENGINE:
+    import google.cloud.logging
+    client = google.cloud.logging_v2.Client()
+    client.setup_logging()
+
+import logging
+LOG_LEVEL = logging.DEBUG # if settings.DEBUG else logging.INFO
 logger = logging.getLogger(__name__)
 logger.setLevel(LOG_LEVEL)
 logger.debug('Logger test')
