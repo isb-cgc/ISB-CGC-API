@@ -160,7 +160,7 @@ def create_app(test_config=None):
             ouath2_callback_path="{}/oauth2callback".format(settings.API_VERSION),
             api_client_id=settings.API_CLIENT_ID
         )
-
+    print("testing pre-flask F")
     # Error handlers
     @app.errorhandler(500)
     def unexpected_error(e):
@@ -174,6 +174,7 @@ def create_app(test_config=None):
         response.status_code = 500
         return response
 
+    print("testing pre-flask G", app)
     return app
 
 if __name__ == '__main__':
