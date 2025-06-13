@@ -182,6 +182,7 @@ jobs:
             sudo -E /bin/bash ./shell/unpack_for_deployment.sh
             sudo -E gcloud endpoints services deploy ./openapi-appengine.v1.yaml  ./openapi-appengine.v2.yaml
             sudo -E gcloud config set app/cloud_build_timeout 1600
+            sudo -E gcloud config set app/app_start_timeout_sec 1800
             sudo -E gcloud app deploy --verbosity=debug ./app.yaml --service-account=${API_RUNTIME_SA_NAME} --quiet
 workflows:
   version: 2
