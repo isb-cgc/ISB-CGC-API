@@ -27,8 +27,8 @@ from testing_branch import test_branch
 # DEFAULT_STORAGE_FILE = os.path.join(os.path.expanduser("~"), '.idc_credentials')
 
 API_VERSION = 'v2'
-VERSION = 20
-NUM_COLLECTIONS = 149
+VERSION = 21
+NUM_COLLECTIONS = 150
 
 # # True to access dev, testing or prod APIs, False to access local API
 # test_remote_api = True
