@@ -23,7 +23,7 @@ from .version_config import API_VERSION
 
 
 logger = logging.getLogger(settings.LOGGER_NAME)
-logger.setLevel(settings.LOG_LEVEL)
+# logger.setLevel(settings.LOG_LEVEL)
 
 from flask import Blueprint
 

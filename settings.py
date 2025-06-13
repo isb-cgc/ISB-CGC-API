@@ -17,7 +17,6 @@ limitations under the License.
 import os
 from os.path import join, dirname, exists
 from dotenv import load_dotenv
-import logging
 
 SECURE_LOCAL_PATH = os.environ.get('SECURE_LOCAL_PATH', '')
 
@@ -45,7 +44,7 @@ print("[STATUS] DEBUG mode is "+str(DEBUG))
 
 LOGGER_NAME = os.environ.get('API_LOGGER_NAME', 'main_logger')
 # LOG_LEVEL                  = logging.DEBUG if DEBUG else logging.INFO
-LOG_LEVEL                  = logging.DEBUG
+# LOG_LEVEL                  = logging.DEBUG
 
 BASE_URL                = os.environ.get('BASE_URL', 'https://dev-portal.canceridc.dev')
 BASE_API_URL            = os.environ.get('BASE_API_URL', 'https://dev-portal.canceridc.dev')

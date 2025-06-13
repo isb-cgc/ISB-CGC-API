@@ -27,7 +27,7 @@ import settings
 from google_helpers.bigquery.bq_support import BigQuerySupport
 
 logger = logging.getLogger(settings.LOGGER_NAME)
-logger.setLevel(settings.LOG_LEVEL)
+# logger.setLevel(settings.LOG_LEVEL)
 
 
 CRDC_GUID_PREFIX='dg.4DFC'
