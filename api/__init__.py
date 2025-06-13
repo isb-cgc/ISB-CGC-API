@@ -27,18 +27,26 @@ import os
 
 from flask import Flask
 
+import logging
+import google.cloud.logging
+client = google.cloud.logging_v2.Client()
+client.setup_logging()
+
 from python_settings import settings
 import settings as api_settings
 
 settings.configure(api_settings)
 assert settings.configured
 
+logger = logging.getLogger(__name__)
+logger.setLevel(settings.LOG_LEVEL)
 
 def create_app(test_config=None):
     # create and configure the app
     if settings.IS_DEV:
         app = Flask(__name__, instance_relative_config=True)
     else:
+        print("testing pre-flask")
         app = Flask(__name__, instance_relative_config=True, static_folder='api_static')
     Talisman(app, strict_transport_security_max_age=300, content_security_policy={
         'default-src': [
@@ -49,6 +57,7 @@ def create_app(test_config=None):
             'data:'
         ]
     })
+    print("testing post-flask")
 
     if test_config is None:
         # load the instance config, if it exists, when not testing
@@ -57,6 +66,7 @@ def create_app(test_config=None):
         # load the test config if passed in
         app.config.from_mapping(test_config)
 
+    print("testing pre-flask B")
     # ensure the instance folder exists
     try:
         os.makedirs(app.instance_path)
@@ -75,6 +85,7 @@ def create_app(test_config=None):
     from query_routes import *
     from user_routes import *'''
 
+    print("testing pre-flask C")
     logger = logging.getLogger(settings.LOGGER_NAME)
     logger.setLevel(settings.LOG_LEVEL)
     ch = logging.StreamHandler()
@@ -82,6 +93,7 @@ def create_app(test_config=None):
     formatter = logging.Formatter('%(name)s:%(levelname)s [%(filename)s:%(funcName)s:%(lineno)s] %(message)s')
     ch.setFormatter(formatter)
     logger.addHandler(ch)
+    print("testing pre-flask D")
 
     from .v1.query_routes import cohort_query_bp
     app.register_blueprint(cohort_query_bp)
@@ -113,6 +125,7 @@ def create_app(test_config=None):
     from .v2.metadata_routes import metadata_bp # as v1_metadata_bp
     app.register_blueprint(metadata_bp)
 
+    print("testing pre-flask E")
     @app.context_processor
     def utilities():
         def load_spec(version):
