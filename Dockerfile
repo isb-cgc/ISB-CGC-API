@@ -26,6 +26,7 @@ ENV PYTHONUNBUFFERED=1
 ENV DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get update
+
 RUN apt-get install -y wget
 # TODO: we need to start using the keyring instead
 RUN apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv A8D3785C
@@ -47,7 +48,7 @@ RUN apt-get -y install --reinstall python3-m2crypto python3-cryptography
 RUN apt-get -y install libxml2-dev libxmlsec1-dev swig pkg-config
 RUN pip install pexpect
 
-RUN apt-get -y install unzip libffi-dev libssl-dev libmysqlclient-dev python3-mysqldb python3-dev libpython3-dev git ruby g++ curl
+RUN apt-get -y install unzip libffi-dev libssl-dev libmysqlclient-dev python3-mysqldb python3-dev libpython3-dev git g++ curl
 
 ADD . /app
 
