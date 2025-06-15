@@ -113,8 +113,6 @@ def create_app(test_config=None):
     from .v2.metadata_routes import metadata_bp # as v1_metadata_bp
     app.register_blueprint(metadata_bp)
 
-    logger.info("[STATUS] Blueprints loaded")
-
     @app.context_processor
     def utilities():
         logger.info("[STATUS] Defining context processor")
