@@ -155,6 +155,7 @@ jobs:
             - ./openapi-appengine.v1.yaml
             - ./openapi-appengine.v2.yaml
             - ./settings.py
+            - ./gunicorn.conf.py
             - ./txt
             - ./json
             - ./.env
