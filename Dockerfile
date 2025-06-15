@@ -60,4 +60,4 @@ ENV PYTHONPATH=/app:/app/api:/app/lib:/app/IDC-Common
 
 WORKDIR /app/
 
-CMD gunicorn -b :$PORT "api:create_app()" -w 3 -t 70
+CMD gunicorn -c gunicorn.conf.py -b :$PORT "api:create_app()" -w 3 -t 70
