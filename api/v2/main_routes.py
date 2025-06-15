@@ -20,7 +20,7 @@ from flask import jsonify, render_template
 from python_settings import settings
 from flask import Blueprint
 from .version_config import API_VERSION
-logger = logging.getLogger(settings.LOGGER_NAME)
+logger = logging.getLogger(__name__)
 
 SCOPE = 'https://www.googleapis.com/auth/userinfo.email'
 
