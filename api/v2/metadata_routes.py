@@ -20,7 +20,7 @@ from flask import jsonify
 from python_settings import settings
 from .schemas.filters import COHORT_FILTERS_SCHEMA
 from .version_config import API_VERSION
-from . metadata_views import get_versions, get_filters, get_collections, get_analysis_results, get_fields
+from .metadata_views import get_versions, get_filters, get_collections, get_analysis_results, get_fields
 from flask import Blueprint
 from google.cloud import bigquery
 from google_helpers.bigquery.bq_support import BigQuerySupport
