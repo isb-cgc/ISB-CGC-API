@@ -56,8 +56,8 @@ ADD . /app
 RUN pip install -r /app/requirements.txt -t /app/lib/ --upgrade
 RUN pip install gunicorn==21.2.0
 
-ENV PYTHONPATH=/app:/app/api:/app/lib:/app/IDC-Common:${PYTHONPATH}
+ENV PYTHONPATH=/app:/app/api:/app/lib:/app/IDC-Common
 
 WORKDIR /app/
 
-CMD gunicorn -b :$PORT "api:create_app()" -w 3 -t 130
+CMD gunicorn -b :$PORT "api:create_app()" -w 3 -t 70
