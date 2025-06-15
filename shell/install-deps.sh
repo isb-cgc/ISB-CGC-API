@@ -19,8 +19,6 @@ fi
 # model has changed names it will cause various load failures
 find . -type f -name '*.pyc' -delete
 
-export DEBIAN_FRONTEND=noninteractive
-
 apt-get update -qq
 
 # Install and update apt-get info
@@ -32,33 +30,15 @@ dpkg --install /tmp/mysql-apt-config_0.8.30-1_all.deb
 
 apt-get update -qq
 
-if [ -n "$CI" ]; then
-    echo 'download mysql public build key'
-    apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv A8D3785C
-    echo 'mysql build key update done.'
-    wget https://dev.mysql.com/get/mysql-apt-config_0.8.29-1_all.deb
-    apt-get install -y lsb-release
-    dpkg -i mysql-apt-config_0.8.29-1_all.deb
-fi
-
-apt-get update -qq
-
 apt-get install mysql-client
 
 # Install apt-get dependencies
 echo "Installing Dependencies..."
 apt-get install -y --force-yes unzip libffi-dev libssl-dev git g++ curl dos2unix pkg-config
+apt-get install -y --force-yes python3-distutils python3-mysqldb libmysqlclient-dev libpython3-dev build-essential
+apt-get install -y --force-yes python3-pip
 
-
-## Install apt-get dependencies
-#echo "Installing Dependencies..."
-#if [ -n "$CI" ]; then
-#apt-get install -y --force-yes unzip libffi-dev libssl-dev libmysqlclient-dev python3-mysqldb python3-dev libpython3-dev git ruby g++ curl dos2unix python3.5
-#apt-get install -y --force-yes mysql-client
-#else
-#    apt-get install -qq -y --force-yes unzip libffi-dev libssl-dev libmysqlclient-dev python3-mysqldb python3-dev libpython3-dev git ruby g++ curl dos2unix python3.5 mysql-client-5.7
-#fi
-#echo "Dependencies Installed"
+echo "Dependencies Installed"
 
 # If this is local development, clean out lib for a re-structuring
 if [ -z "${CI}" ]; then
@@ -68,7 +48,7 @@ if [ -z "${CI}" ]; then
 fi
 
 # Install PIP + Dependencies
-echo "Installing pip3..."
+echo "Installing pip..."
 curl --silent https://bootstrap.pypa.io/get-pip.py | python3
 
 # Install our primary python libraries
