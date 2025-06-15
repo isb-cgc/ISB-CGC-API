@@ -18,7 +18,7 @@ import logging
 from flask import jsonify
 from python_settings import settings
 from .version_config import API_VERSION
-from . metadata_views import get_versions, get_attributes, get_collections, get_analysis_results
+from .metadata_views import get_versions, get_attributes, get_collections, get_analysis_results
 from flask import Blueprint
 
 logger = logging.getLogger(settings.LOGGER_NAME)
