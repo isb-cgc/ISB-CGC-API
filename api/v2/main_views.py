@@ -20,7 +20,7 @@ import requests
 
 from python_settings import settings
 
-logger = logging.getLogger(settings.LOGGER_NAME)
+logger = logging.getLogger(__name__)
 
 
 def get_privacy():
