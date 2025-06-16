@@ -6,6 +6,7 @@ gsutil cp "gs://${DEPLOYMENT_BUCKET}/${OPEN_API_V1_YAML}" ./openapi-appengine.v1
 gsutil cp "gs://${DEPLOYMENT_BUCKET}/${OPEN_API_V2_YAML}" ./openapi-appengine.v2.yaml
 gsutil cp "gs://${DEPLOYMENT_BUCKET}/${OPEN_API_YAML}" ./api/api.yaml
 gsutil cp "gs://${DEPLOYMENT_BUCKET}/${API_APP_YAML}" ./app.yaml
+gsutil cp "gs://${DEPLOYMENT_BUCKET}/${DISPATCH_YAML}" ./dispatch.yaml
 gsutil cp "gs://${DEPLOYMENT_BUCKET}/${API_TOKEN_FILE}" ./api_token.txt
 
 # Pack staged files for caching
