@@ -15,11 +15,8 @@
 #
 
 import logging
-import json
 from flask import jsonify, request, Blueprint
-from django.db import close_old_connections
-from sample_case_views import get_metadata
-from api_logging import *
+from api_logging import st_logger, make_deprecated_msg, log_name, activity_message
 
 logger = logging.getLogger(__name__)
 
@@ -31,131 +28,16 @@ cases_bp = Blueprint(f'cases_bp_v4', __name__, url_prefix='/{}'.format("v4"))
 @cases_bp.route('/cases/nodes/<source>/<identifier>/', methods=['GET'], strict_slashes=False)
 def case_metadata_node(source, identifier):
     st_logger.write_text_log_entry(log_name, activity_message.format(request.method, request.full_path))
-
-    try:
-        metadata = get_metadata({"node": {source: [identifier]}})
-
-        if metadata:
-            if 'message' in metadata:
-                resp_obj = metadata
-                code = 400
-                if 'not_found' in metadata:
-                    code = 404
-            else:
-                resp_obj = {
-                    'data': metadata
-                }
-                code = 200
-        else:
-            resp_obj = {
-                'message': 'Encountered an error while retrieving case metadata.'
-            }
-            code = 500
-    except Exception as e:
-        logger.error("[ERROR] While fetching case metadata:")
-        logger.exception(e)
-        resp_obj = {
-            'message': 'Encountered an error while retrieving case metadata for {}:{}.'.format(source, identifier)
-        }
-        code = 500
-    finally:
-        close_old_connections()
-
-    resp_obj['code'] = code
-    response = jsonify(resp_obj)
-    response.status_code = code
-
-    return response
+    return make_deprecated_msg()
 
 
 @cases_bp.route('/cases/programs/<source>/<identifier>/', methods=['GET'], strict_slashes=False)
 def case_metadata_program(source, identifier):
     st_logger.write_text_log_entry(log_name, activity_message.format(request.method, request.full_path))
-
-    try:
-        metadata = get_metadata({"program": {source: [identifier]}})
-
-        if metadata:
-            if 'message' in metadata:
-                resp_obj = metadata
-                code = 400
-                if 'not_found' in metadata:
-                    code = 404
-            else:
-                resp_obj = {
-                    'data': metadata
-                }
-                code = 200
-        else:
-            resp_obj = {
-                'message': 'Encountered an error while retrieving case metadata.'
-            }
-            code = 500
-    except Exception as e:
-        logger.error("[ERROR] While fetching case metadata:")
-        logger.exception(e)
-        resp_obj = {
-            'message': 'Encountered an error while retrieving case metadata for {}:{}.'.format(source, identifier)
-        }
-        code = 500
-    finally:
-        close_old_connections()
-
-    resp_obj['code'] = code
-    response = jsonify(resp_obj)
-    response.status_code = code
-
-    return response
+    return make_deprecated_msg()
 
 
 @cases_bp.route('/cases/', methods=['POST'], strict_slashes=False)
 def case_metadata_list():
-
-    resp_obj = None
-    code = None
-
     st_logger.write_text_log_entry(log_name, activity_message.format(request.method, request.full_path))
-
-    try:
-
-        request_data = request.get_json()
-
-        if not(request_data.get('program', None) or request_data.get('node', None)):
-            resp_obj = {
-                'message': 'Please separate your lists by source type ("node" or "program").'
-            }
-            code = 400
-        else:
-            metadata = get_metadata(request_data)
-
-            if metadata:
-                if 'message' in metadata:
-                    resp_obj = metadata
-                    code = 400
-                    if 'not_found' in metadata:
-                        code = 404
-                else:
-                    resp_obj = {
-                        'data': metadata
-                    }
-                    code = 200
-            else:
-                resp_obj = {
-                    'message': 'Encountered an error while retrieving case metadata.'
-                }
-                code = 500
-    except Exception as e:
-        logger.error("[ERROR] While fetching case metadata:")
-        logger.exception(e)
-        resp_obj = {
-            'message': 'Encountered an error while retrieving case metadata.'
-        }
-        code = 500
-    finally:
-        close_old_connections()
-        
-    resp_obj['code'] = code
-    response = jsonify(resp_obj)
-    response.status_code = code
-
-    return response
+    return make_deprecated_msg()

@@ -27,20 +27,42 @@ SCOPE = 'https://www.googleapis.com/auth/userinfo.email'
 main_bp = Blueprint(f'main_bp_v4', __name__, url_prefix='/{}'.format("v4"))
 
 
-@main_bp.route('/about/', methods=['GET'], strict_slashes=False)
+def make_deprecated_msg():
+    response = jsonify({
+        'code': 405,
+        'message': 'ISB-CGC APi Endpoints have been deprecated.',
+        'documentation': 'SwaggerUI interface available at <{}/swagger/>.'.format(settings.BASE_API_URL) +
+                         'Historical documentation available at <https://isb-cancer-genomics-cloud.readthedocs.io/en/latest/sections/progapi/progAPI-v4/Programmatic-Demo.html>'
+    })
+    response.status_code = 405
+    return response
+
+
+@main_bp.route('/', methods=['GET'], strict_slashes=False)
+def root():
+    """Base response"""
+
+    st_logger.write_text_log_entry(log_name, activity_message.format(request.method, request.full_path))
+
+    return make_deprecated_msg()
+
+
+@main_bp.route('/v4/', methods=['GET'], strict_slashes=False)
 def v4api():
     """Base response"""
 
     st_logger.write_text_log_entry(log_name, activity_message.format(request.method, request.full_path))
+
+    return make_deprecated_msg()
+
+
+@main_bp.route('/about/', methods=['GET'], strict_slashes=False)
+def about():
+    """Base response"""
+
+    st_logger.write_text_log_entry(log_name, activity_message.format(request.method, request.full_path))
     
-    response = jsonify({
-        'code': 200,
-        'message': 'Welcome to the ISB-CGC API, Version 4.',
-        'documentation': 'SwaggerUI interface available at <{}/swagger/>.'.format(settings.BASE_API_URL) +
-             'Documentation available at <https://isb-cancer-genomics-cloud.readthedocs.io/en/latest/sections/progapi/progAPI-v4/Programmatic-Demo.html>'
-    })
-    response.status_code = 200
-    return response
+    return make_deprecated_msg()
 
 
 # Swagger UI
@@ -50,8 +72,8 @@ def swagger():
     return render_template('swagger/index.html')
 
 
-@main_bp.route('/oauth2callback/', strict_slashes=False)
-def oauth2callback():
-    st_logger.write_text_log_entry(log_name, activity_message.format(request.method, request.full_path))
-    return render_template('swagger/oauth2-redirect.html')
+# @main_bp.route('/oauth2callback/', strict_slashes=False)
+# def oauth2callback():
+#     st_logger.write_text_log_entry(log_name, activity_message.format(request.method, request.full_path))
+#     return render_template('swagger/oauth2-redirect.html')
 
