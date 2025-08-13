@@ -64,13 +64,13 @@ def v4api():
 
 
 @main_bp.route('/v4/swagger/', methods=['GET'], strict_slashes=False)
-def v4api():
+def swagger_old():
     st_logger.write_text_log_entry(log_name, activity_message.format(request.method, request.full_path))
     return redirect(url_for('/swagger/'), code=301)
 
 
 @main_bp.route('/v4/about/', methods=['GET'], strict_slashes=False)
-def v4api():
+def about_old():
     st_logger.write_text_log_entry(log_name, activity_message.format(request.method, request.full_path))
     return redirect(url_for('/about/'), code=301)
 
