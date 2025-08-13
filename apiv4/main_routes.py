@@ -41,7 +41,7 @@ def make_deprecated_msg():
 @main_bp.route('/', methods=['GET'], strict_slashes=False)
 def root():
     st_logger.write_text_log_entry(log_name, activity_message.format(request.method, request.full_path))
-    return make_deprecated_msg()
+    return redirect(url_for('main_bp_v4.api'), code=301)
 
 
 @main_bp.route('/about/', methods=['GET'], strict_slashes=False)
@@ -60,13 +60,13 @@ def swagger():
 @main_bp.route('/api/', methods=['GET'], strict_slashes=False)
 def api():
     st_logger.write_text_log_entry(log_name, activity_message.format(request.method, request.full_path))
-    return redirect(url_for('main_bp_v4.root'), code=301)
+    return make_deprecated_msg()
 
 
 @main_bp.route('/v4/', methods=['GET'], strict_slashes=False)
 def v4api():
     st_logger.write_text_log_entry(log_name, activity_message.format(request.method, request.full_path))
-    return redirect(url_for('main_bp_v4.root'), code=301)
+    return redirect(url_for('main_bp_v4.api'), code=301)
 
 
 @main_bp.route('/v4/swagger/', methods=['GET'], strict_slashes=False)
