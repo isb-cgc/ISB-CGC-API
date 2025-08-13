@@ -60,19 +60,19 @@ def swagger():
 @main_bp.route('/v4/', methods=['GET'], strict_slashes=False)
 def v4api():
     st_logger.write_text_log_entry(log_name, activity_message.format(request.method, request.full_path))
-    return redirect(url_for('/'), code=301)
+    return redirect(url_for('root'), code=301)
 
 
 @main_bp.route('/v4/swagger/', methods=['GET'], strict_slashes=False)
 def swagger_old():
     st_logger.write_text_log_entry(log_name, activity_message.format(request.method, request.full_path))
-    return redirect(url_for('/swagger/'), code=301)
+    return redirect(url_for('swagger'), code=301)
 
 
 @main_bp.route('/v4/about/', methods=['GET'], strict_slashes=False)
 def about_old():
     st_logger.write_text_log_entry(log_name, activity_message.format(request.method, request.full_path))
-    return redirect(url_for('/about/'), code=301)
+    return redirect(url_for('about'), code=301)
 
 # @main_bp.route('/oauth2callback/', strict_slashes=False)
 # def oauth2callback():
