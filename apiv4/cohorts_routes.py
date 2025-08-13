@@ -20,7 +20,7 @@ from api_logging import st_logger, make_deprecated_msg, log_name, activity_messa
 
 logger = logging.getLogger(__name__)
 
-cohorts_bp = Blueprint(f'cohorts_bp_v4', __name__, url_prefix='/{}'.format("v4"))
+cohorts_bp = Blueprint(f'cohorts_bp_v4', __name__)
 
 
 @cohorts_bp.route('/cohorts/<int:cohort_id>/', methods=['GET', 'PATCH', 'DELETE'], strict_slashes=False)

@@ -22,7 +22,7 @@ logger = logging.getLogger(__name__)
 
 NODES = ["PDC", "GDC", "IDC"]
 
-cases_bp = Blueprint(f'cases_bp_v4', __name__, url_prefix='/{}'.format("v4"))
+cases_bp = Blueprint(f'cases_bp_v4', __name__)
 
 
 @cases_bp.route('/cases/nodes/<source>/<identifier>/', methods=['GET'], strict_slashes=False)

@@ -24,7 +24,7 @@ logger = logging.getLogger(__name__)
 
 SCOPE = 'https://www.googleapis.com/auth/userinfo.email'
 
-main_bp = Blueprint(f'main_bp_v4', __name__, url_prefix='/{}'.format("v4"))
+main_bp = Blueprint(f'main_bp_v4', __name__)
 
 
 def make_deprecated_msg():

@@ -20,7 +20,7 @@ from api_logging import st_logger, make_deprecated_msg, log_name, activity_messa
 
 logger = logging.getLogger(__name__)
 
-program_bp = Blueprint(f'program_bp_v4', __name__, url_prefix='/{}'.format("v4"))
+program_bp = Blueprint(f'program_bp_v4', __name__)
 
 
 @program_bp.route('/data/available/', methods=['GET'], strict_slashes=False)
