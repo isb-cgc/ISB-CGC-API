@@ -20,7 +20,7 @@ from api_logging import st_logger, make_deprecated_msg, log_name, activity_messa
 
 logger = logging.getLogger(__name__)
 
-files_bp = Blueprint(f'files_bp_v4', __name__)
+files_bp = Blueprint(f'files_bp_v4', __name__, url_prefix="/api")
 
 
 @files_bp.route('/files/paths/<file_uuid>/', methods=['GET'], strict_slashes=False)

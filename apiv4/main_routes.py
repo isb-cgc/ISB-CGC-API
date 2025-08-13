@@ -57,6 +57,30 @@ def swagger():
     return render_template('swagger/index.html')
 
 
+@main_bp.route('/api/', methods=['GET'], strict_slashes=False)
+def api():
+    st_logger.write_text_log_entry(log_name, activity_message.format(request.method, request.full_path))
+    return redirect(url_for('main_bp_v4.root'), code=301)
+
+
+@main_bp.route('/api/v4/', methods=['GET'], strict_slashes=False)
+def apiv4():
+    st_logger.write_text_log_entry(log_name, activity_message.format(request.method, request.full_path))
+    return redirect(url_for('main_bp_v4.root'), code=301)
+
+
+@main_bp.route('/api/swagger/', methods=['GET'], strict_slashes=False)
+def apiswagger():
+    st_logger.write_text_log_entry(log_name, activity_message.format(request.method, request.full_path))
+    return redirect(url_for('main_bp_v4.swagger'), code=301)
+
+
+@main_bp.route('/api/about/', methods=['GET'], strict_slashes=False)
+def apiabout():
+    st_logger.write_text_log_entry(log_name, activity_message.format(request.method, request.full_path))
+    return redirect(url_for('main_bp_v4.about'), code=301)
+
+
 @main_bp.route('/v4/', methods=['GET'], strict_slashes=False)
 def v4api():
     st_logger.write_text_log_entry(log_name, activity_message.format(request.method, request.full_path))
@@ -73,6 +97,7 @@ def swagger_old():
 def about_old():
     st_logger.write_text_log_entry(log_name, activity_message.format(request.method, request.full_path))
     return redirect(url_for('main_bp_v4.about'), code=301)
+
 
 # @main_bp.route('/oauth2callback/', strict_slashes=False)
 # def oauth2callback():
