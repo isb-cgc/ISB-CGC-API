@@ -83,17 +83,6 @@ def create_app(test_config=None):
                     data = yaml.load(fpi)
                     del data['paths']['/swagger']
                     del data['paths']['/oauth2callback']
-                    # We need to adjust the security definition for use with Swagger UI itself (as opposed to the deployed API)
-                    data['securityDefinitions']['google_id_token'] = {
-                        'type': 'oauth2',
-                        'authorizationUrl': "https://accounts.google.com/o/oauth2/v2/auth",
-                        'tokenUrl': 'https://www.googleapis.com/oauth2/v4/token',
-                        'flow': 'implicit',
-                        'scopes': {"https://www.googleapis.com/auth/userinfo.email": "User email address",
-                                   "openid": "For OIDC"},
-                        'x-tokenName': 'id_token'
-                    }
-                    # Escape the ' or the JS will be sad
                     json_spec = json.dumps(data).replace("'", "\\'")
             except Exception as e:
                 logger.error("[ERROR] While reading YAML spec:")
