@@ -77,11 +77,11 @@ curl --silent https://bootstrap.pypa.io/get-pip.py | python3
 
 # Install our primary python libraries
 # If we're not on CircleCI, or we are but the lib directory isn't there (cache miss), install lib
-if [ -z "${CI}" ] || [ ! -d "lib" ]; then
+if [ -z "${CI}" ]; then
     echo "Installing Python Libraries..."
     pip install -r ${HOMEROOT}/requirements.txt -t ${HOMEROOT}/lib
 else
-    echo "Using restored cache for Python Libraries"
+    echo "Libraries will be built at deployment time"
 fi
 
 # Install Google Cloud SDK
