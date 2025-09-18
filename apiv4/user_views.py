@@ -1,5 +1,5 @@
 # 
-# Copyright 2019, Institute for Systems Biology
+# Copyright 2025, Institute for Systems Biology
 # 
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,25 +15,6 @@
 #
 
 import logging
-import json
-import django
-import re
-
-from flask import request
-from werkzeug.exceptions import BadRequest
-
-from django.contrib.auth.models import User as Django_User
-from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
-from django.conf import settings
-
-from accounts.sa_utils import auth_dataset_whitelists_for_user
-from accounts.models import AuthorizedDataset
-from projects.models import Program
-from auth import UserValidationException
-
-from jsonschema import validate as schema_validate, ValidationError
-
-BLACKLIST_RE = settings.BLACKLIST_RE
 
 logger = logging.getLogger(__name__)
 

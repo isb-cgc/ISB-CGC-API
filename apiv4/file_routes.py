@@ -16,7 +16,8 @@
 
 import logging
 from flask import jsonify, request, Blueprint
-from api_logging import st_logger, make_deprecated_msg, log_name, activity_message
+from api_logging import st_logger, log_name, activity_message
+from apiv4 import make_deprecated_msg
 
 logger = logging.getLogger(__name__)
 

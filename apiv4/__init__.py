@@ -24,22 +24,34 @@ from flask import Flask, jsonify, request
 from flask_cors import cross_origin
 from flask_talisman import Talisman
 
-import django
-django.setup()
-from django.conf import settings
+IS_APP_ENGINE = os.getenv("IS_APP_ENGINE", "false").lower() == "true"
+STATIC_URL = os.getenv("STATIC_URL", "/static/")
+BASE_API_URL = os.getenv("BASE_API_URL", "https://dev-api.isb-cgc.org")
+API_ACTIVITY_LOG_NAME = os.getenv("API_ACTIVITY_LOG_NAME", "local_dev_logging")
 
-if settings.IS_APP_ENGINE:
+if IS_APP_ENGINE:
     import google.cloud.logging
     client = google.cloud.logging_v2.Client()
     client.setup_logging()
 
 logger = logging.getLogger(__name__)
-logger.setLevel(settings.LOG_LEVEL)
+logger.setLevel(logging.DEBUG)
+
+
+def make_deprecated_msg():
+    response = jsonify({
+        'code': 405,
+        'message': 'ISB-CGC APi Endpoints have been deprecated.',
+        'documentation': 'SwaggerUI interface available at <{}/swagger/>.'.format(BASE_API_URL) +
+                         ' Historical documentation available at <https://isb-cancer-genomics-cloud.readthedocs.io/en/latest/sections/progapi/progAPI-v4/Programmatic-Demo.html>'
+    })
+    response.status_code = 405
+    return response
 
 
 def create_app(test_config=None):
     app = Flask(__name__, static_folder='api_static')
-    if settings.IS_APP_ENGINE:
+    if IS_APP_ENGINE:
         Talisman(app, strict_transport_security_max_age=300, content_security_policy={
             'default-src': [
                 '\'self\'',
@@ -61,7 +73,6 @@ def create_app(test_config=None):
 
     from file_routes import files_bp
     app.register_blueprint(files_bp)
-
     from main_routes import main_bp
     app.register_blueprint(main_bp)
 
@@ -91,10 +102,10 @@ def create_app(test_config=None):
 
         return dict(
             load_spec=load_spec,
-            static_uri=(settings.STATIC_URL.replace('/static/', '')),
-            api_base_uri=settings.BASE_API_URL,
+            static_uri=(STATIC_URL.replace('/static/', '')),
+            api_base_uri=BASE_API_URL,
             ouath2_callback_path="oauth2callback",
-            api_client_id=settings.API_CLIENT_ID
+            api_client_id=""
         )
 
     # Error handlers
