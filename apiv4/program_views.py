@@ -15,37 +15,9 @@
 #
 
 import logging
-import json
-import django
-
-from flask import request
-
-from django.conf import settings
-
-from projects.models import Program, Project
 
 logger = logging.getLogger(__name__)
 
 
 def get_cohort_programs():
-    django.setup()
-    program_info = None
-    try:
-        name = request.args.get('name', default='%', type=str) if 'name' in request.args else None
-        desc = request.args.get('desc', default='%', type=str) if 'desc' in request.args else None
-
-        results = Program.get_public_programs(name=name, desc=desc)
-
-        program_info = [
-            {
-                'name': x.name,
-                'description': x.description,
-                'program_privacy': "Public",
-                'projects': [{'name': y.name, 'description': y.description} for y in x.project_set.all()]
-            }
-            for x in results
-        ]
-    except Exception as e:
-        logger.exception(e)
-
-    return program_info
+    pass
