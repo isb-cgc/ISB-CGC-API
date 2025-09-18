@@ -28,6 +28,7 @@ IS_APP_ENGINE = os.getenv("IS_APP_ENGINE", "false").lower() == "true"
 STATIC_URL = os.getenv("STATIC_URL", "/static/")
 BASE_API_URL = os.getenv("BASE_API_URL", "https://dev-api.isb-cgc.org")
 API_ACTIVITY_LOG_NAME = os.getenv("API_ACTIVITY_LOG_NAME", "local_dev_logging")
+GCLOUD_PROJECT_ID = os.getenv("GCLOUD_PROJECT_ID", "isb-cgc-dev-1")
 
 if IS_APP_ENGINE:
     import google.cloud.logging
