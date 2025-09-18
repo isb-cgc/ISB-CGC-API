@@ -107,17 +107,10 @@ jobs:
           name: Set Python Path
           command: |
             echo "export PYTHONPATH=$PYTHONPATH:/usr/lib/google-cloud-sdk/platform/google_appengine" >> $BASH_ENV
-      - restore_cache:
-          keys:
-            - isb-cgc-api-lib-{{ checksum "requirements.txt" }}
       - run:
           name: Install Dependencies
           command: |
             sudo -E /bin/bash ./shell/install-deps.sh
-      - save_cache:
-          key: isb-cgc-api-lib-{{ checksum "requirements.txt" }}
-          paths:
-            - ./lib
       - deployment_setup
       - auth
       - deployment_config
