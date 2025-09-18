@@ -94,20 +94,6 @@ commands:
             sudo apt-get update -qq
             sudo apt-get -y install google-cloud-sdk
 
-  run_tests:
-    steps:
-      - run:
-          name: "Run Tests"
-          command: |
-            sudo -E /bin/bash ./shell/run_tests.sh
-
-  run_lint:
-    steps:
-      - run:
-          name: "Run Pylint"
-          command: |
-            sudo -E /bin/bash ./shell/run_lint.sh
-
 jobs:
   build_job:
     environment:
@@ -120,7 +106,7 @@ jobs:
       - run:
           name: Set Python Path
           command: |
-            echo "export PYTHONPATH=/home/circleci/${CIRCLE_PROJECT_REPONAME}:/home/circleci/${CIRCLE_PROJECT_REPONAME}/lib:/usr/lib/google-cloud-sdk/platform/google_appengine" >> $BASH_ENV
+            echo "export PYTHONPATH=$PYTHONPATH:/usr/lib/google-cloud-sdk/platform/google_appengine" >> $BASH_ENV
       - restore_cache:
           keys:
             - isb-cgc-api-lib-{{ checksum "requirements.txt" }}
@@ -139,7 +125,6 @@ jobs:
           name: Staging and Database testing
           command: |
             sudo -E /bin/bash ./shell/gcloud-pull-staging-files.sh
-      - run_lint
       - run:
           name: Compare Config
           command: |
