@@ -1,5 +1,5 @@
 ###
-# Copyright 2015-2024, Institute for Systems Biology
+# Copyright 2015-2025, Institute for Systems Biology
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -24,18 +24,6 @@ if [ -n "$CI" ]; then
 
     export HOME=/home/circleci/${CIRCLE_PROJECT_REPONAME}
     export HOMEROOT=/home/circleci/${CIRCLE_PROJECT_REPONAME}
-
-    # Clone dependencies
-    COMMON_BRANCH=master
-    if [[ ${CIRCLE_BRANCH} =~ (prod|uat|test).* ]]; then
-        COMMON_BRANCH=$(awk -F- '{print "isb-cgc-"$1}' <<< ${CIRCLE_BRANCH})
-    elif [[ ${CIRCLE_BRANCH} =~ isb-cgc-(prod|uat|test).* ]]; then
-        COMMON_BRANCH=$(awk -F- '{print $1"-"$2"-"$3}' <<< ${CIRCLE_BRANCH})
-    elif [[ ${CIRCLE_BRANCH} == "expr" ]]; then
-        COMMON_BRANCH=expr
-    fi
-    echo "Cloning ISB-CGC-Common branch ${COMMON_BRANCH}..."
-    git clone -b ${COMMON_BRANCH} https://github.com/isb-cgc/ISB-CGC-Common.git
 else
     if ( "/home/vagrant/API/shell/get_env.sh" ) ; then
         export $(cat ${ENV_FILE_PATH} | grep -v ^# | xargs) 2> /dev/null
@@ -65,19 +53,10 @@ apt-get update -qq
 echo "Preparing System"
 apt-get -y --force-yes install software-properties-common ca-certificates gnupg
 
-apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv B7B3B788A8D3785C
-wget "https://repo.mysql.com/mysql-apt-config_0.8.30-1_all.deb" -P /tmp
-dpkg --install /tmp/mysql-apt-config_0.8.30-1_all.deb
-
-apt-get update -qq
-
-echo "Installing MySQL Client"
-apt-get install -y --force-yes mysql-client
-
 # Install apt-get dependencies
 echo "Installing Dependencies..."
 apt-get install -y --force-yes unzip libffi-dev libssl-dev git g++ curl dos2unix pkg-config
-apt-get install -y --force-yes python3-distutils python3-mysqldb libmysqlclient-dev libpython3-dev build-essential
+apt-get install -y --force-yes python3-distutils libpython3-dev build-essential
 apt-get install -y --force-yes python3-pip
 
 echo "Dependencies Installed"
