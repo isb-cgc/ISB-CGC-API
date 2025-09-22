@@ -17,13 +17,7 @@
 import logging
 import base64
 import json
-import requests
-import django
 from flask import request, jsonify
-from django.conf import settings
-from django.contrib.auth.models import User as Django_User
-from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
-from cohorts.models import Cohort_Perms
 
 logger = logging.getLogger(__name__)
 
@@ -58,42 +52,11 @@ def auth_info():
 
 
 def get_user(user_email=None):
-    # Assume this is for the user information in the request header if none is
-    # provided (it could be for someone else on a project, etc.)
-    if not user_email:
-        user_email = auth_info()['email']
-
-    django.setup()
-    try:
-        user = Django_User.objects.get(email=user_email)
-        logger.info("[USER API AUTH] User {} seen in API".format(user_email))
-    except ObjectDoesNotExist as e:
-        logger.warning("User {} does not exist in our system.".format(user_email))
-        raise UserValidationException(
-            "User {} wasn't found in our system.".format(user_email) +
-            " Please register with our Web Application first: <https://isb-cgc.appspot.com>"
-        )
-    
-    return user
+    pass
 
 
 def validate_user(user_email=None, cohort_id=None, uuids=None):
-    user = get_user()
-
-    if not user_email:
-        user_email = user.email
-
-    try:
-        if cohort_id:
-            Cohort_Perms.objects.get(cohort_id=cohort_id, user_id=user.id)
-    except ObjectDoesNotExist as e:
-        logger.warning("Error retrieving cohort {} for user {}: {}".format(cohort_id, user_email, e))
-        raise UserValidationException(
-            "User {} does not have access to cohort {}.".format(user_email, cohort_id) +
-            " Please contact this cohort owner to obtain permission."
-        )
-
-    return user
+    pass
 
 
 # END METHODS

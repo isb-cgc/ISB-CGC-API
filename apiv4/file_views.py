@@ -15,57 +15,9 @@
 #
 
 import logging
-import json
-import django
-
-from flask import request
-from werkzeug.exceptions import BadRequest
-
-from django.conf import settings
-from cohorts.metadata_helpers import get_paths_by_uuid
-
-from auth import UserValidationException
 
 logger = logging.getLogger(__name__)
 
 
 def get_file_paths(uuid=None):
-
-    result = None
-    uuids = None
-
-    try:
-
-        if uuid:
-            uuids = [uuid]
-        else:
-            request_data = request.get_json()
-            if 'uuids' in request_data:
-                uuids = request_data['uuids']
-            
-        if not uuids or not len(uuids):
-            result = {
-                'message': "File UUIDs not provided in data payload."
-            }
-        else:
-            paths, not_found = get_paths_by_uuid(uuids)
-            if not len(paths):
-                result = {
-                    'message': "No file paths were found for the provided UUIDs.",
-                    'not_found': uuids
-                }
-            else:
-                result = {
-                    'paths': paths
-                }
-                if len(not_found):
-                    result['notes'] = "One or more file paths were not found for these UUIDs. Please see 'not_found' for a list."
-                    result['not_found'] = not_found
-
-    except BadRequest as e:
-        logger.warning("[WARNING] Received bad request - couldn't load JSON.")
-        result = {
-            'message': 'The JSON provided in this request appears to be improperly formatted.',
-        }
-
-    return result
+    pass
