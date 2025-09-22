@@ -1,5 +1,5 @@
 # 
-# Copyright 2019, Institute for Systems Biology
+# Copyright 2025, Institute for Systems Biology
 # 
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,58 +15,10 @@
 #
 
 import logging
-import json
-import django
-
-from flask import request
-from werkzeug.exceptions import BadRequest
-from cohorts.metadata_counting import get_full_case_metadata
 
 logger = logging.getLogger(__name__)
 
 NODES = ["PDC", "GDC", "IDC"]
 
-
 def get_metadata(ids):
-
-    results = {}
-    some_not_found = False
-
-    try:
-        for source_type, source_sets in ids.items():
-            results[source_type] = {}
-            id_set_type = "{} {}s".format(source_type, "case barcode" if source_type == "program" else "uuid")
-            for source, id_set in source_sets.items():
-                results[source_type][source] = {}
-                if not id_set or not len(id_set):
-                    results[source_type][source] = {
-                        'message': 'A list of {} was not found in this request. Please double-check the expected request JSON format.'.format(
-                            id_set_type
-                        )
-                    }
-                else:
-                    result = get_full_case_metadata(id_set, source_type, source)
-                    if not result or not result['total_found']:
-                        if not result:
-                            result = {}
-                        else:
-                            del result['total_found']
-                        result['message'] = "No metadata was found for the supplied {}.".format(id_set_type)
-                    else:
-                        if 'not_found' in result:
-                            result['notes'] = "Some {} provided were not found. See 'not_found' for a list.".format(id_set_type)
-                            some_not_found = True
-                    results[source_type][source] = result
-        if some_not_found:
-            results['not_found'] = "Some ids provided were not found. See 'not_found' under each node or program for a list."
-    except BadRequest as e:
-        logger.warning("[WARNING] Received bad request - couldn't load JSON.")
-        results = {
-            'message': 'The JSON provided in this request appears to be improperly formatted.',
-        }
-
-    except Exception as e:
-        logger.error("[ERROR] While fetching {} metadata: ".format(type))
-        logger.exception(e)
-
-    return results
+    pass

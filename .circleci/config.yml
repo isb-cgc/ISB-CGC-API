@@ -73,12 +73,6 @@ commands:
           command: |
             sudo -E /bin/bash ./shell/pull_config.sh
             xargs -a deployment_config.txt -I{} echo "export {}" >> $BASH_ENV
-            # Set up test/deployment database values
-            echo "export MYSQL_ROOT_PASSWORD_BUILD=isb" >> $BASH_ENV
-            echo "export DATABASE_NAME_BUILD=build_database" >> $BASH_ENV
-            echo "export DATABASE_PASSWORD_BUILD=isb" >> $BASH_ENV
-            echo "export DATABASE_USER_BUILD=django-user" >> $BASH_ENV
-            echo "export DATABASE_HOST_BUILD=127.0.0.1" >> $BASH_ENV
 
   auth:
     steps:
@@ -100,20 +94,6 @@ commands:
             sudo apt-get update -qq
             sudo apt-get -y install google-cloud-sdk
 
-  run_tests:
-    steps:
-      - run:
-          name: "Run Tests"
-          command: |
-            sudo -E /bin/bash ./shell/run_tests.sh
-
-  run_lint:
-    steps:
-      - run:
-          name: "Run Pylint"
-          command: |
-            sudo -E /bin/bash ./shell/run_lint.sh
-
 jobs:
   build_job:
     environment:
@@ -121,30 +101,16 @@ jobs:
     working_directory: ~/ISB-CGC-API
     docker:
       - image: cimg/python:3.11
-      - image: cimg/mysql:8.0
-        environment:
-          MYSQL_ROOT_HOST: "%"
-          MYSQL_USER: ubuntu
-          MYSQL_PASSWORD: "isb"
-          MYSQL_ROOT_PASSWORD: "isb"
-          MYSQL_DATABASE: "build_database"
     steps:
       - checkout
       - run:
           name: Set Python Path
           command: |
-            echo "export PYTHONPATH=/home/circleci/${CIRCLE_PROJECT_REPONAME}:/home/circleci/${CIRCLE_PROJECT_REPONAME}/lib:/usr/lib/google-cloud-sdk/platform/google_appengine" >> $BASH_ENV
-      - restore_cache:
-          keys:
-            - isb-cgc-api-lib-{{ checksum "requirements.txt" }}
+            echo "export PYTHONPATH=$PYTHONPATH:/usr/lib/google-cloud-sdk/platform/google_appengine" >> $BASH_ENV
       - run:
           name: Install Dependencies
           command: |
             sudo -E /bin/bash ./shell/install-deps.sh
-      - save_cache:
-          key: isb-cgc-api-lib-{{ checksum "requirements.txt" }}
-          paths:
-            - ./lib
       - deployment_setup
       - auth
       - deployment_config
@@ -152,7 +118,6 @@ jobs:
           name: Staging and Database testing
           command: |
             sudo -E /bin/bash ./shell/gcloud-pull-staging-files.sh
-      - run_lint
       - run:
           name: Compare Config
           command: |
@@ -166,17 +131,11 @@ jobs:
           paths:
             - ./apiv4
             - ./shell
-            - ./ISB-CGC-Common
-            - ./Dockerfile
-            - ./.dockerignore
             - ./app.yaml
             - ./openapi-appengine.yaml
             - ./gunicorn.conf.py
-            - ./settings.py
             - ./txt
             - ./json
-            - ./.env
-            - ./solr-ssl.pem
 
   deploy_job:
     environment:

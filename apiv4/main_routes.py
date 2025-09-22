@@ -1,5 +1,5 @@
 # 
-# Copyright 2019, Institute for Systems Biology
+# Copyright 2025, Institute for Systems Biology
 # 
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -17,25 +17,14 @@
 import logging
 import json
 from flask import jsonify, request, render_template, redirect, url_for, Blueprint
-from django.conf import settings
-from api_logging import *
+from api_logging import st_logger, log_name, activity_message
+from apiv4 import make_deprecated_msg
 
 logger = logging.getLogger(__name__)
 
 SCOPE = 'https://www.googleapis.com/auth/userinfo.email'
 
 main_bp = Blueprint(f'main_bp_v4', __name__)
-
-
-def make_deprecated_msg():
-    response = jsonify({
-        'code': 405,
-        'message': 'ISB-CGC APi Endpoints have been deprecated.',
-        'documentation': 'SwaggerUI interface available at <{}/swagger/>.'.format(settings.BASE_API_URL) +
-                         ' Historical documentation available at <https://isb-cancer-genomics-cloud.readthedocs.io/en/latest/sections/progapi/progAPI-v4/Programmatic-Demo.html>'
-    })
-    response.status_code = 405
-    return response
 
 
 @main_bp.route('/', methods=['GET'], strict_slashes=False)
