@@ -170,7 +170,4 @@ workflows:
           filters:
             branches:
               only:
-                - master
-                - test
-                - uat
                 - prod
