@@ -163,7 +163,11 @@ workflows:
   version: 2
   build_and_deploy:
     jobs:
-      - build_job
+      - build_job:
+          filters:
+            branches:
+              only:
+                - prod
       - deploy_job:
           requires:
             - build_job
