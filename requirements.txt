@@ -7,6 +7,6 @@ google-cloud-logging
 gunicorn==23.0.0
 jsonschema==2.6.0
 PyYAML==6.0.2
-requests==2.32.4
+requests==2.33.0
 ruamel.yaml==0.18.11
 simplejson==3.8.1
