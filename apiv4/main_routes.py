@@ -75,3 +75,4 @@ def about_old():
 #     st_logger.write_text_log_entry(log_name, activity_message.format(request.method, request.full_path))
 #     return render_template('swagger/oauth2-redirect.html')
 
+
